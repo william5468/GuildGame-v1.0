@@ -3461,7 +3461,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 1 && Math.random() < 0.5 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
