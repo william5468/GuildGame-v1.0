@@ -1404,7 +1404,7 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         id: gameState.nextId++,
         name: 'カイト',
         gender: 'male',
-        image: 'images/カイト.png',
+        image: 'Images/カイト.png',
         strength: 30,
         wisdom: 10,
         dexterity: 25,
@@ -1428,7 +1428,7 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         id: gameState.nextId++,
         name: 'ルナ',
         gender: 'female',
-        image: 'images/ルナ.png',
+        image: 'Images/ルナ.png',
         strength: 10,
         wisdom: 30,
         dexterity: 10,
@@ -4568,7 +4568,7 @@ function renderFacilities() {
     const modalContent = document.querySelector('#facilitiesModal .modal-content');
 
     if (currentFacility === null) {
-        modalContent.style.backgroundImage = "url('images/Street.jpg')";
+        modalContent.style.backgroundImage = "url('Images/Street.jpg')";
         content.innerHTML = `
             <div id = "renderedfacilitiesContent" style="text-align:center; padding:60px;">
                 <h2>街</h2>
@@ -4587,7 +4587,7 @@ function renderFacilities() {
         else if (currentFacility === 'tavern') { bgFile = '酒場.jpg'; title = '酒場'; }
         else if (currentFacility === 'alchemy') { bgFile = '錬金工房.jpg'; title = '錬金工房'; }
 
-        modalContent.style.backgroundImage = `url('images/${bgFile}')`;
+        modalContent.style.backgroundImage = `url('Images/${bgFile}')`;
 
         const level = gameState.facilities[currentFacility];
         let html = `<div class="facility-panel">
@@ -5286,7 +5286,7 @@ function renderCurrentNPC() {
     const idx = discoveredIndices[currentNPCIndex];
     const name = discoveryNPCs[idx];
     let html = '<div style="max-width:500px; margin:0 auto; padding:40px; text-align:center;">';
-    html += `<img src="images/${name}.jpg" alt="${name}" class="npc-img" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTQwIDE4MCI+PHJlY3Qgd2lkdGg9IjE0MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSI3MCIgeT0iOTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7nlLvlg4/jgarjgZc8L3RleHQ+PC9zdmc+\'; this.onerror=null;">`;
+    html += `<img src="Images/${name}.jpg" alt="${name}" class="npc-img" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTQwIDE4MCI+PHJlY3Qgd2lkdGg9IjE0MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSI3MCIgeT0iOTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7nlLvlg4/jgarjgZc8L3RleHQ+PC9zdmc+\'; this.onerror=null;">`;
     html += `<h2 style="color:#2c3e50; margin:20px 0 10px;">${name}</h2>`;
     html += '<div style="background:#f8f9fa; padding:20px; border-radius:12px; margin:20px 0; font-size:1.1em; color:#495057;">';
     html += '<p>発見済みNPC</p>';
@@ -5569,12 +5569,12 @@ const dialogues = [
     },
     {
         speaker: "カイト",
-        image: "images/カイト.png",
+        image: "Images/カイト.png",
         text: "……よう、{player}。まだ起きてたのか。<br>ルナもさっきまで泣いてたけど、今は寝ちまったみたいだな。"
     },
     {
         speaker: "カイト",
-        image: "images/カイト.png",
+        image: "Images/カイト.png",
         text: "俺たち……本当にここまで来ちまったな。<br>あの村から逃げて、このセントラルシティまで……<br>家族も、友達も、みんな……"
     },
     {
@@ -5583,32 +5583,32 @@ const dialogues = [
     },
     {
         speaker: "ルナ",
-        image: "images/ルナ.png",
+        image: "Images/ルナ.png",
         text: "……{player}、カイト……ごめん、起きちゃった。<br>夢を見たの。あの夜の夢……またみんなが……"
     },
     {
         speaker: "カイト",
-        image: "images/カイト.png",
+        image: "Images/カイト.png",
         text: "ルナ……もう大丈夫だ。俺たちがいる。<br>でもよ、{player}。このままじゃダメだよな。<br>ただ逃げて、隠れて生きるだけじゃ……"
     },
     {
         speaker: "ルナ",
-        image: "images/ルナ.png",
+        image: "Images/ルナ.png",
         text: "うん……私も思う。あの軍勢の正体、なぜ村が狙われたのか……<br>知りたい。真実を知りたい。<br>そして、生きていくためにも……お金が必要よね。"
     },
     {
         speaker: "カイト",
-        image: "images/カイト.png",
+        image: "Images/カイト.png",
         text: "残ってる金は1000gだけだ。<br>でもよ、{player}。俺たちには力がある。<br>お前とルナと俺——三人なら、冒険者としてやっていけるはずだ。"
     },
     {
         speaker: "ルナ",
-        image: "images/ルナ.png",
+        image: "Images/ルナ.png",
         text: "だから……ギルドを作ろう。ここに。<br>私たちのギルド。小さくてもいい。<br>依頼を受けて、強くなって、真実を探すための力をつけるの。"
     },
     {
         speaker: "カイト",
-        image: "images/カイト.png",
+        image: "Images/カイト.png",
         text: "決まりだな、{player}。<br>俺たち三人で、この街に新しいギルドを立ち上げる。<br>名前は……お前が決めろよ。リーダーなんだから。"
     },
     {
@@ -5877,11 +5877,11 @@ function playNextDialogue() {
             const current = seq[localIndex];
 
             // 話者に応じて画像切り替え（デフォルトはペア画像）
-            let imageSrc = 'images/カイト＆ルナ.png'; // ← ペア画像（ファイル名は環境に合わせて調整）
+            let imageSrc = 'Images/カイト＆ルナ.png'; // ← ペア画像（ファイル名は環境に合わせて調整）
             if (current.speaker === 'カイト') {
-                imageSrc = 'images/カイト.png';
+                imageSrc = 'Images/カイト.png';
             } else if (current.speaker === 'ルナ') {
-                imageSrc = 'images/ルナ.png';
+                imageSrc = 'Images/ルナ.png';
             }
             // それ以外の話者（冒険者、依頼主、ギルドマスターなど）でもペア画像のままにする
             charImage.src = imageSrc;
