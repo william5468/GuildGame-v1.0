@@ -89,7 +89,7 @@ ul {list-style:none; padding:0;}
     padding: 40px;
     background: 
         rgba(255, 255, 255, 0.1)     /* Light glass overlay */
-        url('images/Shop_bg.jpg') center center / cover no-repeat;
+        url('Images/Shop_bg.jpg') center center / cover no-repeat;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 24px;
@@ -244,7 +244,7 @@ ul {list-style:none; padding:0;}
     min-height: 80vh;                /* Taller to comfortably fit stats, progress bars, and large portrait */
     margin: 20px auto;
     padding: 40px;                   /* More internal space */
-    background: rgba(255, 255, 255, 0.558) url('images/Character_bg.jpg') center center / cover no-repeat;;
+    background: rgba(255, 255, 255, 0.558) url('Images/Character_bg.jpg') center center / cover no-repeat;;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 20px;
@@ -274,7 +274,7 @@ body {
     font-family: 'Hiragino Sans', 'Yu Gothic', Arial, sans-serif;
     margin: 0;
     padding: 20px 10px;                  /* Reduced side padding for more background visibility */
-    background: url('images/Guild_bg.jpg') center center / cover no-repeat fixed;
+    background: url('Images/Guild_bg.jpg') center center / cover no-repeat fixed;
     min-height: 100vh;
     box-sizing: border-box;
     color: #2c3e50;                      /* Darker text for contrast */
@@ -381,7 +381,7 @@ body {
     left: -10%;
     width: 120%;
     height: 120%;
-    background: url('images/Card.png') center / contain no-repeat;
+    background: url('Images/Card.png') center / contain no-repeat;
     opacity: 0.95;                   /* Almost full – always clearly visible */
     pointer-events: none;
     transition: transform 0.4s ease, opacity 0.3s ease;
@@ -401,7 +401,7 @@ body {
 }
 /* If Card.png is a framed/bordered design (common for fantasy cards), try 'contain' instead of 'cover' */
  /* Uncomment this line and comment the 'cover' lines above if it looks better: */
-/* background: rgba(255, 255, 255, 0.15) url('images/Card.png') center / contain no-repeat; */
+/* background: rgba(255, 255, 255, 0.15) url('Images/Card.png') center / contain no-repeat; */
 
 .quest-card {
     position: relative;
@@ -437,7 +437,7 @@ body {
     left: -5%;
     width: 110%;
     height: 110%;
-    background: url('images/Quest.png') center / contain no-repeat;
+    background: url('Images/Quest.png') center / contain no-repeat;
     opacity: 0.95;
     pointer-events: none;
     transition: transform 0.4s ease, opacity 0.3s ease;
@@ -458,7 +458,7 @@ body {
 }
 
 /* Same contain option for Quest.png if it's a framed scroll/parchment style */
-/* background: rgba(255, 255, 255, 0.15) url('images/Quest.png') center / contain no-repeat; */
+/* background: rgba(255, 255, 255, 0.15) url('Images/Quest.png') center / contain no-repeat; */
 
 /* Ensure adventurer portrait fits nicely inside the card frame */
 .adventurer-img {
@@ -583,7 +583,7 @@ h1, h3, button, .adventurer-card, .quest-card {
     max-width: 1000px;
     max-height: 1000px;
     margin: 0 auto;
-    background-image: url('images/npc_bg.jpg');
+    background-image: url('Images/npc_bg.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -984,7 +984,7 @@ h1, h3, button, .adventurer-card, .quest-card {
     width: 95vw;
     min-height: 85vh;
     padding: 40px;
-    background: url('images/Street.jpg') center center / cover no-repeat;
+    background: url('Images/Street.jpg') center center / cover no-repeat;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 24px;
