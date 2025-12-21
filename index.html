@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギルドマスターゲーム - 完全修正版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>ギルドマスター v1.0</h2>
+<!-- メインBGM -->
+    <audio id="bgm" loop preload="auto">
+        <source src="bgm.mp3" type="audio/mpeg">
+        ブラウザがオーディオをサポートしていません。
+    </audio>
+    
+    <!-- イントロ専用BGM（新しく追加） -->
+    <audio id="introBgm" loop preload="auto">
+        <source src="yume.mp3" type="audio/mpeg">
+        ブラウザがオーディオをサポートしていません。
+    </audio>
+    <audio id="battleBgm" loop preload="auto">
+        <source src="battle.mp3" type="audio/mpeg">
+    </audio>
+    <div id="introModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center;">
+        <div style="max-width:900px; width:90%; background:#16213e; border:4px solid #0f3460; border-radius:15px; padding:30px; color:white; box-shadow:0 0 30px rgba(0,100,200,0.6);">
+            
+            <!-- ステップ1: 名前入力 -->
+            <div id="stepName" style="text-align:center;">
+                <h1 style="color:#ffffff; margin-bottom:30px; font-size:2.2em;">冒険の始まり</h1>
+                <p style="font-size:1.3em; line-height:1.8;">
+                    あなたはこの世界の主人公です。<br>
+                    幼なじみのカイトとルナと共に、過酷な運命を乗り越えようとしています。<br><br>
+                    まずは、あなたの名前を教えてください。
+                </p>
+                <input type="text" id="playerNameInput" placeholder="名前を入力..." maxlength="12" 
+                    style="padding:15px; font-size:1.2em; width:300px; margin:20px 0; border-radius:8px; border:none; text-align:center;">
+                <br>
+                <button onclick="startIntroDialogue()" 
+                        style="padding:12px 40px; font-size:1.2em; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer; margin-top:20px;">
+                    決定
+                </button>
+            </div>
+            
+            <!-- ステップ2: 対話シーン -->
+            <div id="stepDialogue" style="display:none;">
+                <h1 style="color:#000000; text-align:center; margin-bottom:30px;"></h1>
+                
+                <div id="dialogueBox" style="background:#747474; padding:20px; border-radius:12px; min-height:300px; font-size:1.2em; line-height:1.8;">
+                    <!-- ここにJSで対話が挿入されます -->
+                </div>
+                
+                <div style="text-align:center; margin-top:30px;">
+                    <button id="nextBtn" onclick="nextDialogue()" 
+                            style="padding:12px 40px; font-size:1.2em; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer;">
+                        次へ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>    
+    <div class="buttons">
+    <div id="day"></div>
+    <button onclick="saveGame()">保存</button>
+    <button onclick="loadGame()">読み込み</button>
+    <button onclick="toggleShop()">店</button>
+    <button onclick="toggleCharacters()">キャラクター</button>
+    <button onclick="toggleNPCs()">NPC</button>
+    <button onclick="toggleFacilities()">ギルド周辺</button>
+    <button onclick="toggleGuildQuests()">ギルドクエスト投稿</button>
+    <button onclick="playDay()">日終了 & 冒険者派遣</button>
+    </div>
+    <div class="main">
+        <!-- index.html の .left 内を以下のように修正（#availableAdvs を横スクロール対応に） -->
+        <div class="left">
+            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin-bottom:20px;">利用可能冒険者</h3>
+            <div id="availableAdvs" class="horizontal-scroll-container"></div>
+
+            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin:30px 0 20px;">募集冒険者</h3>
+            <div id="recruits"></div> <!-- 募集は従来通り縦配置のまま（必要に応じて同じ処理を適用可） -->
+        </div>
+        <div class="right">
+            <div class="quest-nav">
+                <h2>クエスト&nbsp;&nbsp;&nbsp;</h2>
+                <button onclick="prevQuest()">‹ 前</button>
+                <span id="questCounter"></span>
+                <button onclick="nextQuest()">次 ›</button>
+            </div>
+            <div id="quests"></div>
+        </div>
+    </div>
+
+    <div id="eventModal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+            <div class="modal-buttons">
+                <button id="prevBtn" onclick="prevPage()">前</button>
+                <span id="pageInfo"></span>
+                <button id="nextBtn" onclick="nextPage()">次</button>
+                <button onclick="closeModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+    <div id="shopModal">
+        <div class="modal-content">
+            <h2>店</h2>
+            <div class="modal-buttons">
+                <button onclick="closeShop()">閉じる</button>
+            </div>
+            <div id="shopContent"></div>
+
+        </div>
+    </div>
+    <div id="charactersModal">
+        <div class="modal-content">
+            <h2>キャラクター</h2>
+            <div class="modal-buttons">
+                <button onclick="closeCharacters()">閉じる</button>
+            </div>            
+            <div id="charactersContent"></div>
+
+        </div>
+    </div>
+    <div id="npcsModal">
+        <div class="modal-content">
+            <h2>NPC</h2>
+            <button onclick="closeNPCs()">閉じる</button>
+            <div id="npcsContent"></div>
+
+        </div>
+    </div>
+    <div id="battleModal">
+        <div class="modal-content">
+            <h2 id="battleTitle">防衛戦</h2>
+            <div id="battleContent"></div>
+            <div class="modal-buttons">
+                <button onclick="closeBattle()">閉じる</button>
+            </div>
+        </div>
+    </div>
+    <div id="facilitiesModal">
+        <div class="modal-content">
+            <h2>ギルド周辺</h2>
+            <div class="modal-buttons">
+                <button onclick="closeFacilities()">閉じる</button>
+            </div>            
+            <div id="facilitiesContent"></div>
+        </div>
+    </div>
+    <div id="guildQuestsModal">
+        <div class="modal-content">
+            <h2>ギルドクエスト投稿</h2>
+            <div class="modal-buttons">
+                <button onclick="closeGuildQuests()">閉じる</button>
+            </div>            
+            <div id="guildQuestsContent"></div>
+
+        </div>
+    </div>
+    <script src="javascript.js"></script>
+</body>
+</html>

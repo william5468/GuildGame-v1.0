@@ -1,0 +1,1039 @@
+
+h1 {color:#2c3e50; text-align:center;}
+h3 {color:#34495e;}
+div {margin-bottom:20px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
+button {margin:5px; padding:8px 12px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;}
+button:hover {background:#2980b9;}
+button:disabled {background:#bdc3c7; cursor:not-allowed;}
+ul {list-style:none; padding:0;}
+.left, .right {flex:1;}
+.buttons {display:flex; justify-content:center; gap:10px; margin:20px 0; flex-wrap:wrap;}
+.stats {font-size:0.85em; color:#555;}
+
+
+/* === UPDATED: Corruption & Expansion Sections – Semi-transparent glass to match shop scene === */
+.corruption-section,
+.expansion-section {
+    background: rgba(255, 255, 255, 0.09);   /* Very light white tint – lets Shop_bg.jpg fully shine through */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 35px;
+    margin: 30px auto;
+    max-width: 800px;
+    text-align: center;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+    transition: all 0.3s ease;
+}
+
+/* Hover effect – subtle lift for interactivity */
+.corruption-section:hover,
+.expansion-section:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Text inside these sections – strong white with glow */
+.corruption-section p,
+.expansion-section p {
+    font-size: 1.4em;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.8);
+    margin: 20px 0;
+}
+
+/* Buttons inside – prominent with color coding */
+.corruption-section button {
+    background: rgba(231, 76, 60, 0.85);      /* Warning red for corruption */
+    padding: 16px 40px;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.corruption-section button:hover {
+    background: rgba(211, 47, 47, 0.95);
+}
+
+.expansion-section button {
+    background: rgba(52, 152, 219, 0.85);     /* Blue for expansion */
+    padding: 16px 40px;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.expansion-section button:hover {
+    background: rgba(41, 128, 185, 0.95);
+}
+
+/* === UPDATED: Shop Modal – Full immersive background with Shop_bg.jpg === */
+#shopModal {
+    display: none;                   /* Keep default hidden state */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);  /* Dark overlay for depth */
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+#shopModal .modal-content {
+    max-width: 1100px;               /* Very wide for shop inventory feel */
+    width: 95vw;                     /* Responsive */
+    min-height: 85vh;                /* Tall to show many items */
+    margin: 0 auto;
+    padding: 40px;
+    background: 
+        rgba(255, 255, 255, 0.1)     /* Light glass overlay */
+        url('images/Shop_bg.jpg') center center / cover no-repeat;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;                /* Scroll if many items */
+    position: relative;
+}
+
+/* Shop title – prominent and glowing */
+#shopModal h2 {
+    font-size: 2.4em;
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+}
+
+#shopContent {
+    background: rgba(255, 255, 255, 0.08);   /* Very light semi-transparent white – lets Shop_bg.jpg show through clearly */
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px auto;
+    max-width: 1000px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    min-height: 60vh;                        /* Ensures space even with few items */
+}
+
+/* === UPDATED: Shop Content & Modal Buttons – Semi-transparent glass style === */
+#shopContent {
+    background: rgba(255, 255, 255, 0.08);   /* Very light semi-transparent white – lets Shop_bg.jpg show through clearly */
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px auto;
+    max-width: 1000px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    min-height: 60vh;                        /* Ensures space even with few items */
+}
+
+/* Modal buttons container (close button, etc.) – semi-transparent dark panel */
+#shopModal .modal-buttons {
+    background: rgba(0, 0, 0, 0.35);         /* Dark semi-transparent backing */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 30px auto 10px;
+    text-align: center;
+    max-width: 600px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* === UPDATED: Shop Page Counter – Force pure white text with strong shadow === */
+.page-counter {
+    font-size: 1.6em !important;
+    font-weight: bold !important;
+    color: #ffffff !important;              /* Pure white – forced */
+    text-shadow: 
+        0 0 12px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 1) !important; /* Strong black glow for readability on any background */
+    padding: 0 40px !important;
+}
+
+/* Close button itself – solid/opaque red for maximum visibility */
+#shopModal .modal-buttons button {
+    padding: 8px 29px !important;           /* Larger for prominence */
+    font-size: 1.4em !important;
+    font-weight: bold;
+    background: #e74c3c !important;          /* Solid bright red – no transparency */
+    color: #ffffff !important;
+    border: 2px solid #c0392b !important;    /* Darker red border for depth */
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    transition: all 0.3s ease !important;
+}
+
+
+#shopModal .modal-buttons button:hover {
+    background: rgba(211, 47, 47, 0.9);
+    transform: scale(1.05);
+}
+
+/* Optional: If you have shop page navigation in modal-buttons or separately, style them too */
+.shop-nav {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 15px;
+    margin: 40px auto 20px;
+    max-width: 500px;
+}
+
+.shop-item {                         /* Assuming items have class .shop-item or similar – adjust if needed */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.shop-item:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.shop-item h3, .shop-item p {
+    margin: 10px 0;
+    font-size: 1.2em;
+}
+
+.shop-item button {
+    margin-top: 15px;
+    padding: 12px 24px;
+    font-size: 1.1em;
+    background: rgba(46, 204, 113, 0.8);  /* Green for "buy" feel */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.shop-item button:hover {
+    background: rgba(39, 174, 96, 0.9);
+}
+
+/* Close button – larger and styled */
+#shopModal .modal-buttons button {
+    padding: 14px 32px;
+    font-size: 1.3em;
+    background: rgba(65, 65, 65, 0.663);
+    margin-top: 30px;
+}
+#charactersModal .modal-content {
+    max-width: 900px;                /* Significantly wider – was ~600px or default */
+    width: 90vw;                     /* Responsive: 90% of viewport width */
+    min-height: 80vh;                /* Taller to comfortably fit stats, progress bars, and large portrait */
+    margin: 20px auto;
+    padding: 40px;                   /* More internal space */
+    background: rgba(255, 255, 255, 0.558) url('images/Character_bg.jpg') center center / cover no-repeat;;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+#charactersModal .modal-buttons{
+
+    background: rgba(255, 255, 255, 0.856);
+}
+
+
+#charactersModal #charactersContent{
+
+    background: rgba(255, 255, 255, 0.856);
+}
+#charactersModal #charactersContent .char-nav{
+
+    background: rgba(255, 255, 255, 0.856);
+}
+
+
+
+/* Updated body – keep the background image full-screen */
+body {
+    font-family: 'Hiragino Sans', 'Yu Gothic', Arial, sans-serif;
+    margin: 0;
+    padding: 20px 10px;                  /* Reduced side padding for more background visibility */
+    background: url('images/Guild_bg.jpg') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    box-sizing: border-box;
+    color: #2c3e50;                      /* Darker text for contrast */
+}
+
+/* Main container – now almost fully transparent with subtle glass effect */
+.main {
+    display: flex;
+    gap: 20px;
+    margin: 10px auto;
+    max-width: 3000px;
+    background: rgba(255, 255, 255, 0.15);   /* Very light white tint */
+    padding: 15px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);            /* Strong frosted glass blur – removes if browser issues */
+    -webkit-backdrop-filter: blur(10px);    /* Safari support */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+/* Panels – larger width with min-width for wider screens, right slightly prioritized for large quest cards */
+.left {
+    flex: 1.2;                       /* Slightly more space for adventurers/recruits */
+    min-width: 1000px;                /* Forces wider panel even on medium screens */
+    background: rgba(255, 255, 255, 0.08);
+    padding: 20px;
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    min-height: 70vh;
+}
+
+.right {
+    flex: 1.8;                       /* More space for larger quest cards */
+    min-width: 600px;                /* Ensures quests have room to breathe */
+    background: rgba(255, 255, 255, 0.08);
+    padding: 20px;
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    min-height: 70vh;
+}
+
+
+
+/* Force white text for #day and all content inside it */
+#day {
+    text-align: center;
+    color: #ffffff !important;       /* Pure white, forced override */
+    font-size: 1em;
+    font-weight: bold;
+    text-shadow: 
+        0 0 12px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 1);      /* Even stronger black glow for max readability */
+    margin: 15px 0;
+    padding: 14px 28px;
+    background: rgba(0, 0, 0, 0.3);   /* Slightly darker backing to help on bright background areas */
+    border-radius: 16px;
+    display: inline-block;
+    min-width: 240px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Ensure any inner text (e.g., spans, p) inside #day is also white */
+#day *,
+#day span,
+#day p,
+#day div {
+    color: #ffffff !important;
+    text-shadow: inherit !important;  /* Inherit the strong shadow */
+}
+/* === FIX: Adventurer Cards – Card.png always visible (not just on hover) === */
+.adventurer-card {
+    position: relative;
+    display: inline-block;
+    width: 240px;                    /* Wider for better portrait + stats fit */
+    min-height: 380px;               /* Taller to fully show Card.png frame and content */
+    margin: 12px;
+    padding: 30px 20px;              /* Generous padding so text stays inside the card frame */
+    background: rgba(255, 255, 255, 0.08);   /* Very light glass – adjust down if Card.png is dark */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    overflow: hidden;                /* Prevent any overflow */
+    z-index: 1;
+}
+
+/* Card.png as pseudo-element – always visible */
+.adventurer-card::before {
+    content: '';
+    position: absolute;
+    top: -10%;                       /* Slight offset to allow scaling without crop */
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background: url('images/Card.png') center / contain no-repeat;
+    opacity: 0.95;                   /* Almost full – always clearly visible */
+    pointer-events: none;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    z-index: -1;
+}
+
+/* Hover effect – subtle zoom + full opacity */
+.adventurer-card:hover::before {
+    transform: scale(1.08);
+    opacity: 1;
+}
+
+.adventurer-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+}
+/* If Card.png is a framed/bordered design (common for fantasy cards), try 'contain' instead of 'cover' */
+ /* Uncomment this line and comment the 'cover' lines above if it looks better: */
+/* background: rgba(255, 255, 255, 0.15) url('images/Card.png') center / contain no-repeat; */
+
+.quest-card {
+    position: relative;
+    width: 700px;                    /* Wide card to fully show the scroll image */
+    max-width: 95vw;                 /* Responsive – prevent overflow on small screens */
+    min-height: 320px;
+    margin: 20px auto;               /* More vertical spacing, centered */
+    padding: 60px 80px 80px;         /* Extra side padding to create "margins" inside the scroll */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    transition: all 0.3s ease;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Quest.png as pseudo-element – larger and always visible */
+.quest-card::before {
+    content: '';
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    background: url('images/Quest.png') center / contain no-repeat;
+    opacity: 0.95;
+    pointer-events: none;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    z-index: -1;
+}
+
+/* Hover effect for quests */
+.quest-card:hover::before {
+    transform: scale(1.06);
+    opacity: 1;
+}
+
+.quest-card:hover,
+.quest-card.drag-over {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Same contain option for Quest.png if it's a framed scroll/parchment style */
+/* background: rgba(255, 255, 255, 0.15) url('images/Quest.png') center / contain no-repeat; */
+
+/* Ensure adventurer portrait fits nicely inside the card frame */
+.adventurer-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;              /* Circular portrait – common fantasy style */
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+}
+
+/* Section headers inside panels (e.g., "募集冒険者", "利用可能冒険者", "クエスト") */
+#recruits h3, #availableAdvs h3, #quests h3,
+.left h3, .right h3 {
+    color: #ffffff;
+    text-shadow: 
+        0 0 8px rgba(0, 0, 0, 0.8),
+        0 2px 6px rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 12px;
+    border-radius: 10px;
+    margin: 10px 0 20px;
+    font-size: 1.3em;
+}
+
+
+
+/* Top elements – make them blend in */
+h1 {
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 12px;
+    margin: 10px auto;
+    max-width: 800px;
+    backdrop-filter: blur(6px);
+}
+
+
+
+.buttons {
+    background: rgba(255, 255, 255, 0.32);
+    display: flex;
+    align-items: center;              /* Vertically centers the buttons */
+    justify-content: center;          /* Horizontally centers the buttons (remove if you don't want this) */
+    gap: 12px;                         /* Optional: adds consistent spacing between buttons */
+    /* The parent must have a height greater than the buttons for vertical centering to be visible */
+    height: 100%;                      /* Example: inherit full height from its parent */
+    /* or use a fixed height like: height: 400px; */
+}
+
+.buttons button {
+    background: rgba(254, 255, 255, 0.7);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    max-height: 40px;
+    /* Optional improvements */
+    padding: 0 20px;                   /* Makes buttons feel better sized */
+    height: 40px;                      /* Fixed height to match max-height */
+    line-height: 40px;                 /* Helps with internal text vertical alignment */
+    border-radius: 8px;                /* Slight rounding for modern look */
+    cursor: pointer;
+}
+
+.buttons button:hover {
+    background: rgba(168, 208, 235, 0.9);
+}
+
+/* 利用可能冒険者・募集冒険者・クエストセクションに統一されたセミトランスペアレントガラス背景を追加 */
+#recruits,
+#availableAdvs,
+#quests {
+    background: rgba(255, 255, 255, 0.08);          /* 軽い白のセミトランスペアレント（背景画像が透ける） */
+    backdrop-filter: blur(14px);                    /* 強めのフロストガラス効果 */
+    -webkit-backdrop-filter: blur(14px);            /* Safari対応 */
+    border: 1px solid rgba(255, 255, 255, 0.15);     /* 微かな白枠で浮遊感 */
+    border-radius: 20px;                            /* 丸みでモダンに */
+    padding: 30px;                                  /* 内部余白（カードとの距離） */
+    margin-bottom: 40px;                            /* セクション間の間隔（元の20pxより少し広め） */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);     /* 深い影で浮遊感強調 */
+    min-height: 200px;                              /* 空時でも崩れない最低高さ */
+}
+
+h3 {
+    color: #ffffff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+h2{
+color: #f5f5f5;
+    font-size: 0.5em;
+}
+
+/* Optional: Darken text slightly for better contrast on bright backgrounds */
+h1, h3, button, .adventurer-card, .quest-card {
+    color: #2c3e50;
+}
+
+
+.npc-img {
+    width: 200px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 0 auto 20px;
+    display: block;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+}
+.npc-img:hover {
+    transform: scale(1.05);
+}
+#npcsModal .modal-content {
+    max-width: 1000px;
+    max-height: 1000px;
+    margin: 0 auto;
+    background-image: url('images/npc_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Optional: add a dark overlay to keep text readable if the image is bright */
+    background-color: rgba(0, 0, 0, 0.4); /* fallback color */
+    background-blend-mode: multiply; /* blends the image with the dark overlay */
+}
+.char-nav {
+    text-align: center;
+    margin-top: 20px;
+}
+.char-nav button {
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin: 0 10px;
+}
+.char-nav button:hover {
+    background: #2980b9;
+}
+
+.npc-card {
+    display: inline-block;
+    width: 280px;
+    margin: 15px;
+    padding: 20px;
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+    vertical-align: top;
+    border: 1px solid #dee2e6;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.npc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.npc-img {
+    width: 280px;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin: 0 auto 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: block;
+}
+.npc-info {
+    font-size: 0.95em;
+    color: #495057;
+    margin-bottom: 15px;
+}
+.npc-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.adventurer-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 8px;
+    object-fit: contain;
+    display: inline-block;
+}
+.stat-icon {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+.progress-bar {
+    width: 150px;
+    height: 2px;
+    background: #dddddd00;
+    border-radius: 1px;
+    overflow: hidden;
+    margin: 1px 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.3s ease;
+}
+.mp-fill {background: #2196f3;}
+.exp-fill {background: #ff9800;}
+.hp-fill {background: #f44336;}
+
+.adventurer-card:active {cursor:grabbing;}
+.adventurer-card:hover {transform:translateY(-4px); box-shadow:0 6px 12px rgba(0,0,0,0.2);}
+.adventurer-card.dragging {opacity:0.5; transform:rotate(5deg);}
+
+
+.quest-card.kill { border-left: 4px solid #ff0000; }
+.quest-card.discovery { border-left: 4px solid #0000ff; }
+.quest-card.escort { border-left: 4px solid #00ff00; }
+.quest-card.fetch { border-left: 4px solid #ffff00; }
+.quest-card.defense { border-left: 4px solid #ff4500; background: #fff5ee; }
+.quest-card.training { border-left: 4px solid #9b59b6; background: #f5e6ff; }
+.quest-card.main { border-left: 4px solid #e67e22; background: #fef5e7; }
+.quest-card.dungeon { border-left: 4px solid #8e44ad; background: #f4ecf7; }
+.quest-card.trade { border-left: 4px solid #27ae60; background: #eafaf1; }
+.quest-card h3 {font-size: 1em; margin: 0 0 4px 0;}
+.quest-card p {font-size: 0.85em; margin: 2px 0;}
+.quest-card.drag-over {border:2px dashed #3498db; background:#e3f2fd;}
+.assigned-adventurer {
+    display:inline-block; margin:4px; padding:4px 8px;
+    background:#d4edda; border-radius:4px; font-size:0.8em;
+}
+.assigned-adventurer img {width:24px; height:auto; vertical-align:middle; margin-right:4px;}
+.cancel-btn {
+    font-size: 0.6em; background: #e74c3c; color: white; border: none; border-radius: 2px; cursor: pointer; padding: 1px 3px; margin-left: 4px;
+}
+.cancel-btn:hover {background: #c0392b;}
+.in-progress {color: #e74c3c; font-style: italic;}
+#eventModal, #shopModal, #charactersModal, #npcsModal, #battleModal, #facilitiesModal, #guildQuestsModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+#npcsContent{
+    background: transparent
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+#battleModal .modal-content { max-width: 1400px; max-height: 90vh; }
+.modal-buttons {
+    text-align: center;
+    margin-top: 10px;
+}
+.modal-buttons button {
+    margin: 5px;
+}
+.battle-section { margin-bottom: 20px; }
+.battle-section ul { list-style: none; padding: 0; }
+.battle-section li { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+.team-member { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+.actions { margin-top: 5px; font-size: 0.9em; }
+.target-buttons button { margin: 2px; padding: 4px 8px; font-size: 0.8em; }
+.battle-enemies {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+.battle-enemy {
+    background: #ffebee;
+    border: 2px solid #f44336;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    min-width: 140px;
+    box-shadow: 0 2px 6px rgba(244, 67, 54, 0.2);
+    font-weight: bold;
+    color: #d32f2f;
+    cursor: default;
+    transition: border-color 0.2s;
+    position: relative;
+}
+.battle-enemy.selectable {
+    cursor: pointer;
+    border-color: #2196f3;
+}
+.battle-enemy .progress-bar {
+    margin: 4px auto;
+    display: block;
+    width: 100%;
+    max-width: 120px;
+}
+.enemy-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 8px;
+    border-radius: 8px;
+}
+.battle-team {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+.team-member {
+    flex: none;
+    min-width: 180px;
+    max-width: 250px;
+    margin: 5px;
+    padding: 15px;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    background: #e3f2fd;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.2);
+    text-align: center;
+    position: relative;
+}
+.team-member .adventurer-card {
+    margin-bottom: 8px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    cursor: default;
+}
+.team-member .adventurer-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+.actions {
+    font-size: 0.85em;
+}
+#battleLog {
+    max-height: 250px;
+    overflow-y: auto;
+    background: #fafafa;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #9e9e9e;
+    font-family: monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    margin: 10px 0;
+}
+.battle-section h3 {
+    margin-bottom: 12px;
+    text-align: center;
+    color: #2c3e50;
+}
+.battle-top {
+    text-align: center;
+    margin: 10px 0;
+}
+.damage-popup {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 1001;
+    animation: damageFade 0.8s ease-out forwards;
+}
+@keyframes damageFade {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-30px);
+    }
+}
+.char-nav {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.char-nav button {
+    margin: 0 10px;
+}
+
+.quest-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.quest-nav button {
+    background: rgba(118, 118, 118, 0.85);
+    color: white;
+    padding: 6px 14px;
+    font-size: 1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quest-nav button:hover {
+    background: rgba(41, 128, 185, 0.95);
+    transform: scale(1.05);
+}
+
+#questCounter {
+    font-size: 1.6em !important;
+    font-weight: bold !important;
+    color: #ffffff !important;
+    text-shadow: 
+        0 0 12px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 1) !important;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* 横スクロールコンテナ – 利用可能冒険者専用 */
+.horizontal-scroll-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    padding: 20px 10px;
+    gap: 25px;                     /* カード間の間隔 */
+    scroll-behavior: smooth;
+    min-height: 520px;             /* カードの高さを確実に収容（380px min-height + padding + portrait） */
+    align-items: flex-start;       /* カードを上揃え（縦ストレッチ防止） */
+    justify-content: flex-start;
+    background: rgba(255, 255, 255, 0.05); /* 軽く背景を付けて視認性向上（任意） */
+    border-radius: 16px;
+    margin-bottom: 30px;
+}
+
+/* スクロールバー完全非表示 */
+.horizontal-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+.horizontal-scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 冒険者カードの横スクロール専用調整（重要：セレクタは .adventurer-card） */
+.horizontal-scroll-container .adventurer-card {
+    flex: 0 0 260px;               /* 幅固定 + 縮まない（240px + 余裕10pxずつ） */
+    width: 260px !important;       /* 元の240pxより少し余裕を持たせて安全に */
+    min-height: 430px !important;  /* 元の380px + padding 30px*2 + portrait余裕 */
+    margin: 0 !important;
+    align-self: flex-start;        /* 縦方向にストレッチしない */
+    flex-shrink: 0;                /* 絶対に縮まない */
+    box-sizing: border-box;
+}
+
+/* ::before（カード枠画像）のサイズを親にしっかり合わせる */
+.horizontal-scroll-container .adventurer-card::before {
+    width: 110%;                   /* 少し小さめにして歪み防止 */
+    height: 110%;
+    top: -5%;
+    left: -5%;
+}
+
+#facilitiesModal .modal-content .modal-buttons{
+    background: rgba(0, 0, 0, 0.3);
+
+}
+
+#facilitiesModal .modal-content #facilitiesContent{
+    background: rgba(0, 0, 0, 0.3);
+
+}
+
+#facilitiesModal .modal-content #facilitiesContent #renderedfacilitiesContent{
+    background: rgba(0, 0, 0, 0.3);
+
+}
+
+/* ギルド施設モーダル – Shopモーダルと同等のガラススタイル + 動的背景 */
+#facilitiesModal .modal-content {
+    max-width: 1100px;
+    width: 95vw;
+    min-height: 85vh;
+    padding: 40px;
+    background: url('images/Street.jpg') center center / cover no-repeat;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    position: relative;
+}
+
+#facilitiesModal h2 {
+    font-size: 2.4em;
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+}
+
+/* 施設内パネル – 背景が透けるガラススタイル */
+.facility-panel {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px auto;
+    max-width: 1000px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* 施設内アイテムカード */
+.facility-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.facility-item:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
+}
