@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+        <!-- ローディング画面 -->
+    <div id="loadingOverlay">
+        <div class="loader">
+            <h2>ギルドマスター v1.0<br> 読み込み中...</h2>
+            <div class="spinner"></div>
+            <p id="loadProgress">0%</p>
+        </div>
+        <button id="readyBtn" style="display:none;" onclick="startGame()">OK</button>
+    </div>
     <h2>ギルドマスター v1.0</h2>
 <!-- メインBGM -->
     <audio id="bgm" loop preload="auto">
@@ -23,7 +32,7 @@
         <source src="battle.mp3" type="audio/mpeg">
     </audio>
     <div id="introModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center;">
-        <div style="max-width:900px; width:90%; background:#16213e; border:4px solid #0f3460; border-radius:15px; padding:30px; color:white; box-shadow:0 0 30px rgba(0,100,200,0.6);">
+        <div style="max-width:900px; width:90%; background:#484848; border:4px solid #535353; border-radius:15px; padding:30px; color:white; box-shadow:0 0 30px rgba(57, 57, 57, 0.6);">
             
             <!-- ステップ1: 名前入力 -->
             <div id="stepName" style="text-align:center;">

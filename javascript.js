@@ -1,3 +1,87 @@
+/* === ローディング画面用プリロード機能 === */
+let loadedCount = 0;
+
+const assetsToLoad = [
+    "Images/Guild_bg.jpg",
+    "Images/Shop_bg.jpg",
+    "Images/Character_bg.jpg",
+    "Images/npc_bg.jpg",
+    "Images/Street.jpg",
+    "Images/Card.png",
+    "Images/カイト.png",
+    "Images/ルナ.png",
+    "Images/main_char.png",
+    "Images/STR_M.png",
+    "Images/STR_F.png",
+    "Images/WIS_F.png",
+    "Images/DEX_M.png",
+    "Images/DEX_F.png",
+    "Images/LUC_M.png",
+    "Images/LUC_F.png",
+    "bgm.mp3",
+    "yume.mp3",
+    "battle.mp3",
+    "STR_Attack.mp3",
+    "WIS_Attack.mp3"
+    // 必要に応じて他の画像・音声パスを追加
+];
+
+const totalAssets = assetsToLoad.length;
+
+function updateProgress() {
+    const percent = Math.round((loadedCount / totalAssets) * 100);
+    const progressEl = document.getElementById('loadProgress');
+    if (progressEl) {
+        progressEl.textContent = percent + '%';
+    }
+    if (loadedCount >= totalAssets) {
+        document.querySelector('.loader').style.display = 'none';
+        const readyBtn = document.getElementById('readyBtn');
+        if (readyBtn) readyBtn.style.display = 'block';
+    }
+}
+
+function preloadAssets() {
+    if (totalAssets === 0) {
+        updateProgress();
+        return;
+    }
+    assetsToLoad.forEach(url => {
+        if (url.match(/\.(mp3|ogg|wav)$/i)) {
+            const audio = new Audio();
+            audio.src = url;
+            audio.addEventListener('canplaythrough', () => {
+                loadedCount++;
+                updateProgress();
+            });
+            audio.addEventListener('error', () => {
+                loadedCount++;
+                updateProgress();
+            });
+            audio.load();
+        } else {
+            const img = new Image();
+            img.src = url;
+            img.addEventListener('load', () => {
+                loadedCount++;
+                updateProgress();
+            });
+            img.addEventListener('error', () => {
+                loadedCount++;
+                updateProgress();
+            });
+        }
+    });
+}
+
+function startGame() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+/* ページ読み込み後すぐにプリロード開始 */
+preloadAssets();
+
 const strSound = new Audio('STR_Attack.mp3');
 const wisSound = new Audio('WIS_Attack.mp3');
 let currentCharIndex = 0;
@@ -1222,11 +1306,6 @@ const QuestCompletionDialogue = [
     }
 ];
 
-const facilityUpgradeCosts = {
-    blacksmith: [3000, 8000, 20000],   // Lv1, Lv2, Lv3 へのアップグレードコスト
-    tavern:     [2500, 7000, 18000],
-    alchemy:    [4000, 10000, 25000]
-};
 
 const cities = [
     {name: "セントラルシティ", guild: true},
@@ -1236,30 +1315,169 @@ const cities = [
     {name: "宝石の街クリスタリス", items: [{name: "宝石", minPrice: 80, maxPrice: 150}]}
 ];
 
-const alchemyRecipes = [
-    {inputs: ["薬草", "鉄鉱石"], output: {name: "鋼のインゴット", type: "material"}},
-    {inputs: ["スパイス", "薬草"], output: {name: "活力の粉", type: "material"}},
-    {inputs: ["宝石", "活力の粉"], output: {name: "魔法の結晶", type: "material"}},
-    {inputs: ["鉄鉱石", "スパイス"], output: {name: "炎の粉", type: "material"}},
-    {inputs: ["薬草", "活力の粉"], output: {name: "上級HPポーション", type: "potion", restore: "hp", amount: 60}},
-    {inputs: ["魔法の結晶", "スパイス"], output: {name: "上級MPポーション", type: "potion", restore: "mp", amount: 45}},
-    
-];
+// 修正版錬金レシピ：全outputに minPrice/maxPrice を追加（sellPrice削除）
+// 計算基準：元sellPriceの平均値として min=avg*0.78, max=avg*1.22（fetchクエストspread~50-60%に一致）
+// 手動微調整でnice number化（例:45→35-55, 80→60-100）
+// ゲームsell logic: random(min, max) で変動売却（fetchアイテムと統一）
+// チェイン利益: 低→高で1.5-2x 増加（クエスト報酬回転→爆益）
 
-const blacksmithRecipes = [
-    {level: 1, name: "上級の剣", stat: "strength", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鋼鉄の剣", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
-    {level: 3, name: "ドラゴンスレイヤー", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "魔法の結晶", qty: 2}, {name: "鋼のインゴット", qty: 5}]},
-    {level: 1, name: "賢者の杖", stat: "wisdom", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "神秘の杖", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "魔法の結晶", qty: 2}]}
+const alchemyRecipes = [
+    // === 既存 + F/F+ (レベル1: 序盤基本合成) ===
+    {level: 1, inputs: ["薬草", "鉄鉱石"], output: {name: "鋼のインゴット", type: "material", minPrice: 60, maxPrice: 100}},
+    {level: 1, inputs: ["スパイス", "薬草"], output: {name: "活力の粉", type: "material", minPrice: 35, maxPrice: 55}},
+    {level: 1, inputs: ["宝石", "活力の粉"], output: {name: "魔法の結晶", type: "material", minPrice: 140, maxPrice: 220}},
+    {level: 1, inputs: ["鉄鉱石", "スパイス"], output: {name: "炎の粉", type: "material", minPrice: 50, maxPrice: 80}},
+    {level: 1, inputs: ["薬草", "活力の粉"], output: {name: "上級HPポーション", type: "potion", restore: "hp", amount: 60, minPrice: 120, maxPrice: 180}},
+    {level: 1, inputs: ["魔法の結晶", "スパイス"], output: {name: "上級MPポーション", type: "potion", restore: "mp", amount: 45, minPrice: 95, maxPrice: 145}},
+
+    {level: 1, inputs: ["キノコ", "薬草"], output: {name: "キノコ回復薬", type: "potion", restore: "hp", amount: 25, minPrice: 35, maxPrice: 55}},
+    {level: 1, inputs: ["花", "普通の薬草"], output: {name: "花の霊薬", type: "potion", restore: "mp", amount: 20, minPrice: 25, maxPrice: 45}},
+    {level: 1, inputs: ["川魚", "キノコ"], output: {name: "魚介滋養スープ", type: "potion", restore: "hp", amount: 35, minPrice: 50, maxPrice: 80}},
+    {level: 1, inputs: ["鉄の欠片", "薬草"], output: {name: "鉄草合金粉", type: "material", minPrice: 40, maxPrice: 70}},
+    {level: 1, inputs: ["花", "キノコ"], output: {name: "森のエキス", type: "material", minPrice: 25, maxPrice: 45}},
+
+    // === D/D+ (レベル2: 中盤強化) ===
+    {level: 2, inputs: ["狼の毛皮", "活力の粉"], output: {name: "獣活力軟膏", type: "potion", restore: "hp", amount: 45, minPrice: 85, maxPrice: 135}},
+    {level: 2, inputs: ["魔力の結晶（小）", "花の霊薬"], output: {name: "小魔力ポーション", type: "potion", restore: "mp", amount: 35, minPrice: 75, maxPrice: 115}},
+    {level: 2, inputs: ["鉄の欠片", "鉄鉱石"], output: {name: "精鉄インゴット", type: "material", minPrice: 75, maxPrice: 115}},
+    {level: 2, inputs: ["狼の毛皮", "森のエキス"], output: {name: "獣皮エキス", type: "material", minPrice: 80, maxPrice: 130}},
+
+    {level: 2, inputs: ["オークの牙", "鋼のインゴット"], output: {name: "牙鋼インゴット", type: "material", minPrice: 170, maxPrice: 270}},
+    {level: 2, inputs: ["古代の巻物断片", "魔力の結晶（小）"], output: {name: "古魔導粉", type: "material", minPrice: 150, maxPrice: 240}},
+    {level: 2, inputs: ["希少スパイス", "上級HPポーション"], output: {name: "スパイシー超HP薬", type: "potion", restore: "hp", amount: 80, minPrice: 250, maxPrice: 390}},
+    {level: 2, inputs: ["希少スパイス", "薬草"], output: {name: "希少活力粉", type: "material", minPrice: 105, maxPrice: 165}},
+
+    // === C/C+ (レベル3: 後半高級合成) ===
+    {level: 3, inputs: ["グリフォンの羽", "魔法の結晶"], output: {name: "風翼結晶", type: "material", minPrice: 380, maxPrice: 580}},
+    {level: 3, inputs: ["ヒドラの毒袋", "聖水"], output: {name: "解毒聖水", type: "potion", restore: "hp", amount: 90, minPrice: 460, maxPrice: 700}},
+    {level: 3, inputs: ["聖水", "古魔導粉"], output: {name: "聖魔導結晶", type: "material", minPrice: 410, maxPrice: 630}},
+    {level: 3, inputs: ["グリフォンの羽", "森のエキス"], output: {name: "天空エキス", type: "potion", restore: "mp", amount: 70, minPrice: 245, maxPrice: 375}},
+
+    {level: 3, inputs: ["ユニコーンの角", "聖水"], output: {name: "ユニコーン浄化薬", type: "potion", restore: "hp", amount: 120, minPrice: 650, maxPrice: 990}},
+    {level: 3, inputs: ["禁断の魔導書頁", "聖魔導結晶"], output: {name: "禁断魔導晶", type: "material", minPrice: 860, maxPrice: 1300}},
+    {level: 3, inputs: ["フェニックスの灰", "炎の粉"], output: {name: "不死鳥炎粉", type: "material", minPrice: 620, maxPrice: 940}},
+    {level: 3, inputs: ["星の欠片", "風翼結晶"], output: {name: "星風ポーション", type: "potion", restore: "mp", amount: 100, minPrice: 890, maxPrice: 1350}},
+    {level: 3, inputs: ["天使の羽", "解毒聖水"], output: {name: "天使癒薬", type: "potion", restore: "hp", amount: 140, minPrice: 1020, maxPrice: 1540}},
+    {level: 3, inputs: ["デーモンの心臓", "希少活力粉"], output: {name: "魔心活力剤", type: "potion", restore: "mp", amount: 110, minPrice: 780, maxPrice: 1180}},
+
+    // === B+/A + A+/S + 究極 (レベル4: エンドコンテンツ至高合成) ===
+    {level: 4, inputs: ["古代ドラゴンの鱗", "牙鋼インゴット"], output: {name: "龍鋼装甲材", type: "material", minPrice: 1580, maxPrice: 2380}},
+    {level: 4, inputs: ["エーテルの結晶", "禁断魔導晶"], output: {name: "エーテル魔晶", type: "material", minPrice: 1980, maxPrice: 2980}},
+    {level: 4, inputs: ["神の涙", "天使癒薬"], output: {name: "神涙神薬", type: "potion", restore: "hp", amount: 200, minPrice: 1900, maxPrice: 2860}},
+    {level: 4, inputs: ["タイタンの骨", "精鉄インゴット"], output: {name: "巨神骨鋼", type: "material", minPrice: 1740, maxPrice: 2620}},
+    {level: 4, inputs: ["永遠の炎", "不死鳥炎粉"], output: {name: "永劫炎粉", type: "material", minPrice: 1660, maxPrice: 2500}},
+    {level: 4, inputs: ["神聖な遺物", "聖魔導結晶"], output: {name: "神聖遺晶", type: "material", minPrice: 1820, maxPrice: 2740}},
+
+    {level: 4, inputs: ["エルダードラゴンの心臓", "龍鋼装甲材"], output: {name: "古龍心鋼", type: "material", minPrice: 3660, maxPrice: 5500}},
+    {level: 4, inputs: ["深淵の核", "エーテル魔晶"], output: {name: "深淵エーテル晶", type: "material", minPrice: 4220, maxPrice: 6340}},
+    {level: 4, inputs: ["光の神器の欠片", "神聖遺晶"], output: {name: "光神器晶", type: "material", minPrice: 3980, maxPrice: 5980}},
+    {level: 4, inputs: ["世界の源石", "神涙神薬"], output: {name: "世界源神薬", type: "potion", restore: "hp", amount: 500, minPrice: 5580, maxPrice: 8380}},
+    {level: 4, inputs: ["創世の欠片", "星風ポーション"], output: {name: "創世魔力薬", type: "potion", restore: "mp", amount: 400, minPrice: 5020, maxPrice: 7540}},
+    {level: 4, inputs: ["滅びの結晶", "永劫炎粉"], output: {name: "終焉破壊粉", type: "material", minPrice: 4700, maxPrice: 7060}},
+
+    {level: 4, inputs: ["世界の源石", "創世の欠片"], output: {name: "創世源ポーション", type: "potion", restore: "hp", amount: 999, minPrice: 10240, maxPrice: 15360}},
+    {level: 4, inputs: ["滅びの結晶", "深淵の核"], output: {name: "滅び深淵晶", type: "material", minPrice: 9440, maxPrice: 14160}}
 ];
 
 const tavernRecipes = [
+    // === 既存レシピ（保持・拡張） ===
     {level: 1, name: "力のスープ", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
     {level: 2, name: "巨人の煮込み", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力の粉", qty: 2}]},
     {level: 1, name: "知恵の茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
     {level: 2, name: "予言者の飲料", buff: {stat: "wisdom", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "魔法の結晶", qty: 1}]},
-    {level: 1, name: "回復のパン", buff: {type: "hpRegen", bonus: 15, days: 3}, cost: 200, materials: []}
+    {level: 1, name: "回復のパン", buff: {type: "hpRegen", bonus: 15, days: 3}, cost: 200, materials: []},
+
+    // === STR料理（肉/骨/ドラゴン系）：活力・獣・龍素材チェイン ===
+    {level: 3, name: "獣肉の活力シチュー", buff: {stat: "strength", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "獣皮エキス", qty: 2}, {name: "狼の毛皮", qty: 1}]},
+    {level: 5, name: "牙鋼の力強煮込み", buff: {stat: "strength", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "牙鋼インゴット", qty: 2}, {name: "オークの牙", qty: 2}]},
+    {level: 7, name: "龍鋼の巨竜ステーキ", buff: {stat: "strength", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "龍鋼装甲材", qty: 3}, {name: "古代ドラゴンの鱗", qty: 2}]},
+    {level: 9, name: "巨神骨の力の饗宴", buff: {stat: "strength", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 2}]},
+    {level: 11, name: "古龍心の覇王料理", buff: {stat: "strength", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
+
+    // === WIS料理（魔法/聖水系）：結晶・禁断・エーテル素材チェイン ===
+    {level: 3, name: "森の霊薬ティー", buff: {stat: "wisdom", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "森のエキス", qty: 3}]},
+    {level: 5, name: "聖魔導の浄化茶", buff: {stat: "wisdom", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "聖魔導結晶", qty: 3}, {name: "聖水", qty: 2}]},
+    {level: 7, name: "禁断魔導の秘酒", buff: {stat: "wisdom", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
+    {level: 9, name: "エーテル魔晶の神酒", buff: {stat: "wisdom", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
+    {level: 11, name: "深淵の叡智スープ", buff: {stat: "wisdom", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "深淵エーテル晶", qty: 4}, {name: "深淵の核", qty: 1}]},
+
+    // === DEX料理（魚/羽/風系）：敏捷・天空素材チェイン ===
+    {level: 1, name: "川魚の軽やか焼き", buff: {stat: "dexterity", percent: true, bonus: 20, days: 5}, cost: 250, materials: [{name: "川魚", qty: 2}]},
+    {level: 3, name: "風翼の迅鳥シチュー", buff: {stat: "dexterity", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "風翼結晶", qty: 2}, {name: "グリフォンの羽", qty: 2}]},
+    {level: 5, name: "ユニコーンの敏捷サラダ", buff: {stat: "dexterity", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "ユニコーンの角", qty: 2}, {name: "花", qty: 3}]},
+    {level: 7, name: "天使の軽羽パイ", buff: {stat: "dexterity", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "天使の羽", qty: 3}, {name: "天空エキス", qty: 2}]},
+    {level: 9, name: "神聖迅撃の料理", buff: {stat: "dexterity", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
+    {level: 11, name: "創世の風神料理", buff: {stat: "dexterity", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+
+    // === LUC料理（スパイス/星/不死鳥系）：幸運・炎・神涙素材チェイン ===
+    {level: 1, name: "希少スパイスの幸運煮", buff: {stat: "luck", percent: true, bonus: 20, days: 5}, cost: 250, materials: [{name: "希少スパイス", qty: 1}]},
+    {level: 3, name: "星の幸運デザート", buff: {stat: "luck", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "星の欠片", qty: 2}]},
+    {level: 5, name: "不死鳥の再生ケーキ", buff: {stat: "luck", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
+    {level: 7, name: "神涙の福運スープ", buff: {stat: "luck", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
+    {level: 9, name: "終焉の幸運饗宴", buff: {stat: "luck", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
+    {level: 11, name: "滅び深淵の神運料理", buff: {stat: "luck", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
+
+    // === 回復/再生系（HP/MP再生強化） ===
+    {level: 2, name: "キノコの活力パン", buff: {type: "hpRegen", bonus: 30, days: 5}, cost: 600, materials: [{name: "キノコ", qty: 3}]},
+    {level: 4, name: "解毒聖水の癒しスープ", buff: {type: "hpRegen", bonus: 60, days: 10}, cost: 2500, materials: [{name: "解毒聖水", qty: 2}]},
+    {level: 6, name: "天使癒薬の神パン", buff: {type: "hpRegen", bonus: 100, days: 15}, cost: 5500, materials: [{name: "天使癒薬", qty: 2}]},
+    {level: 8, name: "神涙神薬の至高スープ", buff: {type: "hpRegen", bonus: 150, days: 20}, cost: 9800, materials: [{name: "神涙神薬", qty: 1}]},
+    {level: 10, name: "世界源神薬の永遠パン", buff: {type: "hpRegen", bonus: 250, days: 30}, cost: 16800, materials: [{name: "世界源神薬", qty: 1}]},
+
+    {level: 3, name: "小魔力ポーションの魔茶", buff: {type: "mpRegen", bonus: 30, days: 8}, cost: 1500, materials: [{name: "小魔力ポーション", qty: 2}]},
+    {level: 6, name: "星風ポーションの星茶", buff: {type: "mpRegen", bonus: 80, days: 15}, cost: 5200, materials: [{name: "星風ポーション", qty: 2}]},
+    {level: 9, name: "創世魔力薬の神酒", buff: {type: "mpRegen", bonus: 150, days: 25}, cost: 11800, materials: [{name: "創世魔力薬", qty: 1}]},
+
+    // === 究極バフ料理（エンドコンテンツ） ===
+    {level: 12, name: "創世源の神饗宴", buff: {stat: "strength", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 4}]},
+    {level: 12, name: "世界源の叡智宴", buff: {stat: "wisdom", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 4}]},
+    {level: 12, name: "終焉の迅神料理", buff: {stat: "dexterity", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 4}]},
+    {level: 12, name: "源石の永運饗宴", buff: {stat: "luck", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 4}]}
+];
+
+const blacksmithRecipes = [
+    // === 既存レシピ（保持・拡張） ===
+    {level: 1, name: "上級の剣", stat: "strength", bonus: 12, cost: 400, materials: []},
+    {level: 2, name: "鋼鉄の剣", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
+    {level: 4, name: "ドラゴンスレイヤー", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "魔法の結晶", qty: 2}, {name: "鋼のインゴット", qty: 5}]},
+    {level: 1, name: "賢者の杖", stat: "wisdom", bonus: 12, cost: 400, materials: []},
+    {level: 2, name: "神秘の杖", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "魔法の結晶", qty: 2}]},
+
+    // === STR武器（剣/斧系）：金属・骨・ドラゴン素材チェイン ===
+    {level: 3, name: "精鉄の大剣", stat: "strength", bonus: 38, cost: 2200, materials: [{name: "精鉄インゴット", qty: 4}]},
+    {level: 5, name: "牙鋼の両手斧", stat: "strength", bonus: 65, cost: 4800, materials: [{name: "牙鋼インゴット", qty: 3}, {name: "オークの牙", qty: 2}]},
+    {level: 7, name: "龍鋼の滅殺剣", stat: "strength", bonus: 95, cost: 8500, materials: [{name: "龍鋼装甲材", qty: 4}, {name: "古代ドラゴンの鱗", qty: 2}]},
+    {level: 9, name: "巨神の戦斧", stat: "strength", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
+    {level: 11, name: "古龍心滅剣", stat: "strength", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
+
+    // === WIS杖（魔法系）：結晶・聖・禁断素材チェイン ===
+    {level: 3, name: "聖魔導の杖", stat: "wisdom", bonus: 38, cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
+    {level: 5, name: "禁断魔導のロッド", stat: "wisdom", bonus: 65, cost: 4800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
+    {level: 7, name: "エーテル魔晶杖", stat: "wisdom", bonus: 95, cost: 8500, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
+    {level: 9, name: "深淵の魔導杖", stat: "wisdom", bonus: 140, cost: 14500, materials: [{name: "深淵エーテル晶", qty: 3}, {name: "深淵の核", qty: 2}]},
+    {level: 11, name: "光神器の神杖", stat: "wisdom", bonus: 220, cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光の神器の欠片", qty: 1}]},
+
+    // === DEX武器（弓/短剣系）：獣皮・羽・風素材チェイン ===
+    {level: 1, name: "獣皮の短剣", stat: "dexterity", bonus: 12, cost: 400, materials: [{name: "獣皮エキス", qty: 2}]},
+    {level: 3, name: "風翼の弓", stat: "dexterity", bonus: 38, cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "グリフォンの羽", qty: 2}]},
+    {level: 5, name: "ユニコーンのダガー", stat: "dexterity", bonus: 65, cost: 4800, materials: [{name: "ユニコーンの角", qty: 2}, {name: "獣皮エキス", qty: 3}]},
+    {level: 7, name: "天使の迅弓", stat: "dexterity", bonus: 95, cost: 8500, materials: [{name: "天使の羽", qty: 3}, {name: "風翼結晶", qty: 2}]},
+    {level: 9, name: "神聖迅撃短剣", stat: "dexterity", bonus: 140, cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
+    {level: 11, name: "創世の神弓", stat: "dexterity", bonus: 220, cost: 28500, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+
+    // === LUC武器（幸運系）：希少・星・神涙素材チェイン ===
+    {level: 1, name: "希少スパイスの短棍", stat: "luck", bonus: 12, cost: 400, materials: [{name: "希少活力粉", qty: 2}]},
+    {level: 3, name: "星の幸運棍", stat: "luck", bonus: 38, cost: 2200, materials: [{name: "星の欠片", qty: 2}]},
+    {level: 5, name: "不死鳥の幸運斧", stat: "luck", bonus: 65, cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
+    {level: 7, name: "神涙の福杖", stat: "luck", bonus: 95, cost: 8500, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
+    {level: 9, name: "終焉の幸運剣", stat: "luck", bonus: 140, cost: 14500, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
+    {level: 11, name: "滅び深淵の神器棍", stat: "luck", bonus: 220, cost: 28500, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
+
+    // === 究極汎用武器（全ステータス対応、エンドコンテンツ） ===
+    {level: 12, name: "創世源の神剣", stat: "strength", bonus: 350, cost: 50000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
+    {level: 12, name: "世界源の神杖", stat: "wisdom", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 5}]},
+    {level: 12, name: "終焉の神弓", stat: "dexterity", bonus: 350, cost: 50000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 5}]},
+    {level: 12, name: "源石の幸運神器", stat: "luck", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 5}]}
 ];
 
 const mainQuests = [
@@ -1781,18 +1999,7 @@ const defenseDescs = [
     'スパイと暗殺者がギルドに侵入。迎え撃て！'
 ];
 
-const fetchItems = [
-    {name: 'グローキャップキノコ', minPrice: 40, maxPrice: 60},
-    {name: 'ゴールデンフェザー', minPrice: 70, maxPrice: 100},
-    {name: 'クリスタルシャード', minPrice: 60, maxPrice: 90},
-    {name: 'ムーンブルームペタル', minPrice: 50, maxPrice: 80},
-    {name: 'ドラゴンスケール', minPrice: 120, maxPrice: 180},
-    {name: 'エンシェントスクロール断片', minPrice: 100, maxPrice: 150},
-    {name: 'レアスパイス', minPrice: 30, maxPrice: 50},
-    {name: 'ゴーストウルフペルト', minPrice: 80, maxPrice: 110},
-    {name: 'スターファルオーレ', minPrice: 90, maxPrice: 130},
-    {name: 'マナベリー', minPrice: 40, maxPrice: 70}
-];
+
 
 const questTypeDescs = [killDescsByRank, discoveryDescsByRank, escortDescsByRank, fetchQuestsByRank];
 const questTypeClasses = ['kill', 'discovery', 'escort', 'fetch', 'defense', 'training', 'main', 'dungeon', 'trade'];
@@ -2131,7 +2338,47 @@ function showModal(day) {
 
 
 
-const allAlchemyMaterials = ["鉄鉱石", "薬草", "スパイス", "宝石", "鋼のインゴット", "活力の粉", "炎の粉", "魔法の結晶"];
+const allAlchemyMaterials = [
+    // === 元の生素材 + クラフト素材（8種） ===
+    "鉄鉱石", "薬草", "スパイス", "宝石",
+    "鋼のインゴット", "活力の粉", "炎の粉", "魔法の結晶",
+
+    // === fetch生素材（recipesで使用される全種） ===
+    // F/F+
+    "キノコ", "花", "普通の薬草", "川魚", "鉄の欠片",
+
+    // D/D+
+    "狼の毛皮", "魔力の結晶（小）",
+
+    // D+/C
+    "オークの牙", "古代の巻物断片", "希少スパイス",
+
+    // C/C+
+    "グリフォンの羽", "ヒドラの毒袋", "聖水",
+
+    // C+/B
+    "ユニコーンの角", "禁断の魔導書頁", "フェニックスの灰",
+    "星の欠片", "天使の羽", "デーモンの心臓",
+
+    // B+/A
+    "古代ドラゴンの鱗", "エーテルの結晶", "神の涙",
+    "タイタンの骨", "永遠の炎", "神聖な遺物",
+
+    // A+/S
+    "エルダードラゴンの心臓", "深淵の核", "光の神器の欠片",
+    "世界の源石", "創世の欠片", "滅びの結晶",
+
+    // === 新規クラフト素材（チェイン用、30種） ===
+    "鉄草合金粉", "森のエキス",
+    "精鉄インゴット", "獣皮エキス",
+    "牙鋼インゴット", "古魔導粉", "希少活力粉",
+    "風翼結晶", "聖魔導結晶",
+    "禁断魔導晶", "不死鳥炎粉",
+    "龍鋼装甲材", "エーテル魔晶",
+    "巨神骨鋼", "永劫炎粉", "神聖遺晶",
+    "古龍心鋼", "深淵エーテル晶", "光神器晶", "終焉破壊粉",
+    "滅び深淵晶"
+]
 
 function getAlchemyMaterialOptions() {
     let html = '<option value="">材料を選択</option>';
@@ -3461,7 +3708,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.1 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -3674,12 +3921,13 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             addToInventory(expOrb, 1);
             extraMsg += ` EXPオーブを受け取りました！（使用で冒険者のレベル+10）`;
         }
-        if (q.type === 3 && q.item && Math.random() < 0.3) {
-            const quantity = 1 + Math.floor(q.difficulty / 15);
+        if (q.type === 3 && q.item) {
+            // 100% chance (condition always true)
+            const quantity = Math.floor(Math.random() * 5) + 1; // 1〜5個（difficultyに関係なくランダム）
             for (let k = 0; k < quantity; k++) {
-                addToInventory({...q.item, id: gameState.nextId++},1);
+                addToInventory({...q.item, id: gameState.nextId++}, 1);
             }
-            extraMsg = ` 冒険者がギルドのために追加の${quantity} ${q.item.name}を持って帰りました！${extraMsg}`;
+            extraMsg = ` 冒険者がギルドのために追加の${quantity}個の${q.item.name}を持って帰りました！${extraMsg}`;
         }
         if (q.type === 0 && Math.random() < 0.2) {
             const numPerms = gameState.adventurers.filter(a => !a.temp).length;
@@ -4380,7 +4628,34 @@ function selectFacility(fac) {
 }
 
 function getAlchemyMaterialOptions() {
-    const materials = ['薬草', '鉄鉱石', 'スパイス', '宝石', '活力の粉', '鋼のインゴット', '炎の粉', '魔法の結晶']; // 必要に応じて追加
+    const materials = [
+        // 元の基本素材
+        '薬草', '鉄鉱石', 'スパイス', '宝石', '活力の粉', '鋼のインゴット', '炎の粉', '魔法の結晶',
+        
+        // fetchクエスト生素材（全ランク）
+        'キノコ', '花', '普通の薬草', '川魚', '鉄の欠片',
+        '狼の毛皮', '魔力の結晶（小）',
+        'オークの牙', '古代の巻物断片', '希少スパイス',
+        'グリフォンの羽', 'ヒドラの毒袋', '聖水',
+        'ユニコーンの角', '禁断の魔導書頁', 'フェニックスの灰',
+        '星の欠片', '天使の羽', 'デーモンの心臓',
+        '古代ドラゴンの鱗', 'エーテルの結晶', '神の涙',
+        'タイタンの骨', '永遠の炎', '神聖な遺物',
+        'エルダードラゴンの心臓', '深淵の核', '光の神器の欠片',
+        '世界の源石', '創世の欠片', '滅びの結晶',
+        
+        // 新規クラフト素材（チェイン用）
+        '鉄草合金粉', '森のエキス',
+        '精鉄インゴット', '獣皮エキス',
+        '牙鋼インゴット', '古魔導粉', '希少活力粉',
+        '風翼結晶', '聖魔導結晶',
+        '禁断魔導晶', '不死鳥炎粉',
+        '龍鋼装甲材', 'エーテル魔晶',
+        '巨神骨鋼', '永劫炎粉', '神聖遺晶',
+        '古龍心鋼', '深淵エーテル晶', '光神器晶', '終焉破壊粉',
+        '滅び深淵晶'
+    ].sort((a, b) => a.localeCompare(b, 'ja')); // 五十音順ソートでUIを整理
+    
     let html = '<option value="">-- 選択 --</option>';
     materials.forEach(mat => {
         const qty = countItem(mat);
@@ -4583,9 +4858,21 @@ function renderFacilities() {
     } else {
         let bgFile = '';
         let title = '';
-        if (currentFacility === 'blacksmith') { bgFile = '鍛冶屋.jpg'; title = '鍛冶屋'; }
-        else if (currentFacility === 'tavern') { bgFile = '酒場.jpg'; title = '酒場'; }
-        else if (currentFacility === 'alchemy') { bgFile = '錬金工房.jpg'; title = '錬金工房'; }
+        let recipes = [];
+
+        if (currentFacility === 'blacksmith') {
+            bgFile = '鍛冶屋.jpg';
+            title = '鍛冶屋';
+            recipes = blacksmithRecipes;
+        } else if (currentFacility === 'tavern') {
+            bgFile = '酒場.jpg';
+            title = '酒場';
+            recipes = tavernRecipes;
+        } else if (currentFacility === 'alchemy') {
+            bgFile = '錬金工房.jpg';
+            title = '錬金工房';
+            recipes = alchemyRecipes;
+        }
 
         modalContent.style.backgroundImage = `url('Images/${bgFile}')`;
 
@@ -4596,119 +4883,312 @@ function renderFacilities() {
                 <button onclick="currentFacility=null; renderFacilities()" style="padding:14px 36px; background:#87878777; font-size:1em;">街に戻る</button>
             </div>`;
 
-        // アップグレード（max Lv4）
-        if (level < 4) {
-            const cost = facilityUpgradeCosts[currentFacility][level];
+        // アップグレード（施設ごとに最大レベル対応）
+        const maxLevel = facilityMaxLevels[currentFacility] || 4;  // 安全策（未定義時は4）
+        if (level < maxLevel) {
+            const nextCost = facilityUpgradeCosts[currentFacility][level];
             html += `
                 <div style="text-align:center; margin:30px 0;">
-                    <p style="font-size:1.4em;">次のレベルアップ：${cost} gold</p>
+                    <p style="font-size:1.4em;">
+                        レベル ${level} → ${level + 1} アップグレード費用：${nextCost} gold
+                    </p>
                     <button onclick="upgradeFacility('${currentFacility}')" 
-                            ${gameState.gold < cost ? 'disabled style="background:#777;"' : ''} 
+                            ${gameState.gold < nextCost ? 'disabled style="background:#777;"' : ''} 
                             style="padding:14px 40px; font-size:1.4em;">
                         アップグレード
                     </button>
                 </div>`;
+        } else {
+            html += `
+                <div style="text-align:center; margin:30px 0;">
+                    <p style="font-size:1.6em; color:#ffd700;">
+                        最大レベル ${maxLevel} に到達しました！
+                    </p>
+                </div>`;
         }
 
-        if (level > 0) {
-            if (currentFacility === 'alchemy') {
-                html += `
-                    <h3 style="text-align:center; margin-top:40px;">錬金術</h3>
-                    <div style="max-width:700px; margin:30px auto; padding:30px; background:rgba(255,255,255,0.15); border-radius:16px;">
-                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content:center;">
-                            <select id="alchemyIng1" onchange="updateAlchemyPreview()" style="flex: 1; min-width: 180px; padding: 10px; font-size:1.1em;"></select>
-                            <span style="font-size:1.4em;">+</span>
-                            <select id="alchemyIng2" onchange="updateAlchemyPreview()" style="flex: 1; min-width: 180px; padding: 10px; font-size:1.1em;"></select>
-                            <span style="font-size:1.2em;">×</span>
-                            <input type="number" id="alchemyQty" value="1" min="1" max="999" onchange="updateAlchemyPreview()" style="width: 100px; padding: 10px; font-size:1.1em;">
-                            <button onclick="performAlchemy()" style="padding: 12px 24px; background: #27ae60; font-size:1.2em;">作成</button>
-                        </div>
-                        <div id="alchemyPreview" style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; min-height: 100px; font-size:1.1em;"></div>
-                    </div>`;
-            } else {
-                const recipes = currentFacility === 'blacksmith' ? blacksmithRecipes : tavernRecipes;
+        if (level > 0 && recipes.length > 0) {
+            html += `<h3 style="text-align:center; margin-top:40px;">製作可能アイテム</h3>
+                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:30px; margin-top:30px;">`;
 
-                html += `<h3 style="text-align:center; margin-top:40px;">製作可能アイテム</h3>
-                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:30px; margin-top:30px;">`;
+            let hasItems = false;
 
-                let hasItems = false;
+            recipes.forEach((r, originalIndex) => {
+                if (r.level > level) return;  // レベル不足は非表示
 
-                recipes.forEach((r, originalIndex) => {
-                    if (r.level > level) return;  // レベル不足のレシピはスキップ（表示しない）
+                hasItems = true;
 
-                    hasItems = true;
+                const cost = r.cost || 0;
+                let canMake = gameState.gold >= cost;
 
-                    const cost = r.cost || 0;
-                    let canMake = gameState.gold >= cost;
+                // 必要素材取得（錬金はinputs、それ以外はmaterials）
+                const materials = currentFacility === 'alchemy' 
+                    ? r.inputs.map(name => ({name, qty: 1}))
+                    : (r.materials || []);
 
-                    // 常に「必要素材:」ヘッダーを表示
-                    let matHtml = '<p style="margin:15px 0;"><strong>必要素材:</strong></p>';
-
-                    if (r.materials && r.materials.length > 0) {
-                        r.materials.forEach(m => {
-                            const have = countItem(m.name);
-                            canMake = canMake && have >= (m.qty || 1);
-                            const color = have >= (m.qty || 1) ? '#ffffff' : '#ff6b6b';
-                            matHtml += `<p style="color:${color}; margin:5px 0;">・${m.name} ×${m.qty || 1} (保有: ${have}個)</p>`;
-                        });
-                    } else {
-                        matHtml += '<p style="color:#aaaaaa; margin:5px 0;">・なし</p>';
-                    }
-
-                    const buttonText = currentFacility === 'tavern' ? '注文（冒険者選択）' : '製作';
-                    const onclick = currentFacility === 'tavern' ? `orderTavernItem(${originalIndex})` :
-                                    `produceBlacksmith(${originalIndex})`;
-
-                    html += `
-                        <div class="facility-item">
-                            <h3>${r.name}</h3>
-                            <p>コスト：${cost} gold</p>
-                            ${matHtml}
-                            <button onclick="${onclick}" 
-                                    ${!canMake ? 'disabled style="background:#777;"' : ''}
-                                    style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
-                                ${buttonText}
-                            </button>
-                        </div>`;
-                });
-
-                if (!hasItems) {
-                    html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">レベルを上げると製作が可能になります</p>`;
+                let matHtml = '<p style="margin:15px 0;"><strong>必要素材:</strong></p>';
+                if (materials.length > 0) {
+                    materials.forEach(m => {
+                        const have = countItem(m.name);
+                        canMake = canMake && have >= m.qty;
+                        const color = have >= m.qty ? '#ffffff' : '#ff6b6b';
+                        matHtml += `<p style="color:${color}; margin:5px 0;">・${m.name} ×${m.qty} (保有: ${have}個)</p>`;
+                    });
+                } else {
+                    matHtml += '<p style="color:#aaaaaa; margin:5px 0;">・なし</p>';
                 }
 
-                html += `</div>`;
+                // アイテム名表示（錬金は「A + B → 出力」形式）
+                const itemName = currentFacility === 'alchemy' 
+                    ? `${r.inputs.join(' + ')} → ${r.output.name}`
+                    : r.name;
+
+                // 効果表示
+                let effectHtml = '';
+                if (currentFacility === 'blacksmith') {
+                    const statText = {
+                        strength: 'STR',
+                        wisdom: 'WIS',
+                        dexterity: 'DEX',
+                        luck: 'LUC'
+                    }[r.stat] || r.stat.toUpperCase();
+                    effectHtml = `<p style="margin:12px 0; color:#ffeb3b; font-weight:bold; font-size:1.1em;">
+                                    装備効果: ${statText} +${r.bonus}
+                                  </p>`;
+                } else if (currentFacility === 'tavern') {
+                    if (r.buff.stat) {
+                        const statText = {
+                            strength: 'STR',
+                            wisdom: 'WIS',
+                            dexterity: 'DEX',
+                            luck: 'LUC'
+                        }[r.buff.stat] || r.buff.stat.toUpperCase();
+                        const percent = r.buff.percent ? '%' : '';
+                        effectHtml = `<p style="margin:12px 0; color:#81ff81; font-weight:bold; font-size:1.1em;">
+                                        バフ効果: ${statText} +${r.buff.bonus}${percent}<br>
+                                        持続: ${r.buff.days}日間
+                                      </p>`;
+                    } else if (r.buff.type) {
+                        const typeText = r.buff.type === 'hpRegen' ? 'HP再生' : 'MP再生';
+                        effectHtml = `<p style="margin:12px 0; color:#81ff81; font-weight:bold; font-size:1.1em;">
+                                        バフ効果: ${typeText} +${r.buff.bonus}<br>
+                                        持続: ${r.buff.days}日間
+                                      </p>`;
+                    }
+                } else if (currentFacility === 'alchemy' && r.output.type === 'potion') {
+                    const restoreText = r.output.restore === 'hp' ? 'HP回復' : 'MP回復';
+                    effectHtml = `<p style="margin:12px 0; color:#a0f7a0; font-weight:bold; font-size:1.1em;">
+                                    効果: ${restoreText} +${r.output.amount}
+                                  </p>`;
+                }
+
+                // ボタン設定
+                let buttonText, onclick;
+                if (currentFacility === 'alchemy') {
+                    buttonText = '合成';
+                    onclick = `craftAlchemyRecipe(${originalIndex})`;
+                } else if (currentFacility === 'tavern') {
+                    buttonText = '注文（冒険者選択）';
+                    onclick = `orderTavernItem(${originalIndex})`;
+                } else {
+                    buttonText = '製作';
+                    onclick = `produceBlacksmith(${originalIndex})`;
+                }
+
+                html += `
+                    <div class="facility-item">
+                        <h3>${itemName}</h3>
+                        ${effectHtml}
+                        <p>コスト：${cost} gold</p>
+                        ${matHtml}
+                        <button onclick="${onclick}" 
+                                ${!canMake ? 'disabled style="background:#777;"' : ''}
+                                style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
+                            ${buttonText}
+                        </button>
+                    </div>`;
+            });
+
+            if (!hasItems) {
+                html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">レベルを上げると新しいレシピが解放されます</p>`;
             }
+
+            html += `</div>`;
         } else {
             html += `<p style="text-align:center; font-size:1.4em; margin-top:40px;">施設をアップグレードすると利用可能になります</p>`;
         }
 
         html += `</div>`;
         content.innerHTML = html;
-
-        // 錬金の場合のみドロップダウン初期化
-        if (currentFacility === 'alchemy' && level > 0) {
-            const optionsHtml = getAlchemyMaterialOptions();
-            document.getElementById('alchemyIng1').innerHTML = optionsHtml;
-            document.getElementById('alchemyIng2').innerHTML = optionsHtml;
-            updateAlchemyPreview();
-        }
     }
 }
+
+
+// 在庫から指定数量を消費する関数（removeFromInventory）
+// inventory → gameState.inventory に修正（ゲームの構造に合わせ）
+function removeFromInventory(itemName, qtyToRemove) {
+    if (qtyToRemove <= 0) return true;
+
+    // gameState.inventory を使用（標準的なゲーム構造）
+    if (!gameState.inventory || !Array.isArray(gameState.inventory)) {
+        console.error('gameState.inventory が未定義または配列ではありません');
+        return false;
+    }
+
+    let removed = 0;
+    for (let i = gameState.inventory.length - 1; i >= 0; i--) {  // 逆順ループでsplice安全
+        const item = gameState.inventory[i];
+        if (item.name === itemName) {
+            const canRemove = Math.min(qtyToRemove - removed, item.qty || 1);
+            item.qty = (item.qty || 1) - canRemove;
+            removed += canRemove;
+
+            if (item.qty <= 0) {
+                gameState.inventory.splice(i, 1);  // 0個になったら削除
+            }
+
+            if (removed >= qtyToRemove) {
+                return true;  // 要求数量すべて消費
+            }
+        }
+    }
+
+    // 不足した場合
+    console.warn(`在庫不足: ${itemName} (要求: ${qtyToRemove}, 消費できた: ${removed})`);
+    return false;
+}
+
+function craftAlchemyRecipe(index) {
+    const recipe = alchemyRecipes[index];
+    if (!recipe) {
+        alert("無効なレシピです。");
+        return;
+    }
+
+    // コストチェック（alchemyRecipesにcostがなければ0）
+    const cost = recipe.cost || 0;
+    if (gameState.gold < cost) {
+        alert("ゴールドが不足しています！");
+        return;
+    }
+
+    // 入力素材チェック（inputsは配列、qtyは常に1）
+    for (const inputName of recipe.inputs) {
+        const have = countItem(inputName);
+        if (have < 1) {
+            alert(`素材不足: ${inputName} が足りません！`);
+            return;
+        }
+    }
+
+    // 消費処理
+    if (cost > 0) {
+        gameState.gold -= cost;
+    }
+    for (const inputName of recipe.inputs) {
+        removeFromInventory(inputName, 1);  // 1個消費（スタック対応関数を想定）
+    }
+
+    // 出力追加
+    const output = recipe.output;
+    let itemToAdd = {
+        name: output.name,
+        type: output.type  // 'material' or 'potion'
+    };
+
+    // ポーションの場合、restore/amount/minPrice/maxPriceを付与
+    if (output.type === 'potion') {
+        itemToAdd.restore = output.restore;
+        itemToAdd.amount = output.amount;
+    }
+
+    // 売却価格（min/max）
+    if (output.minPrice !== undefined && output.maxPrice !== undefined) {
+        itemToAdd.minPrice = output.minPrice;
+        itemToAdd.maxPrice = output.maxPrice;
+    }
+
+    addToInventory(itemToAdd, 1);
+
+    // 成功メッセージ
+    let msg = `${output.name} を合成しました！`;
+    if (output.type === 'potion') {
+        const restoreText = output.restore === 'hp' ? 'HP' : 'MP';
+        msg += ` (${restoreText} +${output.amount})`;
+    }
+    alert(msg);
+
+    // UI更新
+    updateDisplays();
+    renderFacilities();  // レシピリスト再描画（在庫変化反映）
+}
+
+
+const facilityMaxLevels = {
+    alchemy: 4,
+    blacksmith: 12,
+    tavern: 12
+};
+
+const facilityUpgradeCosts = {
+    alchemy: [
+        1000,    // Lv0 → Lv1 (序盤容易)
+        2500,    // Lv1 → Lv2
+        6000,
+        10000     // Lv2 → Lv3 (Lv4はmax)
+    ],
+    blacksmith: [
+        1500,    // Lv0 → Lv1
+        2700,    // Lv1 → Lv2
+        4900,    // Lv2 → Lv3
+        8800,    // Lv3 → Lv4
+        15800,   // Lv4 → Lv5
+        28400,   // Lv5 → Lv6
+        51000,   // Lv6 → Lv7
+        92000,   // Lv7 → Lv8
+        165000,  // Lv8 → Lv9
+        300000,  // Lv9 → Lv10
+        540000,  // Lv10 → Lv11
+        970000   // Lv11 → Lv12
+    ],
+    tavern: [
+        1200,    // Lv0 → Lv1 (酒場少し安め)
+        2200,    // Lv1 → Lv2
+        4000,    // Lv2 → Lv3
+        7200,    // Lv3 → Lv4
+        13000,   // Lv4 → Lv5
+        23000,   // Lv5 → Lv6
+        41000,   // Lv6 → Lv7
+        74000,   // Lv7 → Lv8
+        133000,  // Lv8 → Lv9
+        240000,  // Lv9 → Lv10
+        430000,  // Lv10 → Lv11
+        770000   // Lv11 → Lv12
+    ]
+};
+
 function upgradeFacility(fac) {
-    const level = gameState.facilities[fac];
-    if (level >= 4) return;
-    const cost = facilityUpgradeCosts[fac][level];
+    const currentLevel = gameState.facilities[fac];
+    const maxLevel = facilityMaxLevels[fac];
+
+    if (currentLevel >= maxLevel) {
+        alert('この施設はすでに最大レベルです');
+        return;
+    }
+
+    const cost = facilityUpgradeCosts[fac][currentLevel];
+
     if (gameState.gold >= cost) {
         gameState.gold -= cost;
         gameState.facilities[fac]++;
         renderFacilities();
         if (typeof updateGold === 'function') updateGold();
+        alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`);
     } else {
         alert('ゴールドが不足しています');
     }
     updateDisplays();
 }
-
 
 
 
@@ -5875,9 +6355,22 @@ function playNextDialogue() {
 
         function renderCurrent() {
             const current = seq[localIndex];
+            let imageSrc = 'Images/main_char.png'; 
+            if (current.speaker === '冒険者') {
+                const images = [
+                    'STR_M.png',
+                    'STR_F.png',
 
-            // 話者に応じて画像切り替え（デフォルトはペア画像）
-            let imageSrc = 'Images/カイト＆ルナ.png'; // ← ペア画像（ファイル名は環境に合わせて調整）
+                    'WIS_F.png',
+                    'DEX_M.png',
+                    'DEX_F.png',
+                    'LUC_M.png',
+                    'LUC_F.png'
+                ];
+                
+                const randomIndex = Math.floor(Math.random() * images.length);
+                imageSrc = images[randomIndex];
+            }     
             if (current.speaker === 'カイト') {
                 imageSrc = 'Images/カイト.png';
             } else if (current.speaker === 'ルナ') {
