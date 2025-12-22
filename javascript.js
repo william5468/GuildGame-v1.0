@@ -3000,12 +3000,62 @@ function levelUp(adv, forceLevels = 0) {
     for (let i = 0; i < levelsGained; i++) {
         adv.level++;
 
-        const r = Math.random();
+        // Compute current stats before growth
+        const currentStats = {
+            strength: adv.strength,
+            wisdom: adv.wisdom,
+            dexterity: adv.dexterity,
+            luck: adv.luck
+        };
+
+        // Find max stat value
+        const maxStatValue = Math.max(...Object.values(currentStats));
+
+        // Find all stats that match the max value
+        const highestStats = Object.keys(currentStats).filter(key => currentStats[key] === maxStatValue);
+
+        // Weighted selection: base 1 for all, +4 bonus for each highest stat
+        const weights = {
+            strength: 1,
+            wisdom: 1,
+            dexterity: 1,
+            luck: 1
+        };
+        highestStats.forEach(stat => {
+            weights[stat] += 4;
+        });
+
+        // Total weight
+        const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+
+        // Pick weighted random stat for big boost
+        const rand = Math.random() * totalWeight;
+        let cumulative = 0;
+        let chosenStat = null;
+        for (let stat in weights) {
+            cumulative += weights[stat];
+            if (rand <= cumulative) {
+                chosenStat = stat;
+                break;
+            }
+        }
+
+        // Apply +1 to all, +4 extra to chosen
         let sb = 1, wb = 1, db = 1, lb = 1;
-        if (r < 0.4) wb += 4;
-        else if (r < 0.6) sb += 4;
-        else if (r < 0.8) db += 4;
-        else lb += 4;
+        switch (chosenStat) {
+            case 'strength':
+                sb += 4;
+                break;
+            case 'wisdom':
+                wb += 4;
+                break;
+            case 'dexterity':
+                db += 4;
+                break;
+            case 'luck':
+                lb += 4;
+                break;
+        }
 
         adv.strength += sb;
         adv.wisdom += wb;
