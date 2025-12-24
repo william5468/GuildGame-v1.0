@@ -11,13 +11,13 @@ const assetsToLoad = [
     "Images/カイト.png",
     "Images/ルナ.png",
     "Images/main_char.png",
-    "Images/STR_M.png",
-    "Images/STR_F.png",
-    "Images/WIS_F.png",
-    "Images/DEX_M.png",
-    "Images/DEX_F.png",
-    "Images/LUC_M.png",
-    "Images/LUC_F.png",
+    "STR_M.png",
+    "STR_F.png",
+    "WIS_F.png",
+    "DEX_M.png",
+    "DEX_F.png",
+    "LUC_M.png",
+    "LUC_F.png",
     "bgm.mp3",
     "yume.mp3",
     "battle.mp3",
@@ -2232,6 +2232,7 @@ function generateQuest(){
     const maxDiff = Math.min(150, Math.floor(repFactor / 5.0) + 10); // 上限を少し上げてSランクも出やすく
     const difficulty = minDiff + Math.floor(Math.random() * (maxDiff - minDiff + 1));
     const rank = getQuestRank(difficulty);
+    let storyindex = 0;
 
     
 
@@ -3758,7 +3759,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 1 && Math.random() < 0.5 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -4397,17 +4398,20 @@ function executeAction() {
                 }
             }
             const typeStr = act.type === 'physical' ? '物理攻撃' : '魔法攻撃';
+
+            // データ更新完了 → まずUIを再構築（HPバーなどが最新になる）
+            renderBattle();
             console.log(`${c.name} の ${typeStr}！ ${target.name} に ${Math.floor(finalDmg)} ダメージ！`);
-            addBattleLog(`${c.name} の ${typeStr}！ ${target.name} に ${Math.floor(finalDmg)} ダメージ！`);
-            const hpPct = (target.hp / target.maxHp) * 100;
-            const hpEl = document.getElementById(`hp_${target.id}`);
-            if (hpEl) hpEl.innerHTML = `HP: <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div> ${Math.floor(target.hp)}/${target.maxHp}`;
+            addBattleLog(`${c.name} の ${typeStr}！ ${target.name} に ${Math.floor(finalDmg)} ダメージ！`);            
+
+            // その後に最新のDOM要素を取得してダメージポップアップを追加
             const targetDiv = document.getElementById(`div_${target.id}`);
-            if (targetDiv) {
-                const isCritical = false; // ← クリティカル判定がなければ false のまま
-                console.log(targetDiv)
+            if (targetDiv && finalDmg > 0) {
+                const isCritical = false; // 必要に応じてクリティカル判定を追加
                 showDamagePopup(targetDiv, Math.floor(finalDmg), false, isCritical);
             }
+
+            // MP更新が必要な場合はここでも反映（renderBattle()で既に反映されているが念のため）
             if (act.type === 'magic' && isPlayer) {
                 const mpPct = (c.mp / c.maxMp) * 100;
                 const mpEl = document.getElementById(`mp_${c.id}`);
@@ -4415,6 +4419,7 @@ function executeAction() {
             }
         }
         currentBattle.actionIndex++;
+
         const aliveAdv = currentBattle.team.filter(a => a.hp > 0).length;
         const aliveEn = currentBattle.enemies.filter(e => e.hp > 0).length;
         if (aliveAdv === 0) {
@@ -4425,12 +4430,13 @@ function executeAction() {
             endBattle(true);
             return;
         }
-        renderBattle();
+
+        // renderBattle() はダメージ適用直後に既に呼んでいるので、ここでは呼ばない（二重レンダリング防止）
+        // 次の行動へ進む準備が整った状態で返す
         return;
     }
     endRound();
 }
-
 function endRound() {
     currentBattle.team.forEach(a => {
         a.defending = false;
