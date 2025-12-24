@@ -2,6 +2,7 @@
 let loadedCount = 0;
 
 const assetsToLoad = [
+    // Images folder (all images)
     "Images/Guild_bg.jpg",
     "Images/Shop_bg.jpg",
     "Images/Character_bg.jpg",
@@ -11,21 +12,54 @@ const assetsToLoad = [
     "Images/カイト.png",
     "Images/ルナ.png",
     "Images/main_char.png",
-    "STR_M.png",
-    "STR_F.png",
-    "WIS_F.png",
-    "DEX_M.png",
-    "DEX_F.png",
-    "LUC_M.png",
-    "LUC_F.png",
-    "bgm.mp3",
-    "yume.mp3",
-    "battle.mp3",
-    "STR_Attack.mp3",
-    "WIS_Attack.mp3"
-    // 必要に応じて他の画像・音声パスを追加
-];
+    "Images/STR_M.png",
+    "Images/STR_F.png",
+    "Images/WIS_F.png",
+    "Images/DEX_M.png",
+    "Images/DEX_F.png",
+    "Images/LUC_M.png",
+    "Images/LUC_F.png",
+    "Images/Assassin(F)_enemy.png",
+    "Images/Assassin(M)_enemy.png",
+    "Images/Hunter(F)_enemy.png",
+    "Images/Hunter(M)_enemy.png",
 
+    // === 新規追加：アクションアイコン ===
+    "Images/STR_lightattack_icon.jpg",
+    "Images/STR_heavyattack_icon.jpg",
+    "Images/WIS_lightattack_icon.jpg",
+    "Images/WIS_heavyattack_icon.jpg",
+    "Images/DEX_lightattack_icon.jpg",
+    "Images/DEX_heavyattack_icon.jpg",
+    "Images/LUC_lightattack_icon.jpg",
+    "Images/WIS_explosion_icon.jpg",
+    "Images/STR_protection_icon.jpg",
+    "Images/Defense_icon.jpg",
+    // =====================================
+
+    // Audio folder (all audio)
+    "Audio/bgm.mp3",
+    "Audio/yume.mp3",
+    "Audio/battle.mp3",
+    "Audio/STR_lightAttack.mp3",
+    "Audio/WIS_lightAttack.mp3",
+    "Audio/DEX_lightAttack.mp3",
+    "Audio/LUC_lightAttack.mp3",
+    "Audio/STR_heavyAttack.mp3",
+    "Audio/WIS_heavyAttack.mp3",
+    "Audio/DEX_heavyAttack.mp3",
+    "Audio/STR_protect.mp3",    
+    "Audio/DEX_Stunning.mp3",
+    "Audio/WIS_Explosion.mp3",
+    "Audio/LUC_fortunestrike.mp3",
+    "Audio/LUC_Evade.mp3",
+    "Audio/LUC_Blessing.mp3",
+    "Audio/Defense_F.mp3",
+    "Audio/Defense_M.mp3",    
+    "Audio/CounterAttack_F.mp3",
+    "Audio/CounterAttack_M.mp3",
+    "Audio/CounterAttack_trigger.mp3",
+];
 const totalAssets = assetsToLoad.length;
 
 function updateProgress() {
@@ -73,7 +107,6 @@ function preloadAssets() {
         }
     });
 }
-
 function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
@@ -81,9 +114,30 @@ function startGame() {
 
 /* ページ読み込み後すぐにプリロード開始 */
 preloadAssets();
+const strLightSound = new Audio('Audio/STR_lightAttack.mp3');
+const strHeavySound = new Audio('Audio/STR_heavyAttack.mp3');
+const strProtectSound = new Audio('Audio/STR_protect.mp3');
 
-const strSound = new Audio('STR_Attack.mp3');
-const wisSound = new Audio('WIS_Attack.mp3');
+const wisLightSound = new Audio('Audio/WIS_lightAttack.mp3');
+const wisHeavySound = new Audio('Audio/WIS_heavyAttack.mp3');
+const wisExplosionSound = new Audio('Audio/WIS_Explosion.mp3');
+
+const dexLightSound = new Audio('Audio/DEX_lightAttack.mp3');
+const dexHeavySound = new Audio('Audio/DEX_heavyAttack.mp3');
+const dexStunningSound = new Audio('Audio/DEX_Stunning.mp3');
+
+const lucLightSound = new Audio('Audio/LUC_lightAttack.mp3');
+const lucFortuneSound = new Audio('Audio/LUC_fortunestrike.mp3');
+const lucEvadeSound = new Audio('Audio/LUC_Evade.mp3');
+const lucBlessingSound = new Audio('Audio/LUC_Blessing.mp3');
+
+// Add these Audio declarations (with other Audio objects like strSound, wisSound etc.)
+const defenseMSound = new Audio('Audio/Defense_M.mp3');
+const defenseFSound = new Audio('Audio/Defense_F.mp3');
+const counterMSound = new Audio('Audio/CounterAttack_M.mp3');
+const counterFSound = new Audio('Audio/CounterAttack_F.mp3');
+const counterTriggerSound = new Audio('Audio/CounterAttack_trigger.mp3');
+
 let currentCharIndex = 0;
 let selectedMix1 = null;
 let selectedMix2 = null;
@@ -1622,7 +1676,7 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         id: gameState.nextId++,
         name: 'カイト',
         gender: 'male',
-        image: 'Images/カイト.png',
+        image: 'カイト.png',
         strength: 30,
         wisdom: 10,
         dexterity: 25,
@@ -1646,7 +1700,7 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         id: gameState.nextId++,
         name: 'ルナ',
         gender: 'female',
-        image: 'Images/ルナ.png',
+        image: 'ルナ.png',
         strength: 10,
         wisdom: 30,
         dexterity: 10,
@@ -2926,13 +2980,41 @@ function generateKillRecruit(difficulty) {
 
 function generateEnemies(q) {
     q.enemies = [];
+
+    // List of possible gendered enemy images
+    const possibleEnemyImages = [
+        "Images/Assassin(F)_enemy.png",
+        "Images/Assassin(M)_enemy.png",
+        "Images/Hunter(F)_enemy.png",
+        "Images/Hunter(M)_enemy.png"
+    ];
+
+    // Map image filename to base Japanese name (without gender)
+    const imageToJaName = {
+        "Assassin(F)_enemy.png": "暗殺者",
+        "Assassin(M)_enemy.png": "暗殺者",
+        "Hunter(F)_enemy.png": "ハンター",
+        "Hunter(M)_enemy.png": "ハンター"
+    };
+
     for (let i = 0; i < q.numEnemies; i++) {
-        const config = enemyConfigs[Math.floor(Math.random() * enemyConfigs.length)];
         const baseStat = Math.floor((Math.floor(gameState.reputation) + 1) * 0.6 + Math.random() * 10);
+
+        // Randomly choose an image from the list
+        const imagePath = possibleEnemyImages[Math.floor(Math.random() * possibleEnemyImages.length)];
+
+        // Derive sex from the image name
+        const match = imagePath.match(/\((M|F)\)/);
+        const sex = match ? match[1] : 'N'; // 'M', 'F', or 'N' if no match
+
+        // Get base Japanese name from map
+        const baseJaName = imageToJaName[imagePath.split('/').pop()] || "敵";
+
         const e = {
             id: `enemy_${q.id}_${i}`,
-            name: config.ja + ` ${i + 1}`,
-            image: `${config.en}_enemy.png`,
+            name: baseJaName + ` ${i + 1}`,
+            image: imagePath,
+            sex: sex, // 'M', 'F', or 'N'
             hp: Math.floor(60 + baseStat * 1.5 + Math.random() * 30),
             maxHp: 0,
             mp: Math.floor(20 + baseStat * 0.5 + Math.random() * 10),
@@ -2950,7 +3032,6 @@ function generateEnemies(q) {
         q.enemies.push(e);
     }
 }
-
 function rollStat(adv, statName) {
     if (!adv) return 0;
     const base = getEffectiveStat(adv, statName);
@@ -3514,10 +3595,10 @@ function getRecruitsHtml(){
         const equipWis = effWis - baseWis;
         const equipDex = effDex - baseDex;
         const equipLuk = effLuk - baseLuk;
-        const stats=`Lv ${adv.level} | <img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
         const expNeeded = adv.level * 100;
         const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
-        const img=`<img src="${adv.image}" class="adventurer-img" alt="${adv.name}">`;
+        const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
         const nameHtml = getNameHtml(adv);
         const btnHtml = full ? '<button disabled>ギルド満杯</button>' : `<button onclick="recruit(${i})">募集する</button>`;
         html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
@@ -3545,7 +3626,7 @@ function getAvailableHtml(){
         const equipWis = effWis - baseWis;
         const equipDex = effDex - baseDex;
         const equipLuk = effLuk - baseLuk;
-        const stats=`Lv ${adv.level} | <img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
         const expNeeded = adv.level * 100;
         const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
         const hpPct = adv && typeof adv.hp === 'number' && typeof adv.maxHp === 'number' && adv.maxHp > 0 ? Math.max(0, Math.min(100, (adv.hp / adv.maxHp) * 100)) : 0;
@@ -3554,7 +3635,7 @@ function getAvailableHtml(){
         const maxHpDisplay = Number(adv.maxHp) || 0;
         const mpDisplay = Number(adv.mp) || 0;
         const maxMpDisplay = Number(adv.maxMp) || 0;
-        const img=`<img src="${adv.image}" class="adventurer-img" alt="${adv.name}">`;
+        const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
         const nameHtml = getNameHtml(adv);
         const cost=adv.temp?`雇用: ${adv.hiringCost}g`:'恒久的';
         html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
@@ -3640,8 +3721,8 @@ function getQuestsHtml(){
                 }
             }
         });
-        const minHtml = `<img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength} | <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom} | <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity} | <img src="LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck}`;
-        const teamHtml = `<img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | <img src="LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
+        const minHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength} | <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom} | <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity} | <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck}`;
+        const teamHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
         html+=`<div class="quest-card ${typeClass}" data-quest-id="${q.id}"
                  ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
             <h3>${q.desc}</h3>`;
@@ -3759,7 +3840,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 1 && Math.random() < 0.5 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -4240,252 +4321,685 @@ function playDay(){
 
 function renderBattle() {
     if (!currentBattle) return;
-    let topHtml = '<div class="battle-top"><h3>防衛戦</h3><div id="battleLog"></div>';
+
+    // Initialize defaults if missing
+    if (!currentBattle.log) currentBattle.log = [];
+    if (!currentBattle.round) currentBattle.round = 1;
+    if (!currentBattle.phase) currentBattle.phase = 'setup';
+
+    let topHtml = '<div class="battle-top"><div id="battleLog">';
+    currentBattle.log.forEach(log => topHtml += '<p>' + log + '</p>');
+    topHtml += '</div>';
+
+    // Add Round Start button during setup, or Next/Skip during execution
     if (currentBattle.phase === 'setup') {
         topHtml += '<button onclick="startRound()">ラウンド開始</button>';
-    } else {
-        topHtml += '<button onclick="nextAction()">次の行動</button>';
+    } else if (currentBattle.currentActor) {
+        const buttonText = currentBattle.currentActor.isEnemy ? '次へ' : '行動をスキップ';
+        topHtml += `<button onclick="skipTurn()">${buttonText}</button>`;
     }
     topHtml += '</div>';
-    let enemiesHtml = '<div class="battle-section"><h3>敵 (上)</h3><div class="battle-enemies">';
+
+    let enemiesHtml = '<div class="battle-section"><div class="battle-enemies">';
     currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
         const hpPct = (e.hp / e.maxHp) * 100;
-        const selectableClass = currentSelectingAdvId ? 'selectable' : '';
+        const apPct = ((e.currentAp || 0) / 5) * 100;
+        const selectableClass = currentBattle.selecting && currentBattle.selecting.mode === 'enemy' ? 'selectable-target' : '';
+        const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === e.id;
+        const highlightClass = isCurrent ? 'current-enemy' : '';
         enemiesHtml += `
-            <div class="battle-enemy ${selectableClass}" id="div_${e.id}" data-id="${e.id}" ${currentSelectingAdvId ? `onclick="selectEnemyForCurrentAdv('${e.id}')"` : ''}>
+            <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''}>
                 <img src="${e.image}" class="enemy-img" alt="${e.name}">
                 ${e.name}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
                 HP ${Math.floor(e.hp)}/${e.maxHp}
+                <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
+                AP ${e.currentAp || 0}/5
             </div>
         `;
     });
     enemiesHtml += '</div></div>';
-    let teamHtml = '<div class="battle-section"><h3>チーム (下)</h3><div class="battle-team">';
+
+    let teamHtml = '<div class="battle-section"><div class="battle-team">';
     currentBattle.team.filter(adv => adv.hp > 0).forEach(adv => {
         const hpPct = (adv.hp / adv.maxHp) * 100;
-        const mpPct = (adv.mp / adv.maxMp) * 100;
+        const apPct = ((adv.currentAp || 0) / 5) * 100;
+        const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === adv.id;
+        const highlightClass = isCurrent ? 'current-actor' : '';
+        const selectableClass = currentBattle.selecting && currentBattle.selecting.mode === 'ally' ? 'selectable-target' : '';
         let actionHtml = '';
-        if (currentBattle.phase === 'setup') {
-            const act = currentBattle.actions[adv.id] || {};
-            const isAttack = ['physical', 'magic'].includes(act.type);
-            const targetName = act.target ? currentBattle.enemies.find(e => e.id === act.target)?.name || '不明' : 'なし';
-            const selectingNote = currentSelectingAdvId === adv.id ? '<br><em>(敵をクリックして対象を選択)</em>' : '';
-            actionHtml = `
-                <button onclick="setAction(${adv.id}, 'physical')">Physical (STR)</button>
-                <button onclick="setAction(${adv.id}, 'magic')">Magic (WIS, -10 MP)</button>
-                <button onclick="setAction(${adv.id}, 'defense')">Defense</button>
-                <br>行動: ${act.type || '未選択'}
-                ${isAttack ? `<br>対象: ${targetName}` : ''}
-                ${selectingNote}
-            `;
+        if (isCurrent && !adv.isEnemy && currentBattle.phase === 'executing') {
+            actionHtml = getActionButtonsHtml(adv);
         }
         teamHtml += `
-            <div class="team-member" id="div_${adv.id}">
+        <div class="actions">${actionHtml}</div> 
+        <div class="team-member ${highlightClass} ${selectableClass}" id="div_${adv.id}" data-id="${adv.id}" ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''}>
+                 
                 <div class="adventurer-card">
-                    <img src="${adv.image}" class="adventurer-img" alt="${adv.name}">
+                    <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">
                     ${getNameHtml(adv)}
                     <br>
-                    <div id="hp_${adv.id}" style="background:transparent;">HP: 
-                        <div class="progress-bar" style="background:transparent; border:1px solid rgba(255,255,255,0.3);">
-                            <div class="progress-fill hp-fill" style="width:${hpPct}%"></div>
-                        </div> 
-                        ${Math.floor(adv.hp)}/${adv.maxHp}
-                    </div>
+                    <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
+                    HP ${Math.floor(adv.hp)}/${adv.maxHp}
                     <br>
-                    <div id="mp_${adv.id}" style="background:transparent;">MP: 
-                        <div class="progress-bar" style="background:transparent; border:1px solid rgba(255,255,255,0.3);">
-                            <div class="progress-fill mp-fill" style="width:${mpPct}%"></div>
-                        </div> 
-                        ${Math.floor(adv.mp)}/${adv.maxMp}
-                    </div>
+                    <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
+                    AP ${adv.currentAp || 0}/5
+                    <br>Crit Chance: ${adv.critChance || 0}%
                 </div>
-                <div class="actions">${actionHtml}</div>
+                  
             </div>
         `;
     });
     teamHtml += '</div></div>';
+
+
     document.getElementById('battleContent').innerHTML = topHtml + enemiesHtml + teamHtml;
 }
+function getCharType(adv) {
+    const img = (adv.image || '').toLowerCase();
+    if (img.includes('str_')) return 'STR';
+    if (img.includes('wis_')) return 'WIS';
+    if (img.includes('dex_')) return 'DEX';
+    if (img.includes('luc_')) return 'LUC';
 
-function setAction(advId, type) {
-    let act = currentBattle.actions[advId] || {};
-    act.type = type;
-    if (type === 'defense') act.target = null;
-    currentBattle.actions[advId] = act;
-    currentSelectingAdvId = (type === 'physical' || type === 'magic') ? advId : null;
-    renderBattle();
+    // Fallback: highest stat
+    const stats = {
+        strength: getEffectiveStat(adv, 'strength'),
+        wisdom: getEffectiveStat(adv, 'wisdom'),
+        dexterity: getEffectiveStat(adv, 'dexterity'),
+        luck: getEffectiveStat(adv, 'luck')
+    };
+    let max = -1;
+    let type = 'STR';
+    if (stats.strength > max) { max = stats.strength; type = 'STR'; }
+    if (stats.wisdom > max) { max = stats.wisdom; type = 'WIS'; }
+    if (stats.dexterity > max) { max = stats.dexterity; type = 'DEX'; }
+    if (stats.luck > max) type = 'LUC';
+    return type;
 }
 
-function selectEnemyForCurrentAdv(targetId) {
-    if (currentSelectingAdvId) {
-        const act = currentBattle.actions[currentSelectingAdvId];
-        if (act && (act.type === 'physical' || act.type === 'magic')) {
-            act.target = targetId;
+function getActionButtonsHtml(adv) {
+    const type = getCharType(adv);
+    const canAfford = (cost) => cost <= 0 || (adv.currentAp || 0) >= cost;
+
+    const skills = [];
+
+    if (type === 'LUC') {
+        skills.push({ action: 'luc_light', icon: 'LUC_lightattack_icon.jpg', desc: 'Light Attack (1 AP, 25% LUC)', cost: 1 });
+        skills.push({ action: 'blessing', icon: 'LUC_Blessing_icon.jpg', desc: 'Fortune’s Blessing (3 AP)', cost: 3 }); // Assume you have this or fallback
+        skills.push({ action: 'evade', icon: 'LUC_Evade_icon.jpg', desc: 'Evade with Luck (0 AP)', cost: 0 }); // Assume
+        skills.push({ action: 'fortune', icon: 'LUC_heavyattack_icon.jpg', desc: 'Fortune’s Strike (5 AP)', cost: 5 });
+    } else {
+        skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP)', cost: 1 });
+        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP)', cost: 3 });
+        skills.push({ action: 'defense', icon: 'Defense_icon.jpg', desc: 'Defense (+1 AP)', cost: -1 });
+        skills.push({ action: 'counter', icon: 'Counter_icon.jpg', desc: 'Counter Attack (2 AP)', cost: 2 }); // Assume Counter_icon.jpg or add
+
+        if (type === 'STR') {
+            skills.push({ action: 'protect', icon: 'STR_protection_icon.jpg', desc: 'Protect (3 AP)', cost: 3 });
+        } else if (type === 'WIS') {
+            skills.push({ action: 'explosion', icon: 'WIS_explosion_icon.jpg', desc: 'Explosion (5 AP)', cost: 5 });
+        } else if (type === 'DEX') {
+            skills.push({ action: 'stunning', icon: 'DEX_stunning_icon.png', desc: 'Stunning Strike (3 AP)', cost: 3 }); // Assume you add this
         }
-        currentSelectingAdvId = null;
     }
+
+    // Horizontal row of square icon buttons
+    let html = '<div class="skill-grid">';
+
+    skills.forEach(skill => {
+        const disabled = !canAfford(skill.cost);
+        html += `
+            <button class="skill-btn" 
+                    title="${skill.desc}" 
+                    ${disabled ? 'disabled' : ''} 
+                    onclick="${disabled ? '' : `chooseAction('${skill.action}')`}">
+                <img src="Images/${skill.icon}" alt="${skill.desc}">
+            </button>
+        `;
+    });
+
+    html += '</div>';
+
+    return html;
+}
+
+function chooseAction(actionType) {
+    const actor = currentBattle.currentActor;
+    if (!actor || actor.isEnemy) return;
+
+    const costs = {
+        light: 1, heavy: 3, defense: -1, counter: 2,
+        protect: 3, explosion: 5, stunning: 3,
+        luc_light: 1, blessing: 3, evade: 0, fortune: 5
+    };
+    const cost = costs[actionType] || 0;
+    if (cost > 0 && (actor.currentAp || 0) < cost) return;
+
+    const needsTarget = ['light', 'heavy', 'stunning', 'fortune'].includes(actionType);
+    const needsAllyTarget = actionType === 'blessing';
+    const noTarget = ['defense', 'counter', 'protect', 'explosion', 'evade'];
+
+    if (noTarget.includes(actionType)) {
+        executeActorAction(actor, { type: actionType });
+    } else {
+        currentBattle.selecting = {
+            action: actionType,
+            mode: needsAllyTarget ? 'ally' : 'enemy',
+            isHeavy: ['heavy', 'fortune'].includes(actionType)
+        };
+        renderBattle();
+    }
+}
+
+function selectTarget(targetId) {
+    if (!currentBattle.selecting) return;
+
+    const actor = currentBattle.currentActor;
+    const actionType = currentBattle.selecting.action;
+    let target = null;
+
+    if (currentBattle.selecting.mode === 'enemy') {
+        target = currentBattle.enemies.find(e => e.id === targetId && e.hp > 0);
+    } else if (currentBattle.selecting.mode === 'ally') {
+        target = currentBattle.team.find(a => a.id === targetId && a.hp > 0);
+    }
+
+    if (!target) return;
+
+    executeActorAction(actor, { type: actionType, target: target });
+    currentBattle.selecting = null;
+}
+
+function executeActorAction(actor, action) {
+    const costs = {
+        light: 1, heavy: 3, defense: -1, counter: 2,
+        protect: 3, explosion: 5, stunning: 3,
+        luc_light: 1, blessing: 3, evade: 0, fortune: 5
+    };
+    const cost = costs[action.type] || 0;
+
+    actor.currentAp = (actor.currentAp || 0) - cost;
+    actor.currentAp = Math.min(5, Math.max(0, actor.currentAp));
+
+    let log = `${actor.name} uses ${action.type.replace('_', ' ')}`;
+
+    // Collect all popup infos from this action
+    const popupInfos = [];
+
+    // Determine character type and gender for sound selection
+    const charType = getCharType(actor);
+    const sex = actor.sex || (function() {
+        if (actor.name === 'カイト') {
+                return 'M';
+            }
+            if (actor.name === 'ルナ') {
+                return 'F';
+            }        
+        // 名前リストで判定（男名優先 → 女名 → フォールバック）
+        if (maleNames.includes(actor.name)) {
+            return 'M';
+        }
+        if (femaleNames.includes(actor.name)) {
+            return 'F';
+        }
+
+        // 画像ファイル名で明示的に性別がわかる場合（両方の表記形式に対応）
+        const imgLower = (actor.image || '').toLowerCase();
+        if (imgLower.includes('(f)') || imgLower.includes('_f')) {
+            return 'F';
+        }
+        if (imgLower.includes('(m)') || imgLower.includes('_m')) {
+            return 'M';
+        }
+
+    })()
+    console.log(sex)
+    // Play sound based on action and gender/type
+    let soundToPlay = null;
+
+    switch (action.type) {
+        case 'defense':
+            actor.activeDefense = true;
+            log += '! (25% damage reduction until next turn)';
+            soundToPlay = sex === 'F' ? defenseFSound : defenseMSound;
+            break;
+        case 'counter':
+            actor.activeCounter = true;
+            log += '! (ready to counter)';
+            soundToPlay = sex === 'F' ? counterFSound : counterMSound;
+            break;
+        case 'evade':
+            actor.activeEvadeBonus = true;
+            log += '! (+15% evasion until next turn)';
+            soundToPlay = lucEvadeSound;
+            break;
+        case 'protect':
+            currentBattle.protectRounds = 2;
+            log += '! (team 50% damage reduction for 2 rounds)';
+            soundToPlay = strProtectSound;
+            break;
+        case 'blessing':
+            if (action.target) {
+                action.target.critChance = Math.min(50, (action.target.critChance || 0) + 10);
+                log += ` on ${action.target.name}! (crit +10%, total ${action.target.critChance}%)`;
+            } else {
+                log += ' but no target was selected!';
+            }
+            soundToPlay = lucBlessingSound;
+            break;
+        case 'explosion':
+            log += '!';
+            soundToPlay = wisExplosionSound;
+            currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
+                const infos = calculateAndApplyDamage(actor, e, { basePercent: 150, isWis: true, isAoE: true });
+                popupInfos.push(...infos);
+            });
+            break;
+        default:
+            if (!action.target) {
+                log += ' but has no target!';
+                break;
+            }
+            let basePercent = 100;
+            let isHeavy = false;
+            let isLuc = false;
+
+            if (action.type === 'heavy') basePercent = 350, isHeavy = true;
+            if (action.type === 'stunning') basePercent = 100;
+            if (action.type === 'luc_light') basePercent = 25, isLuc = true;
+            if (action.type === 'fortune') {
+                if (Math.random() < 0.25) {
+                    basePercent = 500;
+                    isLuc = true;
+                } else {
+                    addBattleLog(`${actor.name}'s Fortune’s Strike misses completely!`);
+                    basePercent = 0;
+                }
+            }
+
+            const infos = calculateAndApplyDamage(actor, action.target, { basePercent, isHeavy, isLuc });
+            popupInfos.push(...infos);
+
+            if (action.type === 'stunning' && action.target.hp > 0) {
+                action.target.stunnedRounds = 1;
+                addBattleLog(`${action.target.name} is stunned for 1 turn!`);
+            }
+
+            if (action.type === 'luc_light' && Math.random() < 0.5) {
+                actor.currentAp = Math.min(5, actor.currentAp + 2);
+                addBattleLog(`${actor.name} gets lucky and refunds 2 AP! (AP: ${actor.currentAp})`);
+            }
+
+            // Sound selection for attacks
+            if (action.type === 'light' || action.type === 'luc_light') {
+                if (charType === 'STR') soundToPlay = strLightSound;
+                else if (charType === 'WIS') soundToPlay = wisLightSound;
+                else if (charType === 'DEX') soundToPlay = dexLightSound;
+                else if (charType === 'LUC') soundToPlay = lucLightSound;
+            } else if (action.type === 'heavy') {
+                if (charType === 'STR') soundToPlay = strHeavySound;
+                else if (charType === 'WIS') soundToPlay = wisHeavySound;
+                else if (charType === 'DEX') soundToPlay = dexHeavySound;
+                else if (charType === 'LUC') soundToPlay = lucHeavySound;
+            } else if (action.type === 'stunning') {
+                soundToPlay = dexStunningSound;
+            } else if (action.type === 'fortune') {
+                soundToPlay = lucFortuneSound;
+            }
+
+            break;
+    }
+
+    // Play the selected sound if any
+    if (soundToPlay) {
+        soundToPlay.currentTime = 0;
+        soundToPlay.play().catch(e => console.log('Audio play error:', e));
+    }
+
+    addBattleLog(log);
+
+    // Re-render the UI to update HP/AP/status
     renderBattle();
+
+    // Add all collected damage popups AFTER the re-render
+    setTimeout(() => {
+        popupInfos.forEach(info => {
+            const div = document.getElementById(`div_${info.targetId}`);
+            if (div) {
+                showDamagePopup(div, info.dmg, info.miss, info.crit);
+            }
+        });
+    }, 0);
+
+    nextTurn();
+}
+
+// New helper function: calculates damage, applies it, and returns popup info
+function calculateAndApplyDamage(attacker, target, opts) {
+    if (target.hp <= 0) return [];
+
+    let baseStat = opts.isLuc ? getEffectiveStat(attacker, 'luck') :
+                   opts.isWis ? getEffectiveStat(attacker, 'wisdom') :
+                   Math.max(getEffectiveStat(attacker, 'strength'), getEffectiveStat(attacker, 'wisdom'));
+
+    let dmg = baseStat * opts.basePercent / 100;
+    if (dmg === 0) {
+        addBattleLog(`${attacker.name}'s attack has no effect on ${target.name}!`);
+        return [{ targetId: target.id, dmg: 0, miss: true, crit: false }];
+    }
+
+    dmg *= (0.9 + Math.random() * 0.2);
+
+    const popupInfos = [];
+
+    /* === カウンターを最優先でチェック === */
+    if (target.activeCounter && !opts.isAoE && opts.basePercent > 0) {
+        addBattleLog(`${target.name} counters the attack!`);
+        counterTriggerSound.currentTime = 0;
+        counterTriggerSound.play().catch(e => console.log('Audio play error:', e));
+
+        // メイン攻撃は完全にブロック（ダメージ0、クリティカルも発生しない）
+        popupInfos.push({ targetId: target.id, dmg: 'Counter!', miss: true, crit: false });
+
+        // 反撃ダメージ計算（カウンターはクリティカルなし、元のコード通り）
+        let retDmg = Math.max(getEffectiveStat(target, 'strength'), getEffectiveStat(target, 'wisdom')) * (opts.isHeavy ? 350 : 100) / 100;
+        retDmg = Math.floor(retDmg * (0.9 + Math.random() * 0.2));
+
+        attacker.hp = Math.max(0, attacker.hp - retDmg);
+        addBattleLog(`${target.name} retaliates for ${retDmg} damage!`);
+        popupInfos.push({ targetId: attacker.id, dmg: retDmg, miss: false, crit: false });
+
+        target.activeCounter = false;
+
+        // カウンター発生時はメイン攻撃のダメージ適用・クリティカル・回避判定をすべてスキップして即返却
+        return popupInfos;
+    }
+
+    /* === カウンターがなかった場合のみ以降の処理 === */
+
+    // クリティカル判定（カウンターでブロックされた場合はここに来ないので安全）
+    let crit = false;
+    if (Math.random() < ((attacker.critChance || 0) / 100)) {
+        dmg *= 3;
+        crit = true;
+        addBattleLog('Critical hit!');
+    }
+
+    // 回避判定
+    const baseEv = Math.floor(getEffectiveStat(target, 'luck') / 10);
+    const evasion = Math.min(90, baseEv + (target.activeEvadeBonus ? 15 : 0));
+    if (Math.random() * 100 < evasion) {
+        addBattleLog(`${target.name} evades the attack!`);
+        popupInfos.push({ targetId: target.id, dmg: 'Evade', miss: true, crit: false });
+        return popupInfos;
+    }
+
+    // 防御・プロテクトによる軽減
+    if (target.activeDefense) {
+        dmg *= 0.75;
+        addBattleLog(`${target.name}'s defense reduces the damage!`);
+        strProtectSound.currentTime = 0;
+        strProtectSound.play().catch(e => console.log('Audio play error:', e));
+    }
+    if (!attacker.isEnemy && currentBattle.protectRounds > 0) {
+        dmg *= 0.5;
+        addBattleLog('Protect reduces the damage!');
+        strProtectSound.currentTime = 0;
+        strProtectSound.play().catch(e => console.log('Audio play error:', e));
+    }
+
+    dmg = Math.floor(dmg);
+    const actualDmg = dmg > 0 ? dmg : 0;
+
+    if (actualDmg > 0) {
+        target.hp = Math.max(0, target.hp - actualDmg);
+        addBattleLog(`${attacker.name} deals ${actualDmg} damage to ${target.name}!${crit ? ' (Critical)' : ''}`);
+    } else {
+        addBattleLog(`${attacker.name}'s attack has no effect on ${target.name}!`);
+    }
+
+    popupInfos.push({ targetId: target.id, dmg: actualDmg, miss: actualDmg === 0, crit });
+
+    return popupInfos;
+}
+
+
+function showDamagePopup(parentElement, amount, isMiss = false, isCritical = false) {
+    if (!parentElement) return;
+
+    const popup = document.createElement('div');
+    popup.className = 'damage-popup';
+
+    if (isMiss) {
+        if (amount === 'Counter!') {
+            popup.textContent = 'Counter!';
+            popup.style.color = '#ff00ff'; // Magenta for counter
+            popup.style.fontSize = '24px';
+        } else if (amount === 'Evade') {
+            popup.textContent = 'Evade!';
+            popup.style.color = '#00ffff'; // Cyan for evade
+            popup.style.fontSize = '24px';
+        } else {
+            popup.textContent = 'Miss';
+            popup.style.color = '#ffffff';
+        }
+    } else {
+        popup.textContent = `-${amount}`;
+        popup.style.color = isCritical ? '#ffff00' : '#ff0000'; // Yellow for critical, red for normal
+        if (isCritical) popup.style.fontSize = '28px';
+    }
+
+    // Relative positioning for accurate placement
+    popup.style.position = 'absolute';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+
+    parentElement.style.position = 'relative'; // Ensure parent can contain absolute popup
+    parentElement.appendChild(popup);
+
+    setTimeout(() => {
+        if (popup.parentNode) popup.remove();
+    }, 800);
+}
+
+function aiChooseAndExecute(actor) {
+    const alivePlayers = currentBattle.team.filter(a => a.hp > 0);
+    if (alivePlayers.length === 0) return;
+
+    let actionType = 'light';
+    let cost = 1;
+
+    const ap = actor.currentAp || 0;
+    if (ap >= 3 && Math.random() < 0.7) {
+        actionType = 'heavy';
+        cost = 3;
+    } else if (ap >= 2 && actor.hp / actor.maxHp < 0.5 && Math.random() < 0.5) {
+        actionType = 'counter';
+        cost = 2;
+    } else if (actor.hp / actor.maxHp < 0.4) {
+        actionType = 'defense';
+        cost = -1;
+    }
+
+    actor.currentAp = Math.min(5, Math.max(0, ap - cost));
+
+    const action = { type: actionType };
+    if (actionType !== 'defense' && actionType !== 'counter') {
+        action.target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+    }
+
+    addBattleLog(`${actor.name} uses ${actionType}${action.target ? ' on ' + action.target.name : ''}!`);
+    executeActorAction(actor, action);
+}
+
+function nextTurn() {
+    currentBattle.currentActorIndex++;
+    if (currentBattle.currentActorIndex >= currentBattle.combatants.length) {
+        currentBattle.protectRounds = Math.max(0, currentBattle.protectRounds - 1);
+        updateAliveCombatants();
+        if (checkBattleEnd()) return;
+
+        currentBattle.round++;
+        currentBattle.log = [];
+        addBattleLog(`--- Round ${currentBattle.round} starts ---`);
+
+        // Grant 1 AP to all alive combatants (team + enemies)
+        currentBattle.team.forEach(c => {
+            if (c.hp > 0) c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
+        });
+        currentBattle.enemies.forEach(c => {
+            if (c.hp > 0) c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
+        });
+        renderBattle(); // Force re-render to update AP bars after round gain
+        
+
+        currentBattle.currentActorIndex = 0;
+    }
+
+    let actor = currentBattle.combatants[currentBattle.currentActorIndex];
+
+    // Skip dead or stunned
+    while (actor && (actor.hp <= 0 || actor.stunnedRounds > 0)) {
+        if (actor.stunnedRounds > 0) {
+            addBattleLog(`${actor.name} is stunned and skips the turn!`);
+            actor.stunnedRounds--;
+        }
+        currentBattle.currentActorIndex++;
+        actor = currentBattle.combatants[currentBattle.currentActorIndex];
+    }
+
+    if (!actor || currentBattle.currentActorIndex >= currentBattle.combatants.length) {
+        nextTurn();
+        return;
+    }
+
+    // Clear temporary states
+    actor.activeDefense = false;
+    actor.activeCounter = false;
+    actor.activeEvadeBonus = false;
+
+    currentBattle.currentActor = actor;
+
+    if (actor.isEnemy) {
+        // Wait for player to click "Next" to execute enemy action
+        renderBattle();
+    } else {
+        currentBattle.selecting = null;
+        renderBattle();
+    }
+
+    checkBattleEnd();
+}
+
+function skipTurn() {
+    const actor = currentBattle.currentActor;
+    if (!actor) return;
+
+    if (actor.isEnemy) {
+        // Execute enemy action when "Next" is clicked
+        aiChooseAndExecute(actor);
+    } else {
+        // Skip player turn
+        addBattleLog(`${actor.name} skips their turn.`);
+        actor.currentAp = Math.min(5, (actor.currentAp || 0) + 1);
+    }
+    nextTurn();
+}
+
+function updateAliveCombatants() {
+    currentBattle.combatants = [...currentBattle.team.filter(c => c.hp > 0), ...currentBattle.enemies.filter(c => c.hp > 0)];
+    currentBattle.combatants.sort((a, b) => getEffectiveStat(b, 'dexterity') - getEffectiveStat(a, 'dexterity'));
+}
+
+function checkBattleEnd() {
+    const aliveTeam = currentBattle.team.filter(a => a.hp > 0).length;
+    const aliveEnemies = currentBattle.enemies.filter(e => e.hp > 0).length;
+
+    if (aliveTeam === 0) {
+        endBattle(false);
+        return true;
+    }
+    if (aliveEnemies === 0) {
+        endBattle(true);
+        return true;
+    }
+    return false;
 }
 
 function startRound() {
-    currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
-        const aliveAdv = currentBattle.team.filter(a => a.hp > 0);
-        if (aliveAdv.length > 0) {
-            const randTarget = aliveAdv[Math.floor(Math.random() * aliveAdv.length)];
-            e.action = { type: 'physical', target: randTarget.id };
-        }
-    });
-    currentBattle.combatants = [...currentBattle.team.filter(a => a.hp > 0), ...currentBattle.enemies.filter(e => e.hp > 0)];
-    currentBattle.combatants.sort((a, b) => getEffectiveStat(b, 'dexterity') - getEffectiveStat(a, 'dexterity'));
-    currentBattle.actionIndex = 0;
+    currentBattle.log = [];
+    currentBattle.round = 1;
     currentBattle.phase = 'executing';
-    renderBattle();
-    addBattleLog(`Round ${currentBattle.round + 1} 開始...`);
-}
+    currentBattle.protectRounds = 0;
+    currentBattle.selecting = null;
+    currentBattle.currentActorIndex = 0;
 
-function nextAction() {
-    executeAction();
-}
-
-function executeAction() {
-    while (currentBattle.actionIndex < currentBattle.combatants.length) {
-        const c = currentBattle.combatants[currentBattle.actionIndex];
-        if (c.hp <= 0) {
-            currentBattle.actionIndex++;
-            continue;
-        }
-        const isPlayer = !c.id.toString().startsWith('enemy_');
-        const act = isPlayer ? currentBattle.actions[c.id] : c.action;
-        if (!act) {
-            currentBattle.actionIndex++;
-            continue;
-        }
-        if (act.type === 'defense') {
-            c.defending = true;
-            addBattleLog(`${c.name} が防御の構えを取った！`);
-        } else {
-            let target = null;
-            let dmg = 0;
-            if (isPlayer) {
-                target = currentBattle.enemies.find(e => e.id === act.target);
-            } else {
-                target = currentBattle.team.find(a => a.id === act.target) || currentBattle.team.filter(a => a.hp > 0)[0];
-            }
-            if (!target || target.hp <= 0) {
-                currentBattle.actionIndex++;
-                continue;
-            }
-            if (act.type === 'physical') {
-                dmg = getEffectiveStat(c, 'strength') * (1 + Math.random() * 0.5);
-            } else if (act.type === 'magic') {
-                if (isPlayer) c.mp = Math.max(0, c.mp - 10);
-                dmg = getEffectiveStat(c, 'wisdom') * (1.5 + Math.random() * 0.5);
-            }
-            let finalDmg = dmg;
-            if (target.defending) {
-                finalDmg *= 0.5;
-                target.defending = false;
-            }
-            target.hp = Math.max(0, target.hp - finalDmg);
-            if (finalDmg > 0) {
-                if (act.type === 'physical') {
-                    strSound.currentTime = 0;
-                    strSound.play();
-                } else if (act.type === 'magic') {
-                    wisSound.currentTime = 0;
-                    wisSound.play();
-                }
-            }
-            const typeStr = act.type === 'physical' ? '物理攻撃' : '魔法攻撃';
-
-            // データ更新完了 → まずUIを再構築（HPバーなどが最新になる）
-            renderBattle();
-            console.log(`${c.name} の ${typeStr}！ ${target.name} に ${Math.floor(finalDmg)} ダメージ！`);
-            addBattleLog(`${c.name} の ${typeStr}！ ${target.name} に ${Math.floor(finalDmg)} ダメージ！`);            
-
-            // その後に最新のDOM要素を取得してダメージポップアップを追加
-            const targetDiv = document.getElementById(`div_${target.id}`);
-            if (targetDiv && finalDmg > 0) {
-                const isCritical = false; // 必要に応じてクリティカル判定を追加
-                showDamagePopup(targetDiv, Math.floor(finalDmg), false, isCritical);
-            }
-
-            // MP更新が必要な場合はここでも反映（renderBattle()で既に反映されているが念のため）
-            if (act.type === 'magic' && isPlayer) {
-                const mpPct = (c.mp / c.maxMp) * 100;
-                const mpEl = document.getElementById(`mp_${c.id}`);
-                if (mpEl) mpEl.innerHTML = `MP: <div class="progress-bar"><div class="progress-fill mp-fill" style="width:${mpPct}%"></div></div> ${Math.floor(c.mp)}/${c.maxMp}`;
-            }
-        }
-        currentBattle.actionIndex++;
-
-        const aliveAdv = currentBattle.team.filter(a => a.hp > 0).length;
-        const aliveEn = currentBattle.enemies.filter(e => e.hp > 0).length;
-        if (aliveAdv === 0) {
-            endBattle(false);
-            return;
-        }
-        if (aliveEn === 0) {
-            endBattle(true);
-            return;
-        }
-
-        // renderBattle() はダメージ適用直後に既に呼んでいるので、ここでは呼ばない（二重レンダリング防止）
-        // 次の行動へ進む準備が整った状態で返す
-        return;
-    }
-    endRound();
-}
-function endRound() {
     currentBattle.team.forEach(a => {
-        a.defending = false;
-        delete currentBattle.actions[a.id];
+        a.currentAp = 2;
+        a.critChance = a.critChance || 0;
+        a.activeDefense = false;
+        a.activeCounter = false;
+        a.activeEvadeBonus = false;
+        a.stunnedRounds = 0;
     });
     currentBattle.enemies.forEach(e => {
-        e.defending = false;
-        delete e.action;
+        e.currentAp = 2;
+        e.critChance = 0;
+        e.activeDefense = false;
+        e.activeCounter = false;
+        e.activeEvadeBonus = false;
+        e.stunnedRounds = 0;
+        e.isEnemy = true;
     });
-    currentBattle.round++;
-    currentBattle.phase = 'setup';
-    renderBattle();
-}
 
-function closeBattle() {
-    endBattle(false);
+    updateAliveCombatants();
+
+    addBattleLog('Defense battle begins!');
+
+    currentBattle.currentActorIndex = -1;
+    nextTurn();
 }
 
 function endBattle(win) {
     document.getElementById('battleModal').style.display = 'none';
+    crossfadeTo('bgm', 2000);
+
     const q = currentBattle.quest;
     const day = currentBattle.day;
+
     currentBattle.team.forEach(battleAdv => {
         const origAdv = findAdv(battleAdv.id);
         if (origAdv) {
             origAdv.hp = battleAdv.hp;
-            origAdv.mp = battleAdv.mp;
             if (battleAdv.hp <= 0) {
                 gameState.reputation = Math.max(-100, gameState.reputation - 10);
-                gameState.eventHistory.unshift({day: day, message: `${battleAdv.name} が防衛戦で死亡！ 評判 -10。`});
+                gameState.eventHistory.unshift({ day: day, message: `${battleAdv.name} died in defense battle! Reputation -10.` });
                 const idx = gameState.adventurers.findIndex(a => a.id === battleAdv.id);
                 if (idx > -1) gameState.adventurers.splice(idx, 1);
             }
         }
     });
+
     if (win) {
         let teamLUC = currentBattle.team.reduce((sum, a) => sum + getEffectiveStat(a, 'luck'), 0);
-        q.reward = Math.floor(teamLUC * (Math.floor(gameState.reputation) + 1) * 0.5);
+        q.reward = Math.floor(teamLUC * (Math.floor(gameState.reputation) + 100) * 0.5);
         processQuestOutcome(q, day, true, false, q.reward);
-        crossfadeTo('bgm', 2000);
     } else {
-        gameState.eventHistory.unshift({day: day, message: '防衛戦で全滅！ギルドは陥落しました。ゲームオーバー！'});
+        gameState.eventHistory.unshift({ day: day, message: 'Defense failed! Guild falls. Game Over!' });
         gameState.gameOver = true;
     }
+
     currentBattle = null;
     showModal(day);
 }
 
-
+function addBattleLog(text) {
+    currentBattle.log = currentBattle.log || [];
+    currentBattle.log.push(text);
+    if (currentBattle.log.length > 30) currentBattle.log.shift();
+}
 
 
 function getFacilitiesContent() {
@@ -5626,7 +6140,7 @@ function renderCurrentCharacter() {
 
     // 右側：画像（大きめ表示）
     html += `<div style="flex:0 0 auto; text-align:center;">`;
-    html += `<img src="${adv.image}" 
+    html += `<img src="Images/${adv.image}" 
                  style="width:220px; height:auto; max-height:400px; object-fit:contain; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2);"
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjIwIDQwMCI+PHJlY3Qgd2lkdGg9IjIyMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSIxMTAiIHk9IjIwMCIgZm9udC1zaXplPSIzMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuOCpuODiOOBpzwvdGV4dD48L3N2Zz4=';">`;
     html += `</div>`;
@@ -5729,23 +6243,23 @@ function renderQuests() {
         if (a) {
             const nameHtml = getNameHtml(a);
             if (q.inProgress) {
-                assignedHtml += `<span class="assigned-adventurer"><img src="${a.image}" class="adventurer-img">${nameHtml}</span>`;
+                assignedHtml += `<span class="assigned-adventurer"><img src="Images/${a.image}" class="adventurer-img">${nameHtml}</span>`;
             } else {
-                assignedHtml += `<span class="assigned-adventurer"><img src="${a.image}" class="adventurer-img">${nameHtml} <button class="cancel-btn" onclick="unassign(${q.id}, ${id})">X</button></span>`;
+                assignedHtml += `<span class="assigned-adventurer"><img src="Images/${a.image}" class="adventurer-img">${nameHtml} <button class="cancel-btn" onclick="unassign(${q.id}, ${id})">X</button></span>`;
             }
         }
     });
 
     // 必要ステータスHTML（アイコン付き）
-    const minHtml = `<img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength || 0} | 
-                     <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom || 0} | 
-                     <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity || 0} | 
-                     <img src="LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck || 0}`;
+    const minHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength || 0} | 
+                     <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom || 0} | 
+                     <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity || 0} | 
+                     <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck || 0}`;
 
-    const teamHtml = `<img src="STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | 
-                      <img src="WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | 
-                      <img src="DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | 
-                      <img src="LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
+    const teamHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | 
+                      <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | 
+                      <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | 
+                      <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
 
     // メインHTML構築
     let html = `
@@ -6414,14 +6928,13 @@ function playNextDialogue() {
             let imageSrc = 'Images/main_char.png'; 
             if (current.speaker === '冒険者') {
                 const images = [
-                    'STR_M.png',
-                    'STR_F.png',
-
-                    'WIS_F.png',
-                    'DEX_M.png',
-                    'DEX_F.png',
-                    'LUC_M.png',
-                    'LUC_F.png'
+                    'Images/STR_M.png',
+                    'Images/STR_F.png',
+                    'Images/WIS_F.png',
+                    'Images/DEX_M.png',
+                    'Images/DEX_F.png',
+                    'Images/LUC_M.png',
+                    'Images/LUC_F.png'
                 ];
                 
                 const randomIndex = Math.floor(Math.random() * images.length);

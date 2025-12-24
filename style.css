@@ -734,6 +734,8 @@ h1, h3, button, .adventurer-card, .quest-card {
     overflow-y: auto;
 }
 #battleModal .modal-content { max-width: 1400px; max-height: 90vh; }
+
+
 .modal-buttons {
     text-align: center;
     margin-top: 10px;
@@ -822,6 +824,8 @@ h1, h3, button, .adventurer-card, .quest-card {
     font-size: 0.85em;
 }
 #battleLog {
+    display: none;                   /* Completely hide the battle log */
+    /* All other styles are kept but ineffective when display: none */
     max-height: 250px;
     overflow-y: auto;
     background: #fafafa;
@@ -853,6 +857,7 @@ h1, h3, button, .adventurer-card, .quest-card {
     pointer-events: none;
     z-index: 1001;
     animation: damageFade 0.8s ease-out forwards;
+    background: transparent; /* 明示的に背景を透明化（デフォルトでも透明だが、親要素の影響を防ぐために追加） */
 }
 @keyframes damageFade {
     0% {
@@ -1098,4 +1103,223 @@ h1, h3, button, .adventurer-card, .quest-card {
     background-color: #7b7b7b;
     box-shadow: 0 0 35px #737373;
     transform: scale(1.05);
+}
+
+
+/* Skill Grid - Horizontal Row of Square Icons */
+.skill-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    flex-wrap: wrap; /* Wrap if too many for screen */
+    padding: 10px 0;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+}
+
+.skill-btn {
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    background: #222;
+    border: 4px solid #ffd700;
+    border-radius: 15px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.skill-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    border-color: #fff;
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6);
+}
+
+.skill-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #666;
+}
+
+.skill-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Enhanced Tooltip on Hover */
+.skill-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffd700;
+    padding: 10px 15px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-size: 1em;
+    font-weight: bold;
+    z-index: 20;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+.skill-btn[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    z-index: 20;
+}
+
+.team-member {
+    position: relative; /* Enable absolute positioning for children */
+}
+
+.adventurer-card {
+    position: relative; /* Also relative for safety */
+}
+
+.actions {
+    position: absolute;
+    top: 0px;                  /* Distance from top of card */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: auto;       /* Ensure buttons are clickable */
+    background: rgba(0, 0, 0, 0.6); /* Optional: semi-transparent background */
+    padding: 10px 20px;
+    border-radius: 15px;
+}
+
+/* Light Glow Effect for Selectable Targets */
+.selectable-target {
+    position: relative;
+    cursor: pointer;
+    animation: targetGlow 1.5s ease-in-out infinite;
+    z-index: 5;
+}
+
+.selectable-target::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 4px solid rgba(255, 255, 100, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(255, 255, 100, 0.8), inset 0 0 15px rgba(255, 255, 100, 0.4);
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes targetGlow {
+    0% {
+        box-shadow: 0 0 20px rgba(255, 255, 100, 0.8), inset 0 0 15px rgba(255, 255, 100, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 255, 100, 1), inset 0 0 30px rgba(255, 255, 100, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(255, 255, 100, 0.8), inset 0 0 15px rgba(255, 255, 100, 0.4);
+    }
+}
+
+/* Optional: Hover intensification */
+.selectable-target:hover::before {
+    box-shadow: 0 0 50px rgba(255, 255, 200, 1), inset 0 0 40px rgba(255, 255, 200, 0.8);
+}
+
+
+/* Current Actor Highlight - Strong Golden Glow */
+.current-actor {
+    position: relative;
+    animation: currentActorPulse 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+.current-actor::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border: 6px solid rgba(255, 215, 0, 0.9);
+    border-radius: 25px;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 20px rgba(255, 215, 0, 0.5);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.current-actor .adventurer-card {
+    border: 4px solid gold;
+    box-shadow: 0 0 25px gold;
+}
+
+@keyframes currentActorPulse {
+    0% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 60px rgba(255, 215, 0, 1.2), inset 0 0 40px rgba(255, 215, 0, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 1), inset 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+}
+
+/* Optional: Make the card background slightly brighter */
+.current-actor .adventurer-card {
+    background: linear-gradient(to bottom, rgba(255, 215, 0, 0.1), #222);
+}
+
+/* Current Enemy Highlight - Strong Red Glow (to distinguish from player's gold) */
+.current-enemy {
+    position: relative;
+    animation: currentEnemyPulse 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+.current-enemy::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border: 6px solid rgba(255, 50, 50, 0.9);
+    border-radius: 25px;
+    box-shadow: 0 0 30px rgba(255, 50, 50, 1), inset 0 0 20px rgba(255, 50, 50, 0.5);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.current-enemy .battle-enemy {
+    border: 4px solid #ff3232;
+    box-shadow: 0 0 25px #ff3232;
+}
+
+@keyframes currentEnemyPulse {
+    0% {
+        box-shadow: 0 0 30px rgba(255, 50, 50, 1), inset 0 0 20px rgba(255, 50, 50, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 60px rgba(255, 50, 50, 1.2), inset 0 0 40px rgba(255, 50, 50, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(255, 50, 50, 1), inset 0 0 20px rgba(255, 50, 50, 0.5);
+    }
+}
+
+/* Optional: Darker background tint for enemy card */
+.current-enemy .battle-enemy {
+    background: linear-gradient(to bottom, rgba(255, 50, 50, 0.1), #222);
 }
