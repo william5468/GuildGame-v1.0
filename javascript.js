@@ -23,6 +23,7 @@ const assetsToLoad = [
     "Images/Assassin(M)_enemy.png",
     "Images/Hunter(F)_enemy.png",
     "Images/Hunter(M)_enemy.png",
+    
 
     // === 新規追加：アクションアイコン ===
     "Images/STR_lightattack_icon.jpg",
@@ -36,6 +37,8 @@ const assetsToLoad = [
     "Images/STR_protection_icon.jpg",
     "Images/Defense_icon.jpg",
     // =====================================
+    //skill effect spritesheet
+    "Images/slash_effects.png",
 
     // Audio folder (all audio)
     "Audio/bgm.mp3",
@@ -1735,7 +1738,7 @@ const maleNames = [
     'ミナト', 'レン', 'アオト', 'リク', 'ソウタ',
     'ユイト', 'ハヤト', 'ショウタ', 'コウタ', 'タクミ',
     'ヒロト', 'レオ', 'イオリ', 'アサヒ', 'ヤマト',
-    'エイジ', 'トア', 'カイト' /* 使わないので削除 */, 'ユウマ',
+    'エイジ', 'トア', 'ユウマ',
     'ラン', 'ジン', 'シン', 'トウヤ', 'ケント',
     'ハルキ', 'ソウスケ', 'リョウタ', 'ナツメ', 'コウキ',
     'タイガ', 'リュウセイ', 'カケル', 'テツヤ', 'マヒロ'
@@ -2197,7 +2200,40 @@ function addToInventory(template, qty = 1) {
 
 
 
+function showSlashEffect(targetDiv, rowIndex = 2, numFrames = 11, numRows = 9, frameMs = 55, size = '280px') {
+    if (!targetDiv) return;
 
+    const effect = document.createElement('div');
+    effect.style.position = 'absolute';
+    effect.style.top = '50%';
+    effect.style.left = '50%';
+    effect.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+    effect.style.width = size;
+    effect.style.height = size;
+    effect.style.backgroundImage = 'url("Images/slash_effects.png")';
+    effect.style.backgroundRepeat = 'no-repeat';
+    effect.style.backgroundSize = `${numFrames * 100}% ${numRows * 100}%`;
+    effect.style.pointerEvents = 'none';
+    effect.style.zIndex = '20';
+    effect.style.opacity = '0.95';
+
+    // Ensure parent has relative positioning
+    if (targetDiv.style.position !== 'absolute' && targetDiv.style.position !== 'relative') {
+        targetDiv.style.position = 'relative';
+    }
+
+    targetDiv.appendChild(effect);
+
+    let frame = 0;
+    const interval = setInterval(() => {
+        effect.style.backgroundPosition = `-${frame * 100}% -${rowIndex * 100}%`;
+        frame++;
+        if (frame >= numFrames) {
+            clearInterval(interval);
+            effect.remove();
+        }
+    }, frameMs);
+}
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
@@ -2223,7 +2259,7 @@ function addBattleLog(msg) {
 
 function showDamagePopup(parentElement, amount, isHeal = false, isCritical = false) {
     if (!parentElement) return;
-    console.log(parentElement)
+
     const popup = document.createElement('div');
     popup.className = 'damage-popup';
     popup.textContent = `-${amount}`;
@@ -2231,7 +2267,7 @@ function showDamagePopup(parentElement, amount, isHeal = false, isCritical = fal
 
 
     parentElement.appendChild(popup);
-    console.log(parentElement)
+
     setTimeout(() => {
         if (popup.parentNode) popup.remove();
     }, 800);
@@ -3840,7 +3876,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 1 && Math.random() < 0.5 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -4034,8 +4070,6 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         }
         if (q.type === 1) {
             const discChance = 1;
-            console.log("This is type 1 quest")
-            console.log(q.npcIdx)
             if (Math.random() < discChance && q.npcIdx !== null && !gameState.discoveredNPCs.includes(q.npcIdx)) {
                 gameState.discoveredNPCs.push(q.npcIdx);
                 const npcName = discoveryNPCs[q.npcIdx];
@@ -4321,7 +4355,7 @@ function playDay(){
 
 function renderBattle() {
     if (!currentBattle) return;
-
+    console.log("in renderBattle, after !currentBattle return");
     // Initialize defaults if missing
     if (!currentBattle.log) currentBattle.log = [];
     if (!currentBattle.round) currentBattle.round = 1;
@@ -4335,8 +4369,10 @@ function renderBattle() {
     if (currentBattle.phase === 'setup') {
         topHtml += '<button onclick="startRound()">ラウンド開始</button>';
     } else if (currentBattle.currentActor) {
+        console.log("add button stage");
         const buttonText = currentBattle.currentActor.isEnemy ? '次へ' : '行動をスキップ';
         topHtml += `<button onclick="skipTurn()">${buttonText}</button>`;
+        console.log("button added successfully for: "+currentBattle.currentActor.name);
     }
     topHtml += '</div>';
 
@@ -4493,22 +4529,57 @@ function chooseAction(actionType) {
 }
 
 function selectTarget(targetId) {
-    if (!currentBattle.selecting) return;
-
-    const actor = currentBattle.currentActor;
-    const actionType = currentBattle.selecting.action;
-    let target = null;
-
-    if (currentBattle.selecting.mode === 'enemy') {
-        target = currentBattle.enemies.find(e => e.id === targetId && e.hp > 0);
-    } else if (currentBattle.selecting.mode === 'ally') {
-        target = currentBattle.team.find(a => a.id === targetId && a.hp > 0);
+    // Store currentBattle locally to avoid mid-function changes
+    const battle = currentBattle;
+    
+    // Check if battle and selecting exist
+    if (!battle || !battle.selecting) {
+        console.warn(`selectTarget: Aborted - battle=${battle}, selecting=${battle?.selecting}`);
+        return;
     }
 
-    if (!target) return;
+    const actor = battle.currentActor;
+    const actionType = battle.selecting.action;
+    let target = null;
 
-    executeActorAction(actor, { type: actionType, target: target });
-    currentBattle.selecting = null;
+    // Find target based on mode
+    if (battle.selecting.mode === 'enemy') {
+        target = battle.enemies.find(e => e.id === targetId && e.hp > 0);
+    } else if (battle.selecting.mode === 'ally') {
+        target = battle.team.find(a => a.id === targetId && a.hp > 0);
+    }
+
+    if (!target) {
+        console.warn(`selectTarget: No valid target found for targetId=${targetId}`);
+        // Clear selecting to allow next turn
+        battle.selecting = null;
+        // Trigger render to update UI
+        renderBattle();
+        return;
+    }
+
+    try {
+        // Execute action
+        executeActorAction(actor, { type: actionType, target: target });
+
+        // Only clear selecting if battle still exists and hasn't been reset
+        if (currentBattle === battle && battle.selecting) {
+            battle.selecting = null;
+        } else {
+            console.warn(`selectTarget: Battle state changed during execution (currentBattle=${currentBattle})`);
+        }
+    } catch (error) {
+        console.error(`selectTarget: Error in executeActorAction - ${error.message}`, error);
+        // Clear selecting to prevent lockup
+        if (currentBattle === battle && battle.selecting) {
+            battle.selecting = null;
+        }
+        // Trigger render to recover UI
+        renderBattle();
+    }
+
+    // Update UI after action
+    renderBattle();
 }
 
 function executeActorAction(actor, action) {
@@ -4523,7 +4594,7 @@ function executeActorAction(actor, action) {
     actor.currentAp = Math.min(5, Math.max(0, actor.currentAp));
 
     let log = `${actor.name} uses ${action.type.replace('_', ' ')}`;
-
+    console.log(log);
     // Collect all popup infos from this action
     const popupInfos = [];
 
@@ -4554,7 +4625,7 @@ function executeActorAction(actor, action) {
         }
 
     })()
-    console.log(sex)
+
     // Play sound based on action and gender/type
     let soundToPlay = null;
 
@@ -4775,11 +4846,11 @@ function showDamagePopup(parentElement, amount, isMiss = false, isCritical = fal
         if (amount === 'Counter!') {
             popup.textContent = 'Counter!';
             popup.style.color = '#ff00ff'; // Magenta for counter
-            popup.style.fontSize = '24px';
+            popup.style.fontSize = '40px';
         } else if (amount === 'Evade') {
             popup.textContent = 'Evade!';
             popup.style.color = '#00ffff'; // Cyan for evade
-            popup.style.fontSize = '24px';
+            popup.style.fontSize = '40px';
         } else {
             popup.textContent = 'Miss';
             popup.style.color = '#ffffff';
@@ -4787,12 +4858,12 @@ function showDamagePopup(parentElement, amount, isMiss = false, isCritical = fal
     } else {
         popup.textContent = `-${amount}`;
         popup.style.color = isCritical ? '#ffff00' : '#ff0000'; // Yellow for critical, red for normal
-        if (isCritical) popup.style.fontSize = '28px';
+        if (isCritical) popup.style.fontSize = '80px';
     }
 
     // Relative positioning for accurate placement
     popup.style.position = 'absolute';
-    popup.style.top = '50%';
+    popup.style.top = '0%';
     popup.style.left = '50%';
     popup.style.transform = 'translate(-50%, -50%)';
 
@@ -4834,48 +4905,118 @@ function aiChooseAndExecute(actor) {
     executeActorAction(actor, action);
 }
 
+function roundStartPopup() {
+    // Create a full-screen overlay popup that is not affected by renderBattle() overwriting battleContent
+    const popup = document.createElement('div');
+    
+    popup.textContent = `ROUND ${currentBattle.round}`;
+    
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.fontSize = '80px';
+    popup.style.fontWeight = 'bold';
+    popup.style.color = '#ffd700'; // Gold for festive/important feel
+    popup.style.textShadow = '0 0 15px #000000, 0 0 30px #ffff00';
+    popup.style.zIndex = '1000';
+    popup.style.pointerEvents = 'none';
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+    
+    document.body.appendChild(popup);
+    
+    // Fade in + slight scale up
+    setTimeout(() => {
+        popup.style.opacity = '1';
+        popup.style.transform = 'translate(-50%, -50%) scale(1.2)';
+    }, 100);
+    
+    // Fade out + scale up more then remove
+    setTimeout(() => {
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    }, 1000);
+    
+    setTimeout(() => {
+        if (popup.parentNode) {
+            popup.remove();
+        }
+    }, 1500);
+}
+
 function nextTurn() {
+    console.log("nextTurn triggered");
+
+    // Increment and handle round wrap
     currentBattle.currentActorIndex++;
+
     if (currentBattle.currentActorIndex >= currentBattle.combatants.length) {
         currentBattle.protectRounds = Math.max(0, currentBattle.protectRounds - 1);
         updateAliveCombatants();
+
         if (checkBattleEnd()) return;
 
         currentBattle.round++;
         currentBattle.log = [];
         addBattleLog(`--- Round ${currentBattle.round} starts ---`);
-
-        // Grant 1 AP to all alive combatants (team + enemies)
-        currentBattle.team.forEach(c => {
-            if (c.hp > 0) c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
+        roundStartPopup();  // <-- Add this line here
+        // Grant 1 AP to all alive combatants
+        currentBattle.team.filter(c => c.hp > 0).forEach(c => {
+            c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
         });
-        currentBattle.enemies.forEach(c => {
-            if (c.hp > 0) c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
+        currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
+            e.currentAp = Math.min(5, (e.currentAp || 0) + 1);
         });
-        renderBattle(); // Force re-render to update AP bars after round gain
-        
 
         currentBattle.currentActorIndex = 0;
     }
 
+    // Get the candidate actor
     let actor = currentBattle.combatants[currentBattle.currentActorIndex];
 
-    // Skip dead or stunned
+    // Skip invalid actors (dead or stunned), with early round advance if needed
     while (actor && (actor.hp <= 0 || actor.stunnedRounds > 0)) {
         if (actor.stunnedRounds > 0) {
             addBattleLog(`${actor.name} is stunned and skips the turn!`);
             actor.stunnedRounds--;
-        }
+        } // dead are skipped silently
+
         currentBattle.currentActorIndex++;
+
+        if (currentBattle.currentActorIndex >= currentBattle.combatants.length) {
+            // All remaining actors this round were invalid → advance round early
+            currentBattle.protectRounds = Math.max(0, currentBattle.protectRounds - 1);
+            updateAliveCombatants();
+
+            if (checkBattleEnd()) return;
+
+            currentBattle.round++;
+            currentBattle.log = [];
+            addBattleLog(`--- Round ${currentBattle.round} starts ---`);
+
+            currentBattle.team.filter(c => c.hp > 0).forEach(c => {
+                c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
+            });
+            currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
+                e.currentAp = Math.min(5, (e.currentAp || 0) + 1);
+            });
+
+            currentBattle.currentActorIndex = 0;
+            renderBattle();
+        }
+
         actor = currentBattle.combatants[currentBattle.currentActorIndex];
     }
 
-    if (!actor || currentBattle.currentActorIndex >= currentBattle.combatants.length) {
-        nextTurn();
+    // At this point, actor should always be valid (alive and not stunned)
+    // If somehow not (e.g., no combatants left), end battle
+    if (!actor) {
+        checkBattleEnd();
         return;
     }
 
-    // Clear temporary states
+    // Clear temporary buffs/debuffs
     actor.activeDefense = false;
     actor.activeCounter = false;
     actor.activeEvadeBonus = false;
@@ -4883,11 +5024,10 @@ function nextTurn() {
     currentBattle.currentActor = actor;
 
     if (actor.isEnemy) {
-        // Wait for player to click "Next" to execute enemy action
-        renderBattle();
+        renderBattle(); // Shows "次へ" button
     } else {
         currentBattle.selecting = null;
-        renderBattle();
+        renderBattle(); // Shows action buttons
     }
 
     checkBattleEnd();
@@ -4900,17 +5040,20 @@ function skipTurn() {
     if (actor.isEnemy) {
         // Execute enemy action when "Next" is clicked
         aiChooseAndExecute(actor);
+
     } else {
         // Skip player turn
         addBattleLog(`${actor.name} skips their turn.`);
         actor.currentAp = Math.min(5, (actor.currentAp || 0) + 1);
+        nextTurn();
     }
-    nextTurn();
+    
 }
 
 function updateAliveCombatants() {
     currentBattle.combatants = [...currentBattle.team.filter(c => c.hp > 0), ...currentBattle.enemies.filter(c => c.hp > 0)];
     currentBattle.combatants.sort((a, b) => getEffectiveStat(b, 'dexterity') - getEffectiveStat(a, 'dexterity'));
+    console.log(currentBattle.combatants)
 }
 
 function checkBattleEnd() {
@@ -4934,7 +5077,6 @@ function startRound() {
     currentBattle.phase = 'executing';
     currentBattle.protectRounds = 0;
     currentBattle.selecting = null;
-    currentBattle.currentActorIndex = 0;
 
     currentBattle.team.forEach(a => {
         a.currentAp = 2;
