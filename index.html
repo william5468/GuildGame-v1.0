@@ -15,6 +15,8 @@
             <p id="loadProgress">0%</p>
         </div>
         <button id="readyBtn" style="display:none;" onclick="startGame()">OK</button>
+        <br>
+        <button id="skipIntroBtn" style="display:none;" onclick="skipIntro()">Start from previous</button>
     </div>
     <h2>ギルドマスター v1.0</h2>
 <!-- メインBGM -->
@@ -141,7 +143,7 @@
     </div>
     <div id="battleModal">
         <div class="modal-content">
-            <h2 id="battleTitle">防衛戦</h2>
+            <h3 id="battleTitle">防衛戦</h3>
             <div id="battleContent"></div>
             <div class="modal-buttons">
                 <button onclick="closeBattle()">閉じる</button>
@@ -164,7 +166,6 @@
                 <button onclick="closeGuildQuests()">閉じる</button>
             </div>            
             <div id="guildQuestsContent"></div>
-
         </div>
     </div>
     <script src="javascript.js"></script>

@@ -1,6 +1,6 @@
 /* === ローディング画面用プリロード機能 === */
 let loadedCount = 0;
-
+let currentGuildQuestType = 'main';
 const assetsToLoad = [
     // Images folder (all images)
     "Images/Guild_bg.jpg",
@@ -75,6 +75,8 @@ function updateProgress() {
         document.querySelector('.loader').style.display = 'none';
         const readyBtn = document.getElementById('readyBtn');
         if (readyBtn) readyBtn.style.display = 'block';
+        const skipIntroBtn = document.getElementById('skipIntroBtn');
+        if (skipIntroBtn) skipIntroBtn.style.display = 'block';
     }
 }
 
@@ -113,6 +115,13 @@ function preloadAssets() {
 function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
+}
+
+function skipIntro(){
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+    document.getElementById('introModal').style.display = 'none';
+
 }
 
 /* ページ読み込み後すぐにプリロード開始 */
@@ -2200,40 +2209,7 @@ function addToInventory(template, qty = 1) {
 
 
 
-function showSlashEffect(targetDiv, rowIndex = 2, numFrames = 11, numRows = 9, frameMs = 55, size = '280px') {
-    if (!targetDiv) return;
 
-    const effect = document.createElement('div');
-    effect.style.position = 'absolute';
-    effect.style.top = '50%';
-    effect.style.left = '50%';
-    effect.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
-    effect.style.width = size;
-    effect.style.height = size;
-    effect.style.backgroundImage = 'url("Images/slash_effects.png")';
-    effect.style.backgroundRepeat = 'no-repeat';
-    effect.style.backgroundSize = `${numFrames * 100}% ${numRows * 100}%`;
-    effect.style.pointerEvents = 'none';
-    effect.style.zIndex = '20';
-    effect.style.opacity = '0.95';
-
-    // Ensure parent has relative positioning
-    if (targetDiv.style.position !== 'absolute' && targetDiv.style.position !== 'relative') {
-        targetDiv.style.position = 'relative';
-    }
-
-    targetDiv.appendChild(effect);
-
-    let frame = 0;
-    const interval = setInterval(() => {
-        effect.style.backgroundPosition = `-${frame * 100}% -${rowIndex * 100}%`;
-        frame++;
-        if (frame >= numFrames) {
-            clearInterval(interval);
-            effect.remove();
-        }
-    }, frameMs);
-}
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
@@ -2257,21 +2233,7 @@ function addBattleLog(msg) {
     }
 }
 
-function showDamagePopup(parentElement, amount, isHeal = false, isCritical = false) {
-    if (!parentElement) return;
 
-    const popup = document.createElement('div');
-    popup.className = 'damage-popup';
-    popup.textContent = `-${amount}`;
-
-
-
-    parentElement.appendChild(popup);
-
-    setTimeout(() => {
-        if (popup.parentNode) popup.remove();
-    }, 800);
-}
 
 function corrupt() {
     if (gameState.reputation < 10) {
@@ -3829,7 +3791,7 @@ function updateDisplays(){
 
     const guildQuestsModal = document.getElementById('guildQuestsModal');
     if (guildQuestsModal && guildQuestsModal.style.display === 'flex') {
-        getGuildQuestsContent();
+        showMainSelection();
     }
 }
 
@@ -3876,7 +3838,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 1 && Math.random() < 0.5 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.1 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -4355,7 +4317,6 @@ function playDay(){
 
 function renderBattle() {
     if (!currentBattle) return;
-    console.log("in renderBattle, after !currentBattle return");
     // Initialize defaults if missing
     if (!currentBattle.log) currentBattle.log = [];
     if (!currentBattle.round) currentBattle.round = 1;
@@ -4369,10 +4330,8 @@ function renderBattle() {
     if (currentBattle.phase === 'setup') {
         topHtml += '<button onclick="startRound()">ラウンド開始</button>';
     } else if (currentBattle.currentActor) {
-        console.log("add button stage");
         const buttonText = currentBattle.currentActor.isEnemy ? '次へ' : '行動をスキップ';
         topHtml += `<button onclick="skipTurn()">${buttonText}</button>`;
-        console.log("button added successfully for: "+currentBattle.currentActor.name);
     }
     topHtml += '</div>';
 
@@ -4408,26 +4367,19 @@ function renderBattle() {
             actionHtml = getActionButtonsHtml(adv);
         }
         teamHtml += `
-        <div class="actions">${actionHtml}</div> 
-        <div class="team-member ${highlightClass} ${selectableClass}" id="div_${adv.id}" data-id="${adv.id}" ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''}>
-                 
-                <div class="adventurer-card">
-                    <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">
-                    ${getNameHtml(adv)}
-                    <br>
-                    <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
-                    HP ${Math.floor(adv.hp)}/${adv.maxHp}
-                    <br>
-                    <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
-                    AP ${adv.currentAp || 0}/5
-                    <br>Crit Chance: ${adv.critChance || 0}%
-                </div>
-                  
+            <div class="battle-ally ${selectableClass} ${highlightClass}" id="div_${adv.id}" data-id="${adv.id}" ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''}>
+                <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">
+                ${getNameHtml(adv)}
+                <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
+                HP ${Math.floor(adv.hp)}/${adv.maxHp}
+                <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
+                AP ${adv.currentAp || 0}/5
+                Crit Chance: ${adv.critChance || 0}%
+                ${actionHtml ? `<div class="ally-actions">${actionHtml}</div>` : ''}
             </div>
         `;
     });
     teamHtml += '</div></div>';
-
 
     document.getElementById('battleContent').innerHTML = topHtml + enemiesHtml + teamHtml;
 }
@@ -4529,6 +4481,9 @@ function chooseAction(actionType) {
 }
 
 function selectTarget(targetId) {
+    // Do NOT force parseInt - enemy IDs are strings like "enemy_22_0"
+    // Use loose equality (==) in find() to match both string and number IDs safely
+
     // Store currentBattle locally to avoid mid-function changes
     const battle = currentBattle;
     
@@ -4542,11 +4497,11 @@ function selectTarget(targetId) {
     const actionType = battle.selecting.action;
     let target = null;
 
-    // Find target based on mode
+    // Find target based on mode - use loose equality (==) to handle string/number mismatch
     if (battle.selecting.mode === 'enemy') {
-        target = battle.enemies.find(e => e.id === targetId && e.hp > 0);
+        target = battle.enemies.find(e => e.id == targetId && e.hp > 0);
     } else if (battle.selecting.mode === 'ally') {
-        target = battle.team.find(a => a.id === targetId && a.hp > 0);
+        target = battle.team.find(a => a.id == targetId && a.hp > 0);
     }
 
     if (!target) {
@@ -4730,10 +4685,7 @@ function executeActorAction(actor, action) {
 
     addBattleLog(log);
 
-    // Re-render the UI to update HP/AP/status
-    renderBattle();
-
-    // Add all collected damage popups AFTER the re-render
+    // Add all collected damage popups (use setTimeout 0 to queue after current renders)
     setTimeout(() => {
         popupInfos.forEach(info => {
             const div = document.getElementById(`div_${info.targetId}`);
@@ -4743,8 +4695,15 @@ function executeActorAction(actor, action) {
         });
     }, 0);
 
-    nextTurn();
+    // Delay turn advance only if there were popups (to let animation finish)
+    // 900ms = 800ms popup duration + small buffer
+    const delay = popupInfos.length > 0 ? 900 : 0;
+
+    setTimeout(() => {
+        nextTurn();
+    }, delay);
 }
+
 
 // New helper function: calculates damage, applies it, and returns popup info
 function calculateAndApplyDamage(attacker, target, opts) {
@@ -4809,13 +4768,13 @@ function calculateAndApplyDamage(attacker, target, opts) {
     // 防御・プロテクトによる軽減
     if (target.activeDefense) {
         dmg *= 0.75;
-        addBattleLog(`${target.name}'s defense reduces the damage!`);
+        console.log(`${target.name}'s defense reduces the damage!`);
         strProtectSound.currentTime = 0;
         strProtectSound.play().catch(e => console.log('Audio play error:', e));
     }
-    if (!attacker.isEnemy && currentBattle.protectRounds > 0) {
+    if (attacker.isEnemy && currentBattle.protectRounds > 0) {
         dmg *= 0.5;
-        addBattleLog('Protect reduces the damage!');
+        console.log('Protect reduces the damage!');
         strProtectSound.currentTime = 0;
         strProtectSound.play().catch(e => console.log('Audio play error:', e));
     }
@@ -4872,7 +4831,7 @@ function showDamagePopup(parentElement, amount, isMiss = false, isCritical = fal
 
     setTimeout(() => {
         if (popup.parentNode) popup.remove();
-    }, 800);
+    }, 600);
 }
 
 function aiChooseAndExecute(actor) {
@@ -4946,7 +4905,6 @@ function roundStartPopup() {
 }
 
 function nextTurn() {
-    console.log("nextTurn triggered");
 
     // Increment and handle round wrap
     currentBattle.currentActorIndex++;
@@ -5240,64 +5198,104 @@ function produce(fac, rid) {
 
 function toggleGuildQuests() {
     document.getElementById('guildQuestsModal').style.display = 'flex';
-    getGuildQuestsContent();
+    showMainSelection();
 }
 
 function closeGuildQuests() {
     document.getElementById('guildQuestsModal').style.display = 'none';
 }
 
-function getGuildQuestsContent() {
-    let html = `<select id="gqType" onchange="updateGQFields()">
-        <option value="main">メインクエスト</option>
-        <option value="dungeon">ダンジョンクエスト</option>
-        <option value="trade">トレードクエスト</option>
-    </select><div id="gqFields"></div><button onclick="postGuildQuest()">投稿</button>`;
-    document.getElementById('guildQuestsContent').innerHTML = html;
-    updateGQFields();
+
+
+function showMainSelection() {
+    currentGuildQuestType = 'main';
+    const content = document.getElementById('guildQuestsContent');
+    content.style.backgroundImage = "url('Images/GuildQuest_Background.jpg')";
+    content.innerHTML = `
+        <div class="quest-type-selection">
+            <button class="quest-type-btn" onclick="showStoryQuest()">ストーリークエスト（メイン）</button>
+            <button class="quest-type-btn" onclick="showDungeonQuest()">ダンジョンクエスト</button>
+            <button class="quest-type-btn" onclick="showTradeQuest()">トレードクエスト</button>
+        </div>
+    `;
 }
 
-function updateGQFields() {
-    let type = document.getElementById('gqType').value;
-    let html = '';
-    if (type === 'main') {
-        if (gameState.mainProgress >= mainQuests.length) {
-            html = '<p><strong>すべてのメインクエストを完了しました！</strong><br>深淵の王ヴォルガスは倒され、世界に平和が戻った。おめでとう！</p>';
-        } else {
-            let mq = mainQuests[gameState.mainProgress];
-            const requiredRep = mq.repRequired || 0;
-            const hasActiveMain = gameState.quests.some(q => q.type === 6);
-            const canPost = gameState.reputation >= requiredRep && !hasActiveMain;
+function showStoryQuest() {
+    currentGuildQuestType = 'story';
+    const content = document.getElementById('guildQuestsContent');
+    content.style.backgroundImage = "url('Images/StoryQuest_Background.jpg')";
 
-            html = `<h4>現在のストーリークエスト</h4>
-                    <p>${mq.desc}</p>
-                    <p>難易度 ${mq.difficulty} | 報酬 ${mq.reward}g</p>
-                    <p>必要評判: ${requiredRep} （現在 ${gameState.reputation}）</p>`;
+    let html = `<div class="gq-panel">
+                    <button class="back-btn" onclick="showMainSelection()">戻る</button>`;
 
-            if (hasActiveMain) {
-                html += '<p style="color:orange;">既にメインクエストが進行中です。完了するまで次の投稿はできません。</p>';
-            } else if (gameState.reputation < requiredRep) {
-                html += '<p style="color:red;">評判不足です。サイドクエストなどで評判を上げてください。</p>';
-            }
+    if (gameState.mainProgress >= mainQuests.length) {
+        html += `<p><strong>すべてのメインクエストを完了しました！</strong><br>深淵の王ヴォルガスは倒され、世界に平和が戻った。おめでとう！</p>`;
+    } else {
+        let mq = mainQuests[gameState.mainProgress];
+        const requiredRep = mq.repRequired || 0;
+        const hasActiveMain = gameState.quests.some(q => q.type === 6);
+        const canPost = gameState.reputation >= requiredRep && !hasActiveMain;
 
-            if (canPost) {
-                html += '<button onclick="postGuildQuest()">このメインクエストを投稿する</button>';
-            }
+        html += `<h4>現在のストーリークエスト</h4>
+                 <p>${mq.desc}</p>
+                 <p>難易度 ${mq.difficulty} | 報酬 ${mq.reward}g</p>
+                 <p>必要評判: ${requiredRep} （現在 ${gameState.reputation}）</p>`;
+
+        if (hasActiveMain) {
+            html += `<p style="color:orange;">既にメインクエストが進行中です。完了するまで次の投稿はできません。</p>`;
+        } else if (gameState.reputation < requiredRep) {
+            html += `<p style="color:red;">評判不足です。サイドクエストなどで評判を上げてください。</p>`;
         }
-    } else if (type === 'dungeon') {
-        html = `階層: <input type="number" id="dungeonFloor" min="1" value="5">`;
-    } else if (type === 'trade') {
-        html = `都市: <select id="tradeCity" onchange="updateTradeInfo()">`;
-        cities.filter(c => !c.guild).forEach(c => html += `<option value="${c.name}">${c.name}</option>`);
-        html += `</select>`;
-        html += `<div id="tradeInfo"></div>`;
-        html += `数量: <input type="number" id="tradeQty" value="5" min="1">`;
-        html += `最大単価: <input type="number" id="tradeMaxPrice" value="0">`;
+
+        if (canPost) {
+            html += `<div class="form-buttons">
+                        <button class="post-btn" onclick="postGuildQuest()">このメインクエストを投稿する</button>
+                     </div>`;
+        }
     }
-    document.getElementById('gqFields').innerHTML = html;
-    if (type === 'trade') updateTradeInfo();
+
+    html += `</div>`;
+    content.innerHTML = html;
 }
 
+function showDungeonQuest() {
+    currentGuildQuestType = 'dungeon';
+    const content = document.getElementById('guildQuestsContent');
+    content.style.backgroundImage = "url('Images/DungeonQuest_Background.jpg')";
+
+    let html = `<div class="gq-panel">
+                    <button class="back-btn" onclick="showMainSelection()">戻る</button>
+                    <label>階層: <input type="number" id="dungeonFloor" min="1" value="5"></label>
+                    <div class="form-buttons">
+                        <button class="post-btn" onclick="postGuildQuest()">投稿</button>
+                    </div>
+                </div>`;
+    content.innerHTML = html;
+}
+
+function showTradeQuest() {
+    currentGuildQuestType = 'trade';
+
+    const content = document.getElementById('guildQuestsContent');
+    content.style.backgroundImage = "url('Images/TradingQuest_Background.jpg')";
+
+    let html = `<div class="gq-panel">
+                    <button class="back-btn" onclick="showMainSelection()">戻る</button>
+                    <label>都市: <select id="tradeCity" onchange="updateTradeInfo()">`;
+    cities.filter(c => !c.guild).forEach(c => html += `<option value="${c.name}">${c.name}</option>`);
+    html += `</select></label>
+            <div id="tradeInfo"></div>
+            <label>数量: <input type="number" id="tradeQty" value="5" min="1"></label><br><br>
+            <label>最大単価: <input type="number" id="tradeMaxPrice" value="0"></label>
+            <div class="form-buttons">
+                <button class="post-btn" onclick="postGuildQuest()">投稿</button>
+            </div>
+        </div>`;
+    content.innerHTML = html;
+    updateTradeInfo();
+}
+
+/* 既存の updateTradeInfo はそのまま使用可能（変更なし） */
 function updateTradeInfo() {
     let cityName = document.getElementById('tradeCity').value;
     let city = cities.find(c => c.name === cityName);
@@ -5958,11 +5956,14 @@ function craftFacilityItem(fac, recipeIdx) {
 }
 
 function postGuildQuest() {
-    let type = document.getElementById('gqType').value;
+    // document.getElementById('gqType') を完全に削除 → エラーの原因を根絶
+    // 代わりにグローバル変数 currentGuildQuestType を使用して種別を取得
+    let type = currentGuildQuestType;
+
     let q = null;
     let alertMessage = 'ギルドクエストを投稿しました！';
 
-    if (type === 'main') {
+    if (type === 'story') {
         if (gameState.mainProgress >= mainQuests.length) {
             alert('すべてのメインクエストを完了しました！');
             return;
@@ -5999,7 +6000,12 @@ function postGuildQuest() {
 
         alertMessage = 'メインクエストを投稿しました！クエストボードに表示されます。';
     } else if (type === 'dungeon') {
-        let floor = parseInt(document.getElementById('dungeonFloor').value) || 1;
+        let floorEl = document.getElementById('dungeonFloor');
+        if (!floorEl) {
+            alert('エラー: ダンジョン階層の入力が見つかりません。');
+            return;
+        }
+        let floor = parseInt(floorEl.value) || 1;
         let diff = floor * 12;
         q = {
             id: gameState.nextId++,
@@ -6020,11 +6026,18 @@ function postGuildQuest() {
             inProgress: false
         };
     } else if (type === 'trade') {
-        let cityName = document.getElementById('tradeCity').value;
+        let cityEl = document.getElementById('tradeCity');
+        let qtyEl = document.getElementById('tradeQty');
+        let maxPriceEl = document.getElementById('tradeMaxPrice');
+        if (!cityEl || !qtyEl || !maxPriceEl) {
+            alert('エラー: トレード情報の入力が見つかりません。');
+            return;
+        }
+        let cityName = cityEl.value;
         let city = cities.find(c => c.name === cityName);
         let itemName = city.items[0].name;
-        let qty = parseInt(document.getElementById('tradeQty').value) || 1;
-        let maxPrice = parseInt(document.getElementById('tradeMaxPrice').value) || city.items[0].maxPrice;
+        let qty = parseInt(qtyEl.value) || 1;
+        let maxPrice = parseInt(maxPriceEl.value) || city.items[0].maxPrice;
         q = {
             id: gameState.nextId++,
             desc: `${cityName}で${itemName} ${qty}個購入 (最大${maxPrice}g/個)`,
@@ -6047,7 +6060,7 @@ function postGuildQuest() {
         gameState.quests.push(q);
         updateDisplays();
         alert(alertMessage);
-        closeGuildQuests();  // オプション: 投稿後にモーダルを閉じる
+        closeGuildQuests();  // 投稿後にモーダルを閉じる
     }
 }
 
