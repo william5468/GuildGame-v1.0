@@ -1825,6 +1825,10 @@ function isPartyWiped(q) {
     });
 }
 
+function playTutorialDialogue(){
+    queueQuestCompletionDialogue(TutorialDialogue);
+}
+
 function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride = null) {
 
     if (q.training) {
