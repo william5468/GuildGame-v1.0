@@ -901,6 +901,9 @@ h1, h3, button, .adventurer-card, .quest-card {
     z-index: 1001;
     animation: damageFade 0.5s ease-out forwards;
     background: transparent; /* 明示的に背景を透明化（デフォルトでも透明だが、親要素の影響を防ぐために追加） */
+    border: none;                  /* ボーダーを完全に削除 */
+    outline: none;                 /* アウトライン（フォーカス時の境界線）も削除 */
+    box-shadow: none;              /* シャドウ（ボーダーのような効果）も削除（念のため） */
 }
 @keyframes damageFade {
     0% {
@@ -1738,10 +1741,12 @@ h1, h3, button, .adventurer-card, .quest-card {
 /* Fail parchment – enlarged proportionally by 1.1x (110%) while centered */
 .quest-scroll.quest-scroll-fail {
     background-image: url('Images/QuestScroll_Fail.jpg');
-    background-size: 105%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
+    background-size: 110%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
     background-repeat: no-repeat;
     background-position: center;
     background-color: transparent;         /* No fallback color to block image */
+    min-height: 600px;                     /* Increased minimum height to make the failed quest scroll taller/longer */
+    box-sizing: border-box;                /* Ensures padding doesn't add extra height beyond min-height */
 }
 /* Force all backgrounds transparent in .scroll-content and its children */
 /* This ensures nothing blocks the parchment background image */

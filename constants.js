@@ -21,7 +21,28 @@ const assetsToLoad = [
     "Images/Hunter(F)_enemy.png",
     "Images/Hunter(M)_enemy.png",
     
-
+    // === 新規追加：ダンジョンモンスター画像プリロード ===
+    "Images/Dungeon_Monster/slime.png",
+    "Images/Dungeon_Monster/snake.png",
+    "Images/Dungeon_Monster/goblin.png",
+    "Images/Dungeon_Monster/plant.png",
+    "Images/Dungeon_Monster/bat.png",
+    "Images/Dungeon_Monster/spider.png",
+    "Images/Dungeon_Monster/wolf.png",
+    "Images/Dungeon_Monster/raven.png",
+    "Images/Dungeon_Monster/troll.png",
+    "Images/Dungeon_Monster/treant.png",
+    "Images/Dungeon_Monster/skeleton swordfighter.png",
+    "Images/Dungeon_Monster/skeleton rogue.png",
+    "Images/Dungeon_Monster/skeleton mage.png",
+    "Images/Dungeon_Monster/skeleton archer.png",
+    "Images/Dungeon_Monster/armor.png",
+    "Images/Dungeon_Monster/golem.png",
+    "Images/Dungeon_Monster/dragon.png",
+    "Images/Dungeon_Monster/red imp.png",
+    "Images/Dungeon_Monster/black imp.png",
+    "Images/Dungeon_Monster/shadow.png",
+    // =====================================
     // === 新規追加：アクションアイコン ===
     "Images/STR_lightattack_icon.jpg",
     "Images/STR_heavyattack_icon.jpg",
@@ -1866,4 +1887,161 @@ const materialShop = [
     {name: "薬草", basePrice: 20, variance: 1.5},
     {name: "スパイス", basePrice: 55, variance: 1.8},
     {name: "宝石", basePrice: 115, variance: 2.0}
+];
+
+// NPC固有のサイドクエストデータ（discoveryNPCsの順番に厳密対応）
+const sideQuestData = [
+    // 0: 地図の賢者 エルドリン - discovery (WIS重点、地図関連の探索)
+    {
+        desc: '失われた「永遠の航路図」の断片が散らばっている古代遺跡を探し、正確な位置を地図化せよ。',
+        type: 6, // discovery
+        focusStat: 'wisdom',
+        difficulty: 80,
+        rank: 'B+',
+        minWisdom: 800,
+        minStrength: 30,
+        minDexterity: 40,
+        minLuck: 30,
+        minFocus: 110,
+        reward: 8000,
+        daysLeft: 40
+    },
+    // 1: 歴史の語り部 タリア - fetch (LUC重点、歴史資料集め)
+    {
+        desc: '忘れられた時代を記した「古の石碑の拓本」を各地の遺跡から5枚集めてきてほしい。',
+        type: 3, // fetch
+        focusStat: 'luck',
+        difficulty: 75,
+        rank: 'B+',
+        item: { name: '古の石碑拓本', qty: 5 },
+        minLuck: 700,
+        minStrength: 25,
+        minWisdom: 45,
+        minDexterity: 35,
+        minFocus: 100,
+        reward: 7500,
+        daysLeft: 35
+    },
+    // 2: 深海の探求者 コルバト - discovery (DEX重点、深海探査)
+    {
+        desc: '深海に沈む「アビス・クリスタル」の輝く洞窟を発見し、安全な潜水ルートを記録せよ。',
+        type: 1, // discovery
+        focusStat: 'dexterity',
+        difficulty: 85,
+        rank: 'A',
+        minDexterity: 850,
+        minStrength: 40,
+        minWisdom: 35,
+        minLuck: 30,
+        minFocus: 115,
+        reward: 8500,
+        daysLeft: 45
+    },
+    // 3: 反響の予見者 シララ - discovery (WIS重点、予言関連)
+    {
+        desc: '響き渡る予言の声が聞こえる「エコー・チャンバー」の隠された場所を探し出せ。',
+        type: 1, // discovery
+        focusStat: 'wisdom',
+        difficulty: 90,
+        rank: 'A',
+        minWisdom: 1000,
+        minStrength: 25,
+        minDexterity: 35,
+        minLuck: 40,
+        minFocus: 125,
+        reward: 9000,
+        daysLeft: 40
+    },
+    // 4: 星の観測者 アストリッド - discovery (WIS重点、天文関連)
+    {
+        desc: '星の運行が異常を示す「スターフォール高原」の隠された観測点を特定せよ。',
+        type: 1, // discovery
+        focusStat: 'wisdom',
+        difficulty: 95,
+        rank: 'A+',
+        minWisdom: 1100,
+        minStrength: 20,
+        minDexterity: 30,
+        minLuck: 45,
+        minFocus: 130,
+        reward: 9500,
+        daysLeft: 50
+    },
+    // 5: 森のドルイド リオラ - kill (STR重点、森の脅威除去)
+    {
+        desc: '森を腐敗させる「毒のマンドラゴラ」の群れを根絶やしにせよ。',
+        type: 0, // kill
+        focusStat: 'strength',
+        difficulty: 80,
+        rank: 'B+',
+        minStrength: 1000,
+        minWisdom: 40,
+        minDexterity: 35,
+        minLuck: 25,
+        minFocus: 120,
+        reward: 8000,
+        daysLeft: 35
+    },
+    // 6: 灰の学者 ボルカン - fetch (LUC重点、火山素材)
+    {
+        desc: '火山地帯から「エターナル・アッシュ」を8個集めてきてくれ。',
+        type: 3, // fetch
+        focusStat: 'luck',
+        difficulty: 85,
+        rank: 'A',
+        item: { name: 'エターナル・アッシュ', qty: 8 },
+        minLuck: 9,
+        minStrength: 40,
+        minWisdom: 35,
+        minDexterity: 45,
+        minFocus: 110,
+        reward: 8500,
+        daysLeft: 40
+    },
+    // 7: 幻の舞姫 ザラ - escort (DEX重点、舞姫護衛)
+    {
+        desc: '幻の舞を披露するザラを、呪われた劇場まで安全に護衛せよ。',
+        type: 2, // escort
+        focusStat: 'dexterity',
+        difficulty: 90,
+        rank: 'A',
+        minDexterity: 1000,
+        minStrength: 35,
+        minWisdom: 30,
+        minLuck: 40,
+        minFocus: 125,
+        reward: 9000,
+        daysLeft: 30
+    },
+    // 8: 宝石の彫刻師 トーン - fetch (LUC重点、宝石集め)
+    {
+        desc: '完璧な彫刻のための「スターレム・ジェム」を6個集めてきてほしい。',
+        type: 3, // fetch
+        focusStat: 'luck',
+        difficulty: 80,
+        rank: 'B+',
+        item: { name: 'スターレム・ジェム', qty: 6 },
+        minLuck: 950,
+        minStrength: 30,
+        minWisdom: 40,
+        minDexterity: 35,
+        minFocus: 115,
+        reward: 8000,
+        daysLeft: 45
+    },
+    // 9: 永遠の守護者 フェイ - kill (STR重点、強敵討伐)
+    {
+        desc: '永遠の領域を脅かす「シャドウ・タイタン」を討伐せよ。',
+        type: 0, // kill
+        focusStat: 'strength',
+        difficulty: 100,
+        rank: 'A+',
+        minStrength: 1200,
+        minWisdom: 45,
+        minDexterity: 50,
+        minLuck: 35,
+        minFocus: 140,
+        reward: 12000,
+        daysLeft: 50
+    }
 ];

@@ -162,7 +162,8 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         equipment: [],
         buffs: [],
         temp: false,
-        busy: false
+        busy: false,
+        critChance: 10,
     };
 
     gameState.adventurers.push(kaito);
@@ -186,7 +187,8 @@ if (gameState.adventurers.length === 0 && gameState.day === 1) {
         equipment: [],
         buffs: [],
         temp: false,
-        busy: false
+        busy: false,
+        critChance: 10
     };
 
     gameState.adventurers.push(luna);
@@ -679,162 +681,7 @@ function ensureTrainingQuest() {
 }
 ensureTrainingQuest()
 
-// NPC固有のサイドクエストデータ（discoveryNPCsの順番に厳密対応）
-const sideQuestData = [
-    // 0: 地図の賢者 エルドリン - discovery (WIS重点、地図関連の探索)
-    {
-        desc: '失われた「永遠の航路図」の断片が散らばっている古代遺跡を探し、正確な位置を地図化せよ。エルドリンの研究に不可欠だ。',
-        type: 6, // discovery
-        focusStat: 'wisdom',
-        difficulty: 80,
-        rank: 'B+',
-        minWisdom: 800,
-        minStrength: 30,
-        minDexterity: 40,
-        minLuck: 30,
-        minFocus: 110,
-        reward: 8000,
-        daysLeft: 40
-    },
-    // 1: 歴史の語り部 タリア - fetch (LUC重点、歴史資料集め)
-    {
-        desc: '忘れられた時代を記した「古の石碑の拓本」を各地の遺跡から5枚集めてきてほしい。タリアの語りに新たな章を加えるために。',
-        type: 3, // fetch
-        focusStat: 'luck',
-        difficulty: 75,
-        rank: 'B+',
-        item: { name: '古の石碑拓本', qty: 5 },
-        minLuck: 700,
-        minStrength: 25,
-        minWisdom: 45,
-        minDexterity: 35,
-        minFocus: 100,
-        reward: 7500,
-        daysLeft: 35
-    },
-    // 2: 深海の探求者 コルバト - discovery (DEX重点、深海探査)
-    {
-        desc: '深海に沈む「アビス・クリスタル」の輝く洞窟を発見し、安全な潜水ルートを記録せよ。コルバトの探査に道を開く。',
-        type: 1, // discovery
-        focusStat: 'dexterity',
-        difficulty: 85,
-        rank: 'A',
-        minDexterity: 850,
-        minStrength: 40,
-        minWisdom: 35,
-        minLuck: 30,
-        minFocus: 115,
-        reward: 8500,
-        daysLeft: 45
-    },
-    // 3: 反響の予見者 シララ - discovery (WIS重点、予言関連)
-    {
-        desc: '響き渡る予言の声が聞こえる「エコー・チャンバー」の隠された場所を探し出せ。シララの予見をより鮮明にするために。',
-        type: 1, // discovery
-        focusStat: 'wisdom',
-        difficulty: 90,
-        rank: 'A',
-        minWisdom: 1000,
-        minStrength: 25,
-        minDexterity: 35,
-        minLuck: 40,
-        minFocus: 125,
-        reward: 9000,
-        daysLeft: 40
-    },
-    // 4: 星の観測者 アストリッド - discovery (WIS重点、天文関連)
-    {
-        desc: '星の運行が異常を示す「スターフォール高原」の隠された観測点を特定せよ。アストリッドの星読みに新たな発見をもたらす。',
-        type: 1, // discovery
-        focusStat: 'wisdom',
-        difficulty: 95,
-        rank: 'A+',
-        minWisdom: 1100,
-        minStrength: 20,
-        minDexterity: 30,
-        minLuck: 45,
-        minFocus: 130,
-        reward: 9500,
-        daysLeft: 50
-    },
-    // 5: 森のドルイド リオラ - kill (STR重点、森の脅威除去)
-    {
-        desc: '森を腐敗させる「毒のマンドラゴラ」の群れを根絶やしにせよ。リオラの自然調和を取り戻すために。',
-        type: 0, // kill
-        focusStat: 'strength',
-        difficulty: 80,
-        rank: 'B+',
-        minStrength: 1000,
-        minWisdom: 40,
-        minDexterity: 35,
-        minLuck: 25,
-        minFocus: 120,
-        reward: 8000,
-        daysLeft: 35
-    },
-    // 6: 灰の学者 ボルカン - fetch (LUC重点、火山素材)
-    {
-        desc: '火山地帯から「エターナル・アッシュ」を8個集めてきてくれ。ボルカンの灰の魔術研究に必要だ。',
-        type: 3, // fetch
-        focusStat: 'luck',
-        difficulty: 85,
-        rank: 'A',
-        item: { name: 'エターナル・アッシュ', qty: 8 },
-        minLuck: 9,
-        minStrength: 40,
-        minWisdom: 35,
-        minDexterity: 45,
-        minFocus: 110,
-        reward: 8500,
-        daysLeft: 40
-    },
-    // 7: 幻の舞姫 ザラ - escort (DEX重点、舞姫護衛)
-    {
-        desc: '幻の舞を披露するザラを、呪われた劇場まで安全に護衛せよ。観客の幻影が襲いかかる危険な道だ。',
-        type: 2, // escort
-        focusStat: 'dexterity',
-        difficulty: 90,
-        rank: 'A',
-        minDexterity: 1000,
-        minStrength: 35,
-        minWisdom: 30,
-        minLuck: 40,
-        minFocus: 125,
-        reward: 9000,
-        daysLeft: 30
-    },
-    // 8: 宝石の彫刻師 トーン - fetch (LUC重点、宝石集め)
-    {
-        desc: '完璧な彫刻のための「スターレム・ジェム」を6個集めてきてほしい。トーンの究極の作品を完成させるために。',
-        type: 3, // fetch
-        focusStat: 'luck',
-        difficulty: 80,
-        rank: 'B+',
-        item: { name: 'スターレム・ジェム', qty: 6 },
-        minLuck: 950,
-        minStrength: 30,
-        minWisdom: 40,
-        minDexterity: 35,
-        minFocus: 115,
-        reward: 8000,
-        daysLeft: 45
-    },
-    // 9: 永遠の守護者 フェイ - kill (STR重点、強敵討伐)
-    {
-        desc: '永遠の領域を脅かす「シャドウ・タイタン」を討伐せよ。フェイの守護の負担を軽減するために。',
-        type: 0, // kill
-        focusStat: 'strength',
-        difficulty: 100,
-        rank: 'A+',
-        minStrength: 1200,
-        minWisdom: 45,
-        minDexterity: 50,
-        minLuck: 35,
-        minFocus: 140,
-        reward: 12000,
-        daysLeft: 50
-    }
-];
+
 
 const sideQuestCompletionDialogue = [
     // 0: 地図の賢者 エルドリン - discovery (永遠の航路図)
@@ -972,7 +819,8 @@ function generateTempAdventurer(){
         hiringCost:Math.floor(20+total),
         recruitingCost:Math.floor(100+total*3),
         temp:true, busy:false, generatedDay:0,
-        primary: primary
+        primary: primary,
+        critChance:10,
     };
 }
 
@@ -1439,7 +1287,7 @@ function renderShopPurchase() {
     shopItems.forEach((it, i) => {
         html += `<li class="shop-item">`;
         html += `<strong>${it.name}</strong> - ${it.cost}g`;
-        if (it.stat) html += ` <span class="bonus">(+${it.bonus} ${statFull[it.stat]})</span>`;
+        if (it.stat) html += ` <span class="bonus">(+${it.bonus}% ${statFull[it.stat]})</span>`;
         if (it.type === 'potion') html += ` <span class="bonus">(${it.restore.toUpperCase()} +${it.amount})</span>`;
         html += ` <button class="buy-btn" onclick="buy(${i},1)">購入</button>`;
         html += ` <button class="buy-btn" onclick="buy(${i},10)">10個購入</button>`;
@@ -2115,16 +1963,14 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             const rep = Math.floor(gameState.reputation);
             const effectiveRep = Math.max(0, rep);
 
-            // 小EXPオーブ: 最低1個、評判が高いほど追加のチャンス増加（最大5個）
             let orbQty = 1;
-            const extraChance = Math.min(1, effectiveRep / 100);  // rep 100で100%（確定追加）
-            for (let i = 0; i < 4; i++) {  // 最大4回追加チャンス → 合計最大5個
+            const extraChance = Math.min(1, effectiveRep / 100);
+            for (let i = 0; i < 4; i++) {
                 if (Math.random() < extraChance) {
                     orbQty++;
                 }
             }
 
-            // インベントリに追加（他と同様にユニークID付与）
             for (let i = 0; i < orbQty; i++) {
                 addToInventory({
                     name: 'EXPオーブ (小)',
@@ -2135,7 +1981,6 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 }, 1);
             }
 
-            // extraMsg にボーナス表示を追加（他のボーナスと同様に<br>で連結）
             extraMsg += `<br><strong>Reputation Bonus:</strong> ${orbQty} × EXPオーブ (小)${orbQty > 1 ? 's' : ''} を獲得!`;
         }
         if (q.type === 6) {
@@ -2147,9 +1992,10 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             gameState.gold += treasureGold;
             extraMsg += `<br>ダンジョン${q.floor}階の宝: +${treasureGold}g`;
             let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
-            let rareBonus = 10 + q.floor * 5;
-            addToInventory({name: `ダンジョン${q.floor}階の${statFull[rareStat]}リング`, stat: rareStat, bonus: rareBonus, id: gameState.nextId++},1);
-            extraMsg += `<br>稀少装備発見！`;
+            let rareBonus = 5 + q.floor * 5;
+            let rareItemName = `ダンジョン${q.floor}階の${statFull[rareStat]}リング`;
+            addToInventory({name: rareItemName, stat: rareStat, bonus: rareBonus, id: gameState.nextId++},1);
+            extraMsg += `<br>${rareItemName}発見！`;
         } else if (q.type === 8) {
             let td = q.tradeData;
             let cityItem = cities.find(c => c.name === td.city)?.items[0];
@@ -2200,7 +2046,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 id: gameState.nextId++
             };
             addToInventory(expOrb, 1);
-            extraMsg += `EXPオーブを受け取りました！（使用で冒険者のレベル+10）`;
+            extraMsg += `<br>EXPオーブを受け取りました！（使用で冒険者のレベル+10）`;
         }
         if (q.type === 3 && q.item) {
             const quantity = Math.floor(Math.random() * 5) + 1;
@@ -2212,15 +2058,15 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         if (q.type === 0 && Math.random() < 0.8) {
             const numPerms = gameState.adventurers.filter(a => !a.temp).length;
             if (numPerms >= gameState.maxPermanentSlots) {
-                extraMsg += `感銘を受けた冒険者が加わりたがったが、ギルドは満杯です。`;
+                extraMsg += `<br>感銘を受けた冒険者が加わりたがったが、ギルドは満杯です。`;
             } else {
                 const newAdv = generateKillRecruit(q.difficulty);
                 gameState.adventurers.push(newAdv);
-                extraMsg += `感銘を受けた冒険者${newAdv.name}があなたのギルドに加わることを決めました！`;
+                extraMsg += `<br>感銘を受けた冒険者${newAdv.name}があなたのギルドに加わることを決めました！`;
             }
         }
 
-        // 完了ダイアログ処理（変更なし）
+        // 完了ダイアログ処理
         if (q.side) {
             if (sideQuestCompletionDialogue[q.npcIdx]) {
                 const key = `side-${q.npcIdx}`;
@@ -2251,7 +2097,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
         let rightHTML = survivingAdvs.length > 0 ? `
             <div style="text-align: center;">
-                <div style="font-size: 15px; margin-bottom: 25px;">${q.desc}</div>
+                <div style="font-size: 12px; margin-bottom: 0px; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">${q.desc}</div>
                 <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0px;">
                     ${survivingAdvs.map(adv => `
                     <div style="text-align: center;">
@@ -2261,11 +2107,11 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     </div>
                     `).join('')}
                 </div>
-                <div style="font-size: 12px; font-weight: bold; margin: 20px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box; overflow: hidden;">
+                <div style="font-size: 12px; font-weight: bold; margin: 20px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">
                     ${extraMsg.replace(/<br>/g, '<br>')}
                 </div>                                
             </div>` : `
-            <div style="font-size: 20px; color: darkred;">誰も帰還しませんでした…</div>`;
+            <div style="font-size: 50px; color: darkred;">誰も帰還しませんでした…</div>`;
 
         let messageHTML = `
         <div class="quest-scroll quest-scroll-success">
@@ -2285,7 +2131,6 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         const repLoss = q.difficulty * 2;
         gameState.reputation -= repLoss;
 
-        // Failure uses exact same layout and background as success
         let leftHTML = `
             <div style="text-align: center;">
                 <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">失敗！</div>
@@ -2294,7 +2139,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
         let rightHTML = survivingAdvs.length > 0 ? `
             <div style="text-align: center;">
-                <div style="font-size: 15px; margin-bottom: 25px;">${q.desc}</div>
+                <div style="font-size: 12px; margin-bottom: 0px; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">${q.desc}</div>
                 <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0px;">
                     ${survivingAdvs.map(adv => `
                     <div style="text-align: center; opacity: 0.7;">
@@ -2320,9 +2165,127 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
     }
 }
+
+
+function generateDungeonEnemies(q) {
+    q.enemies = [];
+
+    const MONSTER_FOLDER = "Images/Dungeon_Monster/";
+
+    // ダンジョンモンスターリスト（日本語名修正済み）
+    const dungeonMonsters = [
+        { file: "slime.png",                 name: "スライム",             level: 1,  type: "STR" },
+        { file: "snake.png",                 name: "毒蛇",                 level: 1,  type: "DEX" },
+        { file: "goblin.png",                name: "ゴブリン",             level: 2,  type: "STR" },
+        { file: "plant.png",                 name: "キラープラント",       level: 2,  type: "WIS" },
+        { file: "bat.png",                   name: "ヴァンパイアバット",   level: 3,  type: "DEX" },
+        { file: "spider.png",                name: "ジャイアントスパイダー", level: 3, type: "STR" },
+        { file: "wolf.png",                  name: "ダイアウルフ",         level: 4,  type: "STR" },
+        { file: "raven.png",                 name: "ヘルレイヴン",         level: 4,  type: "DEX" },
+        { file: "troll.png",                 name: "トロール",             level: 5,  type: "STR" },
+        { file: "treant.png",                name: "トレント",             level: 5,  type: "WIS" },
+        { file: "skeleton swordfighter.png", name: "スケルトン剣士",       level: 6,  type: "STR" },
+        { file: "skeleton rogue.png",        name: "スケルトンローグ",     level: 6,  type: "DEX" },
+        { file: "skeleton mage.png",         name: "スケルトンメイジ",     level: 7,  type: "WIS" },
+        { file: "skeleton archer.png",       name: "スケルトンアーチャー", level: 7,  type: "DEX" },
+        { file: "skeleton mage.png",         name: "上級スケルトンメイジ", level: 8,  type: "WIS" },
+        { file: "skeleton archer.png",       name: "上級スケルトンアーチャー", level: 8, type: "DEX" },
+        { file: "armor.png",                 name: "リビングアーマー",     level: 9,  type: "STR" },
+        { file: "golem.png",                 name: "ストーンゴーレム",     level: 9,  type: "STR" },
+        { file: "dragon.png",                name: "ヤングドラゴン",       level: 10, type: "STR" },
+        { file: "red imp.png",               name: "レッダインプ",         level: 10, type: "DEX" },
+        { file: "black imp.png",             name: "ブラックインプ",       level: 10, type: "WIS" },
+        { file: "shadow.png",                name: "シャドウ",             level: 10, type: "LUC" }
+    ];
+
+    // 敵の数: 1〜4体（階層が深いほど平均的に多くなる）
+    const numEnemies = Math.min(4, Math.floor(Math.random() * 4) + 1 + Math.floor(q.floor / 5));
+
+    // 出現可能なモンスターをフィルタリング
+    let availableMonsters;
+    if (q.floor > 10) {
+        // 階層11以上: level === 10 のモンスターのみ（見た目はレベル10固定）
+        availableMonsters = dungeonMonsters.filter(m => m.level === 10);
+    } else {
+        // 階層1〜10: ちょうどその階層のモンスターのみ出現（level === q.floor）
+        availableMonsters = dungeonMonsters.filter(m => m.level === q.floor);
+    }
+
+    // 安全策: 該当するモンスターがいない場合（ありえないが）
+    if (availableMonsters.length === 0) {
+        // 階層10以上の場合はレベル10をフォールバック、それ以外はレベル1
+        availableMonsters = dungeonMonsters.filter(m => m.level === (q.floor > 10 ? 10 : 1));
+    }
+
+    // 基礎ステータス（階層に比例して無制限に強くなる）
+    const baseStatMultiplier = q.floor * 15;
+    const randomBonus = Math.random() * 40 + q.floor * 5;
+
+    for (let i = 0; i < numEnemies; i++) {
+        const monsterData = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+
+        const baseStat = baseStatMultiplier + randomBonus;
+
+        // typeに応じてステータス特化
+        let strength = Math.floor(baseStat * 0.8);
+        let wisdom   = Math.floor(baseStat * 0.8);
+        let dexterity = Math.floor(baseStat * 0.8);
+        let luck     = Math.floor(baseStat * 0.6);
+
+        switch (monsterData.type) {
+            case "STR":
+                strength = Math.floor(baseStat * 1.8 + Math.random() * 25);
+                wisdom   = Math.floor(baseStat * 0.6);
+                dexterity = Math.floor(baseStat * 0.6);
+                luck     = Math.floor(baseStat * 0.5);
+                break;
+            case "DEX":
+                dexterity = Math.floor(baseStat * 1.8 + Math.random() * 25);
+                strength = Math.floor(baseStat * 0.6);
+                wisdom   = Math.floor(baseStat * 0.6);
+                luck     = Math.floor(baseStat * 0.5);
+                break;
+            case "WIS":
+                wisdom = Math.floor(baseStat * 1.8 + Math.random() * 25);
+                strength = Math.floor(baseStat * 0.6);
+                dexterity = Math.floor(baseStat * 0.6);
+                luck     = Math.floor(baseStat * 0.5);
+                break;
+            case "LUC":
+                luck = Math.floor(baseStat * 1.8 + Math.random() * 25);
+                strength = Math.floor(baseStat * 0.7);
+                wisdom   = Math.floor(baseStat * 0.7);
+                dexterity = Math.floor(baseStat * 0.7);
+                break;
+        }
+
+        const e = {
+            id: `dungeon_enemy_${q.id}_${i}`,
+            name: monsterData.name + (numEnemies > 1 ? ` ${i + 1}` : ""),
+            image: `${MONSTER_FOLDER}${monsterData.file}`,
+            sex: 'N',
+            hp: Math.floor(100 + baseStat * 2.8 + Math.random() * 80),
+            maxHp: 0,
+            mp: Math.floor(20 + baseStat * 0.9 + Math.random() * 30),
+            maxMp: 0,
+            strength: Math.max(5, strength + Math.floor(Math.random() * 15)),
+            wisdom:   Math.max(3, wisdom + Math.floor(Math.random() * 10)),
+            dexterity: Math.max(5, dexterity + Math.floor(Math.random() * 15)),
+            luck:     Math.max(3, luck + Math.floor(Math.random() * 10)),
+            defending: false,
+            action: null,
+            target: null
+        };
+        e.maxHp = e.hp;
+        e.maxMp = e.mp;
+        q.enemies.push(e);
+    }
+}
+
 function playDay(){
     if (gameState.gameOver) return;
-// ===== 新規追加: 防衛クエスト未割り当て警告 =====
+
+    // ===== 防衛クエスト未割り当て警告（防衛のみ） =====
     const defenseQuest = gameState.quests.find(q => q.defense);
     if (defenseQuest && defenseQuest.assigned.length === 0) {
         const confirmMessage = 
@@ -2335,22 +2298,28 @@ function playDay(){
 本当に日を進めますか？（キャンセルで日進めを中止できます）`;
 
         if (!confirm(confirmMessage)) {
-            return; // プレイヤーがキャンセル → 日を進めず関数終了
+            return;
         }
-        // OKされた場合は強行的に進めてゲームオーバーへ
     }
     // ===== 追加終わり =====
-    const evDay=gameState.day; gameState.day++;
+
+    const evDay = gameState.day; 
+    gameState.day++;
+
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day-1) * 10);
         gameState.gold -= tax;
         gameState.eventHistory.unshift({day: evDay, message: `税金の日！${tax}g を徴収。`});
         checkGameOver();
     }
+
+    // 通常クエスト処理（防衛・ダンジョンはスキップ）
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense) continue;
+        if (q.defense || q.type === 7) continue;  // 戦闘クエストは後で特殊処理
+
         if (q.type === 8) {
+            // 貿易処理（変更なし）
             if (q.assigned.length === 0) continue;
             if (!q.inProgress) {
                 const teamDex = q.assigned.reduce((sum, id) => sum + getEffectiveStat(findAdv(id), 'dexterity'), 0);
@@ -2431,6 +2400,7 @@ function playDay(){
             }
             continue;
         }
+
         if (q.assigned.length > 0) {
             const teamStr = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'strength'), 0);
             const teamWis = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'wisdom'), 0);
@@ -2450,23 +2420,25 @@ function playDay(){
                 successToday = true;
             }
             if (successToday) {
-                        processQuestOutcome(q, evDay, true, false);
-                        if (!q.training) {  // ← !q.playerPosted を削除
-                            gameState.quests.splice(i, 1);
-                        }
-                    } else {
-                        if (!q.training) {  // ← !q.playerPosted を削除
-                            q.inProgress = true;
-                        }
-                    }
+                processQuestOutcome(q, evDay, true, false);
+                if (!q.training) {
+                    gameState.quests.splice(i, 1);
+                }
+            } else {
+                if (!q.training) {
+                    q.inProgress = true;
+                }
+            }
         }
     }
+
+    // 期限切れ処理（戦闘クエスト除外）
     gameState.quests.forEach(q => {
-        if (!q.training && !q.playerPosted && q.type !== 8) q.daysLeft--;
+        if (!q.training && !q.playerPosted && q.type !== 8 && !q.defense && q.type !== 7) q.daysLeft--;
     });
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense || q.training || q.playerPosted || q.type === 8) continue;
+        if (q.defense || q.training || q.playerPosted || q.type === 8 || q.type === 7) continue;
         if (q.daysLeft <= 0) {
             if (q.assigned.length > 0) {
                 processQuestOutcome(q, evDay, false, false);
@@ -2478,43 +2450,75 @@ function playDay(){
             gameState.quests.splice(i, 1);
         }
     }
-    if (defenseQuest) {
-        gameState.quests = gameState.quests.filter(q => !q.defense);
-        if (defenseQuest.assigned.length === 0) {
-            gameState.eventHistory.unshift({day: evDay, message: `防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`});
-            gameState.gameOver = true;
-            showModal(evDay);
-            updateDisplays();
-            return;
-        } else {
-            generateEnemies(defenseQuest);
-            const team = defenseQuest.assigned.map(id => {
-                const adv = findAdv(id);
-                return adv ? {...adv, id: id} : null;
-            }).filter(a => a);
 
-            currentBattle = {
-                quest: defenseQuest,
-                day: evDay,
-                team: team,
-                enemies: defenseQuest.enemies.map(e => ({...e})),
-                round: 0,
-                actions: {},
-                phase: 'setup',
-                actionIndex: 0,
-                combatants: []
-            };
-
-            document.getElementById('battleTitle').innerHTML = `防衛戦: ${defenseQuest.desc}`;
-            document.getElementById('battleModal').style.display = 'flex';
-            renderBattle();
-
-            // ← 新規追加：戦闘BGMにクロスフェードで切り替え（約1.5秒で緊張感を演出）
-            crossfadeTo('battleBgm', 1500);
-
-            return;
-        }
+    // ===== 戦闘クエスト特殊処理 =====
+    // まず割り当てなしの戦闘クエストを処理（防衛のみゲームオーバー）
+    const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
+    if (unassignedDefense) {
+        gameState.eventHistory.unshift({day: evDay, message: `防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`});
+        gameState.gameOver = true;
+        showModal(evDay);
+        updateDisplays();
+        return;
     }
+
+    const unassignedDungeon = gameState.quests.filter(q => q.type === 7 && q.assigned.length === 0);
+    unassignedDungeon.forEach(q => {
+        processQuestOutcome(q, evDay, false, false);
+        gameState.quests = gameState.quests.filter(quest => quest !== q);
+    });
+
+    // 次に割り当てありの戦闘クエストを処理
+    let assignedBattleQuests = gameState.quests.filter(q => (q.defense || q.type === 7) && q.assigned.length > 0);
+
+    if (assignedBattleQuests.length > 0) {
+        // クエストリストから戦闘クエストを一時削除
+        gameState.quests = gameState.quests.filter(q => !(q.defense || q.type === 7));
+
+        // 防衛を最優先にソート
+        assignedBattleQuests.sort((a, b) => (b.defense ? 1 : 0) - (a.defense ? 1 : 0));
+
+        // 残りをpendingキューに保存
+        gameState.pendingBattles = assignedBattleQuests.slice(1);
+
+        const currentQ = assignedBattleQuests[0];
+
+        // 戦闘開始
+        if (currentQ.defense) {
+            generateEnemies(currentQ);
+        } else {
+            generateDungeonEnemies(currentQ);
+        }
+
+        const team = currentQ.assigned.map(id => {
+            const adv = findAdv(id);
+            return adv ? {...adv} : null;
+        }).filter(a => a);
+
+        currentBattle = {
+            quest: currentQ,
+            day: evDay,
+            team: team,
+            enemies: currentQ.enemies.map(e => ({...e})),
+            round: 0,
+            actions: {},
+            phase: 'setup',
+            actionIndex: 0,
+            combatants: []
+        };
+
+        const titleText = currentQ.defense ? `防衛戦: ${currentQ.desc}` : `ダンジョン${currentQ.floor}階探索: ${currentQ.desc}`;
+
+        document.getElementById('battleTitle').innerHTML = titleText;
+        document.getElementById('battleModal').style.display = 'flex';
+        renderBattle();
+
+        crossfadeTo('battleBgm', 1500);
+
+        return; // 戦闘中は日処理中断
+    }
+
+    // 戦闘クエストがなければ通常終了
     checkGameOver();
     showModal(evDay);
 }
@@ -2617,22 +2621,22 @@ function getActionButtonsHtml(adv) {
     const skills = [];
 
     if (type === 'LUC') {
-        skills.push({ action: 'luc_light', icon: 'LUC_lightattack_icon.jpg', desc: 'Light Attack (1 AP, 25% LUC)', cost: 1 });
-        skills.push({ action: 'blessing', icon: 'LUC_Blessing_icon.jpg', desc: 'Fortune’s Blessing (3 AP)', cost: 3 }); // Assume you have this or fallback
-        skills.push({ action: 'evade', icon: 'LUC_Evade_icon.jpg', desc: 'Evade with Luck (0 AP)', cost: 0 }); // Assume
-        skills.push({ action: 'fortune', icon: 'LUC_heavyattack_icon.jpg', desc: 'Fortune’s Strike (5 AP)', cost: 5 });
+        skills.push({ action: 'luc_light', icon: 'LUC_lightattack_icon.jpg', desc: 'Light Attack (1 AP, deals 25% LUC damage)', cost: 1 });
+        skills.push({ action: 'blessing', icon: 'LUC_Blessing_icon.jpg', desc: 'Fortune’s Blessing (3 AP, Critical chance +40%)', cost: 3 }); // Assume you have this or fallback
+        skills.push({ action: 'evade', icon: 'LUC_Evade_icon.jpg', desc: 'Evade with Luck (0 AP, Evade chance +15%)', cost: 0 }); // Assume
+        skills.push({ action: 'fortune', icon: 'LUC_heavyattack_icon.jpg', desc: 'Fortune’s Strike (5 AP, 50% chance deals 300% LUC damage)', cost: 5 });
     } else {
-        skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP)', cost: 1 });
-        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP)', cost: 3 });
-        skills.push({ action: 'defense', icon: 'Defense_icon.jpg', desc: 'Defense (+1 AP)', cost: -1 });
-        skills.push({ action: 'counter', icon: 'Counter_icon.jpg', desc: 'Counter Attack (2 AP)', cost: 2 }); // Assume Counter_icon.jpg or add
+        skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP, deals 100% STR/WIS damage)', cost: 1 });
+        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP, deals 350% STR/WIS damage)', cost: 3 });
+        skills.push({ action: 'defense', icon: 'Defense_icon.jpg', desc: 'Defense (+1 AP, block 25% damage)', cost: -1 });
+        skills.push({ action: 'counter', icon: 'Counter_icon.jpg', desc: 'Counter Attack (2 AP, evade next attack, deals damage back to attacker)', cost: 2 }); // Assume Counter_icon.jpg or add
 
         if (type === 'STR') {
-            skills.push({ action: 'protect', icon: 'STR_protection_icon.jpg', desc: 'Protect (3 AP)', cost: 3 });
+            skills.push({ action: 'protect', icon: 'STR_protection_icon.jpg', desc: 'Protect (3 AP, block 50% damage for whole team [2 rounds])', cost: 3 });
         } else if (type === 'WIS') {
-            skills.push({ action: 'explosion', icon: 'WIS_explosion_icon.jpg', desc: 'Explosion (5 AP)', cost: 5 });
+            skills.push({ action: 'explosion', icon: 'WIS_explosion_icon.jpg', desc: 'Explosion (5 AP, deals 150% WIS damage to all enemies)', cost: 5 });
         } else if (type === 'DEX') {
-            skills.push({ action: 'stunning', icon: 'DEX_stunning_icon.png', desc: 'Stunning Strike (3 AP)', cost: 3 }); // Assume you add this
+            skills.push({ action: 'stunning', icon: 'DEX_stunning_icon.png', desc: 'Stunning Strike (3 AP), deal 100% STR/WIS damage, stun enemy for 1 round', cost: 3 }); // Assume you add this
         }
     }
 
@@ -2783,7 +2787,9 @@ function executeActorAction(actor, action) {
             return 'M';
         }
 
-    })()
+        // デフォルト（モンスターなど性別不明の場合）
+        return 'N';
+    })();
 
     // Play sound based on action and gender/type
     let soundToPlay = null;
@@ -2792,12 +2798,22 @@ function executeActorAction(actor, action) {
         case 'defense':
             actor.activeDefense = true;
             log += '! (25% damage reduction until next turn)';
-            soundToPlay = sex === 'F' ? defenseFSound : defenseMSound;
+            // モンスター（sex === 'N'）は防御ボイスを再生しない
+            if (sex === 'F') {
+                soundToPlay = defenseFSound;
+            } else if (sex === 'M') {
+                soundToPlay = defenseMSound;
+            }
             break;
         case 'counter':
             actor.activeCounter = true;
             log += '! (ready to counter)';
-            soundToPlay = sex === 'F' ? counterFSound : counterMSound;
+            // モンスター（sex === 'N'）はカウンターボイスを再生しない
+            if (sex === 'F') {
+                soundToPlay = counterFSound;
+            } else if (sex === 'M') {
+                soundToPlay = counterMSound;
+            }
             break;
         case 'evade':
             actor.activeEvadeBonus = true;
@@ -2811,8 +2827,8 @@ function executeActorAction(actor, action) {
             break;
         case 'blessing':
             if (action.target) {
-                action.target.critChance = Math.min(50, (action.target.critChance || 0) + 10);
-                log += ` on ${action.target.name}! (crit +10%, total ${action.target.critChance}%)`;
+                action.target.critChance = Math.min(50, (action.target.critChance || 0) + 40);
+                log += ` on ${action.target.name}! (crit +40%, total ${action.target.critChance}%)`;
             } else {
                 log += ' but no target was selected!';
             }
@@ -2839,8 +2855,8 @@ function executeActorAction(actor, action) {
             if (action.type === 'stunning') basePercent = 100;
             if (action.type === 'luc_light') basePercent = 25, isLuc = true;
             if (action.type === 'fortune') {
-                if (Math.random() < 0.25) {
-                    basePercent = 500;
+                if (Math.random() < 0.5) {
+                    basePercent = 300;
                     isLuc = true;
                 } else {
                     addBattleLog(`${actor.name}'s Fortune’s Strike misses completely!`);
@@ -2907,7 +2923,6 @@ function executeActorAction(actor, action) {
         nextTurn();
     }, delay);
 }
-
 
 // New helper function: calculates damage, applies it, and returns popup info
 function calculateAndApplyDamage(attacker, target, opts) {
@@ -3020,7 +3035,7 @@ function showDamagePopup(parentElement, amount, isMiss = false, isCritical = fal
         }
     } else {
         popup.textContent = `-${amount}`;
-        popup.style.color = isCritical ? '#ffff00' : '#ff0000'; // Yellow for critical, red for normal
+
         if (isCritical) popup.style.fontSize = '80px';
     }
 
@@ -3273,35 +3288,108 @@ function endBattle(win) {
     const q = currentBattle.quest;
     const day = currentBattle.day;
 
+    // Sync HP and handle deaths from battle (applies to both defense and dungeon)
     currentBattle.team.forEach(battleAdv => {
         const origAdv = findAdv(battleAdv.id);
         if (origAdv) {
             origAdv.hp = battleAdv.hp;
             if (battleAdv.hp <= 0) {
-                gameState.reputation = Math.max(-100, gameState.reputation - 10);
-                gameState.eventHistory.unshift({ day: day, message: `${battleAdv.name} died in defense battle! Reputation -10.` });
-                const idx = gameState.adventurers.findIndex(a => a.id === battleAdv.id);
-                if (idx > -1) gameState.adventurers.splice(idx, 1);
+                // Permanent adventurers dying always costs reputation (same for defense/dungeon)
+                if (!battleAdv.temp) {
+                    gameState.reputation = Math.max(-100, gameState.reputation - 10);
+                    gameState.eventHistory.unshift({ 
+                        day: day, 
+                        message: `${battleAdv.name} が戦闘で死亡しました！ 評判 -10。` 
+                    });
+                    const idx = gameState.adventurers.findIndex(a => a.id === battleAdv.id);
+                    if (idx > -1) gameState.adventurers.splice(idx, 1);
+                } else {
+                    gameState.eventHistory.unshift({ 
+                        day: day, 
+                        message: `${battleAdv.name} が戦闘で失われました。` 
+                    });
+                }
             }
         }
     });
 
     if (win) {
-        const rep = Math.floor(gameState.reputation);
-        const effectiveRep = Math.max(0, rep);
-
-        // Gold reward based solely on reputation
-        const goldReward = Math.floor((effectiveRep + 100));
-
-        // Process the outcome with overridden gold (orb logic now moved inside processQuestOutcome)
-        processQuestOutcome(q, day, true, false, goldReward);
+        // Victory processing
+        if (q.defense) {
+            // Defense-specific gold reward based on reputation
+            const rep = Math.floor(gameState.reputation);
+            const effectiveRep = Math.max(0, rep);
+            const goldReward = Math.floor((effectiveRep + 100));
+            processQuestOutcome(q, day, true, false, goldReward);
+        } else {
+            // Dungeon victory: use normal rewards (treasure + ring, no gold override)
+            processQuestOutcome(q, day, true, false);
+        }
     } else {
-        gameState.eventHistory.unshift({ day: day, message: 'Defense failed! Guild falls. Game Over!' });
-        gameState.gameOver = true;
+        // Defeat processing
+        if (q.defense) {
+            // Only defense defeat causes game over
+            gameState.eventHistory.unshift({ 
+                day: day, 
+                message: '防衛戦失敗！ギルドは崩壊しました。ゲームオーバー！' 
+            });
+            gameState.gameOver = true;
+        } else {
+            // Dungeon defeat: normal failure (reputation loss, etc.)
+            processQuestOutcome(q, day, false, false);
+        }
     }
 
+    // Clear current battle
     currentBattle = null;
-    showModal(day);
+
+    // Check for queued battles (multiple same-day battles)
+    if (gameState.pendingBattles && gameState.pendingBattles.length > 0) {
+        // Start the next queued battle
+        const nextQ = gameState.pendingBattles.shift();
+
+        // Generate enemies
+        if (nextQ.defense) {
+            generateEnemies(nextQ);
+        } else {
+            generateDungeonEnemies(nextQ);
+        }
+
+        const team = nextQ.assigned.map(id => {
+            const adv = findAdv(id);
+            return adv ? {...adv} : null;
+        }).filter(a => a);
+
+        currentBattle = {
+            quest: nextQ,
+            day: day,
+            team: team,
+            enemies: nextQ.enemies.map(e => ({...e})),
+            round: 0,
+            actions: {},
+            phase: 'setup',
+            actionIndex: 0,
+            combatants: []
+        };
+
+        const titleText = nextQ.defense ? `防衛戦: ${nextQ.desc}` : `ダンジョン${nextQ.floor}階探索: ${nextQ.desc}`;
+
+        document.getElementById('battleTitle').innerHTML = titleText;
+        document.getElementById('battleModal').style.display = 'flex';
+        renderBattle();
+
+        crossfadeTo('battleBgm', 1500);
+
+        // If no more pending, clean up
+        if (gameState.pendingBattles.length === 0) {
+            delete gameState.pendingBattles;
+        }
+    } else {
+        // No more battles today
+        delete gameState.pendingBattles;
+        showModal(day);
+        updateDisplays();
+    }
 }
 
 function addBattleLog(text) {
@@ -3474,7 +3562,7 @@ function showDungeonQuest() {
 
     let html = `<div class="gq-panel">
                     <button class="back-btn" onclick="showMainSelection()">戻る</button>
-                    <label>階層: <input type="number" id="dungeonFloor" min="1" value="5"></label>
+                    <label>階層: <input type="number" id="dungeonFloor" min="1" value="1"></label>
                     <div class="form-buttons">
                         <button class="post-btn" onclick="postGuildQuest()">投稿</button>
                     </div>
@@ -3873,7 +3961,7 @@ function renderFacilities() {
                         luck: 'LUC'
                     }[r.stat] || r.stat.toUpperCase();
                     effectHtml = `<p style="margin:12px 0; color:#ffeb3b; font-weight:bold; font-size:1.1em;">
-                                    装備効果: ${statText} +${r.bonus}
+                                    装備効果: ${statText} +${r.bonus}%
                                   </p>`;
                 } else if (currentFacility === 'tavern') {
                     if (r.buff.stat) {
@@ -4217,24 +4305,25 @@ function postGuildQuest() {
             return;
         }
         let floor = parseInt(floorEl.value) || 1;
-        let diff = floor * 12;
+        estimated_difficulty = floor * 10;
         q = {
             id: gameState.nextId++,
             desc: `ダンジョン ${floor}階探索`,
-            difficulty: diff,
-            minStrength: diff * 1.2,
-            minWisdom: diff * 0.8,
-            minDexterity: diff * 1.5,
-            minLuck: diff * 0.5,
+            difficulty: 1,
+            minStrength: 1,
+            minWisdom: 1,
+            minDexterity: 1,
+            minLuck: 1,
             focusStat: "dexterity",
-            minFocus: diff * 2,
+            minFocus: 1,
             type: 7,
             reward: floor * 300,
             playerPosted: true,
             floor: floor,
             daysLeft: 999,
             assigned: [],
-            inProgress: false
+            inProgress: false,
+            rank: `Recommended >${estimated_difficulty}`,
         };
     } else if (type === 'trade') {
         let cityEl = document.getElementById('tradeCity');
@@ -4415,7 +4504,7 @@ function renderCurrentCharacter() {
 
     html += `<h3 style="margin:0 0 15px 0; text-align:center;">${getNameHtml(adv)} Lv ${adv.level}</h3>`;
 
-    html += `<p style="margin:10px 0;"><strong>ステータス（装備・バフ込み）</strong></p><ul style="margin:0; padding-left:20px;">`;
+    html += `<p style="margin:10px 0;"><strong>ステータス</strong></p><ul style="margin:0; padding-left:20px;">`;
     html += `<li>筋力: ${eff.strength} (ベース ${adv.strength})</li>`;
     html += `<li>知恵: ${eff.wisdom} (ベース ${adv.wisdom})</li>`;
     html += `<li>敏捷: ${eff.dexterity} (ベース ${adv.dexterity})</li>`;
@@ -4441,10 +4530,10 @@ function renderCurrentCharacter() {
         html += `</ul>`;
     }
 
-    html += `<p style="margin:15px 0 10px;"><strong>装備（最大2）</strong></p><ul style="margin:0; padding-left:20px;">`;
+    html += `<p style="margin:15px 0 10px;"><strong>装備</strong></p><ul style="margin:0; padding-left:20px;">`;
     if (adv.equipment.length === 0) html += `<li>なし</li>`;
     adv.equipment.forEach((eq, i) => {
-        html += `<li>${eq.name} (+${eq.bonus} ${statFull[eq.stat]})
+        html += `<li>${eq.name} (+${eq.bonus}% ${statFull[eq.stat]})
                  <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">解除</button></li>`;
     });
     html += `</ul>`;
@@ -4453,7 +4542,7 @@ function renderCurrentCharacter() {
     if (equippable.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>装備可能アイテム</strong></p><ul style="margin:0; padding-left:20px;">`;
         equippable.forEach(it => {
-            html += `<li>${it.name} x${it.qty || 1} (+${it.bonus} ${statFull[it.stat]}) 
+            html += `<li>${it.name} x${it.qty || 1} (+${it.bonus}% ${statFull[it.stat]}) 
                      <button onclick="equipToChar(${currentCharIndex}, ${it.id})">装備</button></li>`;
         });
         html += `</ul>`;
@@ -4719,7 +4808,10 @@ document.addEventListener('keydown', (event) => {
     const charactersmodal = document.getElementById('charactersModal');
     const characters_modal_displaying = charactersmodal && window.getComputedStyle(charactersmodal).display !== 'none';
     const questCompletion_modal = document.getElementById('questCompletionModal');
-    const questCompletion_modal_displaying = questCompletion_modal && window.getComputedStyle(questCompletion_modal).display !== 'none';    
+    const questCompletion_modal_displaying = questCompletion_modal && window.getComputedStyle(questCompletion_modal).display !== 'none';   
+    const battleModal_modal = document.getElementById('battleModal');
+    const battleModal_modal_displaying = battleModal_modal && window.getComputedStyle(battleModal_modal).display !== 'none';         
+    
     
     console.log(event_modal_displaying);
     if (key === 'a' || event.key === 'ArrowLeft') {
@@ -4756,7 +4848,7 @@ document.addEventListener('keydown', (event) => {
         const advId = q.assigned[q.assigned.length - 1];
 
         unassign(questId, advId);
-    } else if (event.key === 'Enter') {
+    } else if (event.key === 'Enter' && !event_modal_displaying && !shop_modal_displaying && !characters_modal_displaying && !battleModal_modal_displaying) {
         playDay();
     } else if (event.key === ' ') {
     event.preventDefault(); // 常にページスクロールを防止（ゲーム中は不要）

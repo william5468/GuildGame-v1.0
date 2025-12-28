@@ -85,20 +85,21 @@
     <div class="main">
         <!-- index.html の .left 内を以下のように修正（#availableAdvs を横スクロール対応に） -->
         <div class="left">
-            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin-bottom:20px;">利用可能冒険者</h3>
-            <div id="availableAdvs" class="horizontal-scroll-container"></div>
-
-            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin:30px 0 20px;">募集冒険者</h3>
-            <div id="recruits"></div> <!-- 募集は従来通り縦配置のまま（必要に応じて同じ処理を適用可） -->
-        </div>
-        <div class="right">
             <div class="quest-nav">
                 <h2>クエスト&nbsp;&nbsp;&nbsp;</h2>
                 <button onclick="prevQuest()">‹ 前</button>
                 <span id="questCounter"></span>
                 <button onclick="nextQuest()">次 ›</button>
             </div>
-            <div id="quests"></div>
+            <div id="quests"></div>            
+
+        </div>
+        <div class="right">
+            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin-bottom:20px;">利用可能冒険者</h3>
+            <div id="availableAdvs" class="horizontal-scroll-container"></div>
+
+            <h3 style="text-align:center; color:#ffffff; text-shadow:0 0 8px rgba(0,0,0,0.8); margin:30px 0 20px;">募集冒険者</h3>
+            <div id="recruits"></div> <!-- 募集は従来通り縦配置のまま（必要に応じて同じ処理を適用可） -->
         </div>
     </div>
 
