@@ -101,7 +101,7 @@ ul {list-style:none; padding:0;}
 
 /* Shop title – prominent and glowing */
 #shopModal h2 {
-    font-size: 2.4em;
+    font-size: 1.5em;
     color: #ffffff;
     text-shadow: 0 0 12px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.8);
     text-align: center;
@@ -166,7 +166,7 @@ ul {list-style:none; padding:0;}
 /* Close button itself – solid/opaque red for maximum visibility */
 #shopModal .modal-buttons button {
     padding: 8px 29px !important;           /* Larger for prominence */
-    font-size: 1.4em !important;
+    font-size: 1em !important;
     font-weight: bold;
     background: #e74c3c !important;          /* Solid bright red – no transparency */
     color: #ffffff !important;
@@ -405,11 +405,11 @@ body {
 
 .quest-card {
     position: relative;
-    width: 700px;                    /* Wide card to fully show the scroll image */
-    max-width: 95vw;                 /* Responsive – prevent overflow on small screens */
+    width: 100%;                     /* Take full available width of container */
+    max-width: 700px;                /* Cap at preferred wide size, but never exceed container */
     min-height: 320px;
-    margin: 20px auto;               /* More vertical spacing, centered */
-    padding: 60px 80px 80px;         /* Extra side padding to create "margins" inside the scroll */
+    margin: 20px auto;               /* Center horizontally when there's room */
+    padding: 60px 80px 80px;          /* Keep generous inner "margins" for scroll look */
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -562,7 +562,7 @@ color: #f5f5f5;
 
 /* Optional: Darken text slightly for better contrast on bright backgrounds */
 h1, h3, button, .adventurer-card, .quest-card {
-    color: #2c3e50;
+    color: #000000;
 }
 
 
@@ -728,11 +728,11 @@ h1, h3, button, .adventurer-card, .quest-card {
 .quest-card.discovery { border-left: 4px solid #0000ff; }
 .quest-card.escort { border-left: 4px solid #00ff00; }
 .quest-card.fetch { border-left: 4px solid #ffff00; }
-.quest-card.defense { border-left: 4px solid #ff4500; background: #fff5ee; }
-.quest-card.training { border-left: 4px solid #9b59b6; background: #f5e6ff; }
-.quest-card.main { border-left: 4px solid #e67e22; background: #fef5e7; }
-.quest-card.dungeon { border-left: 4px solid #8e44ad; background: #f4ecf7; }
-.quest-card.trade { border-left: 4px solid #27ae60; background: #eafaf1; }
+.quest-card.defense { border-left: 4px solid #ff4500;  }
+.quest-card.training { border-left: 4px solid #9b59b6;}
+.quest-card.main { border-left: 4px solid #e67e22; }
+.quest-card.dungeon { border-left: 4px solid #8e44ad;}
+.quest-card.trade { border-left: 4px solid #27ae60;}
 .quest-card h3 {font-size: 1em; margin: 0 0 4px 0;}
 .quest-card p {font-size: 0.85em; margin: 2px 0;}
 .quest-card.drag-over {border:2px dashed #3498db; background:#e3f2fd;}
@@ -1589,4 +1589,185 @@ h1, h3, button, .adventurer-card, .quest-card {
 /* オプション: 満タン時やホバー時の追加効果（任意） */
 .progress-bar:hover .progress-fill.ap-fill {
     box-shadow: 0 0 12px rgba(156, 39, 176, 0.8);
+}
+
+/* Basic tablet + mobile layout – stack panels vertically */
+@media (max-width: 1024px) {
+    .main {
+        flex-direction: column;      /* Stack left and right panels */
+        gap: 15px;
+        padding: 10px;
+    }
+
+    .left,
+    .right {
+        min-width: 0;                /* Override large min-widths */
+        width: 100%;                 /* Full width */
+        max-width: none;
+        min-height: auto;
+    }
+
+    .left {
+        flex: 1;                     /* Equal space */
+    }
+
+    .right {
+        flex: 1;
+    }
+
+    /* Optional: Reduce panel padding on smaller screens */
+    .left,
+    .right {
+        padding: 15px;
+    }
+}
+
+/* Extra tweaks for phones only (≤ 768px) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px 5px;           /* Less side padding */
+    }
+
+    /* Make quest card less wide and with smaller side padding */
+    .quest-card {
+        max-width: 100%;             /* Full width of container */
+        padding: 40px 20px 60px;     /* Reduce heavy side padding */
+        min-height: 280px;
+    }
+
+    /* Reduce large modal paddings for better mobile fit */
+    #shopModal .modal-content,
+    #charactersModal .modal-content {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    /* Slightly smaller titles/buttons in modals */
+    #shopModal h2,
+    #guildQuestsModal h2 {
+        font-size: 2em;
+    }
+
+    /* Battle content – increase scale on small screens (less cramped) */
+    #battleContent {
+        transform: scale(0.9);       /* Was 0.7 – bump up for phones */
+    }
+}
+
+/* Very small phones (≤ 480px) – final squeeze */
+@media (max-width: 480px) {
+    .quest-card {
+        padding: 30px 15px 50px;
+    }
+
+    #battleContent {
+        transform: scale(1);         /* Full size on tiny screens */
+    }
+
+    button {
+        padding: 10px 14px;          /* Slightly smaller buttons */
+        font-size: 0.95em;
+    }
+}
+
+
+
+/* Event Modal – Wide enough for full scroll */
+#eventModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#eventModal .modal-content {
+    width: 94vw;                           /* Very wide on all screens */
+    max-width: 1264px;                     /* Plenty of room for 1264px scroll + padding */
+    min-height: 85vh;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#eventModal h2 {
+    font-size: clamp(2em, 4.5vw, 3.5em);
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+}
+
+#eventModal .modal-buttons {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 30px auto 10px;
+    text-align: center;
+    max-width: 600px;
+}
+
+
+
+/* Success parchment – enlarged proportionally by 1.1x (110%) while centered */
+.quest-scroll.quest-scroll-success {
+    background-image: url('Images/QuestScroll_Success.jpg');
+    background-size: 110%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;         /* No fallback color to block image */
+}
+
+/* Fail parchment – enlarged proportionally by 1.1x (110%) while centered */
+.quest-scroll.quest-scroll-fail {
+    background-image: url('Images/QuestScroll_Fail.jpg');
+    background-size: 105%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;         /* No fallback color to block image */
+}
+/* Force all backgrounds transparent in .scroll-content and its children */
+/* This ensures nothing blocks the parchment background image */
+
+.scroll-content,
+.scroll-content * {
+
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.modal-content h3{
+    color:#ffffff;
+}
+
+.modal-content #pageInfo{
+    color:#ffffff;
+}
+
+#modalContent{
+    background: transparent;
+}
+
+#modalContent p{
+    color:#ffffff;
 }

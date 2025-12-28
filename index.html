@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ギルドマスターゲーム - 完全修正版</title>
@@ -116,20 +117,19 @@
     <div id="shopModal">
         <div class="modal-content">
             <h2>店</h2>
+            <div id="shopContent"></div>
             <div class="modal-buttons">
                 <button onclick="closeShop()">閉じる</button>
             </div>
-            <div id="shopContent"></div>
-
         </div>
     </div>
     <div id="charactersModal">
         <div class="modal-content">
-            <h2>キャラクター</h2>
+            <h2>キャラクター</h2>          
+            <div id="charactersContent"></div>
             <div class="modal-buttons">
                 <button onclick="closeCharacters()">閉じる</button>
-            </div>            
-            <div id="charactersContent"></div>
+            </div>               
 
         </div>
     </div>
@@ -168,6 +168,7 @@
             <div id="guildQuestsContent"></div>
         </div>
     </div>
+    <script src="constants.js"></script>
     <script src="javascript.js"></script>
 </body>
 </html>
