@@ -1776,3 +1776,96 @@ h1, h3, button, .adventurer-card, .quest-card {
 #modalContent p{
     color:#ffffff;
 }
+/* Force backgrounds transparent for everything EXCEPT ally/enemy cards, progress bar elements, and buttons */
+#battleModal *:not(.battle-ally):not(.battle-enemy):not(.progress-bar):not(.progress-fill):not(.hp-fill):not(.ap-fill):not(button) {
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove any modal borders/shadows */
+#battleModal .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Restore background only for ally and enemy units (cards) */
+#battleModal .battle-ally,
+#battleModal .battle-enemy {
+    background-color: rgba(30, 30, 50, 0.85) !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(100, 150, 255, 0.4) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7) !important;
+    padding: 12px !important;
+}
+
+/* Overall readability on transparent background */
+#battleModal {
+    color: #ffffff !important;
+    text-shadow: 
+        1px 1px 2px #000000,
+        0 0 8px #000000;
+    font-weight: bold;
+}
+
+/* Specific styling for the "Start Round" button inside .battle-top */
+#battleModal .battle-top button {
+    background-color: rgba(0, 140, 255, 0.85) !important; /* Vibrant blue background */
+    color: #ffffff !important;
+    border: 2px solid rgba(100, 200, 255, 0.9) !important;
+    border-radius: 10px !important;
+    padding: 14px 32px !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+    transition: all 0.3s ease !important;
+    min-width: 180px !important;
+    text-align: center !important;
+}
+
+/* Hover effect for the Start Round button */
+#battleModal .battle-top button:hover {
+    background-color: rgba(0, 170, 255, 0.95) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Simple styling for the Close button (so it remains visible but less prominent) */
+#battleModal .modal-buttons button {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+}
+
+#battleModal .modal-buttons button:hover {
+    background-color: rgba(100, 0, 0, 0.8) !important; /* Subtle red tint on hover for "close" feel */
+}
+
+/* Optional battle log panel for readability */
+#battleModal .battle-top {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    border-radius: 10px !important;
+    padding: 15px !important;
+    margin: 10px !important;
+    border: 1px solid rgba(100, 150, 255, 0.3) !important;
+    text-align: center !important; /* Centers the button horizontally */
+}
+
+#battleModal #battleLog {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 15px !important;
+}
+
+#battleModal .modal-content::-webkit-scrollbar {
+    display: none;                /* Safari and Chrome */
+}

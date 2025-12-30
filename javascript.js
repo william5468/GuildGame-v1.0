@@ -1,3 +1,4 @@
+let CurrentQuestType = "None";
 /* === ローディング画面用プリロード機能 === */
 let loadedCount = 0;
 let currentGuildQuestType = 'main';
@@ -50,15 +51,75 @@ function preloadAssets() {
         }
     });
 }
+
+function Render_Mainadventurer() {
+    const names = mainCharacterNames[currentLang] || mainCharacterNames.ja;  // Fallback to ja
+
+    // カイト (STR/DEX 特化の二刀流騎士)
+    const kaito = {
+        id: gameState.nextId++,
+        name: names.kaito,
+        gender: 'male',
+        image: 'カイト.png',
+        strength: 30,
+        wisdom: 10,
+        dexterity: 25,
+        luck: 10,
+        level: 1,
+        exp: 0,
+        hp: 100,
+        maxHp: 100,
+        mp: 130,
+        maxMp: 130,
+        equipment: [],
+        buffs: [],
+        temp: false,
+        busy: false,
+        critChance: 10,
+    };
+
+    gameState.adventurers.push(kaito);
+
+    // ルナ (WIS 特化の魔法使い)
+    const luna = {
+        id: gameState.nextId++,
+        name: names.luna,
+        gender: 'female',
+        image: 'ルナ.png',
+        strength: 10,
+        wisdom: 30,
+        dexterity: 10,
+        luck: 25,
+        level: 1,
+        exp: 0,
+        hp: 100,
+        maxHp: 100,
+        mp: 130,
+        maxMp: 130,
+        equipment: [],
+        buffs: [],
+        temp: false,
+        busy: false,
+        critChance: 10
+    };
+
+    gameState.adventurers.push(luna);
+}
+
+
 function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
+    Render_Mainadventurer();
+    
 }
 
 function skipIntro(){
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
     document.getElementById('introModal').style.display = 'none';
+    loadGame();
+    updateDisplays();
 
 }
 
@@ -132,7 +193,7 @@ let gameState = {
     mainProgress: 0,
     dailyMaterials: [],
     // 新規追加：クエスト完了ダイアログの既視フラグ（同じ内容は1回だけ再生）
-    seenCompletionDialogues: new Set()
+    seenCompletionDialogues: new Set(),
 };
 
 // gameState の定義直後（let gameState = { ... }; の次）に以下のコードを挿入
@@ -142,57 +203,9 @@ let gameState = {
 
 
 
-if (gameState.adventurers.length === 0 && gameState.day === 1) {
-    // カイト (STR/DEX 特化の二刀流騎士)
-    const kaito = {
-        id: gameState.nextId++,
-        name: 'カイト',
-        gender: 'male',
-        image: 'カイト.png',
-        strength: 30,
-        wisdom: 10,
-        dexterity: 25,
-        luck: 10,
-        level: 1,
-        exp: 0,
-        hp: 100,
-        maxHp: 100,
-        mp: 130,
-        maxMp: 130,
-        equipment: [],
-        buffs: [],
-        temp: false,
-        busy: false,
-        critChance: 10,
-    };
+// Updated initial adventurer creation code (in javascript.js or wherever the block is)
 
-    gameState.adventurers.push(kaito);
 
-    // ルナ (WIS 特化の魔法使い)
-    const luna = {
-        id: gameState.nextId++,
-        name: 'ルナ',
-        gender: 'female',
-        image: 'ルナ.png',
-        strength: 10,
-        wisdom: 30,
-        dexterity: 10,
-        luck: 25,
-        level: 1,
-        exp: 0,
-        hp: 100,
-        maxHp: 100,
-        mp: 130,
-        maxMp: 130,
-        equipment: [],
-        buffs: [],
-        temp: false,
-        busy: false,
-        critChance: 10
-    };
-
-    gameState.adventurers.push(luna);
-}
 
 
 function getQuestRank(difficulty) {
@@ -384,9 +397,10 @@ function buyExpansion() {
     updateDisplays();
 }
 
-function randomName(gender){
-    const names = gender === 'M' ? maleNames : femaleNames;
-    return names[Math.floor(Math.random()*names.length)];
+function randomName(gender) {  // gender: 'male' or 'female' (string, lowercase)
+    const names = adventurerNames[currentLang] || adventurerNames.ja;  // fallback to ja
+    const pool = names[gender] || names.female;  // default to female if invalid
+    return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // generateQuest 関数を以下のものに完全に置き換え
@@ -410,22 +424,20 @@ function generateQuest(){
     let qType = 5
 
     if (primary === 0) { // kill (STR)
-        const pool = killDescsByRank[rank];
+        const descs = killDescsByRank[currentLang] || killDescsByRank.ja;
+        const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
         qType = 0;
         storyindex = Math.floor(Math.random() * pool.length); 
         desc = pool[storyindex];
     } else if (primary === 1) { // discovery (WIS)
-    let pool = discoveryDescsByRank[rank] || discoveryDescsByRank['F']; // 通常ランクは通常プール
+    const descs = discoveryDescsByRank[currentLang] || discoveryDescsByRank.ja;
+    const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
+    
     let useEpic = false;
 
     // Bランク以上はepic discoveryDescsを使用（NPC発見可能）
     if (['B','B+','A','A+','S'].includes(rank)) {
         useEpic = true;
-        if (rank === 'B') pool = discoveryDescs.slice(0, 3);
-        else if (rank === 'B+') pool = discoveryDescs.slice(3, 6);
-        else if (rank === 'A') pool = discoveryDescs.slice(6, 8);
-        else if (rank === 'A+') pool = discoveryDescs.slice(8, 10);
-        else pool = discoveryDescsByRank['S']; // Sランクは専用
     }
 
     qType = 1;
@@ -446,12 +458,14 @@ function generateQuest(){
     }
 
     } else if (primary === 2) { // escort (DEX)
-        const pool = escortDescsByRank[rank];
+        const descs = escortDescsByRank[currentLang] || escortDescsByRank.ja;
+        const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
         qType = 2;
         storyindex = Math.floor(Math.random() * pool.length); 
         desc = pool[storyindex];
     } else { // fetch (LUC)
-        const pool = fetchQuestsByRank[rank];
+        const quests = fetchQuestsByRank[currentLang] || fetchQuestsByRank.ja;
+        const pool = quests[rank] || quests['F']; // fallback to F rank if invalid
         qType = 3;
         storyindex = Math.floor(Math.random() * pool.length); 
         const entry = pool[storyindex];
@@ -500,58 +514,8 @@ function showModal(day) {
 
 
 
-const allAlchemyMaterials = [
-    // === 元の生素材 + クラフト素材（8種） ===
-    "鉄鉱石", "薬草", "スパイス", "宝石",
-    "鋼のインゴット", "活力の粉", "炎の粉", "魔法の結晶",
 
-    // === fetch生素材（recipesで使用される全種） ===
-    // F/F+
-    "キノコ", "花", "普通の薬草", "川魚", "鉄の欠片",
 
-    // D/D+
-    "狼の毛皮", "魔力の結晶（小）",
-
-    // D+/C
-    "オークの牙", "古代の巻物断片", "希少スパイス",
-
-    // C/C+
-    "グリフォンの羽", "ヒドラの毒袋", "聖水",
-
-    // C+/B
-    "ユニコーンの角", "禁断の魔導書頁", "フェニックスの灰",
-    "星の欠片", "天使の羽", "デーモンの心臓",
-
-    // B+/A
-    "古代ドラゴンの鱗", "エーテルの結晶", "神の涙",
-    "タイタンの骨", "永遠の炎", "神聖な遺物",
-
-    // A+/S
-    "エルダードラゴンの心臓", "深淵の核", "光の神器の欠片",
-    "世界の源石", "創世の欠片", "滅びの結晶",
-
-    // === 新規クラフト素材（チェイン用、30種） ===
-    "鉄草合金粉", "森のエキス",
-    "精鉄インゴット", "獣皮エキス",
-    "牙鋼インゴット", "古魔導粉", "希少活力粉",
-    "風翼結晶", "聖魔導結晶",
-    "禁断魔導晶", "不死鳥炎粉",
-    "龍鋼装甲材", "エーテル魔晶",
-    "巨神骨鋼", "永劫炎粉", "神聖遺晶",
-    "古龍心鋼", "深淵エーテル晶", "光神器晶", "終焉破壊粉",
-    "滅び深淵晶"
-]
-
-function getAlchemyMaterialOptions() {
-    let html = '<option value="">材料を選択</option>';
-    allAlchemyMaterials.forEach(mat => {
-        const cnt = countItem(mat);
-        if (cnt > 0) {
-            html += `<option value="${mat}">${mat} (在庫: ${cnt})</option>`;
-        }
-    });
-    return html;
-}
 
 function updateAlchemyPreview() {
     const ing1 = document.getElementById('alchemyIng1')?.value || '';
@@ -656,7 +620,7 @@ function generateDefenseQuest() {
 function generateTrainingQuest() {
     return {
         id: gameState.nextId++,
-        desc: 'トレーニングクエスト',
+        desc: t('training_quest_name'),
         difficulty: 1,
         minStrength: 0,
         minWisdom: 0,
@@ -1274,13 +1238,16 @@ function buyMaterial(idx) {
 
 let currentShopPage = 0;
 
+
+// Updated shopSections (use keys instead of hardcoded titles)
 const shopSections = [
-    { title: "アイテム購入", render: renderShopPurchase },
-    { title: "今日の素材", render: renderDailyMaterials },
-    { title: "ギルド拡張", render: renderGuildExpansion },
-    { title: "商人を脅す", render: renderCorruption },
-    { title: "アイテム売却", render: renderSellItems }
+    { key: 'shop_purchase', render: renderShopPurchase },
+    { key: 'daily_materials', render: renderDailyMaterials },
+    { key: 'guild_expansion', render: renderGuildExpansion },
+    { key: 'corrupt_merchant', render: renderCorruption },
+    { key: 'sell_items', render: renderSellItems }
 ];
+
 
 function renderShopPurchase() {
     let html = '<ul class="shop-list">';
@@ -1400,14 +1367,25 @@ function renderSellItems() {
     return html;
 }
 
+// Updated renderCurrentShopPage() and navigation functions
+// Updated renderCurrentShopPage() and navigation functions
 function renderCurrentShopPage() {
     const section = shopSections[currentShopPage];
-    let html = `<h2 class="shop-title">${section.title}</h2>`;
+    
+    // Use translated title from key
+    let html = `<h2 class="shop-title">${t(section.key)}</h2>`;
+    
+    // Shop navigation with translatable buttons and page counter
     html += `<div class="char-nav shop-nav">`;
-    html += `<button onclick="prevShopPage()">前</button>`;
-    html += `<span class="page-counter">${currentShopPage + 1} / ${shopSections.length}</span>`;
-    html += `<button onclick="nextShopPage()">次</button>`;
+    html += `<button onclick="prevShopPage()">${t('shop_prev')}</button>`;
+    html += `<span class="page-counter">${t('shop_page_counter', { 
+        current: currentShopPage + 1, 
+        total: shopSections.length 
+    })}</span>`;
+    html += `<button onclick="nextShopPage()">${t('shop_next')}</button>`;
     html += `</div>`;
+    
+    // Render the current section content
     html += section.render();  // Each render function returns a string
     
     // Directly update the DOM
@@ -1416,9 +1394,10 @@ function renderCurrentShopPage() {
         contentElement.innerHTML = html;
     }
     
-    // Also return the html for flexibility (in case any old code expects it)
+    // Return html for flexibility
     return html;
 }
+
 function prevShopPage() {
     currentShopPage = (currentShopPage - 1 + shopSections.length) % shopSections.length;
     renderCurrentShopPage();
@@ -1428,7 +1407,6 @@ function nextShopPage() {
     currentShopPage = (currentShopPage + 1) % shopSections.length;
     renderCurrentShopPage();
 }
-
 function toggleShop() {
     const modal = document.getElementById('shopModal');
     if (modal.style.display === 'block') {
@@ -1537,8 +1515,8 @@ function getDailyRandomFraction(str) {
 function getRecruitsHtml(){
     const numPerms = gameState.adventurers.filter(a => !a.temp).length;
     const full = numPerms >= gameState.maxPermanentSlots;
-    if(!gameState.recruitPending.length) return '<h3>募集保留</h3><p>なし</p>';
-    let html='<h3>募集保留</h3>';
+    if(!gameState.recruitPending.length) return '';
+    let html='';
     gameState.recruitPending.forEach((adv,i)=>{
         const baseStr = adv.strength;
         const baseWis = adv.wisdom;
@@ -1608,108 +1586,6 @@ function getAvailableHtml(){
     return html;
 }
 
-function getQuestsHtml(){
-    let html='<h3>利用可能クエスト</h3>';
-    gameState.quests.forEach(q=>{
-        let typeClass = questTypeClasses[q.type] || '';
-        if (q.side) typeClass += ' side';
-        if (q.training) typeClass = 'training';
-        if (q.playerPosted) {
-            if (q.type === 6) typeClass = 'main';
-            else if (q.type === 7) typeClass = 'dungeon';
-            else if (q.type === 8) typeClass = 'trade';
-        }
-        const teamStr=q.assigned.reduce((s,id)=>s + getEffectiveStat(findAdv(id), 'strength'), 0);
-        const teamWis=q.assigned.reduce((s,id)=>s + getEffectiveStat(findAdv(id), 'wisdom'), 0);
-        const teamDex=q.assigned.reduce((s,id)=>s + getEffectiveStat(findAdv(id), 'dexterity'), 0);
-        const teamLuk=q.assigned.reduce((s,id)=>s + getEffectiveStat(findAdv(id), 'luck'), 0);
-        let estDays = 'N/A';
-        let chance = 0;
-        const maxSlots = q.training ? 2 : 4;
-        if (q.assigned.length > 0) {
-            if (q.training) {
-                estDays = '1日';
-                chance = 100;
-            } else if (q.defense) {
-                estDays = 'Today: Battle';
-                chance = 'Tactical Combat';
-            } else if (q.type === 8) {
-                const meetsAll = teamDex >= q.minDexterity && teamLuk >= q.minLuck;
-                if (!meetsAll) {
-                    estDays = '失敗 (DEX/LUC不足)';
-                    chance = 0;
-                } else {
-                    let days;
-                    if (q.inProgress && q.tradeRemainingDays !== undefined && q.tradeRemainingDays > 0) {
-                        days = q.tradeRemainingDays;
-                        estDays = `${days}日残り (確定成功)`;
-                    } else {
-                        const avgDex = teamDex / q.assigned.length || 1;
-                        const avgLuc = teamLuk / q.assigned.length || 1;
-                        days = calcTradeRequiredDays(avgDex, avgLuc);
-                        estDays = q.inProgress ? `${days}日残り (確定成功)` : `${days}日 (確定成功)`;
-                    }
-                    chance = 100;
-                }
-            } else {
-                const meetsAll = teamStr >= q.minStrength && teamWis >= q.minWisdom && teamDex >= q.minDexterity && teamLuk >= q.minLuck;
-                if (!meetsAll) {
-                    estDays = '失敗';
-                    chance = 0;
-                } else {
-                    let teamFocus = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), q.focusStat), 0);
-                    const excess = (teamFocus / q.minFocus) - 1;
-                    const prob = Math.min(0.5, 0.1 + Math.max(0, excess) * 0.2);
-                    chance = Math.round(prob * 100);
-                    estDays = Math.max(1, Math.ceil(1 / prob));
-                }
-            }
-        }
-        let assignedHtml = '';
-        q.assigned.forEach(id=>{
-            const a=findAdv(id);
-            if(a){
-                if(q.inProgress){
-                    const nameHtml = getNameHtml(a);
-                    assignedHtml += `<span class="assigned-adventurer"><img src="${a.image}" class="adventurer-img">${nameHtml}</span>`;
-                } else {
-                    const nameHtml = getNameHtml(a);
-                    assignedHtml += `<span class="assigned-adventurer"><img src="${a.image}" class="adventurer-img">${nameHtml} <button class="cancel-btn" onclick="unassign(${q.id}, ${id})">X</button></span>`;
-                }
-            }
-        });
-        const minHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength} | <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom} | <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity} | <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck}`;
-        const teamHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
-        html+=`<div class="quest-card ${typeClass}" data-quest-id="${q.id}"
-                 ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
-            <h3>${q.desc}</h3>`;
-        if (q.training) {
-            html += `<p><strong>常時利用可能なトレーニングクエスト（最大2人）</strong></p>`;
-            html += `<p>低いレベルの冒険者はペアの高いレベル相当のEXPを獲得。リスクなし、報酬なし。</p>`;
-            html += `<p>難易度: ${q.difficulty}（固定） | 必要ステータス: 全て0</p>`;
-        } else {
-            html += `<p>難易度: ${q.difficulty} | 残り日数: ${q.daysLeft} | 報酬: ${q.reward}g</p>`;
-            if (q.defense) {
-                html += `<p><strong style="color:red;">防衛クエスト - 1-4人の防衛者を割り当てなければゲームオーバー！</strong></p>`;
-            }
-            if (!q.defense && !q.playerPosted) {
-                html += `<p>必要: ${minHtml}</p>`;
-            }
-        }
-        html += `<p>予想日数: ${estDays}</p>
-            <p>チーム: ${teamHtml} | 成功確率: ${chance}%</p>
-            <div>割り当て済み (${q.assigned.length}/${maxSlots}): ${assignedHtml}</div>`;
-        if(q.assigned.length === 0 && !q.inProgress && !q.defense && !q.training && !q.playerPosted){
-            const rejectPenalty = (0.1 * q.difficulty).toFixed(1);
-            html += `<p><button onclick="rejectQuest(${q.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">クエスト拒否 (評判 -${rejectPenalty})</button></p>`;
-        }
-        if(q.inProgress){
-            html += `<p class="in-progress">進行中 - 冒険者の割り当て解除不可</p>`;
-        }
-        html += `</div>`;
-    });
-    return html;
-}
 
 function calcTradeRequiredDays(avgDex, avgLuc) {
     const avgStat = (avgDex + avgLuc) / 2;
@@ -1720,18 +1596,27 @@ function updateDay(){
     const current_week = Math.floor((gameState.day - 1) / 7);
     const next_tax_day = (current_week + 1) * 7;
     const daysUntilTax = next_tax_day - gameState.day;
-    const estimatedTax = Math.floor(Math.floor((next_tax_day) * 10));
+    const estimatedTax = Math.floor(next_tax_day * 10);  // Fixed minor redundancy in original
+
     let taxDisplay;
     if (daysUntilTax === 0) {
-        taxDisplay = `今日の税金: ${estimatedTax}g`;
+        taxDisplay = `${t('tax_today_prefix')} ${estimatedTax}g`;
     } else {
-        taxDisplay = `${daysUntilTax}日後の税金: ${estimatedTax}g`;
+        taxDisplay = t('tax_later_prefix', {days: daysUntilTax}) + ` ${estimatedTax}g`;
     }
+
     let status = '';
     if (gameState.gameOver) {
-        status = ' | <span style="color:red; font-weight:bold;">ゲームオーバー</span>';
+        status = ` | <span style="color:red; font-weight:bold;">${t('game_over_text')}</span>`;
     }
-    document.getElementById('day').innerHTML=`<h2>日 ${gameState.day} | ゴールド: ${gameState.gold} | 評判: ${Math.max(0, gameState.reputation.toFixed(0))} | ${taxDisplay}${status}</h2>`;
+
+    const dayPart = t('day_format', {day: gameState.day});
+    const goldPart = `${t('gold_label')} ${gameState.gold}`;
+    const repPart = `${t('reputation_label')} ${Math.max(0, gameState.reputation.toFixed(0))}`;
+
+    document.getElementById('day').innerHTML = 
+        `<h2>${dayPart} | ${goldPart} | ${repPart} | ${taxDisplay}${status}</h2>`;
+
 }
 
 function updateDisplays(){
@@ -1826,7 +1711,9 @@ function isPartyWiped(q) {
 }
 
 function playTutorialDialogue(){
-    queueQuestCompletionDialogue(TutorialDialogue);
+    // Use the language-specific tutorial dialogue at runtime
+    const currentTutorial = tutorialDialogues[currentLang] || tutorialDialogues.ja;
+    queueQuestCompletionDialogue(currentTutorial);
 }
 
 function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride = null) {
@@ -2512,7 +2399,8 @@ function playDay(){
         };
 
         const titleText = currentQ.defense ? `防衛戦: ${currentQ.desc}` : `ダンジョン${currentQ.floor}階探索: ${currentQ.desc}`;
-
+        CurrentQuestType = currentQ.defense ? 'defense' : 'dungeon';
+        console.log(CurrentQuestType);
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
@@ -2529,6 +2417,24 @@ function playDay(){
 
 function renderBattle() {
     if (!currentBattle) return;
+
+    // 戦闘タイプに応じてモーダルの背景画像を動的に変更
+    const modalContent = document.querySelector('#battleModal');
+    if (modalContent) {
+        const backgrounds = {
+            defense: 'Images/Street.jpg',                    // デフォルト（通常戦闘）
+            dungeon: 'Images/DungeonQuest_Background.jpg',    // ダンジョン戦闘用（パスは適宜調整）
+            // 必要に応じて追加してください
+        };
+        console.log(CurrentQuestType);
+        const bgUrl = backgrounds[CurrentQuestType] || backgrounds.normal;
+        modalContent.style.backgroundImage = `url('${bgUrl}')`;
+        // CSSで既に設定されている場合も上書きされるようinline styleで指定
+        modalContent.style.backgroundSize = 'cover';
+        modalContent.style.backgroundPosition = 'center';
+        modalContent.style.backgroundRepeat = 'no-repeat';
+    }
+
     // Initialize defaults if missing
     if (!currentBattle.log) currentBattle.log = [];
     if (!currentBattle.round) currentBattle.round = 1;
@@ -2775,13 +2681,21 @@ function executeActorAction(actor, action) {
                 return 'F';
             }        
         // 名前リストで判定（男名優先 → 女名 → フォールバック）
-        if (maleNames.includes(actor.name)) {
-            return 'M';
-        }
-        if (femaleNames.includes(actor.name)) {
-            return 'F';
-        }
-
+        if (actor.gender === 'male') {
+                return 'M';
+            }
+            if (actor.gender === 'female') {
+                return 'F';
+            }
+            // Rare fallback for very old saves without gender field
+            // (only checks original Japanese names — safe but unnecessary in normal play)
+            if (adventurerNames.ja.male.includes(actor.name)) {
+                return 'M';
+            }
+            if (adventurerNames.ja.female.includes(actor.name)) {
+                return 'F';
+            }
+   
         // 画像ファイル名で明示的に性別がわかる場合（両方の表記形式に対応）
         const imgLower = (actor.image || '').toLowerCase();
         if (imgLower.includes('(f)') || imgLower.includes('_f')) {
@@ -4625,13 +4539,14 @@ function getDisplayableQuests() {
     return gameState.quests.filter(q => !q.completed);
 }
 
+// Updated renderQuests() with full translation support
 function renderQuests() {
     const quests = getDisplayableQuests(); // !q.completed のクエスト
     const container = document.getElementById('quests');
     const counter = document.getElementById('questCounter');
 
     if (quests.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#ffffff; padding:60px; font-size:1.4em;">利用可能なクエストはありません。</p>';
+        container.innerHTML = `<p style="text-align:center; color:#ffffff; padding:60px; font-size:1.4em;">${t('no_available_quests')}</p>`;
         counter.textContent = '';
         return;
     }
@@ -4641,7 +4556,7 @@ function renderQuests() {
     if (currentQuestIndex < 0) currentQuestIndex = quests.length - 1;
 
     const q = quests[currentQuestIndex];
-    counter.textContent = `${currentQuestIndex + 1} / ${quests.length}`;
+    counter.textContent = t('quest_counter', {current: currentQuestIndex + 1, total: quests.length});
 
     // タイプクラス設定
     let typeClass = questTypeClasses[q.type] || '';
@@ -4660,32 +4575,34 @@ function renderQuests() {
     const teamLuk = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'luck'), 0);
 
     // 予想日数・成功確率計算
-    let estDays = 'N/A';
+    let estDays = t('na');
     let chance = 0;
+    let chanceSuffix = '%';
     const maxSlots = q.training ? 2 : 4;
 
     if (q.assigned.length > 0) {
         if (q.training) {
-            estDays = '1日';
+            estDays = t('training_days');
             chance = 100;
         } else if (q.defense) {
-            estDays = 'Today: Battle';
-            chance = 'Tactical Combat';
+            estDays = t('defense_today');
+            chance = t('tactical_combat');
+            chanceSuffix = ''; // No % for tactical combat
         } else if (q.type === 8) { // trade
             const meetsAll = teamDex >= q.minDexterity && teamLuk >= q.minLuck;
             if (!meetsAll) {
-                estDays = '失敗 (DEX/LUC不足)';
+                estDays = t('trade_failure');
                 chance = 0;
             } else {
                 let days;
                 if (q.inProgress && q.tradeRemainingDays !== undefined && q.tradeRemainingDays > 0) {
                     days = q.tradeRemainingDays;
-                    estDays = `${days}日残り (確定成功)`;
+                    estDays = t('trade_remaining_days', {days});
                 } else {
                     const avgDex = teamDex / q.assigned.length || 1;
                     const avgLuc = teamLuk / q.assigned.length || 1;
                     days = calcTradeRequiredDays(avgDex, avgLuc);
-                    estDays = q.inProgress ? `${days}日残り (確定成功)` : `${days}日 (確定成功)`;
+                    estDays = q.inProgress ? t('trade_remaining_days', {days}) : t('trade_days', {days});
                 }
                 chance = 100;
             }
@@ -4693,14 +4610,15 @@ function renderQuests() {
             const meetsAll = teamStr >= q.minStrength && teamWis >= q.minWisdom && 
                             teamDex >= q.minDexterity && teamLuk >= q.minLuck;
             if (!meetsAll) {
-                estDays = '失敗';
+                estDays = t('failure');
                 chance = 0;
             } else {
                 let teamFocus = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), q.focusStat), 0);
                 const excess = (teamFocus / q.minFocus) - 1;
                 const prob = Math.min(0.5, 0.1 + Math.max(0, excess) * 0.2);
                 chance = Math.round(prob * 100);
-                estDays = Math.max(1, Math.ceil(1 / prob));
+                const days = Math.max(1, Math.ceil(1 / prob));
+                estDays = t('estimated_days', {days});
             }
         }
     }
@@ -4718,17 +4636,20 @@ function renderQuests() {
             }
         }
     });
+    if (assignedHtml === '') {
+        assignedHtml = `<span style="color:#aaa;">${t('no_assignment')}</span>`;
+    }
 
     // 必要ステータスHTML（アイコン付き）
-    const minHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${q.minStrength || 0} | 
-                     <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${q.minWisdom || 0} | 
-                     <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${q.minDexterity || 0} | 
-                     <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${q.minLuck || 0}`;
+    const minHtml = `<img src="Images/STR.png" class="stat-icon" title="${t('stat_strength')}"> ${t('stat_strength')} ${q.minStrength || 0} | 
+                     <img src="Images/WIS.png" class="stat-icon" title="${t('stat_wisdom')}"> ${t('stat_wisdom')} ${q.minWisdom || 0} | 
+                     <img src="Images/DEX.png" class="stat-icon" title="${t('stat_dexterity')}"> ${t('stat_dexterity')} ${q.minDexterity || 0} | 
+                     <img src="Images/LUC.png" class="stat-icon" title="${t('stat_luck')}"> ${t('stat_luck')} ${q.minLuck || 0}`;
 
-    const teamHtml = `<img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${teamStr} | 
-                      <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${teamWis} | 
-                      <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${teamDex} | 
-                      <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${teamLuk}`;
+    const teamHtml = `<img src="Images/STR.png" class="stat-icon" title="${t('stat_strength')}"> ${t('stat_strength')} ${teamStr} | 
+                      <img src="Images/WIS.png" class="stat-icon" title="${t('stat_wisdom')}"> ${t('stat_wisdom')} ${teamWis} | 
+                      <img src="Images/DEX.png" class="stat-icon" title="${t('stat_dexterity')}"> ${t('stat_dexterity')} ${teamDex} | 
+                      <img src="Images/LUC.png" class="stat-icon" title="${t('stat_luck')}"> ${t('stat_luck')} ${teamLuk}`;
 
     // メインHTML構築
     let html = `
@@ -4740,23 +4661,23 @@ function renderQuests() {
             <h3>${q.desc}</h3>`;
 
     if (q.training) {
-        html += `<p><strong>常時利用可能なトレーニングクエスト（最大2人）</strong></p>`;
-        html += `<p>低いレベルの冒険者はペアの高いレベル相当のEXPを獲得。リスクなし、報酬なし。</p>`;
-        html += `<p>難易度: ${q.difficulty} | 必要ステータス: 全て0</p>`;
+        html += `<p><strong>${t('training_quest_title')}</strong></p>`;
+        html += `<p>${t('training_quest_desc')}</p>`;
+        html += `<p>${t('difficulty_label')}: ${q.difficulty} | ${t('required_stats')}: ${t('all_zero')}</p>`;
     } else {
-        html += `<p>難易度: ${q.difficulty} (${q.rank}) | 残り日数: ${q.daysLeft} | 報酬: ${q.reward}g</p>`;
+        html += `<p>${t('difficulty_label')}: ${q.difficulty} (${q.rank || ''}) | ${t('days_left_label')}: ${q.daysLeft} | ${t('reward_label')}: ${q.reward}g</p>`;
         if (q.defense) {
-            html += `<p><strong style="color:red;">防衛クエスト - 1-4人の防衛者を割り当てなければゲームオーバー！</strong></p>`;
+            html += `<p><strong style="color:red;">${t('defense_warning')}</strong></p>`;
         }
         if (!q.defense && !q.playerPosted) {
-            html += `<p>必要: ${minHtml}</p>`;
+            html += `<p>${t('required_label')}: ${minHtml}</p>`;
         }
     }
 
-    html += `<p>予想日数: ${estDays}</p>
-             <p>チーム: ${teamHtml} | 成功確率: ${chance}${chance === 'Tactical Combat' ? '' : '%'} </p>
-             <div style="margin-top:15px;">割り当て済み (${q.assigned.length}/${maxSlots}): 
-                 ${assignedHtml || '<span style="color:#aaa;">未割り当て</span>'}
+    html += `<p>${t('estimated_days_label')}: ${estDays}</p>
+             <p>${t('team_label')}: ${teamHtml} | ${t('success_rate_label')}: ${chance}${chanceSuffix}</p>
+             <div style="margin-top:15px;">${t('assigned_label', {current: q.assigned.length, max: maxSlots})}: 
+                 ${assignedHtml}
              </div>`;
 
     // 拒否ボタン（条件一致時のみ）
@@ -4765,13 +4686,13 @@ function renderQuests() {
         html += `<p style="margin-top:15px;">
                     <button onclick="rejectQuest(${q.id})" 
                             style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-                        クエスト拒否 (評判 -${rejectPenalty})
+                        ${t('reject_button')} (${t('reputation_penalty')}-${rejectPenalty})
                     </button>
                  </p>`;
     }
 
     if (q.inProgress) {
-        html += `<p class="in-progress" style="margin-top:15px;">進行中 - 冒険者の割り当て解除不可</p>`;
+        html += `<p class="in-progress" style="margin-top:15px;">${t('in_progress_message')}</p>`;
     }
 
     html += `</div>`; // .quest-card 閉じ
@@ -5180,68 +5101,7 @@ scrollContainer.style.cursor = 'grab'; // つかめる感じでヒント
 let playerName = "";
 let dialogueIndex = 0;
 
-const dialogues = [
-    {
-        speaker: "ナレーター",
-        text: "……炎が空を赤く染めていた。あの夜、静かな村は突然の襲撃を受けた。<br>黒い鎧の軍勢——その正体も目的もわからないまま、すべてを焼き払い、奪い去っていった。"
-    },
-    {
-        speaker: "ナレーター",
-        text: "あなた、<strong>{player}</strong>は、幼なじみのカイトとルナと共に、必死に逃げ延びた。<br>家族も、家も、故郷も……すべてを失った。"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "……よう、{player}。まだ起きてたのか。<br>ルナもさっきまで泣いてたけど、今は寝ちまったみたいだな。"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "俺たち……本当にここまで来ちまったな。<br>あの村から逃げて、このセントラルシティまで……<br>家族も、友達も、みんな……"
-    },
-    {
-        speaker: "あなた",
-        text: "……ああ。でも、生きてる。俺たち三人だけでも。"
-    },
-    {
-        speaker: "ルナ",
-        image: "Images/ルナ.png",
-        text: "……{player}、カイト……ごめん、起きちゃった。<br>夢を見たの。あの夜の夢……またみんなが……"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "ルナ……もう大丈夫だ。俺たちがいる。<br>でもよ、{player}。このままじゃダメだよな。<br>ただ逃げて、隠れて生きるだけじゃ……"
-    },
-    {
-        speaker: "ルナ",
-        image: "Images/ルナ.png",
-        text: "うん……私も思う。あの軍勢の正体、なぜ村が狙われたのか……<br>知りたい。真実を知りたい。<br>そして、生きていくためにも……お金が必要よね。"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "残ってる金は1000gだけだ。<br>でもよ、{player}。俺たちには力がある。<br>お前とルナと俺——三人なら、冒険者としてやっていけるはずだ。"
-    },
-    {
-        speaker: "ルナ",
-        image: "Images/ルナ.png",
-        text: "だから……ギルドを作ろう。ここに。<br>私たちのギルド。小さくてもいい。<br>依頼を受けて、強くなって、真実を探すための力をつけるの。"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "決まりだな、{player}。<br>俺たち三人で、この街に新しいギルドを立ち上げる。<br>名前は……お前が決めろよ。リーダーなんだから。"
-    },
-    {
-        speaker: "ナレーター",
-        text: "こうして、あなたたちは少ない所持金と、失われた故郷への想いを胸に——<br><strong>冒険者ギルド</strong>を設立した。<br><br>復讐と真実、そして新しい未来のために。"
-    },
-    {
-        speaker: "ナレーター",
-        text: "あなたたちの冒険が、今始まる……"
-    }
-];
+
 
 // startIntroDialogue 関数を以下のように修正
 function startIntroDialogue() {
@@ -5250,7 +5110,9 @@ function startIntroDialogue() {
         alert("名前を入力してください！");
         return;
     }
-    
+    // Use language-specific intro
+    const currentIntro = introDialogues[currentLang] || introDialogues.ja;
+    dialogues = currentIntro;  // Temporarily assign to global dialogues variable used by render/next
     document.getElementById('stepName').style.display = 'none';
     document.getElementById('stepDialogue').style.display = 'block';
     
@@ -5289,13 +5151,15 @@ function renderCurrentDialogue() {
 
     // 次へ／ゲーム開始ボタンの処理（常にnextDialogueを紐づけ、テキストのみ変更）
     const nextBtn = document.getElementById('nextBtn');
-    if (nextBtn) {
+if (nextBtn) {
         if (dialogueIndex === dialogues.length - 1) {
-            nextBtn.textContent = "ゲーム開始";
+            nextBtn.textContent = t('start_game_button', {});  // We'll add this key below
         } else {
-            nextBtn.textContent = "次へ";
+            nextBtn.textContent = t('next_button', {});
         }
-        nextBtn.onclick = nextDialogue;  // 常にnextDialogueを呼び出す
+        nextBtn.onclick = nextDialogue;
+    
+
     }
 }
 
