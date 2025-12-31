@@ -86,7 +86,8 @@ const assetsToLoad = [
 const totalAssets = assetsToLoad.length;
 
 
-const QuestCompletionDialogue = [
+const QuestCompletionDialogue = {
+    ja: [
     // 0: STR - kill quests
     {
         'F': [
@@ -1287,7 +1288,356 @@ const QuestCompletionDialogue = [
     
         
     }
-];
+],
+    en: [
+
+        {
+      'F': [
+        // 0: Kill 5 Slimes (Client: Farmer)
+        [
+          {speaker: "Adventurer", text: "I took down all 5 slimes around the village... Honestly, they were bouncing everywhere and it wore me out."},
+          {speaker: "Kaito", text: "Hah! You got tired from slimes? I'd have squashed them into jelly with one hit!"},
+          {speaker: "Guild Master", text: "Kaito, shut it. The farmer client is waiting."},
+          {speaker: "Farmer", text: "You really got all 5 slimes! My crops are safe from dissolving now... Wait, jelly isn't food, right? Scary! Thank you so much, adventurer!"},
+          {speaker: "Guild Master", text: "Here's your reward. Next time we bring Kaito, you might end up covered in slime juice."}
+        ],
+        // 1: Exterminate Giant Rats (Client: Tavern Owner)
+        [
+          {speaker: "Adventurer", text: "I cleared out all the giant rats in the tavern basement... Nearly got bitten, it was nerve-wracking."},
+          {speaker: "Kaito", text: "Giant rats!? How big were they? I wanted to go and slice them up!"},
+          {speaker: "Guild Master", text: "If you'd gone, Kaito, the tavern would be a sea of blood. Let's report to the owner."},
+          {speaker: "Tavern Owner", text: "You wiped out all the giant rats! I can use the basement again. I'll treat you to a drink... but no bloodbaths, please! Really, thank you!"},
+          {speaker: "Guild Master", text: "Here's your reward. Kaito, next rat hunt is all yours."}
+        ],
+        // 2: Kill 3 Wild Dogs (Client: Farmer)
+        [
+          {speaker: "Adventurer", text: "I took down the 3 wild dogs attacking the farm. The livestock is safe."},
+          {speaker: "Kaito", text: "Wild dogs! Sounds fun—like a chase! Leave the next one to me!"},
+          {speaker: "Guild Master", text: "If you went, Kaito, you'd chase the livestock too. Let's tell the farmer."},
+          {speaker: "Farmer", text: "You got all 3 wild dogs and saved my livestock! Everyone's grateful... Wait, chasing isn't a game, right? Thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward time. Kaito, you're on standby next round."}
+        ]
+      ],
+      'F+': [
+        // 0: Kill 8 Goblins (Client: Road Guard)
+        [
+          {speaker: "Adventurer", text: "I eliminated all 8 goblins ambushing on the road... They were pretty persistent and tiring."},
+          {speaker: "Kaito", text: "8 goblins!? Nice! I'd have cut down 10 easy! Take me next time, no excuses!"},
+          {speaker: "Guild Master", text: "Kaito, cool it. Let's report to the guard."},
+          {speaker: "Guard", text: "You took out 8 goblins! The road is safe now... Bragging about 10 is a bit much, huh? Thanks, adventurer!"},
+          {speaker: "Guild Master", text: "Take your reward. Kaito, get ready—I really will bring you next time."}
+        ],
+        // 1: Eliminate 5 Bandits (Client: Merchant)
+        [
+          {speaker: "Adventurer", text: "I took out the 5 bandits hiding in the forest... Fighting humans made me tense."},
+          {speaker: "Kaito", text: "Bandits!? Human or not, my sword doesn't care—I'd wipe them all out! My turn next!"},
+          {speaker: "Luna", text: "Kaito, that's a bit scary... But yeah, they're trouble."},
+          {speaker: "Guild Master", text: "Both of you, quiet. Let's report to the merchant."},
+          {speaker: "Merchant", text: "You eliminated all 5 bandits! Business can be safe again. I'm truly grateful, thank you!"},
+          {speaker: "Guild Master", text: "Here's the reward. Kaito, try not to scare anyone next time."}
+        ],
+        // 2: Kill 1 Giant Spider (Client: Villager)
+        [
+          {speaker: "Adventurer", text: "I defeated the giant spider lurking in the cave... Getting tangled in webs was the worst."},
+          {speaker: "Kaito", text: "Giant spider!? Sounds strong! I'd have skewered it with my sword!"},
+          {speaker: "Luna", text: "Spider silk is great magic material... What a waste."},
+          {speaker: "Guild Master", text: "Luna, think about materials later. Let's tell the villager."},
+          {speaker: "Villager", text: "You beat the giant spider! The cave isn't scary anymore. Thank you so much!"},
+          {speaker: "Guild Master", text: "Take your reward. Maybe next time collect some silk?"}
+        ]
+      ],
+      'D': [
+        // 0: Kill 10 Orcs (Client: Village Chief)
+        [
+          {speaker: "Adventurer", text: "I wiped out the 10 orcs threatening the village... The stench was awful."},
+          {speaker: "Kaito", text: "10 orcs!? Awesome! My sword would be singing! Take me next time!"},
+          {speaker: "Luna", text: "Kaito, orc smell can't be removed even with magic..."},
+          {speaker: "Guild Master", text: "Both quiet. Report to the chief."},
+          {speaker: "Village Chief", text: "You destroyed the orc pack! The village is saved... I'll endure the smell! Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Bringing Kaito next might make the whole village smell like orc."}
+        ],
+        // 1: Kill 1 Troll (Client: Bridge Keeper)
+        [
+          {speaker: "Adventurer", text: "I defeated the troll occupying the bridge... Its regeneration made it tough."},
+          {speaker: "Kaito", text: "A troll!? The regenerating kind! I'd have burned it to ash! My turn next!"},
+          {speaker: "Guild Master", text: "Kaito, fire would burn the bridge too. Report to the keeper."},
+          {speaker: "Bridge Keeper", text: "You killed the troll! The bridge is safe... but no fire, please! Thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward. Next time, no fire."}
+        ],
+        // 2: Kill Wolf King + Pack (Client: Hunter)
+        [
+          {speaker: "Adventurer", text: "I hunted the wolf king and its pack deep in the forest... The howling still rings in my ears."},
+          {speaker: "Kaito", text: "Wolf king!? Cool! I wanted to fight the whole pack!"},
+          {speaker: "Luna", text: "Kaito, getting bitten would be bad."},
+          {speaker: "Guild Master", text: "Quiet, you two. Report to the hunter."},
+          {speaker: "Hunter", text: "You took down the wolf king and pack! The forest is at peace. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Taking Kaito next might turn it into a howling concert."}
+        ]
+      ]},{
+      'F': [
+        // 0: Find Pendant
+        [
+          {speaker: "Adventurer", text: "I found the precious pendant that was lost in town."},
+          {speaker: "Luna", text: "Hehe, I might have found it faster. But good job!"},
+          {speaker: "Guild Master", text: "Luna, no bragging. Return it to the old lady."},
+          {speaker: "Old Lady", text: "You found my lost pendant... It holds dear memories. Tears are coming... Thank you so much!"},
+          {speaker: "Guild Master", text: "Take your reward. Luna, want a finding contest next time?"}
+        ],
+        // 1: Find Hidden Treasure Chest
+        [
+          {speaker: "Adventurer", text: "I discovered a small hidden treasure chest in the nearby forest."},
+          {speaker: "Luna", text: "The hint was probably at the tree roots, right? Just as I deduced~"},
+          {speaker: "Guild Master", text: "Luna, explain later. Report to the villager first."},
+          {speaker: "Villager", text: "You found the hidden forest chest! How did you notice that spot? The contents are your reward—take them!"},
+          {speaker: "Guild Master", text: "Good reward. Luna's deduction fee is extra."}
+        ],
+        // 2: Well Secret
+        [
+          {speaker: "Adventurer", text: "I found the secret at the bottom of the old well."},
+          {speaker: "Luna", text: "A well secret... Maybe an ancient magic circle? It's in my book!"},
+          {speaker: "Guild Master", text: "Luna, too excited. Tell the scholar."},
+          {speaker: "Scholar", text: "You uncovered the well's secret! An old mystery solved—fascinating! Thanks for the report!"},
+          {speaker: "Guild Master", text: "Here's the reward. Luna, book club next time?"}
+        ]
+      ],
+      'F+': [
+        // 0: Cave Behind Waterfall (Client: Explorer)
+        [
+          {speaker: "Adventurer", text: "I found the hidden cave behind the forest waterfall... Got completely soaked from the spray."},
+          {speaker: "Luna", text: "Behind a waterfall!? So romantic~ Must be a hidden ruin!"},
+          {speaker: "Kaito", text: "Water? Pass—I hate getting wet."},
+          {speaker: "Guild Master", text: "Quiet, you two. Report to the explorer."},
+          {speaker: "Explorer", text: "You found the cave behind the waterfall! New adventures can begin. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Next time, Kaito gets wet too."}
+        ],
+        // 1: Hidden Basement in Old House (Client: Homeowner)
+        [
+          {speaker: "Adventurer", text: "I located the hidden basement in the old house... Covered in dust, can't stop sneezing."},
+          {speaker: "Luna", text: "Hidden basement!? Secret library or treasure vault—my deduction was spot on!"},
+          {speaker: "Guild Master", text: "Luna, brag later. Report to the homeowner."},
+          {speaker: "Homeowner", text: "You found the hidden basement! My ancestors' secrets can finally be uncovered. Thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward. Luna, cleaning duty next."}
+        ],
+        // 2: Hidden Hut Along River (Client: Fisherman)
+        [
+          {speaker: "Adventurer", text: "I found the hidden hut along the river... So many bugs, it was rough."},
+          {speaker: "Luna", text: "Hidden hut... Maybe a smuggler's hideout? Sounds interesting!"},
+          {speaker: "Kaito", text: "Bugs!? I'd have crushed them all!"},
+          {speaker: "Guild Master", text: "You two overthinking. Report to the fisherman."},
+          {speaker: "Fisherman", text: "You found my old hidden hut by the river! The tools inside are still usable. Really helps—thanks!"},
+          {speaker: "Guild Master", text: "Reward. Bring bug repellent next time."}
+        ]
+      ],
+      'D': [
+        // 0: Small Ruin Entrance (Client: Archaeologist)
+        [
+          {speaker: "Adventurer", text: "I discovered the entrance to a small ruin on the nearby hill... Lots of traps."},
+          {speaker: "Luna", text: "Ruin entrance!? The patterns match my book—definitely ancient magic!"},
+          {speaker: "Kaito", text: "Traps... I'd have smashed them all!"},
+          {speaker: "Guild Master", text: "Calm down, both. Report to the archaeologist."},
+          {speaker: "Archaeologist", text: "You found the small ruin entrance! New discoveries await. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Next time, Luna disarms traps with magic."}
+        ],
+        // 1: Hidden Bandit Camp (Client: Guard Captain)
+        [
+          {speaker: "Adventurer", text: "I located the bandits' hidden camp... Security was tight."},
+          {speaker: "Luna", text: "Camp location... Just as I deduced from the terrain!"},
+          {speaker: "Guild Master", text: "Luna, brag later. Report to the captain."},
+          {speaker: "Guard Captain", text: "You found the bandits' hidden camp! We can wipe them out now. Thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward. Next time, Luna's deduction wipes them out?"}
+        ],
+        // 2: Missing Caravan Wreckage (Client: Merchant Guild Leader)
+        [
+          {speaker: "Adventurer", text: "I found the wreckage of the missing caravan... It was a sad sight."},
+          {speaker: "Luna", text: "Caravan wreckage... Are the goods intact? I want the merchant records."},
+          {speaker: "Guild Master", text: "Luna, think of the bereaved. Report to the guild leader."},
+          {speaker: "Merchant Guild Leader", text: "You found the caravan wreckage... Now we know the truth. Thank you so much."},
+          {speaker: "Guild Master", text: "Reward. Hope it brings some closure."}
+        ]
+      ]
+      // Higher ranks to be added later
+    },// 2: DEX - escort quests (English - only F, F+, D ranks)
+    {
+      'F': [
+        // 0: Escort Farmer
+        [
+          {speaker: "Adventurer", text: "I safely escorted the farmer to the nearby market."},
+          {speaker: "Kaito", text: "Nothing happened on the way? Boring!"},
+          {speaker: "Luna", text: "Kaito, nothing happening is the best outcome."},
+          {speaker: "Guild Master", text: "Quiet, you two. Farmer, how was it?"},
+          {speaker: "Farmer", text: "I made it to the market safely. No scary moments—really helped! Thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward. Bringing Kaito next might make it... exciting."}
+        ],
+        // 1: Escort Child
+        [
+          {speaker: "Adventurer", text: "I safely escorted the child across the dangerous bridge home."},
+          {speaker: "Luna", text: "Kids are so cute~ I wanted to give them sweets."},
+          {speaker: "Kaito", text: "I wanted to practice swordplay with them!"},
+          {speaker: "Guild Master", text: "Behave in front of kids. Check with the parent."},
+          {speaker: "Parent", text: "You brought my child home safely! I was worried sick... I can't thank you enough."},
+          {speaker: "Guild Master", text: "Reward. Your kindness came through."}
+        ],
+        // 2: Escort Messenger
+        [
+          {speaker: "Adventurer", text: "I safely guarded the messenger delivering the letter."},
+          {speaker: "Kaito", text: "No spies showed up? If they did, I'd have slashed them!"},
+          {speaker: "Luna", text: "Kaito, peace is best."},
+          {speaker: "Guild Master", text: "You two... Report to the village chief."},
+          {speaker: "Village Chief", text: "The letter arrived safely thanks to your guard. It was important—the village is saved. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Taking you two next might turn it dramatic."}
+        ]
+      ],
+      'F+': [
+        // 0: Escort Merchant (Goblin Road)
+        [
+          {speaker: "Adventurer", text: "I escorted the merchant to the next town. Goblin road, but safe."},
+          {speaker: "Kaito", text: "Goblins showed up and you didn't call me!? Next time, no excuses!"},
+          {speaker: "Luna", text: "If Kaito went, the merchant would run in fear."},
+          {speaker: "Guild Master", text: "Both noisy. Merchant, your thoughts?"},
+          {speaker: "Merchant", text: "We passed the goblin road safely! You were reliable—thank you, adventurer!"},
+          {speaker: "Guild Master", text: "Reward. Taking Kaito next might lead to price hikes."}
+        ],
+        // 1: Escort Traveler Group
+        [
+          {speaker: "Adventurer", text: "I safely guarded the traveler group through the forest road."},
+          {speaker: "Luna", text: "The travelers seemed to enjoy it? I wanted souvenir stories~"},
+          {speaker: "Kaito", text: "Forest? I'd have made an iron defense! Call me next!"},
+          {speaker: "Guild Master", text: "You're tourists yourselves. Report to the group leader."},
+          {speaker: "Traveler Leader", text: "You got us safely through the forest! It was scary but fun thanks to you!"},
+          {speaker: "Guild Master", text: "Reward. Next time, tour guide duty?"}
+        ],
+        // 2: Escort Caravan
+        [
+          {speaker: "Adventurer", text: "I safely protected the cargo caravan from bandits."},
+          {speaker: "Kaito", text: "Bandits appeared!? I'd have wiped them all—damn, missed it!"},
+          {speaker: "Luna", text: "Kaito, damaged cargo would be bad. Safe is best."},
+          {speaker: "Guild Master", text: "Quiet. Report to the caravan leader."},
+          {speaker: "Caravan Leader", text: "You protected the cargo from bandits! Business can continue—thank you!"},
+          {speaker: "Guild Master", text: "Reward. Kaito, next bandit hunt is yours."}
+        ]
+      ],
+      'D': [
+        // 0: Escort Noble (Client: Noble)
+        [
+          {speaker: "Adventurer", text: "I safely escorted the noble to the neighboring town... Assassin vibes kept me on edge."},
+          {speaker: "Kaito", text: "Assassins!? If they showed, I'd have cut them down instantly! Take me next!"},
+          {speaker: "Luna", text: "Kaito would scare the noble into fleeing..."},
+          {speaker: "Guild Master", text: "Quiet. Noble, how was the trip?"},
+          {speaker: "Noble", text: "I arrived safely in the next town. Assassin rumors, but no fear thanks to you. Grateful!"},
+          {speaker: "Guild Master", text: "Reward. Taking Kaito next might cause... negotiations."}
+        ],
+        // 1: Return Injured Soldier (Client: Medic)
+        [
+          {speaker: "Adventurer", text: "I escorted the injured soldier from the front line to camp... Battlefield air was heavy."},
+          {speaker: "Luna", text: "Injured soldier... I wanted to cast healing magic. Should have gone."},
+          {speaker: "Kaito", text: "Battlefield!? I'd have cleared all enemies!"},
+          {speaker: "Guild Master", text: "Read the room. Report to the medic."},
+          {speaker: "Medic", text: "You safely brought the injured soldier! A life saved—thank you!"},
+          {speaker: "Guild Master", text: "Reward. Luna's magic could heal everyone next time?"}
+        ],
+        // 2: Escort Scholar to Ruin (Client: Scholar)
+        [
+          {speaker: "Adventurer", text: "I escorted the scholar to the dangerous ruin... Too many traps, nerve-wracking."},
+          {speaker: "Luna", text: "Ruin traps!? I'd have disarmed them all~ Scholar must be thrilled."},
+          {speaker: "Kaito", text: "Traps? I'd smash through!"},
+          {speaker: "Guild Master", text: "Don't crush the scholar. Scholar, impressions?"},
+          {speaker: "Scholar", text: "We reached the ruin safely. Impossible without your guard. Thank you!"},
+          {speaker: "Guild Master", text: "Reward. Taking you two next might collapse the ruin."}
+        ]
+      ]
+      // Higher ranks to be added later
+    },// 3: LUC - fetch quests (English - only F, F+, D ranks)
+    {
+      'F': [
+        // 0: Collect Herbs
+        [
+          {speaker: "Adventurer", text: "I collected the herbs requested for the alchemist."},
+          {speaker: "Luna", text: "These herbs are perfect for healing potions! I want some too~"},
+          {speaker: "Guild Master", text: "Luna, you'll get some later. Show the alchemist."},
+          {speaker: "Alchemist", text: "You gathered all these herbs properly! I can make new potions now. Really helps—thanks!"},
+          {speaker: "Guild Master", text: "Take your reward. Luna's potion experiments later."}
+        ],
+        // 1: Collect Mushrooms
+        [
+          {speaker: "Adventurer", text: "I brought fresh mushrooms for the cook."},
+          {speaker: "Kaito", text: "Mushrooms!? Mushroom hotpot tonight! I can eat 5 bowls!"},
+          {speaker: "Luna", text: "Kaito, overeating will upset your stomach."},
+          {speaker: "Guild Master", text: "You two only think about food. Give them to the cook."},
+          {speaker: "Cook", text: "Fresh mushrooms like this! Tonight's dinner will be amazing—everyone will love it. Thanks!"},
+          {speaker: "Guild Master", text: "Reward... Looks like mushroom overload tonight."}
+        ],
+        // 2: Collect Flowers
+        [
+          {speaker: "Adventurer", text: "I gathered and delivered beautiful flowers for the villager."},
+          {speaker: "Luna", text: "These flowers smell wonderful! Let's decorate the guild~"},
+          {speaker: "Kaito", text: "Flowers over dumplings... Wait, Luna's glaring, never mind."},
+          {speaker: "Guild Master", text: "You two can be cute sometimes. Ask the villager."},
+          {speaker: "Villager", text: "You brought such pretty flowers! Everyone's smiling now. Your kindness shows—thank you!"},
+          {speaker: "Guild Master", text: "Reward. Guild might turn into a flower garden."}
+        ]
+      ],
+      'F+': [
+        // 0: Collect Iron Scraps (Client: Blacksmith)
+        [
+          {speaker: "Adventurer", text: "I gathered plenty of iron scraps for the blacksmith... Heavy."},
+          {speaker: "Kaito", text: "Iron!? Perfect for my new sword! Give me some!"},
+          {speaker: "Luna", text: "Kaito, always swords... But good material."},
+          {speaker: "Guild Master", text: "You'll get shares later. Give to the blacksmith."},
+          {speaker: "Blacksmith", text: "So many iron scraps! I can make great weapons now. Really helps—thanks!"},
+          {speaker: "Guild Master", text: "Reward. Kaito's new sword later."}
+        ],
+        // 1: Catch River Fish (Client: Fisherman)
+        [
+          {speaker: "Adventurer", text: "I caught the river fish requested by the fisherman... Took time."},
+          {speaker: "Kaito", text: "Fish!? Grilled fish tonight! I can eat 10!"},
+          {speaker: "Luna", text: "Kaito, moderation. But they look fresh and tasty~"},
+          {speaker: "Guild Master", text: "Food again... Give to the fisherman."},
+          {speaker: "Fisherman", text: "You caught this many fish! Tonight's table will be lavish. Thanks!"},
+          {speaker: "Guild Master", text: "Reward... Fish feast tonight."}
+        ],
+        // 2: Collect Common Herbs (Client: Apothecary)
+        [
+          {speaker: "Adventurer", text: "I gathered lots of common herbs for the apothecary."},
+          {speaker: "Luna", text: "Common herbs can make strong medicine with the right mix! I want to research~"},
+          {speaker: "Kaito", text: "Herbs over meat... Luna's glaring again."},
+          {speaker: "Guild Master", text: "You two are greedy. Show the apothecary."},
+          {speaker: "Apothecary", text: "So many common herbs! Village medicine stock is secure now. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Kaito, you're Luna's test subject."}
+        ]
+      ],
+      'D': [
+        // 0: Iron Ore (Client: Miner)
+        [
+          {speaker: "Adventurer", text: "I mined plenty of quality iron ore for the miner... Back hurts."},
+          {speaker: "Kaito", text: "Iron ore!? I'd have smashed rocks and brought it all!"},
+          {speaker: "Luna", text: "Quality ore could be for magic weapons... I want some."},
+          {speaker: "Guild Master", text: "Shares later. Give to the miner."},
+          {speaker: "Miner", text: "This much quality ore! The village will prosper. Really helps—thanks!"},
+          {speaker: "Guild Master", text: "Reward. Save Kaito's destruction for next time."}
+        ],
+        // 1: Wolf Pelts (Client: Hunter)
+        [
+          {speaker: "Adventurer", text: "I brought lots of wolf pelts for the hunter... Hunting was tough."},
+          {speaker: "Kaito", text: "Wolf pelts!? I'd have hunted the whole pack and made a mountain!"},
+          {speaker: "Luna", text: "Pelts are perfect for cold protection. I want one~"},
+          {speaker: "Guild Master", text: "Greedy pair. Give to the hunter."},
+          {speaker: "Hunter", text: "This many wolf pelts! Best cold gear ever. Thanks!"},
+          {speaker: "Guild Master", text: "Reward. Pelt coats next?"}
+        ],
+        // 2: Small Mana Crystals (Client: Mage)
+        [
+          {speaker: "Adventurer", text: "I collected small mana crystals for the mage... Monsters guarded them—close call."},
+          {speaker: "Luna", text: "Mana crystals!? Perfect for my magic research! Share some~"},
+          {speaker: "Kaito", text: "Monsters? I'd have slashed them all and monopolized the crystals!"},
+          {speaker: "Guild Master", text: "No monopolies. Show the mage."},
+          {speaker: "Mage", text: "This many mana crystals! New spells possible now. Thank you so much!"},
+          {speaker: "Guild Master", text: "Reward. Luna's experiments later."}
+        ]
+      ]
+      // Higher ranks to be added later
+    }
+    ]
+}
 
 const cities = [
     {name: "セントラルシティ", guild: true},
@@ -1297,164 +1647,9 @@ const cities = [
     {name: "宝石の街クリスタリス", items: [{name: "宝石", minPrice: 80, maxPrice: 150}]}
 ];
 
-const alchemyRecipes = [
-    // === 既存 + F/F+ (レベル1: 序盤基本合成) ===
-    {level: 1, inputs: ["薬草", "鉄鉱石"], output: {name: "鋼のインゴット", type: "material", minPrice: 60, maxPrice: 100}},
-    {level: 1, inputs: ["スパイス", "薬草"], output: {name: "活力の粉", type: "material", minPrice: 35, maxPrice: 55}},
-    {level: 1, inputs: ["宝石", "活力の粉"], output: {name: "魔法の結晶", type: "material", minPrice: 140, maxPrice: 220}},
-    {level: 1, inputs: ["鉄鉱石", "スパイス"], output: {name: "炎の粉", type: "material", minPrice: 50, maxPrice: 80}},
-    {level: 1, inputs: ["薬草", "活力の粉"], output: {name: "上級HPポーション", type: "potion", restore: "hp", amount: 60, minPrice: 120, maxPrice: 180}},
-    {level: 1, inputs: ["魔法の結晶", "スパイス"], output: {name: "上級MPポーション", type: "potion", restore: "mp", amount: 45, minPrice: 95, maxPrice: 145}},
 
-    {level: 1, inputs: ["キノコ", "薬草"], output: {name: "キノコ回復薬", type: "potion", restore: "hp", amount: 25, minPrice: 35, maxPrice: 55}},
-    {level: 1, inputs: ["花", "普通の薬草"], output: {name: "花の霊薬", type: "potion", restore: "mp", amount: 20, minPrice: 25, maxPrice: 45}},
-    {level: 1, inputs: ["川魚", "キノコ"], output: {name: "魚介滋養スープ", type: "potion", restore: "hp", amount: 35, minPrice: 50, maxPrice: 80}},
-    {level: 1, inputs: ["鉄の欠片", "薬草"], output: {name: "鉄草合金粉", type: "material", minPrice: 40, maxPrice: 70}},
-    {level: 1, inputs: ["花", "キノコ"], output: {name: "森のエキス", type: "material", minPrice: 25, maxPrice: 45}},
 
-    // === D/D+ (レベル2: 中盤強化) ===
-    {level: 2, inputs: ["狼の毛皮", "活力の粉"], output: {name: "獣活力軟膏", type: "potion", restore: "hp", amount: 45, minPrice: 85, maxPrice: 135}},
-    {level: 2, inputs: ["魔力の結晶（小）", "花の霊薬"], output: {name: "小魔力ポーション", type: "potion", restore: "mp", amount: 35, minPrice: 75, maxPrice: 115}},
-    {level: 2, inputs: ["鉄の欠片", "鉄鉱石"], output: {name: "精鉄インゴット", type: "material", minPrice: 75, maxPrice: 115}},
-    {level: 2, inputs: ["狼の毛皮", "森のエキス"], output: {name: "獣皮エキス", type: "material", minPrice: 80, maxPrice: 130}},
 
-    {level: 2, inputs: ["オークの牙", "鋼のインゴット"], output: {name: "牙鋼インゴット", type: "material", minPrice: 170, maxPrice: 270}},
-    {level: 2, inputs: ["古代の巻物断片", "魔力の結晶（小）"], output: {name: "古魔導粉", type: "material", minPrice: 150, maxPrice: 240}},
-    {level: 2, inputs: ["希少スパイス", "上級HPポーション"], output: {name: "スパイシー超HP薬", type: "potion", restore: "hp", amount: 80, minPrice: 250, maxPrice: 390}},
-    {level: 2, inputs: ["希少スパイス", "薬草"], output: {name: "希少活力粉", type: "material", minPrice: 105, maxPrice: 165}},
-
-    // === C/C+ (レベル3: 後半高級合成) ===
-    {level: 3, inputs: ["グリフォンの羽", "魔法の結晶"], output: {name: "風翼結晶", type: "material", minPrice: 380, maxPrice: 580}},
-    {level: 3, inputs: ["ヒドラの毒袋", "聖水"], output: {name: "解毒聖水", type: "potion", restore: "hp", amount: 90, minPrice: 460, maxPrice: 700}},
-    {level: 3, inputs: ["聖水", "古魔導粉"], output: {name: "聖魔導結晶", type: "material", minPrice: 410, maxPrice: 630}},
-    {level: 3, inputs: ["グリフォンの羽", "森のエキス"], output: {name: "天空エキス", type: "potion", restore: "mp", amount: 70, minPrice: 245, maxPrice: 375}},
-
-    {level: 3, inputs: ["ユニコーンの角", "聖水"], output: {name: "ユニコーン浄化薬", type: "potion", restore: "hp", amount: 120, minPrice: 650, maxPrice: 990}},
-    {level: 3, inputs: ["禁断の魔導書頁", "聖魔導結晶"], output: {name: "禁断魔導晶", type: "material", minPrice: 860, maxPrice: 1300}},
-    {level: 3, inputs: ["フェニックスの灰", "炎の粉"], output: {name: "不死鳥炎粉", type: "material", minPrice: 620, maxPrice: 940}},
-    {level: 3, inputs: ["星の欠片", "風翼結晶"], output: {name: "星風ポーション", type: "potion", restore: "mp", amount: 100, minPrice: 890, maxPrice: 1350}},
-    {level: 3, inputs: ["天使の羽", "解毒聖水"], output: {name: "天使癒薬", type: "potion", restore: "hp", amount: 140, minPrice: 1020, maxPrice: 1540}},
-    {level: 3, inputs: ["デーモンの心臓", "希少活力粉"], output: {name: "魔心活力剤", type: "potion", restore: "mp", amount: 110, minPrice: 780, maxPrice: 1180}},
-
-    // === B+/A + A+/S + 究極 (レベル4: エンドコンテンツ至高合成) ===
-    {level: 4, inputs: ["古代ドラゴンの鱗", "牙鋼インゴット"], output: {name: "龍鋼装甲材", type: "material", minPrice: 1580, maxPrice: 2380}},
-    {level: 4, inputs: ["エーテルの結晶", "禁断魔導晶"], output: {name: "エーテル魔晶", type: "material", minPrice: 1980, maxPrice: 2980}},
-    {level: 4, inputs: ["神の涙", "天使癒薬"], output: {name: "神涙神薬", type: "potion", restore: "hp", amount: 200, minPrice: 1900, maxPrice: 2860}},
-    {level: 4, inputs: ["タイタンの骨", "精鉄インゴット"], output: {name: "巨神骨鋼", type: "material", minPrice: 1740, maxPrice: 2620}},
-    {level: 4, inputs: ["永遠の炎", "不死鳥炎粉"], output: {name: "永劫炎粉", type: "material", minPrice: 1660, maxPrice: 2500}},
-    {level: 4, inputs: ["神聖な遺物", "聖魔導結晶"], output: {name: "神聖遺晶", type: "material", minPrice: 1820, maxPrice: 2740}},
-
-    {level: 4, inputs: ["エルダードラゴンの心臓", "龍鋼装甲材"], output: {name: "古龍心鋼", type: "material", minPrice: 3660, maxPrice: 5500}},
-    {level: 4, inputs: ["深淵の核", "エーテル魔晶"], output: {name: "深淵エーテル晶", type: "material", minPrice: 4220, maxPrice: 6340}},
-    {level: 4, inputs: ["光の神器の欠片", "神聖遺晶"], output: {name: "光神器晶", type: "material", minPrice: 3980, maxPrice: 5980}},
-    {level: 4, inputs: ["世界の源石", "神涙神薬"], output: {name: "世界源神薬", type: "potion", restore: "hp", amount: 500, minPrice: 5580, maxPrice: 8380}},
-    {level: 4, inputs: ["創世の欠片", "星風ポーション"], output: {name: "創世魔力薬", type: "potion", restore: "mp", amount: 400, minPrice: 5020, maxPrice: 7540}},
-    {level: 4, inputs: ["滅びの結晶", "永劫炎粉"], output: {name: "終焉破壊粉", type: "material", minPrice: 4700, maxPrice: 7060}},
-
-    {level: 4, inputs: ["世界の源石", "創世の欠片"], output: {name: "創世源ポーション", type: "potion", restore: "hp", amount: 999, minPrice: 10240, maxPrice: 15360}},
-    {level: 4, inputs: ["滅びの結晶", "深淵の核"], output: {name: "滅び深淵晶", type: "material", minPrice: 9440, maxPrice: 14160}}
-];
-
-const tavernRecipes = [
-    // === 既存レシピ（保持・拡張） ===
-    {level: 1, name: "力のスープ", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
-    {level: 2, name: "巨人の煮込み", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力の粉", qty: 2}]},
-    {level: 1, name: "知恵の茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
-    {level: 2, name: "予言者の飲料", buff: {stat: "wisdom", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "魔法の結晶", qty: 1}]},
-    {level: 1, name: "回復のパン", buff: {type: "hpRegen", bonus: 15, days: 3}, cost: 200, materials: []},
-
-    // === STR料理（肉/骨/ドラゴン系）：活力・獣・龍素材チェイン ===
-    {level: 3, name: "獣肉の活力シチュー", buff: {stat: "strength", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "獣皮エキス", qty: 2}, {name: "狼の毛皮", qty: 1}]},
-    {level: 5, name: "牙鋼の力強煮込み", buff: {stat: "strength", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "牙鋼インゴット", qty: 2}, {name: "オークの牙", qty: 2}]},
-    {level: 7, name: "龍鋼の巨竜ステーキ", buff: {stat: "strength", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "龍鋼装甲材", qty: 3}, {name: "古代ドラゴンの鱗", qty: 2}]},
-    {level: 9, name: "巨神骨の力の饗宴", buff: {stat: "strength", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 2}]},
-    {level: 11, name: "古龍心の覇王料理", buff: {stat: "strength", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
-
-    // === WIS料理（魔法/聖水系）：結晶・禁断・エーテル素材チェイン ===
-    {level: 3, name: "森の霊薬ティー", buff: {stat: "wisdom", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "森のエキス", qty: 3}]},
-    {level: 5, name: "聖魔導の浄化茶", buff: {stat: "wisdom", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "聖魔導結晶", qty: 3}, {name: "聖水", qty: 2}]},
-    {level: 7, name: "禁断魔導の秘酒", buff: {stat: "wisdom", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
-    {level: 9, name: "エーテル魔晶の神酒", buff: {stat: "wisdom", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
-    {level: 11, name: "深淵の叡智スープ", buff: {stat: "wisdom", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "深淵エーテル晶", qty: 4}, {name: "深淵の核", qty: 1}]},
-
-    // === DEX料理（魚/羽/風系）：敏捷・天空素材チェイン ===
-    {level: 1, name: "川魚の軽やか焼き", buff: {stat: "dexterity", percent: true, bonus: 20, days: 5}, cost: 250, materials: [{name: "川魚", qty: 2}]},
-    {level: 3, name: "風翼の迅鳥シチュー", buff: {stat: "dexterity", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "風翼結晶", qty: 2}, {name: "グリフォンの羽", qty: 2}]},
-    {level: 5, name: "ユニコーンの敏捷サラダ", buff: {stat: "dexterity", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "ユニコーンの角", qty: 2}, {name: "花", qty: 3}]},
-    {level: 7, name: "天使の軽羽パイ", buff: {stat: "dexterity", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "天使の羽", qty: 3}, {name: "天空エキス", qty: 2}]},
-    {level: 9, name: "神聖迅撃の料理", buff: {stat: "dexterity", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
-    {level: 11, name: "創世の風神料理", buff: {stat: "dexterity", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
-
-    // === LUC料理（スパイス/星/不死鳥系）：幸運・炎・神涙素材チェイン ===
-    {level: 1, name: "希少スパイスの幸運煮", buff: {stat: "luck", percent: true, bonus: 20, days: 5}, cost: 250, materials: [{name: "希少スパイス", qty: 1}]},
-    {level: 3, name: "星の幸運デザート", buff: {stat: "luck", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "星の欠片", qty: 2}]},
-    {level: 5, name: "不死鳥の再生ケーキ", buff: {stat: "luck", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
-    {level: 7, name: "神涙の福運スープ", buff: {stat: "luck", percent: true, bonus: 130, days: 20}, cost: 7800, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
-    {level: 9, name: "終焉の幸運饗宴", buff: {stat: "luck", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
-    {level: 11, name: "滅び深淵の神運料理", buff: {stat: "luck", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
-
-    // === 回復/再生系（HP/MP再生強化） ===
-    {level: 2, name: "キノコの活力パン", buff: {type: "hpRegen", bonus: 30, days: 5}, cost: 600, materials: [{name: "キノコ", qty: 3}]},
-    {level: 4, name: "解毒聖水の癒しスープ", buff: {type: "hpRegen", bonus: 60, days: 10}, cost: 2500, materials: [{name: "解毒聖水", qty: 2}]},
-    {level: 6, name: "天使癒薬の神パン", buff: {type: "hpRegen", bonus: 100, days: 15}, cost: 5500, materials: [{name: "天使癒薬", qty: 2}]},
-    {level: 8, name: "神涙神薬の至高スープ", buff: {type: "hpRegen", bonus: 150, days: 20}, cost: 9800, materials: [{name: "神涙神薬", qty: 1}]},
-    {level: 10, name: "世界源神薬の永遠パン", buff: {type: "hpRegen", bonus: 250, days: 30}, cost: 16800, materials: [{name: "世界源神薬", qty: 1}]},
-
-    {level: 3, name: "小魔力ポーションの魔茶", buff: {type: "mpRegen", bonus: 30, days: 8}, cost: 1500, materials: [{name: "小魔力ポーション", qty: 2}]},
-    {level: 6, name: "星風ポーションの星茶", buff: {type: "mpRegen", bonus: 80, days: 15}, cost: 5200, materials: [{name: "星風ポーション", qty: 2}]},
-    {level: 9, name: "創世魔力薬の神酒", buff: {type: "mpRegen", bonus: 150, days: 25}, cost: 11800, materials: [{name: "創世魔力薬", qty: 1}]},
-
-    // === 究極バフ料理（エンドコンテンツ） ===
-    {level: 12, name: "創世源の神饗宴", buff: {stat: "strength", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 4}]},
-    {level: 12, name: "世界源の叡智宴", buff: {stat: "wisdom", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 4}]},
-    {level: 12, name: "終焉の迅神料理", buff: {stat: "dexterity", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 4}]},
-    {level: 12, name: "源石の永運饗宴", buff: {stat: "luck", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 4}]}
-];
-
-const blacksmithRecipes = [
-    // === 既存レシピ（保持・拡張） ===
-    {level: 1, name: "上級の剣", stat: "strength", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鋼鉄の剣", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
-    {level: 4, name: "ドラゴンスレイヤー", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "魔法の結晶", qty: 2}, {name: "鋼のインゴット", qty: 5}]},
-    {level: 1, name: "賢者の杖", stat: "wisdom", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "神秘の杖", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "魔法の結晶", qty: 2}]},
-
-    // === STR武器（剣/斧系）：金属・骨・ドラゴン素材チェイン ===
-    {level: 3, name: "精鉄の大剣", stat: "strength", bonus: 38, cost: 2200, materials: [{name: "精鉄インゴット", qty: 4}]},
-    {level: 5, name: "牙鋼の両手斧", stat: "strength", bonus: 65, cost: 4800, materials: [{name: "牙鋼インゴット", qty: 3}, {name: "オークの牙", qty: 2}]},
-    {level: 7, name: "龍鋼の滅殺剣", stat: "strength", bonus: 95, cost: 8500, materials: [{name: "龍鋼装甲材", qty: 4}, {name: "古代ドラゴンの鱗", qty: 2}]},
-    {level: 9, name: "巨神の戦斧", stat: "strength", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
-    {level: 11, name: "古龍心滅剣", stat: "strength", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
-
-    // === WIS杖（魔法系）：結晶・聖・禁断素材チェイン ===
-    {level: 3, name: "聖魔導の杖", stat: "wisdom", bonus: 38, cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
-    {level: 5, name: "禁断魔導のロッド", stat: "wisdom", bonus: 65, cost: 4800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
-    {level: 7, name: "エーテル魔晶杖", stat: "wisdom", bonus: 95, cost: 8500, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
-    {level: 9, name: "深淵の魔導杖", stat: "wisdom", bonus: 140, cost: 14500, materials: [{name: "深淵エーテル晶", qty: 3}, {name: "深淵の核", qty: 2}]},
-    {level: 11, name: "光神器の神杖", stat: "wisdom", bonus: 220, cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光の神器の欠片", qty: 1}]},
-
-    // === DEX武器（弓/短剣系）：獣皮・羽・風素材チェイン ===
-    {level: 1, name: "獣皮の短剣", stat: "dexterity", bonus: 12, cost: 400, materials: [{name: "獣皮エキス", qty: 2}]},
-    {level: 3, name: "風翼の弓", stat: "dexterity", bonus: 38, cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "グリフォンの羽", qty: 2}]},
-    {level: 5, name: "ユニコーンのダガー", stat: "dexterity", bonus: 65, cost: 4800, materials: [{name: "ユニコーンの角", qty: 2}, {name: "獣皮エキス", qty: 3}]},
-    {level: 7, name: "天使の迅弓", stat: "dexterity", bonus: 95, cost: 8500, materials: [{name: "天使の羽", qty: 3}, {name: "風翼結晶", qty: 2}]},
-    {level: 9, name: "神聖迅撃短剣", stat: "dexterity", bonus: 140, cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
-    {level: 11, name: "創世の神弓", stat: "dexterity", bonus: 220, cost: 28500, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
-
-    // === LUC武器（幸運系）：希少・星・神涙素材チェイン ===
-    {level: 1, name: "希少スパイスの短棍", stat: "luck", bonus: 12, cost: 400, materials: [{name: "希少活力粉", qty: 2}]},
-    {level: 3, name: "星の幸運棍", stat: "luck", bonus: 38, cost: 2200, materials: [{name: "星の欠片", qty: 2}]},
-    {level: 5, name: "不死鳥の幸運斧", stat: "luck", bonus: 65, cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
-    {level: 7, name: "神涙の福杖", stat: "luck", bonus: 95, cost: 8500, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
-    {level: 9, name: "終焉の幸運剣", stat: "luck", bonus: 140, cost: 14500, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
-    {level: 11, name: "滅び深淵の神器棍", stat: "luck", bonus: 220, cost: 28500, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
-
-    // === 究極汎用武器（全ステータス対応、エンドコンテンツ） ===
-    {level: 12, name: "創世源の神剣", stat: "strength", bonus: 350, cost: 50000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
-    {level: 12, name: "世界源の神杖", stat: "wisdom", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 5}]},
-    {level: 12, name: "終焉の神弓", stat: "dexterity", bonus: 350, cost: 50000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 5}]},
-    {level: 12, name: "源石の幸運神器", stat: "luck", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 5}]}
-];
 
 const mainQuests = [
     {

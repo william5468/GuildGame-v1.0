@@ -2,6 +2,10 @@ let CurrentQuestType = "None";
 /* === ローディング画面用プリロード機能 === */
 let loadedCount = 0;
 let currentGuildQuestType = 'main';
+let currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+let currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 
 
 function updateProgress() {
@@ -65,6 +69,7 @@ function Render_Mainadventurer() {
         wisdom: 10,
         dexterity: 25,
         luck: 10,
+        defense: 2,
         level: 1,
         exp: 0,
         hp: 100,
@@ -90,6 +95,7 @@ function Render_Mainadventurer() {
         wisdom: 30,
         dexterity: 10,
         luck: 25,
+        defense: 2,
         level: 1,
         exp: 0,
         hp: 100,
@@ -111,6 +117,12 @@ function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
     Render_Mainadventurer();
+    console.log("CurrentLang is:"+currentLang);
+    currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+    currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+    currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+    currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
+
     
 }
 
@@ -118,6 +130,7 @@ function skipIntro(){
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
     document.getElementById('introModal').style.display = 'none';
+    console.log("CurrentLang is:"+currentLang);
     loadGame();
     updateDisplays();
 
@@ -259,6 +272,13 @@ function saveGame() {
 
 function loadGame() {
     const saved = localStorage.getItem('guildMasterSave');
+    console.log("Current Lang is"+currentLang);
+    // 現在の言語に応じたレシピをグローバルに設定（言語変更時にも有効）
+    currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+    currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+    currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+    currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
+
     if (saved) {
         const loadedState = JSON.parse(saved);
 
@@ -270,17 +290,124 @@ function loadGame() {
         if (!gameState.dailyPrices) gameState.dailyPrices = {};
         if (gameState.mainProgress === undefined) gameState.mainProgress = 0;
 
-        // seenCompletionDialogues を Array → Set に復元（旧セーブでは undefined もあり得る）
+        // seenCompletionDialogues を Array → Set に復元
         if (Array.isArray(gameState.seenCompletionDialogues)) {
             gameState.seenCompletionDialogues = new Set(gameState.seenCompletionDialogues);
         } else if (!gameState.seenCompletionDialogues) {
             gameState.seenCompletionDialogues = new Set();
         }
 
-        // 冒険者関連の後方互換処理（既存のまま）
+        // 冒険者関連の後方互換処理
         gameState.adventurers.forEach(a => {
             if (!a.buffs) a.buffs = [];
         });
+
+        // === アイテム名言語変換（セーブが古い言語の場合に対応）===
+        const itemMap = {};
+
+        // 1. Fetchクエスト素材（ランクごとに配列長が一致することを前提）
+        const fetchRanks = Object.keys(fetchQuestsByRank.ja);
+        fetchRanks.forEach(rank => {
+            const currentQuests = fetchQuestsByRank[currentLang][rank] || fetchQuestsByRank.ja[rank];
+            ['ja', 'en', 'zh'].forEach(lang => {
+                if (lang === currentLang) return;
+                const oldQuests = fetchQuestsByRank[lang][rank];
+                if (oldQuests && oldQuests.length === currentQuests.length) {
+                    oldQuests.forEach((q, i) => {
+                        if (currentQuests[i]) {
+                            itemMap[q.itemName] = currentQuests[i].itemName;
+                        }
+                    });
+                }
+            });
+        });
+
+        // 2. Alchemyレシピ（inputsとoutput.nameを変換）
+        const alchemyLangs = ['ja', 'en', 'zh'];
+        const currentAlchemy = alchemyRecipes[currentLang];
+        alchemyLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldAlchemy = alchemyRecipes[lang];
+            if (oldAlchemy && oldAlchemy.length === currentAlchemy.length) {
+                oldAlchemy.forEach((rec, i) => {
+                    const curRec = currentAlchemy[i];
+                    // inputs
+                    rec.inputs.forEach((inp, j) => {
+                        if (curRec.inputs[j]) {
+                            itemMap[inp] = curRec.inputs[j];
+                        }
+                    });
+                    // output name
+                    itemMap[rec.output.name] = curRec.output.name;
+                });
+            }
+        });
+
+        // 3. Tavernレシピ（materialsとproduct name）
+        const tavernLangs = ['ja', 'en', 'zh'];
+        const currentTavern = tavernRecipes[currentLang];
+        tavernLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldTavern = tavernRecipes[lang];
+            if (oldTavern && oldTavern.length === currentTavern.length) {
+                oldTavern.forEach((rec, i) => {
+                    const curRec = currentTavern[i];
+                    // materials
+                    rec.materials.forEach((mat, j) => {
+                        const curMat = curRec.materials[j];
+                        if (curMat) {
+                            itemMap[mat.name] = curMat.name;
+                        }
+                    });
+                    // product name
+                    itemMap[rec.name] = curRec.name;
+                });
+            }
+        });
+
+        // 4. Blacksmithレシピ（materialsとproduct name）
+        const blacksmithLangs = ['ja', 'en', 'zh'];
+        const currentBlacksmith = blacksmithRecipes[currentLang];
+        blacksmithLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldBlacksmith = blacksmithRecipes[lang];
+            if (oldBlacksmith && oldBlacksmith.length === currentBlacksmith.length) {
+                oldBlacksmith.forEach((rec, i) => {
+                    const curRec = currentBlacksmith[i];
+                    // materials
+                    rec.materials.forEach((mat, j) => {
+                        const curMat = curRec.materials[j];
+                        if (curMat) {
+                            itemMap[mat.name] = curMat.name;
+                        }
+                    });
+                    // product name
+                    itemMap[rec.name] = curRec.name;
+                });
+            }
+        });
+
+        // === インベントリに適用 ===
+        gameState.inventory = gameState.inventory.map(item => {
+            if (itemMap[item.name]) {
+                return { ...item, name: itemMap[item.name] };
+            }
+            return item;
+        });
+
+        // === 冒険者の装備に適用（装備名も言語依存）===
+        gameState.adventurers.forEach(adv => {
+            if (adv.equipment && adv.equipment.length > 0) {
+                adv.equipment = adv.equipment.map(eq => {
+                    if (itemMap[eq.name]) {
+                        return { ...eq, name: itemMap[eq.name] };
+                    }
+                    return eq;
+                });
+            }
+        });
+
+        //（必要に応じて他の場所、例: sellables なども同様に処理可能）
 
         cleanupAdventurers();
         checkGameOver();
@@ -531,7 +658,7 @@ function updateAlchemyPreview() {
     }
 
     const sortedInputs = [ing1, ing2].sort();
-    const recipe = alchemyRecipes.find(r => {
+    const recipe = currentAlchemyRecipes.find(r => {
         const rInputs = [...r.inputs].sort();
         return rInputs[0] === sortedInputs[0] && rInputs[1] === sortedInputs[1];
     });
@@ -770,12 +897,19 @@ function generateTempAdventurer(){
     const gender = Math.random() < 0.5 ? 'M' : 'F';
     const name = randomName(gender);
     const statAbbr = ['STR','WIS','DEX','LUC'][primary];
-    const image = `${statAbbr}_${gender}.png`;
+    
+    let image;
+    if (gameState.reputation <= 100) {
+        image = `${statAbbr}_RankF_${gender}.png`;
+    } else {
+        image = `${statAbbr}_${gender}.png`;
+    }
+    
     return {
         id: gameState.nextId++,
         name: name,
         level:1, exp:0,
-        strength:s, wisdom:w, dexterity:d, luck:l,
+        strength:s, wisdom:w, dexterity:d, luck:l, defense:2,
         hp:100, maxHp:100, mp:50, maxMp:50,
         equipment:[],
         buffs: [],
@@ -867,7 +1001,7 @@ function generateKillRecruit(difficulty) {
         id: gameState.nextId++,
         name: name,
         level: 1, exp: 0,
-        strength: s, wisdom: w, dexterity: d, luck: l,
+        strength: s, wisdom: w, dexterity: d, luck: l,defense:2,
         hp: 100, maxHp: 100, mp: 50, maxMp: 50,
         equipment: [],
         buffs: [],
@@ -891,6 +1025,7 @@ function generateKillRecruit(difficulty) {
         adv.maxMp += 10;
     }
     adv.level = startLevel;
+    adv.defense = startLevel *2;
     adv.hp = adv.maxHp;
     adv.mp = adv.maxMp;
     adv.exp = 0;
@@ -942,6 +1077,7 @@ function generateEnemies(q) {
             wisdom: Math.max(1, Math.floor(baseStat * 0.8 + Math.random() * 5)),
             dexterity: Math.max(1, Math.floor(baseStat * 0.8 + Math.random() * 5)),
             luck: Math.max(1, Math.floor(baseStat * 0.5 + Math.random() * 3)),
+            defense:2,
             defending: false,
             action: null,
             target: null
@@ -1065,6 +1201,7 @@ function levelUp(adv, forceLevels = 0) {
 
         adv.maxHp += 20;
         adv.maxMp += 10;
+        adv.defense +=2;
         adv.hp = adv.maxHp;  // Full heal on each level up
         adv.mp = adv.maxMp;
     }
@@ -1310,7 +1447,7 @@ function renderSellItems() {
     gameState.inventory.forEach(item => allItems.push({...item, source: 'inventory'}));
 
     if (allItems.length === 0) {
-        return '<p class="empty-msg">売却可能なアイテムがありません。</p>';
+        return `<p class="empty-msg">${t('sell_no_items')}</p>`;
     }
 
     const grouped = {};
@@ -1352,14 +1489,28 @@ function renderSellItems() {
 
         html += `<li class="shop-item">`;
         html += `<strong>${group.name}</strong>`;
-        if (group.stat) html += ` <span class="bonus">(+${group.bonus} ${statFull[group.stat]})</span>`;
-        if (group.type === 'potion') html += ` <span class="bonus">(${group.restore?.toUpperCase()} +${group.amount})</span>`;
-        html += ` <em>x${count}</em> - ${singlePrice}g/個 (合計 ${totalPrice}g)`;
+
+        // 装備ボーナス表示（翻訳対応）
+        if (group.stat) {
+            const statText = t(`stat_${group.stat}`);
+            html += ` <span class="bonus">(${t('sell_equip_bonus', {bonus: group.bonus, stat: statText})})</span>`;
+        }
+
+        // ポーション効果表示（翻訳対応）
+        if (group.type === 'potion') {
+            const restoreText = t(`potion_${group.restore}`);
+            html += ` <span class="bonus">(${restoreText} +${group.amount})</span>`;
+        }
+
+        // 価格・数量表示（翻訳対応）
+        html += ` <em>${t('sell_quantity', {count})}</em> - ${t('sell_price_each', {price: singlePrice, unit: t('gold_unit')})} (${t('sell_price_total', {total: totalPrice, unit: t('gold_unit')})})`;
+
+        // 売却ボタン（翻訳対応）
         if (count === 1) {
-            html += ` <button class="sell-btn" onclick="sellStackedItem('${group.name}', 1)">売却</button>`;
+            html += ` <button class="sell-btn" onclick="sellStackedItem('${group.name}', 1)">${t('sell_button')}</button>`;
         } else {
-            html += ` <button class="sell-btn" onclick="sellStackedItem('${group.name}', 1)">1つ売却</button>`;
-            html += ` <button class="sell-btn all" onclick="sellStackedItem('${group.name}', ${count})">すべて売却</button>`;
+            html += ` <button class="sell-btn" onclick="sellStackedItem('${group.name}', 1)">${t('sell_one_button')}</button>`;
+            html += ` <button class="sell-btn all" onclick="sellStackedItem('${group.name}', ${count})">${t('sell_all_button')}</button>`;
         }
         html += `</li>`;
     });
@@ -1645,14 +1796,45 @@ function startDay(){
         return;
     }
     cleanupAdventurers();
-    gameState.adventurers.forEach(a=>{
-        if(!a.temp && !a.busy){
-            a.hp=Math.min(a.maxHp, (a.hp || 0) + Math.floor(a.maxHp*0.1));
-            a.mp=Math.min(a.maxMp, (a.mp || 0) + Math.floor(a.maxMp*0.1));
+    gameState.adventurers.forEach(a => {
+        // 基本回復量（10%）
+        let baseHpRegen = Math.floor(a.maxHp * 0.1);
+        let baseMpRegen = Math.floor(a.maxMp * 0.1);
+
+        // バフによる固定値追加回復量（絶対値）
+        let extraHpRegen = 0;
+        let extraMpRegen = 0;
+
+        if (a.buffs && a.buffs.length > 0) {
+            a.buffs.forEach(b => {
+                if (b.type === 'hpRegen' && b.bonus) {
+                    extraHpRegen += b.bonus;  // bonus:30 → +30 HP固定回復
+                } else if (b.type === 'mpRegen' && b.bonus) {
+                    extraMpRegen += b.bonus;  // 将来的なMP固定回復用
+                }
+                // 将来的にパーセント系バフが必要になったら別type（例: 'hpRegenPercent'）で分岐可能
+            });
         }
+
+        // 合計回復量
+        const totalHpRegen = baseHpRegen + extraHpRegen;
+        const totalMpRegen = baseMpRegen + extraMpRegen;
+
+        // 恒久冒険者かつクエスト中でない場合のみ日次回復適用
+        if (!a.temp && !a.busy) {
+            a.hp = Math.min(a.maxHp, (a.hp || 0) + totalHpRegen);
+            a.mp = Math.min(a.maxMp, (a.mp || 0) + totalMpRegen);
+        }
+
+        // バフ効果適用後に持続日数を減少させ、終了したバフを削除
+        // （バフ適用日を含めて正確に指定日数持続）
         if (a.buffs) {
-            a.buffs = a.buffs.filter(b => b.daysLeft > 1);
-            a.buffs.forEach(b => b.daysLeft--);
+            a.buffs.forEach(b => {
+                if (b.daysLeft > 0) {
+                    b.daysLeft--;
+                }
+            });
+            a.buffs = a.buffs.filter(b => b.daysLeft > 0);
         }
     });
     gameState.dailyMaterials = [];
@@ -1967,10 +2149,10 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     gameState.seenCompletionDialogues.add(key);
                 }
             }
-        } else if (QuestCompletionDialogue[q.questType]?.[q.rank]?.[q.questStoryindex]) {
+        } else if (currentQuestCompletionDialogue[q.questType]?.[q.rank]?.[q.questStoryindex]) {
             const key = `${q.questType}-${q.rank}-${q.questStoryindex}`;
             if (!gameState.seenCompletionDialogues.has(key)) {
-                const dialogue = QuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
+                const dialogue = currentQuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
                 queueQuestCompletionDialogue(dialogue);
                 gameState.seenCompletionDialogues.add(key);
             }
@@ -2163,6 +2345,7 @@ function generateDungeonEnemies(q) {
             wisdom:   Math.max(3, wisdom + Math.floor(Math.random() * 10)),
             dexterity: Math.max(5, dexterity + Math.floor(Math.random() * 15)),
             luck:     Math.max(3, luck + Math.floor(Math.random() * 10)),
+            defense: q.floor*10,
             defending: false,
             action: null,
             target: null
@@ -2537,7 +2720,7 @@ function getActionButtonsHtml(adv) {
         skills.push({ action: 'fortune', icon: 'LUC_heavyattack_icon.jpg', desc: 'Fortune’s Strike (5 AP, 50% chance deals 300% LUC damage)', cost: 5 });
     } else {
         skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP, deals 100% STR/WIS damage)', cost: 1 });
-        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP, deals 350% STR/WIS damage)', cost: 3 });
+        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP, deals 300% STR/WIS damage)', cost: 3 });
         skills.push({ action: 'defense', icon: 'Defense_icon.jpg', desc: 'Defense (+1 AP, block 25% damage)', cost: -1 });
         skills.push({ action: 'counter', icon: 'Counter_icon.jpg', desc: 'Counter Attack (2 AP, evade next attack, deals damage back to attacker)', cost: 2 }); // Assume Counter_icon.jpg or add
 
@@ -2769,7 +2952,7 @@ function executeActorAction(actor, action) {
             let isHeavy = false;
             let isLuc = false;
 
-            if (action.type === 'heavy') basePercent = 350, isHeavy = true;
+            if (action.type === 'heavy') basePercent = 300, isHeavy = true;
             if (action.type === 'stunning') basePercent = 100;
             if (action.type === 'luc_light') basePercent = 25, isLuc = true;
             if (action.type === 'fortune') {
@@ -2857,7 +3040,9 @@ function calculateAndApplyDamage(attacker, target, opts) {
     }
 
     dmg *= (0.9 + Math.random() * 0.2);
-
+    console.log("damage before calculating def"+dmg);
+    dmg -= getEffectiveStat(target, 'defense');
+    console.log("damage after calculating def"+dmg);   
     const popupInfos = [];
 
     /* === カウンターを最優先でチェック === */
@@ -2870,7 +3055,7 @@ function calculateAndApplyDamage(attacker, target, opts) {
         popupInfos.push({ targetId: target.id, dmg: 'Counter!', miss: true, crit: false });
 
         // 反撃ダメージ計算（カウンターはクリティカルなし、元のコード通り）
-        let retDmg = Math.max(getEffectiveStat(target, 'strength'), getEffectiveStat(target, 'wisdom')) * (opts.isHeavy ? 350 : 100) / 100;
+        let retDmg = Math.max(getEffectiveStat(target, 'strength'), getEffectiveStat(target, 'wisdom')) * (opts.isHeavy ? 300 : 100) / 100;
         retDmg = Math.floor(retDmg * (0.9 + Math.random() * 0.2));
 
         attacker.hp = Math.max(0, attacker.hp - retDmg);
@@ -3343,7 +3528,7 @@ function getFacilitiesContent() {
                         </div>
                     `;
             } else {
-                const recipes = f === 'blacksmith' ? blacksmithRecipes : tavernRecipes;
+                const recipes = f === 'blacksmith' ? currentBlacksmithRecipes : currentTavernRecipes;
                 html += `<h4>${names[f]} 生産</h4><ul>`;
                 recipes.forEach((r, j) => {
                     if (r.level > level) return;
@@ -3385,7 +3570,7 @@ function selectMix(slot, idx) {
 
 
 function produce(fac, rid) {
-    const recipes = fac === 'blacksmith' ? blacksmithRecipes : tavernRecipes;
+    const recipes = fac === 'blacksmith' ? currentBlacksmithRecipes : currentTavernRecipes;
     const r = recipes[rid];
     if (!spendGold(r.cost)) return;
     if (r.materials) {
@@ -3591,39 +3776,7 @@ function getAlchemyMaterialOptions() {
     return html;
 }
 
-function updateAlchemyPreview() {
-    const ing1 = document.getElementById('alchemyIng1')?.value;
-    const ing2 = document.getElementById('alchemyIng2')?.value;
-    const qty = parseInt(document.getElementById('alchemyQty')?.value) || 1;
-    const preview = document.getElementById('alchemyPreview');
-    if (!preview || !ing1 || !ing2 || ing1 === ing2) {
-        preview.innerHTML = '<p style="color:#aaa;">異なる材料を2つ選択するとレシピが表示されます</p>';
-        return;
-    }
 
-    const sorted = [ing1, ing2].sort();
-    const recipe = alchemyRecipes.find(r => {
-        const rSorted = [...r.inputs].sort();
-        return rSorted[0] === sorted[0] && rSorted[1] === sorted[1];
-    });
-
-    if (!recipe) {
-        preview.innerHTML = '<p style="color:#ff6b6b;">この組み合わせのレシピはありません</p>';
-        return;
-    }
-
-    const have1 = countItem(ing1);
-    const have2 = countItem(ing2);
-    const canMake = have1 >= qty && have2 >= qty;
-
-    preview.innerHTML = `
-        <p><strong>出力:</strong> ${recipe.output.name} ×${qty}</p>
-        <p><strong>必要材料:</strong></p>
-        <p style="color:${have1 >= qty ? '#ffffff' : '#ff6b6b'};">・${ing1} ×${qty} (保有: ${have1}個)</p>
-        <p style="color:${have2 >= qty ? '#ffffff' : '#ff6b6b'};">・${ing2} ×${qty} (保有: ${have2}個)</p>
-        <p style="margin-top:15px; color:${canMake ? '#27ae60' : '#ff6b6b'};"><strong>${canMake ? '作成可能' : '材料不足'}</strong></p>
-    `;
-}
 
 function performAlchemy() {
     const ing1 = document.getElementById('alchemyIng1').value;
@@ -3665,7 +3818,7 @@ function performAlchemy() {
 }
 
 function orderTavernItem(recipeIdx) {
-    const r = tavernRecipes[recipeIdx];
+    const r = currentTavernRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
         alert('ゴールドが不足しています');
         return;
@@ -3687,23 +3840,31 @@ function orderTavernItem(recipeIdx) {
         return;
     }
 
-    // 冒険者選択リスト（画像を小さめの円形で表示）
     let selectHtml = `<div style="margin:40px 0; padding:30px; background:rgba(255,255,255,0.15); border-radius:16px;">
         <p style="font-size:1.4em; margin-bottom:25px; text-align:center;"><strong>${r.name}</strong> を注文（${r.cost}g）<br>
         適用する冒険者を選択してください</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:20px;">`;
+        <div style="display:grid; 
+                    grid-template-columns: repeat(2, 1fr); 
+                    gap:30px; 
+                    justify-items:center; 
+                    max-width:900px; 
+                    margin:0 auto;">
+    `;
 
     perms.forEach(adv => {
-        selectHtml += `<div style="text-align:center; padding:15px; background:rgba(255,255,255,0.1); border-radius:12px;">
-            <!-- 小さめ（80px）の円形ポートレート（歪みなし、適切なクロップ） -->
-            <div style="width:80px; height:80px; border-radius:50%; overflow:hidden; margin:0 auto 12px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid rgba(255,255,255,0.3);">
-                <img src="${adv.image}" style="width:100%; height:100%; object-fit:cover; object-position:center top;">
+        selectHtml += `<div style="text-align:center; padding:15px; background:rgba(255,255,255,0.1); border-radius:12px; width:100%; max-width:380px;">
+            <!-- レスポンシブ円形ポートレート（画像サイズ追従 + 最大380px） -->
+            <div style="width:100%; max-width:320px; aspect-ratio:1/1; border-radius:25%; overflow:hidden; margin:0 auto 12px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid rgba(255,255,255,0.3);">
+                <img src="Images/${adv.image}" 
+                    style="width:100%; height:100%; object-fit:cover; object-position:center top;"
+                    onload="this.parentNode.style.aspectRatio = (this.naturalWidth / this.naturalHeight) || '1/1';">
             </div>
             <strong style="font-size:1.2em; display:block; margin-bottom:8px;">${adv.name}</strong>
             <button onclick="applyTavernBuff(${recipeIdx}, ${adv.id})" style="padding:10px 24px; background:#27ae60; font-size:1.1em; border:none; border-radius:8px;">適用</button>
         </div>`;
     });
 
+    selectHtml += `</div></div>`;
     selectHtml += `</div>
         <div style="text-align:center; margin-top:30px;">
             <button onclick="renderFacilities()" style="padding:10px 24px; background:#e74c3c; font-size:1.1em; border:none; border-radius:8px;">キャンセル</button>
@@ -3713,7 +3874,7 @@ function orderTavernItem(recipeIdx) {
     document.querySelector('.facility-panel').insertAdjacentHTML('beforeend', selectHtml);
 }
 function applyTavernBuff(recipeIdx, advId) {
-    const r = tavernRecipes[recipeIdx];
+    const r = currentTavernRecipes[recipeIdx];
     const adv = findAdv(advId);
     if (!adv || adv.temp) return;
 
@@ -3736,7 +3897,7 @@ function applyTavernBuff(recipeIdx, advId) {
 }
 
 function produceBlacksmith(recipeIdx) {
-    const r = blacksmithRecipes[recipeIdx];
+    const r = currentBlacksmithRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
         alert('ゴールドが不足しています');
         return;
@@ -3771,153 +3932,151 @@ function renderFacilities() {
     if (currentFacility === null) {
         modalContent.style.backgroundImage = "url('Images/Street.jpg')";
         content.innerHTML = `
-            <div id = "renderedfacilitiesContent" style="text-align:center; padding:60px;">
-                <h2>街</h2>
-                <h2 style="font-size:1.6em; margin:40px 0;">施設を選択してください</h2>
+            <div id="renderedfacilitiesContent" style="text-align:center; padding:60px;">
+                <h2>${t('facilities_street_title')}</h2>
+                <h2 style="font-size:1.6em; margin:40px 0;">${t('facilities_select_prompt')}</h2>
                 <div class="buttons" style="gap:30px; flex-wrap:wrap;">
-                    <button onclick="selectFacility('blacksmith')" style="padding:40px 40px; font-size:1.4em; background:rgba(231,76,60,0.9);">鍛冶屋</button>
-                    <button onclick="selectFacility('tavern')" style="padding:40px 40px; font-size:1.4em; background:rgba(52,152,219,0.9);">酒場</button>
-                    <button onclick="selectFacility('alchemy')" style="padding:40px 40px; font-size:1.4em; background:rgba(46,204,113,0.9);">錬金工房</button>
+                    <button onclick="selectFacility('blacksmith')" style="padding:40px 40px; font-size:1.4em; background:rgba(231,76,60,0.9);">
+                        ${t('facilities_blacksmith')}
+                    </button>
+                    <button onclick="selectFacility('tavern')" style="padding:40px 40px; font-size:1.4em; background:rgba(52,152,219,0.9);">
+                        ${t('facilities_tavern')}
+                    </button>
+                    <button onclick="selectFacility('alchemy')" style="padding:40px 40px; font-size:1.4em; background:rgba(46,204,113,0.9);">
+                        ${t('facilities_alchemy')}
+                    </button>
                 </div>
             </div>
         `;
     } else {
         let bgFile = '';
-        let title = '';
+        let titleKey = '';
         let recipes = [];
 
         if (currentFacility === 'blacksmith') {
             bgFile = '鍛冶屋.jpg';
-            title = '鍛冶屋';
-            recipes = blacksmithRecipes;
+            titleKey = 'facilities_blacksmith';
+            recipes = currentBlacksmithRecipes;
         } else if (currentFacility === 'tavern') {
             bgFile = '酒場.jpg';
-            title = '酒場';
-            recipes = tavernRecipes;
+            titleKey = 'facilities_tavern';
+            recipes = currentTavernRecipes;
         } else if (currentFacility === 'alchemy') {
             bgFile = '錬金工房.jpg';
-            title = '錬金工房';
-            recipes = alchemyRecipes;
+            titleKey = 'facilities_alchemy';
+            recipes = currentAlchemyRecipes;
         }
 
         modalContent.style.backgroundImage = `url('Images/${bgFile}')`;
 
         const level = gameState.facilities[currentFacility];
+        const title = t(titleKey);
         let html = `<div class="facility-panel">
-            <h2>${title}　レベル ${level}</h2>
+            <h2>${t('facilities_level_title', {title, level})}</h2>
             <div style="text-align:center; margin:30px 0;">
-                <button onclick="currentFacility=null; renderFacilities()" style="padding:14px 36px; background:#87878777; font-size:1em;">街に戻る</button>
+                <button onclick="currentFacility=null; renderFacilities()" style="padding:14px 36px; background:#87878777; font-size:1em;">
+                    ${t('facilities_back_to_street')}
+                </button>
             </div>`;
 
-        // アップグレード（施設ごとに最大レベル対応）
-        const maxLevel = facilityMaxLevels[currentFacility] || 4;  // 安全策（未定義時は4）
+        // アップグレード
+        const maxLevel = facilityMaxLevels[currentFacility] || 4;
         if (level < maxLevel) {
             const nextCost = facilityUpgradeCosts[currentFacility][level];
             html += `
                 <div style="text-align:center; margin:30px 0;">
                     <p style="font-size:1.4em;">
-                        レベル ${level} → ${level + 1} アップグレード費用：${nextCost} gold
+                        ${t('facilities_upgrade_cost', {level, next: level + 1, cost: nextCost})}
                     </p>
                     <button onclick="upgradeFacility('${currentFacility}')" 
                             ${gameState.gold < nextCost ? 'disabled style="background:#777;"' : ''} 
                             style="padding:14px 40px; font-size:1.4em;">
-                        アップグレード
+                        ${t('facilities_upgrade_button')}
                     </button>
                 </div>`;
         } else {
             html += `
                 <div style="text-align:center; margin:30px 0;">
                     <p style="font-size:1.6em; color:#ffd700;">
-                        最大レベル ${maxLevel} に到達しました！
+                        ${t('facilities_max_level', {max: maxLevel})}
                     </p>
                 </div>`;
         }
 
         if (level > 0 && recipes.length > 0) {
-            html += `<h3 style="text-align:center; margin-top:40px;">製作可能アイテム</h3>
+            html += `<h3 style="text-align:center; margin-top:40px;">${t('facilities_craftable_items')}</h3>
                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:30px; margin-top:30px;">`;
 
             let hasItems = false;
 
             recipes.forEach((r, originalIndex) => {
-                if (r.level > level) return;  // レベル不足は非表示
+                if (r.level > level) return;
 
                 hasItems = true;
 
                 const cost = r.cost || 0;
                 let canMake = gameState.gold >= cost;
 
-                // 必要素材取得（錬金はinputs、それ以外はmaterials）
                 const materials = currentFacility === 'alchemy' 
                     ? r.inputs.map(name => ({name, qty: 1}))
                     : (r.materials || []);
 
-                let matHtml = '<p style="margin:15px 0;"><strong>必要素材:</strong></p>';
+                let matHtml = `<p style="margin:15px 0;"><strong>${t('facilities_required_materials')}</strong></p>`;
                 if (materials.length > 0) {
                     materials.forEach(m => {
                         const have = countItem(m.name);
                         canMake = canMake && have >= m.qty;
                         const color = have >= m.qty ? '#ffffff' : '#ff6b6b';
-                        matHtml += `<p style="color:${color}; margin:5px 0;">・${m.name} ×${m.qty} (保有: ${have}個)</p>`;
+                        matHtml += `<p style="color:${color}; margin:5px 0;">・${m.name} ×${m.qty} (${t('facilities_owned', {have})})</p>`;
                     });
                 } else {
-                    matHtml += '<p style="color:#aaaaaa; margin:5px 0;">・なし</p>';
+                    matHtml += `<p style="color:#aaaaaa; margin:5px 0;">・${t('facilities_none')}</p>`;
                 }
 
-                // アイテム名表示（錬金は「A + B → 出力」形式）
+                // アイテム名（錬金は「A + B → 出力」形式）
                 const itemName = currentFacility === 'alchemy' 
                     ? `${r.inputs.join(' + ')} → ${r.output.name}`
                     : r.name;
 
-                // 効果表示
+                // 効果表示（翻訳対応）
                 let effectHtml = '';
                 if (currentFacility === 'blacksmith') {
-                    const statText = {
-                        strength: 'STR',
-                        wisdom: 'WIS',
-                        dexterity: 'DEX',
-                        luck: 'LUC'
-                    }[r.stat] || r.stat.toUpperCase();
+                    const statText = t(`stat_${r.stat}`); // stat_strength 等がtranslations.jsにある前提
                     effectHtml = `<p style="margin:12px 0; color:#ffeb3b; font-weight:bold; font-size:1.1em;">
-                                    装備効果: ${statText} +${r.bonus}%
+                                    ${t('facilities_equip_effect', {stat: statText, bonus: r.bonus})}
                                   </p>`;
                 } else if (currentFacility === 'tavern') {
                     if (r.buff.stat) {
-                        const statText = {
-                            strength: 'STR',
-                            wisdom: 'WIS',
-                            dexterity: 'DEX',
-                            luck: 'LUC'
-                        }[r.buff.stat] || r.buff.stat.toUpperCase();
+                        const statText = t(`stat_${r.buff.stat}`);
                         const percent = r.buff.percent ? '%' : '';
                         effectHtml = `<p style="margin:12px 0; color:#81ff81; font-weight:bold; font-size:1.1em;">
-                                        バフ効果: ${statText} +${r.buff.bonus}${percent}<br>
-                                        持続: ${r.buff.days}日間
+                                        ${t('facilities_buff_effect', {stat: statText, bonus: r.buff.bonus, percent})}<br>
+                                        ${t('facilities_buff_duration', {days: r.buff.days})}
                                       </p>`;
                     } else if (r.buff.type) {
-                        const typeText = r.buff.type === 'hpRegen' ? 'HP再生' : 'MP再生';
+                        const typeText = r.buff.type === 'hpRegen' ? t('buff_hp_regen') : t('buff_mp_regen');
                         effectHtml = `<p style="margin:12px 0; color:#81ff81; font-weight:bold; font-size:1.1em;">
-                                        バフ効果: ${typeText} +${r.buff.bonus}<br>
-                                        持続: ${r.buff.days}日間
+                                        ${t('facilities_buff_effect_type', {type: typeText, bonus: r.buff.bonus})}<br>
+                                        ${t('facilities_buff_duration', {days: r.buff.days})}
                                       </p>`;
                     }
                 } else if (currentFacility === 'alchemy' && r.output.type === 'potion') {
-                    const restoreText = r.output.restore === 'hp' ? 'HP回復' : 'MP回復';
+                    const restoreText = r.output.restore === 'hp' ? t('potion_hp') : t('potion_mp');
                     effectHtml = `<p style="margin:12px 0; color:#a0f7a0; font-weight:bold; font-size:1.1em;">
-                                    効果: ${restoreText} +${r.output.amount}
+                                    ${t('facilities_potion_effect', {type: restoreText, amount: r.output.amount})}
                                   </p>`;
                 }
 
-                // ボタン設定
+                // ボタンラベル
                 let buttonText, onclick;
                 if (currentFacility === 'alchemy') {
-                    buttonText = '合成';
+                    buttonText = t('facilities_craft_alchemy');
                     onclick = `craftAlchemyRecipe(${originalIndex})`;
                 } else if (currentFacility === 'tavern') {
-                    buttonText = '注文（冒険者選択）';
+                    buttonText = t('facilities_order_tavern');
                     onclick = `orderTavernItem(${originalIndex})`;
                 } else {
-                    buttonText = '製作';
+                    buttonText = t('facilities_produce_blacksmith');
                     onclick = `produceBlacksmith(${originalIndex})`;
                 }
 
@@ -3925,7 +4084,7 @@ function renderFacilities() {
                     <div class="facility-item">
                         <h3>${itemName}</h3>
                         ${effectHtml}
-                        <p>コスト：${cost} gold</p>
+                        <p>${t('facilities_cost', {cost})}</p>
                         ${matHtml}
                         <button onclick="${onclick}" 
                                 ${!canMake ? 'disabled style="background:#777;"' : ''}
@@ -3936,19 +4095,18 @@ function renderFacilities() {
             });
 
             if (!hasItems) {
-                html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">レベルを上げると新しいレシピが解放されます</p>`;
+                html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">${t('facilities_no_recipes_yet')}</p>`;
             }
 
             html += `</div>`;
         } else {
-            html += `<p style="text-align:center; font-size:1.4em; margin-top:40px;">施設をアップグレードすると利用可能になります</p>`;
+            html += `<p style="text-align:center; font-size:1.4em; margin-top:40px;">${t('facilities_upgrade_to_unlock')}</p>`;
         }
 
         html += `</div>`;
         content.innerHTML = html;
     }
 }
-
 
 // 在庫から指定数量を消費する関数（removeFromInventory）
 // inventory → gameState.inventory に修正（ゲームの構造に合わせ）
@@ -3985,7 +4143,7 @@ function removeFromInventory(itemName, qtyToRemove) {
 }
 
 function craftAlchemyRecipe(index) {
-    const recipe = alchemyRecipes[index];
+    const recipe = currentAlchemyRecipes[index];
     if (!recipe) {
         alert("無効なレシピです。");
         return;
@@ -4119,58 +4277,7 @@ function upgradeFacility(fac) {
 
 
 
-function craftFacilityItem(fac, recipeIdx) {
-    const recipes = fac === 'blacksmith' ? blacksmithRecipes :
-                    fac === 'tavern' ? tavernRecipes : alchemyRecipes;
-    const r = recipes[recipeIdx];
-    if (!r) return;
 
-    const cost = r.cost || 0;
-    if (gameState.gold < cost) { alert('ゴールド不足'); return; }
-
-    // 素材チェック
-    if (r.materials) {
-        for (let m of r.materials) {
-            if (countItem(m.name) < (m.qty || 1)) {
-                alert('素材不足');
-                return;
-            }
-        }
-    }
-
-    // 消費
-    gameState.gold -= cost;
-    if (r.materials) {
-        for (let m of r.materials) {
-            removeItems(m.name, m.qty || 1);
-        }
-    }
-
-    // 生産
-    if (fac === 'alchemy') {
-        addToInventory(r.output);
-        alert(`${r.output.name} を製作しました！`);
-    } else if (fac === 'blacksmith') {
-        addToInventory({name: r.name, stat: r.stat, bonus: r.bonus});
-        alert(`${r.name} を製作しました！`);
-    } else if (fac === 'tavern') {
-        const perms = gameState.adventurers.filter(a => !a.temp);
-        if (perms.length === 0) {
-            alert('永久冒険者がいないため適用できません');
-            gameState.gold += cost;  // 返金
-            return;
-        }
-        const target = perms[Math.floor(Math.random() * perms.length)];
-        const buffCopy = JSON.parse(JSON.stringify(r.buff));
-        buffCopy.daysLeft = buffCopy.days;
-        target.buffs.push(buffCopy);
-        alert(`${target.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`);
-    }
-
-    renderFacilities();
-    if (typeof updateGold === 'function') updateGold();
-    updateDisplays();
-}
 
 function postGuildQuest() {
     // document.getElementById('gqType') を完全に削除 → エラーの原因を根絶
@@ -4392,7 +4499,7 @@ function useExpOrbOnChar(charIndex, itemId) {
 function renderCurrentCharacter() {
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
-        document.getElementById('charactersContent').innerHTML = '<p>恒久的な冒険者がいません。</p>';
+        document.getElementById('charactersContent').innerHTML = `<p>${t('no_permanent_adventurers')}</p>`;
         return;
     }
     if (currentCharIndex >= perms.length || currentCharIndex < 0) currentCharIndex = 0;
@@ -4401,7 +4508,8 @@ function renderCurrentCharacter() {
         strength: getEffectiveStat(adv, 'strength'),
         wisdom: getEffectiveStat(adv, 'wisdom'),
         dexterity: getEffectiveStat(adv, 'dexterity'),
-        luck: getEffectiveStat(adv, 'luck')
+        luck: getEffectiveStat(adv, 'luck'),
+        defense: getEffectiveStat(adv, 'defense'),
     };
     const expNeeded = adv.level * 100;
     const expPct = Math.min(100, (adv.exp / expNeeded) * 100 || 0);
@@ -4409,9 +4517,9 @@ function renderCurrentCharacter() {
     const mpPct = (adv.mp / adv.maxMp) * 100 || 0;
 
     let html = `<div class="char-nav" style="margin-bottom:20px;">
-        <button onclick="prevChar()">‹ 前</button>
+        <button onclick="prevChar()">${t('prev_character')}</button>
         <span>${currentCharIndex + 1} / ${perms.length}</span>
-        <button onclick="nextChar()">次 ›</button>
+        <button onclick="nextChar()">${t('next_character')}</button>
     </div>`;
 
     // メインコンテンツ：flexで左右配置
@@ -4422,100 +4530,100 @@ function renderCurrentCharacter() {
 
     html += `<h3 style="margin:0 0 15px 0; text-align:center;">${getNameHtml(adv)} Lv ${adv.level}</h3>`;
 
-    html += `<p style="margin:10px 0;"><strong>ステータス</strong></p><ul style="margin:0; padding-left:20px;">`;
-    html += `<li>筋力: ${eff.strength} (ベース ${adv.strength})</li>`;
-    html += `<li>知恵: ${eff.wisdom} (ベース ${adv.wisdom})</li>`;
-    html += `<li>敏捷: ${eff.dexterity} (ベース ${adv.dexterity})</li>`;
-    html += `<li>運: ${eff.luck} (ベース ${adv.luck})</li>`;
+    html += `<p style="margin:10px 0;"><strong>${t('status_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
+    html += `<li>${t('stat_strength')}: ${eff.strength} (${t('base_stat_label')} ${adv.strength})</li>`;
+    html += `<li>${t('stat_wisdom')}: ${eff.wisdom} (${t('base_stat_label')} ${adv.wisdom})</li>`;
+    html += `<li>${t('stat_dexterity')}: ${eff.dexterity} (${t('base_stat_label')} ${adv.dexterity})</li>`;
+    html += `<li>${t('stat_luck')}: ${eff.luck} (${t('base_stat_label')} ${adv.luck})</li>`;
+    html += `<li>${t('stat_defense')}: ${eff.defense} (${t('base_stat_label')} ${adv.defense})</li>`;
     html += `</ul>`;
 
     html += `<div style="margin:15px 0;">
                 <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div>
-                EXP ${adv.exp}/${expNeeded}<br>
+                ${t('exp_bar_label', {exp: adv.exp, needed: expNeeded})}<br>
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
-                HP ${adv.hp}/${adv.maxHp}<br>
+                ${t('hp_bar_label', {hp: adv.hp, maxHp: adv.maxHp})}<br>
                 <div class="progress-bar"><div class="progress-fill mp-fill" style="width:${mpPct}%"></div></div>
-                MP ${adv.mp}/${adv.maxMp}
+                ${t('mp_bar_label', {mp: adv.mp, maxMp: adv.maxMp})}
              </div>`;
 
     if (adv.buffs && adv.buffs.length > 0) {
-        html += `<p style="margin:10px 0;"><strong>アクティブバフ</strong></p><ul style="margin:0; padding-left:20px;">`;
+        html += `<p style="margin:10px 0;"><strong>${t('active_buffs_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         adv.buffs.forEach(b => {
             const bonus = b.percent ? `${b.bonus}%` : `+${b.bonus}`;
-            const target = b.stat ? statFull[b.stat] : b.type;
-            html += `<li>${bonus} ${target}（残り${b.daysLeft}日）</li>`;
+            const target = b.stat ? t(`stat_${b.stat}`) : b.type;
+            html += `<li>${t('buff_line', {bonus: bonus, target: target, daysLeft: b.daysLeft})}</li>`;
         });
         html += `</ul>`;
     }
 
-    html += `<p style="margin:15px 0 10px;"><strong>装備</strong></p><ul style="margin:0; padding-left:20px;">`;
-    if (adv.equipment.length === 0) html += `<li>なし</li>`;
+    html += `<p style="margin:15px 0 10px;"><strong>${t('equipment_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
+    if (adv.equipment.length === 0) html += `<li>${t('none_equipment')}</li>`;
     adv.equipment.forEach((eq, i) => {
-        html += `<li>${eq.name} (+${eq.bonus}% ${statFull[eq.stat]})
-                 <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">解除</button></li>`;
+        html += `<li>${eq.name} (+${eq.bonus}% ${t(`stat_${eq.stat}`)})
+                 <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">${t('unequip_button')}</button></li>`;
     });
     html += `</ul>`;
 
     const equippable = gameState.inventory.filter(it => it.stat && adv.equipment.length < 2 && (it.qty || 1) > 0);
     if (equippable.length > 0) {
-        html += `<p style="margin:15px 0 10px;"><strong>装備可能アイテム</strong></p><ul style="margin:0; padding-left:20px;">`;
+        html += `<p style="margin:15px 0 10px;"><strong>${t('equippable_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         equippable.forEach(it => {
-            html += `<li>${it.name} x${it.qty || 1} (+${it.bonus}% ${statFull[it.stat]}) 
-                     <button onclick="equipToChar(${currentCharIndex}, ${it.id})">装備</button></li>`;
+            html += `<li>${it.name} x${it.qty || 1} (+${it.bonus}% ${t(`stat_${it.stat}`)}) 
+                     <button onclick="equipToChar(${currentCharIndex}, ${it.id})">${t('equip_button')}</button></li>`;
         });
         html += `</ul>`;
     }
 
     const potions = gameState.inventory.filter(it => it.type === 'potion' && (it.qty || 1) > 0);
     if (potions.length > 0) {
-        html += `<p style="margin:15px 0 10px;"><strong>ポーション</strong></p><ul style="margin:0; padding-left:20px;">`;
+        html += `<p style="margin:15px 0 10px;"><strong>${t('potions_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         potions.forEach(it => {
-            const target = it.restore === 'hp' ? `HP +${it.amount}` : `MP +${it.amount}`;
+            const effect = it.restore === 'hp' ? t('potion_hp', {amount: it.amount}) : t('potion_mp', {amount: it.amount});
             const safeName = it.name.replace(/'/g, "\\'");
-            html += `<li>${it.name} x${it.qty || 1} (${target}) 
-                     <button onclick="usePotionOnChar(${currentCharIndex}, '${safeName}')">使用</button></li>`;
+            html += `<li>${it.name} x${it.qty || 1} (${effect}) 
+                     <button onclick="usePotionOnChar(${currentCharIndex}, '${safeName}')">${t('use_button')}</button></li>`;
         });
         html += `</ul>`;
     }
 
-    // 新規追加: EXPオーブ専用セクション（大・小両方対応）
     const expOrbs = gameState.inventory.filter(it => 
         (it.name === 'EXPオーブ' || it.name === 'EXPオーブ (小)') && (it.qty || 1) > 0
     );
     if (expOrbs.length > 0) {
-        html += `<p style="margin:15px 0 10px;"><strong>レベルアップアイテム</strong></p><ul style="margin:0; padding-left:20px;">`;
+        html += `<p style="margin:15px 0 10px;"><strong>${t('level_up_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         expOrbs.forEach(it => {
             const levels = it.name === 'EXPオーブ (小)' ? 1 : 10;
-            html += `<li>${it.name} x${it.qty || 1} (使用でレベル+${levels}) 
-                     <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">使用</button></li>`;
+            html += `<li>${it.name} x${it.qty || 1} ${t('level_up_amount', {levels: levels})} 
+                     <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
         });
         html += `</ul>`;
     }
 
-    // 既存のバフ消費アイテムはそのまま（EXPオーブ大・小を除外）
     const consumables = gameState.inventory.filter(it => 
         it.type === 'consumable' && 
         it.name !== 'EXPオーブ' && 
-        it.name !== 'EXPオーブ (小)'
+        it.name !== 'EXPオーブ (小)' && 
+        (it.qty || 1) > 0
     );
     if (consumables.length > 0) {
-        html += `<p style="margin:15px 0 10px;"><strong>消費アイテム（バフ）</strong></p><ul style="margin:0; padding-left:20px;">`;
+        html += `<p style="margin:15px 0 10px;"><strong>${t('consumables_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         consumables.forEach(it => {
             const bonus = it.buff.percent ? `${it.buff.bonus}%` : `+${it.buff.bonus}`;
-            const target = it.buff.stat ? statFull[it.buff.stat] : it.buff.type;
-            html += `<li>${it.name} (${bonus} ${target} ${it.buff.days}日)
-                     <button onclick="useConsumable(${currentCharIndex}, ${it.id})">使用</button></li>`;
+            const target = it.buff.stat ? t(`stat_${it.buff.stat}`) : it.buff.type;
+            html += `<li>${it.name} (${bonus} ${target} ${it.buff.days}${t('days_suffix')})
+                     <button onclick="useConsumable(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
         });
         html += `</ul>`;
     }
 
     html += `<hr style="margin:20px 0;">`;
     if (adv.busy) {
-        html += `<p style="color:red; text-align:center;">クエスト中 - 解雇不可</p>`;
+        html += `<p style="color:red; text-align:center;">${t('on_quest_cannot_fire')}</p>`;
     } else {
         html += `<div style="text-align:center;">
                     <button style="background:#e74c3c; color:white; padding:10px 20px; border:none; border-radius:4px; cursor:pointer;"
-                            onclick="firePerm(${currentCharIndex})">この冒険者を解雇</button>
+                            onclick="firePerm(${currentCharIndex})">${t('fire_adventurer_button')}</button>
                  </div>`;
     }
 
@@ -4735,9 +4843,11 @@ document.addEventListener('keydown', (event) => {
     const questCompletion_modal = document.getElementById('questCompletionModal');
     const questCompletion_modal_displaying = questCompletion_modal && window.getComputedStyle(questCompletion_modal).display !== 'none';   
     const battleModal_modal = document.getElementById('battleModal');
-    const battleModal_modal_displaying = battleModal_modal && window.getComputedStyle(battleModal_modal).display !== 'none';         
-    
-    
+    const battleModal_modal_displaying = battleModal_modal && window.getComputedStyle(battleModal_modal).display !== 'none';     
+    const facilitiesModal_modal = document.getElementById('facilitiesModal');
+    const facilitiesModal_modal_displaying = battleModal_modal && window.getComputedStyle(facilitiesModal_modal).display !== 'none';    
+    const guildQuestsModal_modal = document.getElementById('guildQuestsModal');
+    const guildQuestsModal_modal_displaying = battleModal_modal && window.getComputedStyle(guildQuestsModal_modal).display !== 'none';                   
     console.log(event_modal_displaying);
     if (key === 'a' || event.key === 'ArrowLeft') {
         if (event_modal_displaying) {
@@ -4786,6 +4896,10 @@ document.addEventListener('keydown', (event) => {
         closeShop();
     }else if (characters_modal_displaying) {
         closeCharacters();
+    }else if (facilitiesModal_modal_displaying) {
+        closeFacilities();
+    }else if (guildQuestsModal_modal_displaying) {
+        closeGuildQuests();
     }
 
 }
@@ -5349,6 +5463,15 @@ function playNextDialogue() {
             const typingText = document.getElementById('typingText');
 
             let i = 0;
+
+            // 言語に応じたタイピング速度（英語は速く、その他は標準）
+            let delay = 30; // デフォルト（日本語・中文）
+            if (currentLang === 'en') {
+                delay = 15; // 英語は約2倍速く（読みやすさ重視で調整可能）
+            } else if (currentLang === 'zh') {
+                delay = 35; // 繁體中文は少し遅め（漢字の複雑さ考慮）
+            }
+
             localInterval = setInterval(() => {
                 if (i < targetText.length) {
                     typingText.innerHTML += targetText.charAt(i);
@@ -5359,38 +5482,55 @@ function playNextDialogue() {
                     nextBtn.disabled = false;
                     nextBtn.style.opacity = '1';
 
+                    // ボタンテキストを翻訳対応
                     if (localIndex === seq.length - 1) {
-                        nextBtn.textContent = '閉じる';
+                        nextBtn.textContent = t('dialogue_close'); // "Close" / "閉じる" / "關閉"
                     } else {
-                        nextBtn.textContent = '次へ';
+                        nextBtn.textContent = t('dialogue_next'); // "Next" / "次へ" / "下一頁"
                     }
                 }
-            }, 30);
+            }, delay);
         }
 
         function renderCurrent() {
             const current = seq[localIndex];
             let imageSrc = 'Images/main_char.png'; 
-            if (current.speaker === '冒険者') {
+            
+            // 多言語対応: 冒険者（Adventurer）の場合、ランダム画像
+            const adventurerNames = {
+                ja: '冒険者',
+                en: 'Adventurer',
+                zh: '冒險者'  // 繁體中文での一般的な翻訳（必要に応じて調整）
+            };
+            if (current.speaker === adventurerNames[currentLang] || 
+                current.speaker === adventurerNames.ja ||  // フォールバック
+                current.speaker === adventurerNames.en ||
+                current.speaker === adventurerNames.zh) {
                 const images = [
-                    'Images/STR_M.png',
-                    'Images/STR_F.png',
-                    'Images/WIS_F.png',
-                    'Images/DEX_M.png',
-                    'Images/DEX_F.png',
-                    'Images/LUC_M.png',
-                    'Images/LUC_F.png'
+                    'Images/STR_RankF_F.png',
+                    'Images/STR_RankF_M.png',
+                    'Images/DEX_RankF_F.png',
+                    'Images/DEX_RankF_M.png',
+                    'Images/WIS_RankF_F.png',
+                    'Images/WIS_RankF_M.png',
+                    'Images/LUC_RankF_F.png',
+                    'Images/LUC_RankF_M.png'
                 ];
                 
                 const randomIndex = Math.floor(Math.random() * images.length);
                 imageSrc = images[randomIndex];
             }     
-            if (current.speaker === 'カイト') {
+            // Kaito（固有名詞だが英語でもほぼ同じ）
+            else if (current.speaker === 'カイト' || current.speaker === 'Kaito') {
                 imageSrc = 'Images/カイト.png';
-            } else if (current.speaker === 'ルナ') {
+            } 
+            // Luna（固有名詞）
+            else if (current.speaker === 'ルナ' || current.speaker === 'Luna') {
                 imageSrc = 'Images/ルナ.png';
             }
-            // それ以外の話者（冒険者、依頼主、ギルドマスターなど）でもペア画像のままにする
+            // その他（依頼主、ギルドマスター、Narratorなど）はデフォルトのペア画像
+            // 必要に応じて追加可能（例: Guild Master用の専用画像）
+
             charImage.src = imageSrc;
             charImage.style.display = 'block'; // 常に表示
 
