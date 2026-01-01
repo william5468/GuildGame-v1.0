@@ -1,4 +1,63 @@
 
+// === キャラクターごとの呼吸アニメ設定を一元管理（javascript.js の上部やconstants.jsなどに追加） ===
+const breathingAnimationSettings = {
+  // キー: baseImageのファイル名（拡張子なし、例: 'LUC_RankF_F'）
+  // 値: generateBreathingAnimation用のパラメータオブジェクト
+  'LUC_RankF_F': {
+    rows: 3,
+    cols: 4,
+    frameW: 944,
+    frameH: 1400,
+    cycleDuration: 2.2,
+    scaleFactor: 1,  // 背景変動隠蔽用縮小率（必要に応じて0.92〜0.98で調整）
+    innerHeight: 1370,       // ← ここで指定：最適表示高さ
+    innerWidth: 900,
+
+  },
+  'ルナ': {
+    rows: 5,
+    cols: 6,
+    frameW: 842,
+    frameH: 1248,
+    cycleDuration: 3.6,
+    scaleFactor: 1,  // 背景変動隠蔽用縮小率（必要に応じて0.92〜0.98で調整）
+    innerHeight: 1210,       // ← ここで指定：最適表示高さ
+    innerWidth: 850,
+
+  },
+    'カイト': {
+    rows: 3,
+    cols: 4,
+    frameW: 842,
+    frameH: 1248,
+    cycleDuration: 2.5,
+    scaleFactor: 1,  // 背景変動隠蔽用縮小率（必要に応じて0.92〜0.98で調整）
+    innerHeight: 1210,       // ← ここで指定：最適表示高さ
+    innerWidth: 780,
+
+  },
+      'WIS_RankF_F': {
+    rows: 4,
+    cols: 5,
+    frameW: 842,
+    frameH: 1248,
+    cycleDuration: 3,
+    scaleFactor: 1,  // 背景変動隠蔽用縮小率（必要に応じて0.92〜0.98で調整）
+    innerHeight: 1210,       // ← ここで指定：最適表示高さ
+    innerWidth: 780,
+
+  },
+};
+
+// === デフォルト設定（設定がないキャラクター用） ===
+const defaultBreathingSettings = {
+  rows: 3,
+  cols: 4,
+  frameW: 842,
+  frameH: 1248,
+  cycleDuration: 3.6,
+  scaleFactor: 0.95
+};
 
 const assetsToLoad = [
     // Images folder (all images)

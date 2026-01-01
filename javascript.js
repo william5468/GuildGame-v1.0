@@ -81,6 +81,7 @@ function Render_Mainadventurer() {
         temp: false,
         busy: false,
         critChance: 10,
+        primary: 0
     };
 
     gameState.adventurers.push(kaito);
@@ -106,7 +107,8 @@ function Render_Mainadventurer() {
         buffs: [],
         temp: false,
         busy: false,
-        critChance: 10
+        critChance: 10,
+        primary: 1
     };
 
     gameState.adventurers.push(luna);
@@ -117,6 +119,9 @@ function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
     Render_Mainadventurer();
+    if (!gameState.dungeonCooldowns) {
+    gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
+}
     console.log("CurrentLang is:"+currentLang);
     currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
     currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
@@ -131,6 +136,7 @@ function skipIntro(){
     if (overlay) overlay.style.display = 'none';
     document.getElementById('introModal').style.display = 'none';
     console.log("CurrentLang is:"+currentLang);
+    
     loadGame();
     updateDisplays();
 
@@ -273,6 +279,10 @@ function saveGame() {
 function loadGame() {
     const saved = localStorage.getItem('guildMasterSave');
     console.log("Current Lang is"+currentLang);
+
+    if (!gameState.dungeonCooldowns) {
+    gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
+}
     // 現在の言語に応じたレシピをグローバルに設定（言語変更時にも有効）
     currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
     currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
@@ -1099,23 +1109,40 @@ function rollStat(adv, statName) {
 
 function getEffectiveStat(obj, stat) {
     if (!obj) return 0;
-    const base = obj[stat];
-    let equipmentBonus = obj.equipment ? obj.equipment.reduce((sum, e) => e.stat === stat ? sum + e.bonus : sum, 0) : 0;
-    let buffBonus = 0;
+    const base = obj[stat] || 0;
+
+    // 元の装備ボーナス（%扱い） - 該当ステータスの装備のみ加算
+    let percentFromEquip = obj.equipment ? obj.equipment.reduce((sum, e) => 
+        (e.stat === stat ? sum + (e.bonus || 0) : sum), 0) : 0;
+
+    // バフボーナス（元コード通り%扱い）
+    let percentFromBuff = 0;
     if (obj.buffs) {
         obj.buffs.forEach(b => {
-            if (b.stat === stat) buffBonus += b.bonus;
+            if (b.stat === stat) percentFromBuff += (b.bonus || 0);
         });
     }
-    const mpPct = obj && typeof obj.mp === 'number' && typeof obj.maxMp === 'number' && obj.maxMp > 0 ? obj.mp / obj.maxMp : 1;
-    let mpBonus;
-    if (mpPct >= 0.5) {
-        mpBonus = 0.20 * (mpPct - 0.5) / 0.5;
-    } else {
-        mpBonus = -0.20 * (0.5 - mpPct) / 0.5;
-    }
-    const totalPctBonus = equipmentBonus + buffBonus + (mpBonus * 100);
-    return Math.max(1, Math.floor(base * (1 + totalPctBonus / 100)));
+
+    // MP比率によるパーセンテージ補正（-20% ～ +20%）
+    const mpPct = obj && typeof obj.mp === 'number' && typeof obj.maxMp === 'number' && obj.maxMp > 0 
+        ? obj.mp / obj.maxMp : 1;
+    let mpPercent = (mpPct >= 0.5) 
+        ? 20 * (mpPct - 0.5) / 0.5 
+        : -20 * (0.5 - mpPct) / 0.5;
+
+    // 合計%ボーナス（装備% + バフ% + MP%）
+    let totalPercent = percentFromEquip + percentFromBuff + mpPercent;
+
+    // %適用後
+    let afterPercent = Math.floor(base * (1 + totalPercent / 100));
+
+    // 新規：enhancementによる絶対値ボーナス（後から加算） - 該当ステータスの装備のみ加算
+    let absoluteFromEquip = obj.equipment ? obj.equipment.reduce((sum, e) => 
+        (e.stat === stat ? sum + (e.enhancement || 0) : sum), 0) : 0;
+
+    let total = afterPercent + absoluteFromEquip;
+
+    return Math.max(1, total);
 }
 
 function calcSumStats(adv){
@@ -2038,7 +2065,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
             let orbQty = 1;
             const extraChance = Math.min(1, effectiveRep / 100);
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 2; i++) {
                 if (Math.random() < extraChance) {
                     orbQty++;
                 }
@@ -2061,15 +2088,36 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             gameState.reputation += 30;
             extraMsg += `<br><strong>ストーリーが進行しました！</strong> 次のメインクエストがギルドクエストメニューで確認できるようになりました。`;
         } else if (q.type === 7) {
-            let treasureGold = q.floor * 300;
-            gameState.gold += treasureGold;
-            extraMsg += `<br>ダンジョン${q.floor}階の宝: +${treasureGold}g`;
-            let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
-            let rareBonus = 5 + q.floor * 5;
-            let rareItemName = `ダンジョン${q.floor}階の${statFull[rareStat]}リング`;
-            addToInventory({name: rareItemName, stat: rareStat, bonus: rareBonus, id: gameState.nextId++},1);
-            extraMsg += `<br>${rareItemName}発見！`;
-        } else if (q.type === 8) {
+    let treasureGold = q.floor * 300;
+    gameState.gold += treasureGold;
+    extraMsg += `<br>${t('dungeon_treasure_gold', {floor: q.floor, gold: treasureGold})}`;
+    
+    let roll = Math.random();
+    
+    if (roll < 0.9) { // 90% chance - high chance for enhancement crystals
+        let crystalQty = 2 + Math.floor(q.floor / 2);
+        let crystalName = t('enhancement_crystal');
+        addToInventory(
+            {name: crystalName, id: gameState.nextId++, consumable: true}, // consumable: true を追加（鍛冶屋で消費するため）
+            crystalQty
+        );
+        let crystalMsg = crystalQty > 1 
+            ? t('item_found_qty', {name: crystalName, qty: crystalQty})
+            : t('item_found', {name: crystalName});
+        extraMsg += `<br>${crystalMsg}`;
+    } else { // 10% chance - low chance for the original rare ring
+        let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
+        let rareStatFull = t(`stat_${rareStat}`);
+        let rareBonus = 5 + q.floor * 5;
+        let rareItemName = t('dungeon_ring', {floor: q.floor, stat: rareStatFull});
+        addToInventory(
+            {name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: 0, id: gameState.nextId++},
+            1
+        );
+        extraMsg += `<br>${t('item_found', {name: rareItemName})}${t('rare_indicator')}`;
+    }
+
+        }else if (q.type === 8) {
             let td = q.tradeData;
             let cityItem = cities.find(c => c.name === td.city)?.items[0];
             if (!cityItem) {
@@ -2348,7 +2396,8 @@ function generateDungeonEnemies(q) {
             defense: q.floor*10,
             defending: false,
             action: null,
-            target: null
+            target: null,
+            primary: monsterData.type
         };
         e.maxHp = e.hp;
         e.maxMp = e.mp;
@@ -2667,6 +2716,8 @@ function renderBattle() {
         if (isCurrent && !adv.isEnemy && currentBattle.phase === 'executing') {
             actionHtml = getActionButtonsHtml(adv);
         }
+        const baseEv = Math.floor(getEffectiveStat(adv, 'luck') / 10);
+        const evasion = Math.min(80, baseEv + (adv.activeEvadeBonus ? 15 : 0));
         teamHtml += `
             <div class="battle-ally ${selectableClass} ${highlightClass}" id="div_${adv.id}" data-id="${adv.id}" ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''}>
                 <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">
@@ -2675,7 +2726,10 @@ function renderBattle() {
                 HP ${Math.floor(adv.hp)}/${adv.maxHp}
                 <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
                 AP ${adv.currentAp || 0}/5
-                Crit Chance: ${adv.critChance || 0}%
+                <div class="battle-stats">
+                        Crit: ${adv.critChance}%<br>
+                        Evade: ${evasion}%
+                    </div>
                 ${actionHtml ? `<div class="ally-actions">${actionHtml}</div>` : ''}
             </div>
         `;
@@ -2719,8 +2773,8 @@ function getActionButtonsHtml(adv) {
         skills.push({ action: 'evade', icon: 'LUC_Evade_icon.jpg', desc: 'Evade with Luck (0 AP, Evade chance +15%)', cost: 0 }); // Assume
         skills.push({ action: 'fortune', icon: 'LUC_heavyattack_icon.jpg', desc: 'Fortune’s Strike (5 AP, 50% chance deals 300% LUC damage)', cost: 5 });
     } else {
-        skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP, deals 100% STR/WIS damage)', cost: 1 });
-        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP, deals 300% STR/WIS damage)', cost: 3 });
+        skills.push({ action: 'light', icon: `${type}_lightattack_icon.jpg`, desc: 'Light Attack (1 AP, deals 100% STR/WIS damage, 50% DEX damage)', cost: 1 });
+        skills.push({ action: 'heavy', icon: `${type}_heavyattack_icon.jpg`, desc: 'Heavy Attack (3 AP, deals 300% STR/WIS damage, 150% DEX damage)', cost: 3 });
         skills.push({ action: 'defense', icon: 'Defense_icon.jpg', desc: 'Defense (+1 AP, block 25% damage)', cost: -1 });
         skills.push({ action: 'counter', icon: 'Counter_icon.jpg', desc: 'Counter Attack (2 AP, evade next attack, deals damage back to attacker)', cost: 2 }); // Assume Counter_icon.jpg or add
 
@@ -2729,7 +2783,7 @@ function getActionButtonsHtml(adv) {
         } else if (type === 'WIS') {
             skills.push({ action: 'explosion', icon: 'WIS_explosion_icon.jpg', desc: 'Explosion (5 AP, deals 150% WIS damage to all enemies)', cost: 5 });
         } else if (type === 'DEX') {
-            skills.push({ action: 'stunning', icon: 'DEX_stunning_icon.png', desc: 'Stunning Strike (3 AP), deal 100% STR/WIS damage, stun enemy for 1 round', cost: 3 }); // Assume you add this
+            skills.push({ action: 'stunning', icon: 'DEX_stunning_icon.png', desc: 'Stunning Strike (3 AP), deal 100% DEX damage, stun enemy for 1 round', cost: 3 }); // Assume you add this
         }
     }
 
@@ -2870,14 +2924,7 @@ function executeActorAction(actor, action) {
             if (actor.gender === 'female') {
                 return 'F';
             }
-            // Rare fallback for very old saves without gender field
-            // (only checks original Japanese names — safe but unnecessary in normal play)
-            if (adventurerNames.ja.male.includes(actor.name)) {
-                return 'M';
-            }
-            if (adventurerNames.ja.female.includes(actor.name)) {
-                return 'F';
-            }
+            // Rare fallback for very old saves without gender fiel
    
         // 画像ファイル名で明示的に性別がわかる場合（両方の表記形式に対応）
         const imgLower = (actor.image || '').toLowerCase();
@@ -2953,7 +3000,7 @@ function executeActorAction(actor, action) {
             let isLuc = false;
 
             if (action.type === 'heavy') basePercent = 300, isHeavy = true;
-            if (action.type === 'stunning') basePercent = 100;
+            if (action.type === 'stunning') basePercent = 200;
             if (action.type === 'luc_light') basePercent = 25, isLuc = true;
             if (action.type === 'fortune') {
                 if (Math.random() < 0.5) {
@@ -3029,9 +3076,28 @@ function executeActorAction(actor, action) {
 function calculateAndApplyDamage(attacker, target, opts) {
     if (target.hp <= 0) return [];
 
-    let baseStat = opts.isLuc ? getEffectiveStat(attacker, 'luck') :
-                   opts.isWis ? getEffectiveStat(attacker, 'wisdom') :
-                   Math.max(getEffectiveStat(attacker, 'strength'), getEffectiveStat(attacker, 'wisdom'));
+    let str = getEffectiveStat(attacker, 'strength');
+    let wis = getEffectiveStat(attacker, 'wisdom');
+    let dex = getEffectiveStat(attacker, 'dexterity');
+    let luc = getEffectiveStat(attacker, 'luck');
+
+    let baseStat;
+
+    if (opts.isLuc) {
+        baseStat = luc;
+    } else if (opts.isWis) {
+        baseStat = wis;
+    } else {
+        // 通常攻撃（STR/WISベース）の場合
+        let primaryBase = Math.max(str, wis);
+
+        // DEXが最強ステータスの場合、baseStatをDEXの50%に設定（弱めつつダメージ確保）
+        if (dex > primaryBase) {
+            baseStat = Math.floor(dex * 0.5);
+        } else {
+            baseStat = primaryBase;
+        }
+    }
 
     let dmg = baseStat * opts.basePercent / 100;
     if (dmg === 0) {
@@ -3080,8 +3146,10 @@ function calculateAndApplyDamage(attacker, target, opts) {
 
     // 回避判定
     const baseEv = Math.floor(getEffectiveStat(target, 'luck') / 10);
-    const evasion = Math.min(90, baseEv + (target.activeEvadeBonus ? 15 : 0));
-    if (Math.random() * 100 < evasion) {
+    const evasion = Math.min(80, baseEv + (target.activeEvadeBonus ? 15 : 0));
+    console.log(attacker.primary );
+    // DEX攻撃 (primary===2 または "DEX") は回避を無視して必ず命中
+    if (Math.random() * 100 < evasion && attacker.primary !== 2 && attacker.primary !== "DEX") {
         addBattleLog(`${target.name} evades the attack!`);
         popupInfos.push({ targetId: target.id, dmg: 'Evade', miss: true, crit: false });
         return popupInfos;
@@ -3665,12 +3733,44 @@ function showDungeonQuest() {
 
     let html = `<div class="gq-panel">
                     <button class="back-btn" onclick="showMainSelection()">戻る</button>
-                    <label>階層: <input type="number" id="dungeonFloor" min="1" value="1"></label>
+                    <label>階層: <input type="number" id="dungeonFloor" min="1" value="1" onchange="updateDungeonCooldown()"></label>
+                    <div id="dungeonCooldownMsg" style="margin:15px 0; min-height:30px;"></div>
                     <div class="form-buttons">
                         <button class="post-btn" onclick="postGuildQuest()">投稿</button>
                     </div>
                 </div>`;
     content.innerHTML = html;
+
+    // 初回表示時にクールダウン状況を更新
+    updateDungeonCooldown();
+}
+
+function updateDungeonCooldown() {
+    const floorInput = document.getElementById('dungeonFloor');
+    let floor = Number(floorInput.value);
+    if (isNaN(floor) || floor < 1) {
+        floorInput.value = 1;
+        floor = 1;
+    }
+
+    const nextAvail = gameState.dungeonCooldowns[floor];
+    const msgEl = document.getElementById('dungeonCooldownMsg');
+    const postBtn = document.querySelector('.post-btn');
+
+    if (nextAvail && gameState.day < nextAvail) {
+        const remaining = nextAvail - gameState.day;
+        msgEl.innerHTML = `<p style="color:#ff6b6b; font-size:1.3em; font-weight:bold;">
+                              ${t('dungeon_cooldown_remaining', {floor, remaining})}
+                           </p>`;
+        postBtn.disabled = true;
+        postBtn.style.opacity = '0.5';
+    } else {
+        msgEl.innerHTML = `<p style="color:#aaffaa; font-size:1.2em;">
+                              ${t('dungeon_post_available')}
+                           </p>`;
+        postBtn.disabled = false;
+        postBtn.style.opacity = '1';
+    }
 }
 
 function showTradeQuest() {
@@ -3896,6 +3996,67 @@ function applyTavernBuff(recipeIdx, advId) {
     if (typeof updateGold === 'function') updateGold();
 }
 
+
+// enhanceEquipment の安全強化版（itemIdが文字列の場合も対応 + デバッグログ改善）
+function enhanceEquipment(advId, itemId) {
+    const adv = gameState.adventurers.find(a => a.id === advId);
+    console.log("The adventurer is: " + (adv ? adv.name : 'Not found (ID: ' + advId + ')'));
+
+    if (!adv) return;
+
+    // itemIdが文字列の場合、数値に変換（onclickでクォートなしなら数値のまま）
+    const numericItemId = Number(itemId);
+
+    const item = adv.equipment.find(i => i.id === numericItemId);
+    console.log("The item is: " + (item ? item.name + ' (ID: ' + item.id + ')' : 'Not found (searched ID: ' + numericItemId + ')'));
+
+    if (!item || !item.stat || typeof item.bonus !== 'number') {
+        console.warn("Invalid item or item not enhanceable");
+        alert("強化対象のアイテムが見つかりません。画面を更新してください。");
+        return;
+    }
+
+    const crystalName = t('enhancement_crystal');
+
+    // クリスタル消費（スタック対応）
+    let consumed = false;
+    for (let i = gameState.inventory.length - 1; i >= 0; i--) {
+        const inv = gameState.inventory[i];
+        if (inv.name === crystalName) {
+            const currentQty = inv.qty || 1;
+            if (currentQty >= 1) {
+                if (currentQty > 1) {
+                    inv.qty -= 1;
+                } else {
+                    gameState.inventory.splice(i, 1);
+                }
+                consumed = true;
+                break;
+            }
+        }
+    }
+
+    if (!consumed) {
+        alert(t('blacksmith_insufficient_crystals'));
+        return;
+    }
+
+    // 強化実行（絶対値+1）
+    item.enhancement = (item.enhancement || 0) + 1;
+
+    const statFull = t(`stat_${item.stat}`) || t(`stat_${item.stat}`);
+    alert(t('blacksmith_enhance_success', {
+        item: item.name,
+        bonus: item.bonus,
+        enhancement: item.enhancement,
+        stat: statFull
+    }));
+
+    // UI更新
+    renderFacilities();
+
+}
+
 function produceBlacksmith(recipeIdx) {
     const r = currentBlacksmithRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
@@ -4003,8 +4164,65 @@ function renderFacilities() {
                 </div>`;
         }
 
+        // === 鍛冶屋専用の装備強化セクションをここに移動（アップグレード直後・合成リストの上）===
+        if (currentFacility === 'blacksmith') {
+            const crystalName = t('enhancement_crystal');
+            const crystalCount = countItem(crystalName);
+
+            html += `
+                <h3 style="text-align:center; margin-top:60px;">${t('blacksmith_enhancement_title')}</h3>
+                <p style="text-align:center; font-size:1.3em; margin:20px 0;">
+                    ${t('blacksmith_enhancement_desc')}<br>
+                    <strong>${crystalName}: ${crystalCount}</strong>
+                </p>`;
+
+            if (crystalCount === 0) {
+                html += `<p style="text-align:center; color:#ff6b6b;">${t('blacksmith_no_crystals')}</p>`;
+            } else {
+                let hasEnhanceable = false;
+                html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(400px, 1fr)); gap:30px; margin-top:30px;">`;
+
+                gameState.adventurers.forEach(adv => {
+                    const enhanceableItems = adv.equipment.filter(item => item.stat && typeof item.bonus === 'number');
+                    if (enhanceableItems.length > 0) {
+                        hasEnhanceable = true;
+                        html += `
+                            <div class="enhancement-group" style="background:rgba(0,0,0,0.25); padding:20px; border-radius:16px;">
+                                <h4 style="text-align:center; margin-bottom:20px;">${adv.name} ${t('equipment_title')}</h4>`;
+
+                        enhanceableItems.forEach(item => {
+                            const statFull = t(`stat_${item.stat}`) || t(`stat_${item.stat}`);
+                            const currentEnh = item.enhancement || 0;
+                            html += `
+                                <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; margin:10px 0; display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <p style="margin:0; font-weight:bold;">${item.name}</p>
+                                        <p style="margin:5px 0; color:#ffeb3b;">
+                                            ${statFull} +${item.bonus}${t('percent_symbol')} 
+                                            ${currentEnh > 0 ? ` + ${currentEnh}${t('absolute_symbol')}` : ''}
+                                        </p>
+                                    </div>
+                                    <button onclick="enhanceEquipment(${adv.id}, ${item.id})"
+                                            style="padding:10px 20px; font-size:1.1em;">
+                                        ${t('blacksmith_enhance_button')}
+                                    </button>
+                                </div>`;
+                        });
+
+                        html += `</div>`;
+                    }
+                });
+
+                if (!hasEnhanceable) {
+                    html += `<p style="grid-column:1/-1; text-align:center; color:#aaa;">${t('blacksmith_no_equipment')}</p>`;
+                }
+
+                html += `</div>`;
+            }
+        }
+
         if (level > 0 && recipes.length > 0) {
-            html += `<h3 style="text-align:center; margin-top:40px;">${t('facilities_craftable_items')}</h3>
+            html += `<h3 style="text-align:center; margin-top:60px;">${t('facilities_craftable_items')}</h3>
                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:30px; margin-top:30px;">`;
 
             let hasItems = false;
@@ -4033,15 +4251,13 @@ function renderFacilities() {
                     matHtml += `<p style="color:#aaaaaa; margin:5px 0;">・${t('facilities_none')}</p>`;
                 }
 
-                // アイテム名（錬金は「A + B → 出力」形式）
                 const itemName = currentFacility === 'alchemy' 
                     ? `${r.inputs.join(' + ')} → ${r.output.name}`
                     : r.name;
 
-                // 効果表示（翻訳対応）
                 let effectHtml = '';
                 if (currentFacility === 'blacksmith') {
-                    const statText = t(`stat_${r.stat}`); // stat_strength 等がtranslations.jsにある前提
+                    const statText = t(`stat_${r.stat}`);
                     effectHtml = `<p style="margin:12px 0; color:#ffeb3b; font-weight:bold; font-size:1.1em;">
                                     ${t('facilities_equip_effect', {stat: statText, bonus: r.bonus})}
                                   </p>`;
@@ -4067,7 +4283,6 @@ function renderFacilities() {
                                   </p>`;
                 }
 
-                // ボタンラベル
                 let buttonText, onclick;
                 if (currentFacility === 'alchemy') {
                     buttonText = t('facilities_craft_alchemy');
@@ -4350,6 +4565,7 @@ function postGuildQuest() {
             inProgress: false,
             rank: `Recommended >${estimated_difficulty}`,
         };
+        gameState.dungeonCooldowns[floor] = gameState.day + 7;
     } else if (type === 'trade') {
         let cityEl = document.getElementById('tradeCity');
         let qtyEl = document.getElementById('tradeQty');
@@ -4496,6 +4712,68 @@ function useExpOrbOnChar(charIndex, itemId) {
     updateDisplays();
 }
 
+
+// === 完全に汎用化した生成関数：javascript.js に置き換えまたは追加してください ===
+// 異なるスプライトシートサイズ・グリッドに対応（例: 5052×6240で5列×5行など）
+// scaleFactorで余白確保（ポーズ変動隠蔽）調整可能、デフォルト0.95（5%縮小）
+// === 完全に汎用化した最終版 generateBreathingAnimation関数 ===
+// キャラクターごとにinnerHeightを指定可能（LUC用1350pxなど）
+// innerHeightで表示高さを調整 → 脚切れ/頭切れ/他フレーム混入を防ぎ最適表示
+// scaleFactorで背景変動隠蔽（余白確保）
+// verticalOffsetで追加微調整可能
+// === 更新された generateBreathingAnimation関数 ===
+// アニメーションキャラクターの場合、最初からフォールバック（静止画）を隠し、直接アニメーション開始
+// ロード失敗時のみフォールバック表示（onerrorで .animated 除去）
+function generateBreathingAnimation(
+  baseImage, 
+  displayWidth = 220, 
+  maxHeight = 400, 
+  cycleDuration = 3.6,
+  spritesheetSuffix = '_Breathing.png',
+  rows = 3, 
+  cols = 4, 
+  frameW = 842, 
+  frameH = 1248,
+  scaleFactor = 0.95,
+  innerHeight = null,
+  innerWidth = null,
+  verticalOffset = '0%'
+) {
+  const aspectRatio = frameH / frameW;
+
+  let visibleWidth = displayWidth;
+  let visibleHeight = visibleWidth * aspectRatio;
+  if (visibleHeight > maxHeight) {
+    visibleHeight = maxHeight;
+    visibleWidth = visibleHeight / aspectRatio;
+  }
+  visibleWidth = Math.round(visibleWidth);
+  visibleHeight = Math.round(visibleHeight);
+
+  const displayInnerHeight = innerHeight !== null && innerHeight !== undefined ? innerHeight : frameH;
+  const displayInnerWidth = innerWidth !== null && innerWidth !== undefined ? innerWidth : frameW;
+
+  const normalScale = visibleWidth / frameW;
+  const reducedScale = normalScale * scaleFactor;
+
+  const spritesheet = baseImage.replace(/\.png$/i, spritesheetSuffix);
+
+  const fallbackCss = baseImage ? `url('Images/${baseImage}')` : 'none';
+
+  const divHtml = `<div class="sprite-wrapper animated" style="width:${visibleWidth}px; height:${visibleHeight}px; --fallback-img:${fallbackCss};">
+    <div class="sprite-breathing"
+      data-spritesheet="${spritesheet}"
+      data-rows="${rows}"
+      data-cols="${cols}"
+      data-frame-width="${frameW}"
+      data-frame-height="${frameH}"
+      data-cycle-duration="${cycleDuration}"
+      style="width:${displayInnerWidth}px; height:${displayInnerHeight}px; --scale:${reducedScale}; --vertical-offset:${verticalOffset};">
+    </div>
+  </div>`;
+
+  return divHtml;
+}
 function renderCurrentCharacter() {
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
@@ -4558,19 +4836,31 @@ function renderCurrentCharacter() {
     }
 
     html += `<p style="margin:15px 0 10px;"><strong>${t('equipment_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
-    if (adv.equipment.length === 0) html += `<li>${t('none_equipment')}</li>`;
-    adv.equipment.forEach((eq, i) => {
-        html += `<li>${eq.name} (+${eq.bonus}% ${t(`stat_${eq.stat}`)})
-                 <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">${t('unequip_button')}</button></li>`;
-    });
+    if (adv.equipment.length === 0) {
+        html += `<li>${t('none_equipment')}</li>`;
+    } else {
+        adv.equipment.forEach((eq, i) => {
+            const statFull = t(`stat_${eq.stat}`) || t(`stat_${eq.stat}`);
+            const baseBonus = `+${eq.bonus}% ${statFull}`;
+            const enhBonus = (eq.enhancement > 0) 
+                ? ` + ${eq.enhancement}${t('absolute_symbol')}` 
+                : '';
+            html += `<li>${eq.name} (${baseBonus}${enhBonus})
+                    <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">${t('unequip_button')}</button></li>`;
+        });
+    }
     html += `</ul>`;
 
     const equippable = gameState.inventory.filter(it => it.stat && adv.equipment.length < 2 && (it.qty || 1) > 0);
     if (equippable.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>${t('equippable_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         equippable.forEach(it => {
-            html += `<li>${it.name} x${it.qty || 1} (+${it.bonus}% ${t(`stat_${it.stat}`)}) 
-                     <button onclick="equipToChar(${currentCharIndex}, ${it.id})">${t('equip_button')}</button></li>`;
+            const baseBonus = `+${it.bonus}% ${t(`stat_${it.stat}`)}`;
+            const enhBonus = (it.enhancement > 0) 
+                ? ` + ${it.enhancement}${t('absolute_symbol')}` 
+                : '';
+            html += `<li>${it.name} x${it.qty || 1} (${baseBonus}${enhBonus}) 
+                    <button onclick="equipToChar(${currentCharIndex}, ${it.id})">${t('equip_button')}</button></li>`;
         });
         html += `</ul>`;
     }
@@ -4628,18 +4918,41 @@ function renderCurrentCharacter() {
     }
 
     html += `</div>`; // 左側閉じ
-
+// === 更新された生成関数呼び出し例（元の呼び出し場所に置き換え） ===
     // 右側：画像（大きめ表示）
     html += `<div style="flex:0 0 auto; text-align:center;">`;
-    html += `<img src="Images/${adv.image}" 
-                 style="width:220px; height:auto; max-height:400px; object-fit:contain; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2);"
-                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjIwIDQwMCI+PHJlY3Qgd2lkdGg9IjIyMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSIxMTAiIHk9IjIwMCIgZm9udC1zaXplPSIzMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuOCpuODiOOBpzwvdGV4dD48L3N2Zz4=';">`;
+
+    // baseImageからキー作成（拡張子除去）
+    const baseKey = adv.image.replace(/\.png$/i, '');
+
+    // 設定取得（キャラクター専用があればそれ、なければデフォルト）
+    const settings = breathingAnimationSettings[baseKey] || defaultBreathingSettings;
+
+    // 汎用関数呼び出し（全パラメータ渡し）
+    const breathingDiv = generateBreathingAnimation(
+      adv.image,                  // baseImage (fallback用)
+      220,                        // displayWidth
+      400,                        // maxHeight
+      settings.cycleDuration,     // cycleDuration
+      '_Breathing.png',           // suffix（必要に応じて変更可能）
+      settings.rows,
+      settings.cols,
+      settings.frameW,
+      settings.frameH,
+      settings.scaleFactor,
+      settings.innerHeight,
+      settings.innerWidth,
+    );
+
+    html += breathingDiv;
+
     html += `</div>`;
 
     html += `</div>`; // flexコンテナ閉じ
-
     document.getElementById('charactersContent').innerHTML = html;
 }
+
+
 
 
 function getDisplayableQuests() {
@@ -5404,9 +5717,9 @@ function playNextDialogue() {
 
         // === キャラ画像（話者に応じて切り替え、デフォルトはペア画像）===
         const charImage = document.createElement('img');
-        charImage.style.width = '220px';
+        charImage.style.width = '200px';
         charImage.style.height = 'auto';
-        charImage.style.maxHeight = '400px';
+        charImage.style.maxHeight = '440px';
         charImage.style.objectFit = 'contain';
         charImage.style.borderRadius = '12px';
         charImage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';

@@ -5,6 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ギルドマスターゲーム</title>
     <link rel="stylesheet" href="style.css">
+<!-- === 更新された共通スタイル： <head> 内の重複した <style> を削除し、この1つの <style> に置き換えてください === -->
+<style>
+.sprite-wrapper {
+  width: inherit;
+  height: inherit;
+
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  border-radius: 12px;
+}
+
+.sprite-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--fallback-img), url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjIwIDQwMCI+PHJlY3Qgd2lkdGg9IjIyMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwMDAwMDAiLz48dGV4dCB4PSIxMTAiIHk9IjIwMCIgZm9udC1zaXplPSIzMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuOCpuODiOOBpzwvdGV4dD48L3N2Zz4=');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.sprite-wrapper.animated::after {
+  opacity: 0;
+}
+
+.sprite-breathing {
+  background-repeat: no-repeat;
+  background-color: transparent;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(var(--scale)) translateY(var(--vertical-offset, 0%));
+  transform-origin: center center;
+  image-rendering: pixelated;
+}
+</style>
+    
 </head>
 <body>
         <!-- ローディング画面 -->
@@ -189,5 +230,97 @@
     <script src="translations.js"></script>
     <script src="constants.js"></script>
     <script src="javascript.js"></script>
+<!-- === 2. グローバルアニメーションスクリプト：この <script> ブロック全体を </body> の直前に直接貼り付けてください === -->
+<!-- （createElementを使わず、直接 <script> として記述。MutationObserverで動的追加にも完全対応） -->
+<!-- === 更新されたグローバルスクリプト： </body> 直前の <script> をこの新しいものに置き換え === -->
+<!-- 変更点：animatedクラスを外側ラッパー（.sprite-wrapper）に追加 -->
+<script>
+(function() {
+  console.log('Breathing animation global script loaded and active (stable gray background fix)');
+
+  function initBreathingElement(innerEl) {
+    if (innerEl.classList.contains('initialized')) return;
+    innerEl.classList.add('initialized');
+
+    var filename = innerEl.dataset.spritesheet;
+    if (!filename) {
+      console.warn('No spritesheet specified for breathing element', innerEl);
+      return;
+    }
+
+    console.log('Initializing breathing animation for: Images/' + filename);
+
+    var img = new Image();
+    img.onload = function() {
+      console.log('Successfully loaded breathing spritesheet: Images/' + filename + ' (size: ' + img.naturalWidth + 'x' + img.naturalHeight + ')');
+
+      var rows = Number(innerEl.dataset.rows);
+      var cols = Number(innerEl.dataset.cols);
+      var frameW = Number(innerEl.dataset.frameWidth);
+      var frameH = Number(innerEl.dataset.frameHeight);
+      var durationSec = Number(innerEl.dataset.cycleDuration) || 3.6;
+      var totalFrames = rows * cols;
+
+      innerEl.style.backgroundImage = 'url("Images/' + filename + '")';
+      innerEl.style.backgroundSize = (cols * frameW) + 'px ' + (rows * frameH) + 'px';
+      innerEl.style.backgroundPosition = '0px 0px';
+
+      // アニメ開始 + フォールバック（静止画）をフェードアウト
+      var wrapper = innerEl.parentElement;
+      wrapper.classList.add('animated');
+
+      var startTime = performance.now();
+      var durationMs = durationSec * 1000;
+
+      function animate(time) {
+        var elapsed = (time - startTime) % durationMs;
+        var progress = elapsed / durationMs;
+        var frameIndex = Math.floor(progress * totalFrames) % totalFrames; // フラッシュ防止
+
+        var col = frameIndex % cols;
+        var row = Math.floor(frameIndex / cols);
+        var x = -col * frameW;
+        var y = -row * frameH;
+
+        innerEl.style.backgroundPosition = x + 'px ' + y + 'px';
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    };
+    img.onerror = function(err) {
+      console.error('Failed to load breathing spritesheet: Images/' + filename, err);
+      var wrapper = innerEl.parentElement;
+      wrapper.classList.remove('animated');
+      // フォールバック静止画 + placeholder が表示されたまま
+    };
+    img.src = 'Images/' + filename;
+  }
+
+  var elements = document.querySelectorAll('.sprite-breathing');
+  elements.forEach(initBreathingElement);
+
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      mutation.addedNodes.forEach(function(node) {
+        if (node.nodeType === 1) {
+          if (node.classList && node.classList.contains('sprite-breathing')) {
+            initBreathingElement(node);
+          }
+          var children = node.querySelectorAll ? node.querySelectorAll('.sprite-breathing') : [];
+          children.forEach(initBreathingElement);
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  console.log('Breathing animation observer active – stable gray background applied');
+})();
+</script>
 </body>
+
+
 </html>

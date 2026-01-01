@@ -235,6 +235,31 @@ const translations = {
     // ポーション種別（既存のものと統一）
     potion_hp: "HP",
     potion_mp: "MP",
+    enhancement_crystal: "強化クリスタル",
+    dungeon_treasure_gold: "ダンジョン{floor}階の宝: +{gold}g",
+    item_found: "{name}発見！",
+    item_found_qty: "{name} x{qty}発見！",
+    rare_indicator: " (レア！)",
+    dungeon_ring: "ダンジョン{floor}階の{stat}リング",
+
+    stat_strength_full: "筋力",
+    stat_wisdom_full: "知恵",
+    stat_dexterity_full: "敏捷",
+    stat_luck_full: "運",
+    percent_symbol: "%",
+    absolute_symbol: "（絶対値）",
+    blacksmith_enhancement_desc: "強化クリスタルを使用して装備のステータスボーナスを永久に+1（絶対値）できます。<br>元の%ボーナスは維持され、%計算後に絶対値が加算されます。",
+    blacksmith_enhance_button: "強化",
+    blacksmith_enhance_success: "{item}を強化しました！ {stat} +{bonus}% + {enhancement}（絶対値）",
+
+    blacksmith_enhancement_title: "装備強化",
+
+    blacksmith_insufficient_crystals: "強化クリスタルが不足しています。",
+    blacksmith_no_crystals: "強化クリスタルがありません。",
+    blacksmith_no_equipment: "強化可能な装備がありません。",
+    dungeon_cooldown_remaining: "{floor}階ダンジョンクエストはあと{remaining}日投稿できません。",
+    dungeon_post_available: "この階層は投稿可能です。",
+
 
 
   },
@@ -467,6 +492,29 @@ const translations = {
 
     potion_hp: "HP",
     potion_mp: "MP",
+    enhancement_crystal: "Enhancement Crystal",
+    dungeon_treasure_gold: "Dungeon Floor {floor} Treasure: +{gold}g",
+    item_found: "Found {name}!",
+    item_found_qty: "Found {name} x{qty}!",
+    rare_indicator: " (Rare!) ",
+    dungeon_ring: "Dungeon Floor {floor} {stat} Ring",
+
+    stat_strength_full: "Strength",
+    stat_wisdom_full: "Wisdom",
+    stat_dexterity_full: "Dexterity",
+    stat_luck_full: "Luck",
+    percent_symbol: "%",
+    absolute_symbol: " (absolute)",
+    blacksmith_enhancement_desc: "Use an Enhancement Crystal to permanently increase an equipment's stat bonus by +1 (absolute).<br>The original % bonus is preserved and applied first, followed by the absolute bonus.",
+    blacksmith_enhance_button: "Enhance",
+    blacksmith_enhance_success: "Enhanced {item}! {stat} +{bonus}% + {enhancement} (absolute)",
+
+    blacksmith_enhancement_title: "Equipment Enhancement",
+    blacksmith_insufficient_crystals: "Not enough Enhancement Crystals.",
+    blacksmith_no_crystals: "No Enhancement Crystals.",
+    blacksmith_no_equipment: "No enhanceable equipment.",
+    dungeon_cooldown_remaining: "Dungeon Floor {floor} quest cannot be posted for another {remaining} days.",
+    dungeon_post_available: "This floor is available for posting.",
   },
   zh: {  // Traditional Chinese (繁體中文 - Taiwan/HK style)
     page_title: "公會大師遊戲",
@@ -714,6 +762,31 @@ const translations = {
 
     potion_hp: "HP",
     potion_mp: "MP",
+    enhancement_crystal: "強化水晶",
+    dungeon_treasure_gold: "地下城第{floor}層寶箱: +{gold}g",
+    item_found: "發現{name}！",
+    item_found_qty: "發現{name} x{qty}！",
+    rare_indicator: " (稀有！)",
+    dungeon_ring: "地下城{floor}層的{stat}戒指",
+
+    stat_strength_full: "力量",
+    stat_wisdom_full: "智慧",
+    stat_dexterity_full: "敏捷",
+    stat_luck_full: "幸運",
+    stat_luck_defense: "幸運",
+    percent_symbol: "%",
+    absolute_symbol: "（絕對值）",
+    blacksmith_enhancement_desc: "使用強化水晶永久提升裝備的屬性加成+1（絕對值）。<br>原本的%加成保持不變，先計算%後再加上絕對值。",
+    blacksmith_enhance_button: "強化",
+    blacksmith_enhance_success: "強化了{item}！ {stat} +{bonus}% + {enhancement}（絕對值）",
+    blacksmith_enhancement_title: "裝備強化",
+
+
+    blacksmith_insufficient_crystals: "強化水晶不足。",
+    blacksmith_no_crystals: "沒有強化水晶。",
+    blacksmith_no_equipment: "沒有可強化的裝備。",
+    dungeon_cooldown_remaining: "第{floor}層地下城任務還需{remaining}天後才能再次投稿。",
+    dungeon_post_available: "此層可投稿。",
 
   }
 };
@@ -1214,7 +1287,7 @@ const mainCharacterNames = {
 
 const adventurerNames = {
   ja: {
-    male: [
+    M: [
       'アキラ', 'ハルト', 'ケン', 'リュウ', 'ソラ',
       'タイチ', 'ユウト', 'カズキ', 'リョウ', 'ショウ',
       'トモヤ', 'ダイキ', 'ヒロ', 'マサト', 'ナオキ',
@@ -1227,7 +1300,7 @@ const adventurerNames = {
       'ハルキ', 'ソウスケ', 'リョウタ', 'ナツメ', 'コウキ',
       'タイガ', 'リュウセイ', 'カケル', 'テツヤ', 'マヒロ'
     ],
-    female: [
+    F: [
       'アヤカ', 'ハルカ', 'ミカ', 'サクラ', 'ユイ',
       'リナ', 'モモ', 'ナナ', 'ユナ', 'アカリ',
       'ヒナタ', 'ソラ', 'ミユ', 'リコ', 'サヤ',
@@ -1242,7 +1315,7 @@ const adventurerNames = {
     ]
   },
   en: {
-    male: [
+    M: [
       'Arthur', 'Blake', 'Connor', 'Drake', 'Ethan',
       'Finn', 'Gavin', 'Hunter', 'Ian', 'Jack',
       'Kyle', 'Liam', 'Mason', 'Nolan', 'Owen',
@@ -1254,7 +1327,7 @@ const adventurerNames = {
       'Wade', 'York', 'Cade', 'Jace', 'Rhys',
       'Silas', 'Tate', 'Zane', 'Brody', 'Gage'
     ],
-    female: [
+    F: [
       'Alice', 'Bella', 'Clara', 'Daisy', 'Emma',
       'Fiona', 'Grace', 'Harper', 'Isla', 'Jade',
       'Kira', 'Lily', 'Mia', 'Nora', 'Olivia',
@@ -1269,7 +1342,7 @@ const adventurerNames = {
     ]
   },
   zh: {  // Now uses the same English fantasy names as 'en' for better immersion in fantasy setting
-    male: [
+    M: [
       'Arthur', 'Blake', 'Connor', 'Drake', 'Ethan',
       'Finn', 'Gavin', 'Hunter', 'Ian', 'Jack',
       'Kyle', 'Liam', 'Mason', 'Nolan', 'Owen',
@@ -1281,7 +1354,7 @@ const adventurerNames = {
       'Wade', 'York', 'Cade', 'Jace', 'Rhys',
       'Silas', 'Tate', 'Zane', 'Brody', 'Gage'
     ],
-    female: [
+    F: [
       'Alice', 'Bella', 'Clara', 'Daisy', 'Emma',
       'Fiona', 'Grace', 'Harper', 'Isla', 'Jade',
       'Kira', 'Lily', 'Mia', 'Nora', 'Olivia',
