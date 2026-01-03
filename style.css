@@ -1387,12 +1387,13 @@ h1, h3, button, .adventurer-card, .quest-card {
 
 #guildQuestsModal .modal-content {
     width: 90%;
-    max-width: 900px;        /* モーダル全体の最大幅を縮小（1100px → 900px） */
-    height: 80%;             /* 高さも少し縮小（85% → 80%） */
+    max-width: 960px;              /* 少し広げて横スクロールを防ぎつつ内容を収めやすく */
+    height: 92vh;                  /* 高さをほぼ全画面に（スクロール不要になるよう拡張） */
+    max-height: 960px;             /* 超高解像度画面でも極端に伸びない上限 */
     background: #2c2c2c;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-    overflow: hidden;
+    overflow: hidden;              /* モーダル全体は隠す（内部スクロールはcontentに任せる） */
     display: flex;
     flex-direction: column;
 }
@@ -1400,36 +1401,86 @@ h1, h3, button, .adventurer-card, .quest-card {
 #guildQuestsModal h2 {
     text-align: center;
     color: #ffd700;
-    margin: 15px 0 8px;      /* マージン縮小 */
-    font-size: 1.8em;        /* タイトルフォント縮小（2.2em → 1.8em） */
+    margin: 12px 0 6px;            /* 上部余白をさらに縮小 */
+    font-size: 1.6em;              /* タイトルを少し小さく */
     text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    flex-shrink: 0;
 }
 
 #guildQuestsModal .modal-buttons {
     text-align: center;
-    margin-bottom: 15px;     /* マージン縮小 */
+    margin: 8px 0 10px;            /* ボタンエリア余白縮小 */
+    flex-shrink: 0;
+    background:rgba(68,68,68,0.6);
 }
 
 #guildQuestsModal .modal-buttons button {
     background: #e74c3c;
     color: white;
-    padding: 8px 20px;       /* パディング縮小 */
+    padding: 6px 16px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 1.1em;        /* フォント縮小 */
+    font-size: 1em;
 }
 
 #guildQuestsContent {
     flex: 1;
+    background-image: url('Images/GuildQuest_Background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    padding: 15px 10px;            /* パディング大幅縮小（横も少し狭く） */
+    overflow-y: auto;              /* 万一の溢れ対策でautoを維持（通常はスクロール不要に） */
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    padding: 20px;           /* パディング縮小（40px → 20px） */
-    overflow-y: auto;
+    gap: 12px;                     /* city-trade間の隙間を統一・縮小（marginの代わり） */
+}
+
+/* city-tradeカードの縦余白を大幅削減 */
+.city-trade {
+    background: rgba(30,30,50,0.6);
+    border: 2px solid #555;
+    border-radius: 16px;
+    padding: 14px !important;      /* 元の20px → 14pxに縮小 */
+    margin: 0 !important;          /* margin:30px auto を廃止（gapで制御） */
+    width: 100%;
+    max-width: 860px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+
+/* 都市タイトル余白縮小 */
+.city-trade h4 {
+    margin: 0 0 12px 0 !important;  /* 下余白のみ確保 */
+    font-size: 1.4em !important;
+}
+
+/* イベント表示余白縮小 */
+.city-trade h4 span {
+    margin-top: 4px !important;
+    font-size: 0.75em !important;
+}
+
+/* テーブル内余白縮小 */
+.city-trade table {
+    margin-bottom: 12px;
+}
+
+.city-trade th,
+.city-trade td {
+    padding: 8px !important;       /* 元の12px → 8pxに縮小 */
+}
+
+/* ボタンエリア余白縮小 */
+.city-trade > div[style*="text-align:center"] {
+    margin-top: 10px !important;
+}
+
+/* 全体の見出し（貿易掲示板）余白縮小 */
+#guildQuestsContent > h3 {
+    margin: 10px 0 20px 0 !important;
+    font-size: 1.6em !important;
 }
 
 /* メイン選択画面（ボタン） - さらにコンパクトに */

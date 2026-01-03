@@ -8,6 +8,218 @@ let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
 let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 
 
+function openTradeForm(cityId) {
+    const city = gameState.tradeCityStates.find(c => c.id === cityId);
+    if (!city) return;
+
+    let html = `
+    <h3 style="text-align:center; margin:20px 0; font-size:1.6em; color:#ffd700; text-shadow:0 0 10px rgba(0,0,0,0.8);">${t('trade_form_title', {city: city.name})}</h3>
+    
+    <!-- 戻るボタン（透明周辺） -->
+    <div style="text-align:center; margin-bottom:30px; background:transparent;">
+        <button onclick="showTradeQuest()" style="padding:10px 30px; font-size:1.1em; background:#555; border:none; border-radius:8px; cursor:pointer; color:#fff;">
+            ${t('trade_back_to_board')}
+        </button>
+    </div>
+
+    <div style="max-width:900px; margin:0 auto; background: transparent;">
+        <!-- テーブル（完全透明背景） -->
+        <table style="width:100%; border-collapse:collapse; background:transparent; border-radius:12px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.4); border:2px solid rgba(85,85,85,0.6);">
+            <thead>
+                <tr style="background:rgba(68,68,68,0.6); color:#fff;">
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_resource')}</th>
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_stock')}</th>
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_sell_qty')}</th>
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_sell_price')}</th>
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_buy_qty')}</th>
+                    <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_buy_price')}</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    resources.forEach(r => {
+        const stock = (gameState.inventory.find(i => i.name === r && i.type === 'material') || {qty: 0}).qty;
+        const sellPrice = getSellPrice(city, r);
+        const buyPrice = getBuyPrice(city, r);
+
+        const isSpecialty = city.specialty === r;
+        const rowStyle = isSpecialty ? 'background:rgba(0,100,0,0.2); font-weight:bold;' : '';
+
+        html += `
+        <tr style="${rowStyle}">
+            <td style="padding:12px; text-align:center; color:#fff; text-shadow:0 0 8px rgba(0,0,0,0.8);">${r}${isSpecialty ? t('trade_specialty_marker') : ''}</td>
+            <td style="padding:12px; text-align:center; color:#aaa; text-shadow:0 0 6px rgba(0,0,0,0.8);">${stock}</td>
+            <td style="padding:12px; text-align:center;">
+                <input type="number" id="sell_${r}" min="0" max="${stock}" value="0" 
+                       style="width:80px; padding:6px; text-align:center; background:rgba(0,0,0,0.4); color:#fff; border:1px solid #666; border-radius:4px;">
+            </td>
+            <td style="padding:12px; text-align:center; color:#8f8; text-shadow:0 0 6px rgba(0,0,0,0.8);">${sellPrice}${t('gold_unit')}</td>
+            <td style="padding:12px; text-align:center;">
+                <input type="number" id="buy_${r}" min="0" value="0" 
+                       style="width:80px; padding:6px; text-align:center; background:rgba(0,0,0,0.4); color:#fff; border:1px solid #666; border-radius:4px;">
+            </td>
+            <td style="padding:12px; text-align:center; color:#ff8; text-shadow:0 0 6px rgba(0,0,0,0.8);">${buyPrice}${t('gold_unit')}</td>
+        </tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+
+        <!-- 計算ボタン（透明周辺） -->
+        <div style="text-align:center; margin:30px 0; background:transparent;">
+            <button onclick="calcTrade('${cityId}')" style="padding:10px 30px; font-size:1.2em; background:#3498db; border:none; border-radius:8px; cursor:pointer;">
+                ${t('trade_calc_button')}
+            </button>
+        </div>
+
+        <!-- 計算結果（透明背景、枠線で視認性） -->
+        <div id="calcResult" style="background:transparent; border:2px solid rgba(85,85,85,0.6); padding:20px; border-radius:12px; margin:20px 0; min-height:100px; text-align:center; color:#fff; text-shadow:0 0 8px rgba(0,0,0,0.8);"></div>
+
+        <!-- 投稿ボタン（透明周辺） -->
+        <div style="text-align:center; background:transparent;">
+            <button onclick="postTrade('${cityId}')" id="postTradeBtn" disabled 
+                    style="padding:12px 40px; font-size:1.3em; background:#27ae60; border:none; border-radius:8px; cursor:pointer;">
+                ${t('trade_post_button')}
+            </button>
+        </div>
+    </div>`;
+
+    const content = document.getElementById('guildQuestsContent');
+    content.innerHTML = html;
+
+    // フォームを開いたらコンテンツを最上部にスクロール
+    content.scrollTop = 0;
+}
+
+function calcTrade(cityId) {
+    const city = gameState.tradeCityStates.find(c => c.id === cityId);
+    const sell = {}, buy = {};
+    let outLoad = 0, inLoad = 0, revenue = 0, cost = 0;
+
+    resources.forEach(r => {
+        sell[r] = parseInt(document.getElementById(`sell_${r}`).value) || 0;
+        buy[r] = parseInt(document.getElementById(`buy_${r}`).value) || 0;
+        outLoad += sell[r];
+        inLoad += buy[r];
+        revenue += sell[r] * getSellPrice(city, r);
+        cost += buy[r] * getBuyPrice(city, r);
+    });
+
+    const unit = t('gold_unit');
+
+    if (outLoad > 100 || inLoad > 100) {
+        document.getElementById('calcResult').innerHTML = `<p style="color:red;">${t('trade_load_exceed')}</p>`;
+        document.getElementById('postTradeBtn').disabled = true;
+        return;
+    }
+
+    const goingDays = Math.ceil(2 + 8 * (outLoad / 100));
+    const returnDays = Math.ceil(2 + 8 * (inLoad / 100));
+    const totalDays = goingDays + returnDays;
+    const net = revenue - cost;
+
+    let result = `<p>${t('trade_outbound_load', {out: outLoad, days: goingDays})}　${t('trade_return_load', {in: inLoad, days: returnDays})}</p>`;
+    result += `<p>${t('trade_total_days', {days: totalDays})}</p>`;
+    result += `<p>${t('trade_revenue')}${revenue}${unit}　${t('trade_cost')}${cost}${unit}</p>`;
+
+    if (net >= 0) {
+        result += `<p style="color:gold;">${t('trade_profit')}${net}${unit}${t('trade_profit_note')}</p>`;
+    } else {
+        result += `<p>${t('trade_required_gold')}${ -net }${unit}${t('trade_deduct_note')}</p>`;
+        if (gameState.gold < -net) {
+            result += `<p style="color:red;">${t('trade_gold_insufficient')}</p>`;
+        }
+    }
+
+    document.getElementById('calcResult').innerHTML = result;
+    document.getElementById('postTradeBtn').disabled = (net < 0 && gameState.gold < -net);
+
+    window.tempTradeData = {cityId, sell, buy, revenue, cost, totalDays, outLoad, inLoad};
+}
+function postTrade(cityId) {
+    const data = window.tempTradeData;
+    if (!data || data.cityId !== cityId) return;
+
+    // 在庫チェック＆売却素材扣除
+    let hasStockIssue = false;
+    resources.forEach(r => {
+        const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
+        const stock = item ? item.qty : 0;
+        if (data.sell[r] > stock) {
+            alert(t('trade_insufficient_stock', { item: r }));
+            hasStockIssue = true;
+        }
+        if (data.sell[r] > 0 && item) {
+            item.qty -= data.sell[r];
+        }
+    });
+    if (hasStockIssue) return;
+
+    // 購入コストを事前に全額扣除（資本が必要になる現実的な貿易に）
+    if (gameState.gold < data.cost) {
+        alert(t('trade_insufficient_gold', {
+            cost: data.cost,
+            current: gameState.gold
+        }));
+        // 売却素材を戻す（扣除取り消し）
+        resources.forEach(r => {
+            const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
+            if (data.sell[r] > 0 && item) item.qty += data.sell[r];
+        });
+        return;
+    }
+    gameState.gold -= data.cost;
+
+    const city = gameState.tradeCityStates.find(c => c.id === cityId);
+
+    // generateQuestの返却形式に近づけた貿易クエストオブジェクト
+    const outLoad = Object.values(data.sell).reduce((a, b) => a + b, 0);
+    const inLoad = Object.values(data.buy).reduce((a, b) => a + b, 0);
+
+    // 難易度を所要日数ベースに調整（ランク表示・EXP量に影響）
+    const difficulty = Math.floor(data.totalDays * 10); // 例: 4日→40, 20日→200
+
+    const quest = {
+        id: gameState.nextId++,
+        desc: t('trade_quest_description', {
+            cityName: city.name,
+            outLoad: outLoad,
+            inLoad: inLoad,
+            totalDays: data.totalDays
+        }),
+        difficulty: 1,
+        rank: t('trade_rank'), // 翻訳可能にしたランク表示（必要に応じて調整）
+        minStrength: 0,
+        minWisdom: 0,
+        minDexterity: 0,
+        minLuck: 0,
+        focusStat: 'luck',       // 貿易は運が重要という設定（表示用）
+        minFocus: 0,             // 確定成功なので実質ステータス不要
+        type: 'trade',           // 既存の 'trade' 文字列を維持（レンダリングで特殊扱い可能）
+        item: null,
+        npcIdx: null,
+        daysLeft: data.totalDays + 5,
+        reward: data.revenue,    // 完了時に売却収益を加算（購入コストは事前扣除済み → 純利益 = reward - cost）
+        assigned: [],
+        inProgress: false,
+        questType: questTypeClasses.indexOf('trade'), // 'trade' のインデックス（例: 8）
+        questStoryindex: 0,
+        // 貿易内部データ（完了処理用）
+        sell: data.sell,
+        buy: data.buy,
+        outLoad: outLoad,
+        inLoad: inLoad,
+        tradeRemainingDays: data.totalDays, // 進行管理用残り日数
+        cityName: city.name,                // ← 完了メッセージで使用するため明示的に保存
+        totalDaysRecorded: data.totalDays   // メッセージ表示用（所要日数表示）
+    };
+
+    gameState.quests.push(quest);
+    alert(t('trade_post_success'));
+    showMainSelection();
+    updateDisplays();
+}
 function updateProgress() {
     const percent = Math.round((loadedCount / totalAssets) * 100);
     const progressEl = document.getElementById('loadProgress');
@@ -127,6 +339,15 @@ function startGame() {
     currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
     currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
     currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
+    // === javascript.js の gameState 初期化部分（startGame() 内や新ゲーム開始時に追加） ===
+gameState.tradeCityStates = tradeCities.map(city => ({
+    ...city,
+    event: getRandomEvent(),
+    variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
+}));
+
+gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+gameState.materialPrices = {}; // ギルドショップ用（後述）
 
     
 }
@@ -241,7 +462,52 @@ function getQuestRank(difficulty) {
     return 'S';
 }
 
+// === javascript.js に新関数追加（価格計算） ===
+function getMarketPrice(cityState, resource, isHome = false) {
+    // 安全ガード：undefined対策（optional chaining + fallback）
+    const variance = isHome 
+        ? (gameState.homeVariances?.[resource] ?? 1) 
+        : (cityState?.variances?.[resource] ?? 1);
+    
+    let price = baseMarketPrices[resource] * variance;
+    
+    if (!isHome && cityState?.specialty === resource) {
+        price *= specialtyMultiplier;
+    }
+    
+    if (!isHome && cityState?.event?.multipliers?.[resource] !== undefined) {
+        price *= cityState.event.multipliers[resource];
+    }
+    
+    return Math.round(price / 5) * 5; // 5g単位に丸め
+}
 
+function getBuyPrice(cityState, resource, isHome = false) {
+    return Math.round(getMarketPrice(cityState, resource, isHome) * (1 + priceSpread) / 5) * 5;
+}
+
+function getSellPrice(cityState, resource, isHome = false) {
+    return Math.round(getMarketPrice(cityState, resource, isHome) * (1 - priceSpread) / 5) * 5;
+}
+
+function updateDailyPrices() {
+    // ホーム（ギルドショップ）価格更新
+    resources.forEach(r => {
+        gameState.homeVariances[r] = 0.8 + Math.random() * 0.4;
+        gameState.materialPrices[r] = getBuyPrice(null, r, true); // ショップ購入価格に同期
+    });
+
+    // 貿易都市価格・イベント更新
+    gameState.tradeCityStates.forEach(city => {
+        resources.forEach(r => city.variances[r] = 0.8 + Math.random() * 0.4);
+        if (city.event) {
+            city.event.daysLeft--;
+            if (city.event.daysLeft <= 0) city.event = getRandomEvent();
+        } else {
+            city.event = getRandomEvent();
+        }
+    });
+}
 
 
 
@@ -277,6 +543,15 @@ function saveGame() {
 }
 
 function loadGame() {
+    // === javascript.js の gameState 初期化部分（startGame() 内や新ゲーム開始時に追加） ===
+gameState.tradeCityStates = tradeCities.map(city => ({
+    ...city,
+    event: getRandomEvent(),
+    variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
+}));
+
+gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+gameState.materialPrices = {}; // ギルドショップ用（後述）
     const saved = localStorage.getItem('guildMasterSave');
     console.log("Current Lang is"+currentLang);
 
@@ -896,14 +1171,14 @@ function generateSideQuest(npcIdx) {
 }
 
 function generateTempAdventurer(){
-    const repFactor = Math.max(0.1, (gameState.reputation + 50) / 100);
     const primary = Math.floor(Math.random()*4);
-    let s=Math.max(1, Math.floor((1+Math.random()*5) * repFactor)), w=Math.max(1, Math.floor((1+Math.random()*5) * repFactor)), d=Math.max(1, Math.floor((1+Math.random()*5) * repFactor)), l=Math.max(1, Math.floor((1+Math.random()*5) * repFactor));
-    if(primary===0) s=Math.floor(20 * repFactor + Math.random()*(20 * repFactor)) + Math.floor(gameState.reputation / 20);
-    else if(primary===1) w=Math.floor(20 * repFactor + Math.random()*(20 * repFactor)) + Math.floor(gameState.reputation / 20);
-    else if(primary===2) d=Math.floor(20 * repFactor + Math.random()*(20 * repFactor)) + Math.floor(gameState.reputation / 20);
-    else l=Math.floor(20 * repFactor + Math.random()*(20 * repFactor)) + Math.floor(gameState.reputation / 20);
-    const total = s+w+d+l;
+    
+    let s = 10, w = 10, d = 10, l = 10;
+    if(primary===0) s = 20;
+    else if(primary===1) w = 20;
+    else if(primary===2) d = 20;
+    else l = 20;
+    
     const gender = Math.random() < 0.5 ? 'M' : 'F';
     const name = randomName(gender);
     const statAbbr = ['STR','WIS','DEX','LUC'][primary];
@@ -915,21 +1190,42 @@ function generateTempAdventurer(){
         image = `${statAbbr}_${gender}.png`;
     }
     
-    return {
+    let adv = {
         id: gameState.nextId++,
         name: name,
-        level:1, exp:0,
-        strength:s, wisdom:w, dexterity:d, luck:l, defense:2,
-        hp:100, maxHp:100, mp:50, maxMp:50,
-        equipment:[],
+        level: 1,
+        exp: 0,
+        strength: s,
+        wisdom: w,
+        dexterity: d,
+        luck: l,
+        defense: 2,
+        hp: 100,
+        maxHp: 100,
+        mp: 50,
+        maxMp: 50,
+        equipment: [],
         buffs: [],
         image: image,
-        hiringCost:Math.floor(20+total),
-        recruitingCost:Math.floor(100+total*3),
-        temp:true, busy:false, generatedDay:0,
+        temp: true,
+        busy: false,
+        generatedDay: 0,
         primary: primary,
-        critChance:10,
+        critChance: 10,
     };
+    
+    // Target level = floor(reputation / 20), minimum 1 → matches (reputation / 10)/2
+    const targetLevel = Math.max(1, Math.floor(gameState.reputation / 20));
+    
+    // Force level-ups from level 1 to targetLevel
+    levelUp(adv, targetLevel - 1);
+    
+    // Costs are based on final total stats after all growth
+    const total = adv.strength + adv.wisdom + adv.dexterity + adv.luck;
+    adv.hiringCost = Math.floor(20 + total);
+    adv.recruitingCost = Math.floor(100 + total * 3);
+    
+    return adv;
 }
 
 function showQuestCompletionStory(story) {
@@ -1505,9 +1801,11 @@ function renderSellItems() {
         else if (group.type === 'consumable') basePrice = Math.floor((group.buff?.bonus || 100) * 5);
         else if (group.minPrice !== undefined && group.maxPrice !== undefined) {
             basePrice = Math.floor(group.minPrice + randMinMax * (group.maxPrice - group.minPrice + 1));
+            console.log(group.name+basePrice);
         } else {
-            const materialBases = { "鉄鉱石": 30, "薬草": 20, "スパイス": 55, "宝石": 115, "鋼のインゴット": 80, "活力の粉": 60, "魔法の結晶": 150, "炎の粉": 70 };
-            basePrice = materialBases[group.name] || 50;
+            basePrice = 5;
+            
+            
         }
 
         const variance = Math.floor(basePrice * 0.4);
@@ -1624,8 +1922,8 @@ function sellStackedItem(name, amount) {
         // 日固定乱数で価格決定（ショップ表示と一致）
         basePrice = Math.floor(sampleItem.minPrice + randMinMax * (sampleItem.maxPrice - sampleItem.minPrice + 1));
     } else {
-        const materialBases = { "鉄鉱石": 30, "薬草": 20, "スパイス": 55, "宝石": 115, "鋼のインゴット": 80, "活力の粉": 60, "魔法の結晶": 150, "炎の粉": 70 };
-        basePrice = materialBases[name] || 50;
+       
+        basePrice = 5;
     }
 
     const variance = Math.floor(basePrice * 0.4);
@@ -1789,7 +2087,7 @@ function updateDay(){
     }
 
     const dayPart = t('day_format', {day: gameState.day});
-    const goldPart = `${t('gold_label')} ${gameState.gold}`;
+    const goldPart = `${t('gold_label')} ${Math.floor(gameState.gold)}`;
     const repPart = `${t('reputation_label')} ${Math.max(0, gameState.reputation.toFixed(0))}`;
 
     document.getElementById('day').innerHTML = 
@@ -1825,28 +2123,22 @@ function startDay(){
     cleanupAdventurers();
     gameState.adventurers.forEach(a => {
         // 基本回復量（10%）
-        let baseHpRegen = Math.floor(a.maxHp * 0.1);
-        let baseMpRegen = Math.floor(a.maxMp * 0.1);
-
-        // バフによる固定値追加回復量（絶対値）
-        let extraHpRegen = 0;
-        let extraMpRegen = 0;
+        let hpRegenPercent = 10; // 基本10% + バフによる追加パーセントポイント
+        let mpRegenPercent = 10; // MPも同様に基本10% + バフ追加
 
         if (a.buffs && a.buffs.length > 0) {
             a.buffs.forEach(b => {
                 if (b.type === 'hpRegen' && b.bonus) {
-                    extraHpRegen += b.bonus;  // bonus:30 → +30 HP固定回復
+                    hpRegenPercent += b.bonus;  // bonus:5 → +5%追加
                 } else if (b.type === 'mpRegen' && b.bonus) {
-                    extraMpRegen += b.bonus;  // 将来的なMP固定回復用
+                    mpRegenPercent += b.bonus;  // bonus:5 → MP回復に+5%追加
                 }
-                // 将来的にパーセント系バフが必要になったら別type（例: 'hpRegenPercent'）で分岐可能
             });
         }
 
-        // 合計回復量
-        const totalHpRegen = baseHpRegen + extraHpRegen;
-        const totalMpRegen = baseMpRegen + extraMpRegen;
-
+        // 合計回復量（パーセント計算後、切り捨て）
+        const totalHpRegen = Math.floor(a.maxHp * hpRegenPercent / 100);
+        const totalMpRegen = Math.floor(a.maxMp * mpRegenPercent / 100);
         // 恒久冒険者かつクエスト中でない場合のみ日次回復適用
         if (!a.temp && !a.busy) {
             a.hp = Math.min(a.maxHp, (a.hp || 0) + totalHpRegen);
@@ -1891,7 +2183,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 30 && Math.random() < 0.1 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.01 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -1926,7 +2218,151 @@ function playTutorialDialogue(){
 }
 
 function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride = null) {
+// processQuestOutcome() 内の貿易専用ブランチを以下に更新
+if (q.type === 8 || q.type === 'trade') {
+    // 貿易クエストの完了判定：tradeRemainingDaysが0以下なら成功、それ以外は失敗
+    if (q.tradeRemainingDays > 0) {
+        // === 失敗処理 ===
+        const repLoss = 15 + Math.floor(q.difficulty * 0.3); // 規模に応じたペナルティ
+        gameState.reputation -= repLoss;
 
+        // 割り当て冒険者のbusy解放（帰還）
+        q.assigned.forEach(id => {
+            const adv = findAdv(id);
+            if (adv) adv.busy = false;
+        });
+
+        // 失敗メッセージ（失敗スクロールレイアウトに準拠）
+        const failMessage = `
+        <div class="quest-scroll quest-scroll-fail">
+            <div class="scroll-content">
+                <br><br>
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">貿易クエスト失敗！</div>
+                    <div style="font-size: 15px; color: darkred;">
+                        評判 -${repLoss}
+                    </div>
+                    <div style="font-size: 12px; margin: 40px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%;">
+                        ${q.desc}<br><br>
+                        貿易キャラバンが期限内に目的地に到達できませんでした。<br>
+                        冒険者の割り当てが不足または遅れたため、計画は失敗しました。<br>
+                        事前に支払った購入コストは失われました。
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        gameState.eventHistory.unshift({day: eventDay, message: failMessage});
+
+        return; // 処理終了
+    }
+
+    // === 成功処理（tradeRemainingDays <= 0 の場合） ===
+// 貿易クエスト完了時の素材追加処理を修正（playDay() またはクエスト完了ハンドラ内の該当部分）
+if (q.buy) {
+    // 素材店・錬金レシピ（ja）と完全に一致させる固定名（日本語ハードコード名）
+    const fixedResourceNames = ["鉄鉱石", "薬草", "スパイス", "宝石"];
+
+    resources.forEach((currentDisplayedName, index) => {
+        const qty = q.buy[currentDisplayedName] || 0;  // 投稿時の表示名でqtyを取得（言語同じなら必ずヒット）
+        if (qty > 0) {
+            const fixedName = fixedResourceNames[index];
+
+            // 固定名でアイテムを探す（素材店購入分と完全に統合）
+            let item = gameState.inventory.find(it => it.name === fixedName && it.type === 'material');
+            if (!item) {
+                item = { name: fixedName, qty: 0, type: 'material' };
+                gameState.inventory.push(item);
+            }
+            item.qty += qty;
+
+            // オプション: もし古い表示名で別アイテムが存在していたらマージ（言語変更ケース対策）
+            const oldItem = gameState.inventory.find(it => it.name === currentDisplayedName && it.type === 'material' && it !== item);
+            if (oldItem) {
+                item.qty += oldItem.qty;
+                gameState.inventory = gameState.inventory.filter(it => it !== oldItem);  // 古い方を削除
+            }
+        }
+    });
+}
+
+    // 売却収益を加算
+    gameState.gold += q.reward;
+
+    // 割り当て冒険者にEXP付与・レベルアップ・busy解放
+    let survivingAdvs = [];
+    const expGain = q.difficulty * 20;
+    q.assigned.forEach(id => {
+        const adv = findAdv(id);
+        if (adv) {
+            adv.exp += expGain;
+            levelUp(adv);
+            adv.busy = false;
+            survivingAdvs.push(adv);
+        }
+    });
+
+    // 評判ボーナス
+    const repGain = q.difficulty * 0.5;
+    gameState.reputation += repGain;
+
+    // 追加アイテムHTML（購入素材）
+    let additionalItemHTML = '';
+    if (q.buy) {
+        const boughtItems = Object.keys(q.buy).filter(r => q.buy[r] > 0);
+        if (boughtItems.length > 0) {
+            additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">購入素材: ${boughtItems.map(r => `${r} ×${q.buy[r]}`).join(', ')}</div>`;
+        }
+    }
+
+    // extraMsg
+    let extraMsg = `所要日数: ${q.totalDaysRecorded || '複数'} 日（確定成功）`;
+
+    // leftHTML
+    let leftHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 15px; margin-bottom: 40px;">評判 +${repGain.toFixed(1)}</div>
+            <div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
+                +${q.reward} ゴールド（売却収益）
+            </div>
+            ${additionalItemHTML}          
+        </div>`;
+
+    // rightHTML
+    let rightHTML = survivingAdvs.length > 0 ? `
+        <div style="text-align: center;">
+            <div style="font-size: 12px; margin-bottom: 0px; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">${q.desc}</div>
+            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 0px;">
+                ${survivingAdvs.map(adv => `
+                <div style="text-align: center;">
+                    <img class="adventurer-img" src="Images/${adv.image}" alt="${adv.name}">
+                    <div style="margin-top: 10px; font-size: 15px;">${adv.name}</div>
+                    <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${expGain} Exp</div>
+                </div>
+                `).join('')}
+            </div>
+            <div style="font-size: 12px; font-weight: bold; margin: 20px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">
+                ${extraMsg}
+            </div>                                
+        </div>` : `
+        <div style="font-size: 50px; color: darkred;">誰も帰還しませんでした…</div>`;
+
+    // Unified success layout
+    let messageHTML = `
+    <div class="quest-scroll quest-scroll-success">
+        <div class="scroll-content">
+            <br><br>
+            <div style="display: flex; justify-content: center; align-items: flex-start; gap: 0px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+                ${rightHTML}
+                ${leftHTML}
+            </div>
+        </div>
+    </div>`;
+
+    gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
+
+    return;
+}
     if (q.training) {
         if (q.assigned.length === 0) return;
         let assignedAdvs = q.assigned.map(id => findAdv(id)).filter(a => a);
@@ -2117,33 +2553,8 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         extraMsg += `<br>${t('item_found', {name: rareItemName})}${t('rare_indicator')}`;
     }
 
-        }else if (q.type === 8) {
-            let td = q.tradeData;
-            let cityItem = cities.find(c => c.name === td.city)?.items[0];
-            if (!cityItem) {
-                extraMsg += `<br>都市データエラー。`;
-            } else {
-                const currentPrice = gameState.dailyPrices[td.city][cityItem.name];
-                const tradeSuccess = currentPrice <= td.maxPrice;
-                const qty = td.qty;
-                const actualCost = tradeSuccess ? currentPrice * qty : 0;
-                const refund = td.deductedGold - actualCost;
-                gameState.gold += refund;
-                if (tradeSuccess) {
-                    for (let k = 0; k < qty; k++) {
-                        addToInventory({
-                            name: td.item,
-                            minPrice: Math.floor(currentPrice * 1.2),
-                            maxPrice: Math.floor(currentPrice * 1.5),
-                            id: gameState.nextId++
-                        },1);
-                    }
-                    extraMsg += `<br>${td.item} x${qty}個を${currentPrice}g/個で購入成功！返金${refund}g。`;
-                } else {
-                    extraMsg += `<br>価格${currentPrice}g > 最大${td.maxPrice}gで失敗。全額${td.deductedGold}g返金。`;
-                }
-            }
-        } else if (q.type === 2) {
+        }else // === 貿易クエスト完了処理（日終了時のクエスト完了ループ内に追加） ===
+ if (q.type === 2) {
             const repChance = Math.min(0.8, 0.15 + q.difficulty * 0.0065);
             if (Math.random() < repChance) {
                 const extraRep = q.difficulty * 0.6;
@@ -2436,94 +2847,35 @@ function playDay(){
         checkGameOver();
     }
 
-    // 通常クエスト処理（防衛・ダンジョンはスキップ）
+    // playDay() の通常クエスト処理ループを以下に更新（貿易を特殊扱い）
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense || q.type === 7) continue;  // 戦闘クエストは後で特殊処理
+        if (q.defense || q.type === 7) continue;  // 戦闘クエストは後で特殊処理（貿易はここで処理）
 
-        if (q.type === 8) {
-            // 貿易処理（変更なし）
-            if (q.assigned.length === 0) continue;
-            if (!q.inProgress) {
-                const teamDex = q.assigned.reduce((sum, id) => sum + getEffectiveStat(findAdv(id), 'dexterity'), 0);
-                const teamLuk = q.assigned.reduce((sum, id) => sum + getEffectiveStat(findAdv(id), 'luck'), 0);
-                if (teamDex < q.minDexterity || teamLuk < q.minLuck) {
-                    q.assigned.forEach(id => {
-                        const adv = findAdv(id);
-                        if (adv) adv.busy = false;
-                    });
-                    q.assigned = [];
-                    gameState.eventHistory.unshift({day: evDay, message: `貿易クエスト "${q.desc}" 開始失敗: DEXまたはLUC不足。`});
-                    continue;
+        if (q.type === 8 || q.type === 'trade') {
+            // === 貿易クエスト専用進行 ===
+            if (q.assigned.length > 0) {
+                if (!q.inProgress) {
+                    q.inProgress = true;
                 }
-                const qty = q.tradeData.qty;
-                const maxPrice = q.tradeData.maxPrice;
-                const neededGold = qty * maxPrice;
-                if (gameState.gold < neededGold) {
-                    q.assigned.forEach(id => {
-                        const adv = findAdv(id);
-                        if (adv) adv.busy = false;
-                    });
-                    q.assigned = [];
-                    gameState.eventHistory.unshift({day: evDay, message: `貿易クエスト "${q.desc}" 開始失敗: 予算不足 (必要${neededGold}g)。`});
-                    continue;
-                }
-                gameState.gold -= neededGold;
-                q.inProgress = true;
-                const avgDex = teamDex / q.assigned.length;
-                const avgLuc = teamLuk / q.assigned.length;
-                q.tradeRemainingDays = calcTradeRequiredDays(avgDex, avgLuc);
-                q.deductedGold = neededGold;
-                q.originalRequiredDays = q.tradeRemainingDays;
-                gameState.eventHistory.unshift({day: evDay, message: `貿易クエスト開始: ${q.desc} (${q.tradeRemainingDays}日予定、予算${neededGold}g扣除)`});
-            } else {
-                q.tradeRemainingDays--;
+                q.tradeRemainingDays--; // 毎日減少
+                console.log("tradeRemainingDays redeuced to: "+q.tradeRemainingDays);
+                console.log("daysleft: "+ q.daysLeft);
+
                 if (q.tradeRemainingDays <= 0) {
-                    const city = q.tradeData.city;
-                    const itemName = q.tradeData.item;
-                    const qty = q.tradeData.qty;
-                    const maxPrice = q.tradeData.maxPrice;
-                    const currentPrice = gameState.dailyPrices[city][itemName];
-                    const success = currentPrice <= maxPrice;
-                    const actualCost = success ? currentPrice * qty : 0;
-                    const refund = q.deductedGold - actualCost;
-                    gameState.gold += refund;
-                    let msg = success 
-                        ? `貿易成功！${itemName} x${qty}を${currentPrice}g/個で購入（総${actualCost}g）。返金${refund}g。`
-                        : `貿易失敗：価格${currentPrice}g > 最大${maxPrice}g。全額${q.deductedGold}g返金。`;
-                    if (success) {
-                        for (let k = 0; k < qty; k++) {
-                            addToInventory({
-                                name: itemName,
-                                minPrice: Math.floor(currentPrice * 1.2),
-                                maxPrice: Math.floor(currentPrice * 1.5),
-                                id: gameState.nextId++
-                            },1);
-                        }
-                        const expGain = 20 * q.originalRequiredDays;
-                        q.assigned.forEach(id => {
-                            const adv = findAdv(id);
-                            if (adv) {
-                                adv.exp += expGain;
-                                levelUp(adv);
-                                adv.busy = false;
-                            }
-                        });
-                        msg += `<br>全員EXP +${expGain}獲得！`;
-                    } else {
-                        q.assigned.forEach(id => {
-                            const adv = findAdv(id);
-                            if (adv) adv.busy = false;
-                        });
-                    }
-                    gameState.eventHistory.unshift({day: evDay, message: `貿易クエスト完了: ${q.desc}<br>${msg}`});
-                    q.assigned = [];
+                    // 完了時のみ processQuestOutcome を呼び出し（success=true）
+                    processQuestOutcome(q, evDay, true, false);
                     gameState.quests.splice(i, 1);
                 }
+                // 未完了の場合は進行中（busy は維持、EXP/ダメージなし）
+            } else {
+                // 割り当て0人の場合は進行停止（残り日数減少なし）
+                q.inProgress = false; // 表示用にリセット（任意）
             }
-            continue;
+            continue; // 通常処理スキップ
         }
 
+        // === 通常クエスト処理（変更なし） ===
         if (q.assigned.length > 0) {
             const teamStr = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'strength'), 0);
             const teamWis = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'wisdom'), 0);
@@ -2555,6 +2907,8 @@ function playDay(){
         }
     }
 
+        // === 日終了処理（playDay() 内の日終了時に呼び出し） ===
+    updateDailyPrices(); // 既存の日終了処理の最初か最後に追加
     // 期限切れ処理（戦闘クエスト除外）
     gameState.quests.forEach(q => {
         if (!q.training && !q.playerPosted && q.type !== 8 && !q.defense && q.type !== 7) q.daysLeft--;
@@ -3681,9 +4035,9 @@ function showMainSelection() {
     content.style.backgroundImage = "url('Images/GuildQuest_Background.jpg')";
     content.innerHTML = `
         <div class="quest-type-selection">
-            <button class="quest-type-btn" onclick="showStoryQuest()">ストーリークエスト（メイン）</button>
-            <button class="quest-type-btn" onclick="showDungeonQuest()">ダンジョンクエスト</button>
-            <button class="quest-type-btn" onclick="showTradeQuest()">トレードクエスト</button>
+            <button class="quest-type-btn" onclick="showStoryQuest()">${t('guild_quests_story_main')}</button>
+            <button class="quest-type-btn" onclick="showDungeonQuest()">${t('guild_quests_dungeon')}</button>
+            <button class="quest-type-btn" onclick="showTradeQuest()">${t('guild_quests_trade')}</button>
         </div>
     `;
 }
@@ -3777,22 +4131,87 @@ function showTradeQuest() {
     currentGuildQuestType = 'trade';
 
     const content = document.getElementById('guildQuestsContent');
-    content.style.backgroundImage = "url('Images/TradingQuest_Background.jpg')";
+    let html = `
+    <h3 style="text-align:center; margin:30px 0; font-size:1.8em; color:#f0d080;">${t('trade_board_title')}</h3>
+    
+    <!-- 共通の戻るボタン（常に上部に表示） -->
+    <div style="text-align:center; margin-bottom:30px; background:transparent;">
+        <button onclick="showMainSelection()" style="padding:10px 30px; font-size:1.1em; background:#555; border:none; border-radius:8px; cursor:pointer; color:#fff;">
+            ${t('trade_back_to_main')}
+        </button>
+    </div>`;
 
-    let html = `<div class="gq-panel">
-                    <button class="back-btn" onclick="showMainSelection()">戻る</button>
-                    <label>都市: <select id="tradeCity" onchange="updateTradeInfo()">`;
-    cities.filter(c => !c.guild).forEach(c => html += `<option value="${c.name}">${c.name}</option>`);
-    html += `</select></label>
-            <div id="tradeInfo"></div>
-            <label>数量: <input type="number" id="tradeQty" value="5" min="1"></label><br><br>
-            <label>最大単価: <input type="number" id="tradeMaxPrice" value="0"></label>
-            <div class="form-buttons">
-                <button class="post-btn" onclick="postGuildQuest()">投稿</button>
-            </div>
+    const activeTrade = gameState.quests.find(q => q.type === 'trade');
+    if (activeTrade) {
+        html += `
+        <div style="text-align:center; padding:20px; background:transparent; border:2px solid rgba(255,160,0,0.3); border-radius:12px; margin:20px auto; max-width:800px;">
+            <p style="font-size:1.4em; color:orange;">${t('trade_active_title')}</p>
+            <p style="font-size:1.2em;">${activeTrade.cityName}（${t('trade_remaining_days', {days: activeTrade.daysLeft})}）</p>
+            <p style="font-size:1.1em; color:#aaa; margin-top:15px;">${t('trade_active_note')}</p>
         </div>`;
+    } else {
+        // 全都市（ホーム含む）を統一テーブル形式で表示
+        const allCities = [
+            ...gameState.tradeCityStates.map(c => ({id: c.id, name: c.name, cityObj: c}))
+        ];
+
+        allCities.forEach(cityInfo => {
+            const isHome = cityInfo.id === 'home';
+            const cityState = isHome ? null : cityInfo.cityObj;
+            const cityName = cityInfo.name;
+
+            html += `
+            <div class="city-trade" style="background:transparent; border:2px solid rgba(85,85,85,0.6); border-radius:16px; padding:20px; margin:30px auto; max-width:900px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                <h4 style="text-align:center; font-size:1.6em; margin-bottom:20px; color:#ffd700; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+                    ${cityName}
+                    ${!isHome && cityInfo.cityObj?.event ? `
+                    <span style="display:block; font-size:0.8em; color:#ff0; margin-top:8px; text-shadow:0 0 8px rgba(0,0,0,0.8);">
+                        ${t('trade_event_label')} ${cityInfo.cityObj.event.name}: ${cityInfo.cityObj.event.desc}（${t('trade_event_days_left', {days: cityInfo.cityObj.event.daysLeft})}）
+                    </span>` : ''}
+                </h4>
+                <table style="width:100%; border-collapse:collapse; background:transparent; border-radius:12px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:rgba(68,68,68,0.6); color:#fff;">
+                            <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_resource')}</th>
+                            <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_player_sell_price')}</th>
+                            <th style="padding:12px; border-bottom:3px solid rgba(102,102,102,0.8);">${t('trade_table_player_buy_price')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            resources.forEach(r => {
+                const playerSellPrice = isHome ? getSellPrice(null, r, true) : getSellPrice(cityState, r); // プレイヤー売却価格（都市買い値）
+                const playerBuyPrice = isHome ? getBuyPrice(null, r, true) : getBuyPrice(cityState, r);  // プレイヤー購入価格（都市売り値）
+
+                const isSpecialty = !isHome && cityState?.specialty === r;
+                const rowStyle = isSpecialty ? 'background:rgba(0,100,0,0.2); font-weight:bold;' : '';
+
+                html += `
+                <tr style="${rowStyle}">
+                    <td style="padding:12px; text-align:center; border-bottom:1px solid rgba(85,85,85,0.6); color:#fff; text-shadow:0 0 8px rgba(0,0,0,0.8);">${r}${isSpecialty ? t('trade_specialty_marker') : ''}</td>
+                    <td style="padding:12px; text-align:center; color:#8f8; border-bottom:1px solid rgba(85,85,85,0.6); text-shadow:0 0 6px rgba(0,0,0,0.8);">${playerSellPrice}${t('gold_unit')}</td>
+                    <td style="padding:12px; text-align:center; color:#ff8; border-bottom:1px solid rgba(85,85,85,0.6); text-shadow:0 0 6px rgba(0,0,0,0.8);">${playerBuyPrice}${t('gold_unit')}</td>
+                </tr>`;
+            });
+
+            html += `
+                    </tbody>
+                </table>`;
+
+            if (!isHome) {
+                html += `
+                <div style="text-align:center; margin-top:20px; background:transparent;">
+                    <button onclick="openTradeForm('${cityInfo.id}')" style="padding:8px 16px; font-size:1em; background:#27ae60; border:none; border-radius:6px; cursor:pointer;">
+                        ${t('trade_start_button')}
+                    </button>
+                </div>`;
+            }
+
+            html += `</div>`;
+        });
+    }
+
     content.innerHTML = html;
-    updateTradeInfo();
 }
 
 /* 既存の updateTradeInfo はそのまま使用可能（変更なし） */
@@ -4283,16 +4702,38 @@ function renderFacilities() {
                                   </p>`;
                 }
 
-                let buttonText, onclick;
+                let craftButtonHtml = '';
                 if (currentFacility === 'alchemy') {
-                    buttonText = t('facilities_craft_alchemy');
-                    onclick = `craftAlchemyRecipe(${originalIndex})`;
-                } else if (currentFacility === 'tavern') {
-                    buttonText = t('facilities_order_tavern');
-                    onclick = `orderTavernItem(${originalIndex})`;
+                    const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
+                    craftButtonHtml = `
+                        <div style="margin-top:15px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+                            <button onclick="craftAlchemyRecipe(${originalIndex},1)" 
+                                    ${disabledAttr}
+                                    style="padding:12px 30px; font-size:1.2em; flex:1; min-width:180px;">
+                                ${t('facilities_craft_alchemy')}
+                            </button>
+                            <button onclick="craftAlchemyRecipe(${originalIndex},10)" 
+                                    ${disabledAttr}
+                                    style="padding:12px 30px; font-size:1.2em; flex:1; min-width:180px;">
+                                ${t('facilities_craft_alchemy_10')}
+                            </button>
+                        </div>`;
                 } else {
-                    buttonText = t('facilities_produce_blacksmith');
-                    onclick = `produceBlacksmith(${originalIndex})`;
+                    let buttonText, onclick;
+                    if (currentFacility === 'tavern') {
+                        buttonText = t('facilities_order_tavern');
+                        onclick = `orderTavernItem(${originalIndex})`;
+                    } else {
+                        buttonText = t('facilities_produce_blacksmith');
+                        onclick = `produceBlacksmith(${originalIndex})`;
+                    }
+                    const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
+                    craftButtonHtml = `
+                        <button onclick="${onclick}" 
+                                ${disabledAttr}
+                                style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
+                            ${buttonText}
+                        </button>`;
                 }
 
                 html += `
@@ -4301,11 +4742,7 @@ function renderFacilities() {
                         ${effectHtml}
                         <p>${t('facilities_cost', {cost})}</p>
                         ${matHtml}
-                        <button onclick="${onclick}" 
-                                ${!canMake ? 'disabled style="background:#777;"' : ''}
-                                style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
-                            ${buttonText}
-                        </button>
+                        ${craftButtonHtml}
                     </div>`;
             });
 
@@ -4357,35 +4794,47 @@ function removeFromInventory(itemName, qtyToRemove) {
     return false;
 }
 
-function craftAlchemyRecipe(index) {
+function craftAlchemyRecipe(index, qty) {
+    if (qty <= 0) {
+        return;
+    }
+
     const recipe = currentAlchemyRecipes[index];
     if (!recipe) {
         alert("無効なレシピです。");
         return;
     }
 
-    // コストチェック（alchemyRecipesにcostがなければ0）
-    const cost = recipe.cost || 0;
-    if (gameState.gold < cost) {
-        alert("ゴールドが不足しています！");
+    // コストチェック（1回あたりcost × qty）
+    const costPer = recipe.cost || 0;
+    const totalCost = costPer * qty;
+    if (gameState.gold < totalCost) {
+        alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`);
         return;
     }
 
-    // 入力素材チェック（inputsは配列、qtyは常に1）
+    // 必要素材量を計算（inputsに同じ素材が複数含まれる場合に対応）
+    const required = {};
     for (const inputName of recipe.inputs) {
+        required[inputName] = (required[inputName] || 0) + 1;
+    }
+
+    // 素材不足チェック（qty分必要）
+    for (const [inputName, reqPer] of Object.entries(required)) {
+        const needed = reqPer * qty;
         const have = countItem(inputName);
-        if (have < 1) {
-            alert(`素材不足: ${inputName} が足りません！`);
+        if (have < needed) {
+            alert(`素材不足: ${inputName} が ${needed} 個必要ですが、${have} 個しかありません！`);
             return;
         }
     }
 
     // 消費処理
-    if (cost > 0) {
-        gameState.gold -= cost;
+    if (totalCost > 0) {
+        gameState.gold -= totalCost;
     }
     for (const inputName of recipe.inputs) {
-        removeFromInventory(inputName, 1);  // 1個消費（スタック対応関数を想定）
+        removeFromInventory(inputName, qty);
     }
 
     // 出力追加
@@ -4395,22 +4844,21 @@ function craftAlchemyRecipe(index) {
         type: output.type  // 'material' or 'potion'
     };
 
-    // ポーションの場合、restore/amount/minPrice/maxPriceを付与
     if (output.type === 'potion') {
         itemToAdd.restore = output.restore;
         itemToAdd.amount = output.amount;
     }
 
-    // 売却価格（min/max）
     if (output.minPrice !== undefined && output.maxPrice !== undefined) {
         itemToAdd.minPrice = output.minPrice;
         itemToAdd.maxPrice = output.maxPrice;
     }
 
-    addToInventory(itemToAdd, 1);
+    addToInventory(itemToAdd, qty);
 
-    // 成功メッセージ
-    let msg = `${output.name} を合成しました！`;
+    // 成功メッセージ（qtyに対応）
+    const quantityText = qty > 1 ? `${qty}個の ` : '';
+    let msg = `${quantityText}${output.name} を合成しました！`;
     if (output.type === 'potion') {
         const restoreText = output.restore === 'hp' ? 'HP' : 'MP';
         msg += ` (${restoreText} +${output.amount})`;
@@ -4419,9 +4867,8 @@ function craftAlchemyRecipe(index) {
 
     // UI更新
     updateDisplays();
-    renderFacilities();  // レシピリスト再描画（在庫変化反映）
+    renderFacilities();
 }
-
 
 const facilityMaxLevels = {
     alchemy: 4,
@@ -4871,7 +5318,7 @@ function renderCurrentCharacter() {
         potions.forEach(it => {
             const effect = it.restore === 'hp' ? t('potion_hp', {amount: it.amount}) : t('potion_mp', {amount: it.amount});
             const safeName = it.name.replace(/'/g, "\\'");
-            html += `<li>${it.name} x${it.qty || 1} (${effect}) 
+            html += `<li>${it.name} x${it.qty || 1} (${effect} +${it.amount}) 
                      <button onclick="usePotionOnChar(${currentCharIndex}, '${safeName}')">${t('use_button')}</button></li>`;
         });
         html += `</ul>`;
@@ -5009,25 +5456,22 @@ function renderQuests() {
             estDays = t('defense_today');
             chance = t('tactical_combat');
             chanceSuffix = ''; // No % for tactical combat
-        } else if (q.type === 8) { // trade
-            const meetsAll = teamDex >= q.minDexterity && teamLuk >= q.minLuck;
-            if (!meetsAll) {
-                estDays = t('trade_failure');
-                chance = 0;
-            } else {
-                let days;
-                if (q.inProgress && q.tradeRemainingDays !== undefined && q.tradeRemainingDays > 0) {
-                    days = q.tradeRemainingDays;
-                    estDays = t('trade_remaining_days', {days});
-                } else {
-                    const avgDex = teamDex / q.assigned.length || 1;
-                    const avgLuc = teamLuk / q.assigned.length || 1;
-                    days = calcTradeRequiredDays(avgDex, avgLuc);
-                    estDays = q.inProgress ? t('trade_remaining_days', {days}) : t('trade_days', {days});
-                }
-                chance = 100;
-            }
-        } else { // 通常クエスト
+        } else if (q.type === 8 || q.type === 'trade') { // trade（numeric typeを維持する場合） または q.type === 'trade'
+    if (q.assigned.length === 0) {
+        chance = 0;
+        estDays = t('no_assignment'); // 「未割り当て」などの翻訳キー（既存にあれば活用）
+    } else {
+        chance = 100; // 確定成功
+
+        let days = q.tradeRemainingDays; // 投稿時に設定した固定日数（残り日数）
+
+        if (q.inProgress && q.tradeRemainingDays > 0) {
+            estDays = t('trade_remaining_days', {days});
+        } else {
+            estDays = t('trade_days', {days});
+        }
+    }
+} else { // 通常クエスト
             const meetsAll = teamStr >= q.minStrength && teamWis >= q.minWisdom && 
                             teamDex >= q.minDexterity && teamLuk >= q.minLuck;
             if (!meetsAll) {

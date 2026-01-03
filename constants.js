@@ -1,4 +1,69 @@
 
+// === constants.js に追加（既存のmaterialShopの下あたりに） ===
+const resources = [
+    t('resource_iron_ore'),
+    t('resource_medicinal_herb'),
+    t('resource_spice'),
+    t('resource_gem')
+];
+
+// baseMarketPrices も翻訳された表示名をキーにする
+const baseMarketPrices = {
+    [resources[0]]: 30,
+    [resources[1]]: 20,
+    [resources[2]]: 55,
+    [resources[3]]: 115
+};
+
+// tradeCities（都市名を翻訳キー化、specialty は内部キー）
+const tradeCities = [
+    {id: "dragora", name: t('city_dragora'), specialty: "iron_ore"},
+    {id: "herbria", name: t('city_herbria'), specialty: "medicinal_herb"},
+    {id: "spaisis", name: t('city_spaisis'), specialty: "spice"},
+    {id: "gemheart", name: t('city_gemheart'), specialty: "gem"},
+];
+
+const specialtyMultiplier = 0.5; // 専門都市では市場価格50%安（大幅安）
+const priceSpread = 0.1;         // 購入価 +10%、売却価 -10%
+
+// === 市場イベント（既存の多言語対応を維持しつつ、multipliers を内部英語キー化）===
+const eventTypes = [
+    { key: "production_boom",      multipliers: {iron_ore: 0.7, medicinal_herb: 0.7, spice: 0.7, gem: 0.7} },
+    { key: "resource_shortage",    multipliers: {iron_ore: 1.6, medicinal_herb: 1.6, spice: 1.6, gem: 1.6} },
+    { key: "new_mine",             multipliers: {iron_ore: 0.5} },
+    { key: "herb_boom",            multipliers: {medicinal_herb: 0.5} },
+    { key: "spice_festival",       multipliers: {spice: 1.7} },
+    { key: "gem_exhibition",       multipliers: {gem: 1.8} },
+    { key: "mine_accident",        multipliers: {iron_ore: 1.7} },
+    { key: "epidemic",             multipliers: {medicinal_herb: 1.8} },
+    { key: "spice_embargo",        multipliers: {spice: 1.6} },
+    { key: "gem_theft",            multipliers: {gem: 1.5} },
+    { key: "capital_construction", multipliers: {iron_ore: 1.4, gem: 1.4} },
+    { key: "frontier_herbs",       multipliers: {medicinal_herb: 0.6, spice: 0.7} },
+    { key: "adventurer_boom",      multipliers: {iron_ore: 1.3, medicinal_herb: 1.4, spice: 1.2, gem: 1.3} },
+    { key: "poor_harvest",         multipliers: {medicinal_herb: 1.5, spice: 1.5} },
+    { key: "mining_boom",          multipliers: {iron_ore: 0.6, gem: 0.7} },
+    { key: "peaceful_trade",       multipliers: {iron_ore: 0.8, medicinal_herb: 0.8, spice: 0.8, gem: 0.8} },
+    { key: "war_outbreak",         multipliers: {iron_ore: 1.8} },
+    { key: "noble_weddings",       multipliers: {gem: 1.7, spice: 1.5} },
+    { key: "healing_festival",     multipliers: {medicinal_herb: 1.7} },
+    { key: "sea_route_open",       multipliers: {spice: 0.6, gem: 0.7} }
+];
+
+function getRandomEvent() {
+    if (Math.random() < 0.4) { // 40%の確率でイベント発生
+        const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+        return {
+            name: t(`market_event_${type.key}_name`),
+            desc: t(`market_event_${type.key}_desc`),
+            multipliers: type.multipliers,
+            daysLeft: 7 + Math.floor(Math.random() * 8) // 7〜14日
+        };
+    }
+    return null;
+}
+
+
 // === キャラクターごとの呼吸アニメ設定を一元管理（javascript.js の上部やconstants.jsなどに追加） ===
 const breathingAnimationSettings = {
   // キー: baseImageのファイル名（拡張子なし、例: 'LUC_RankF_F'）
@@ -1697,13 +1762,12 @@ const QuestCompletionDialogue = {
     }
     ]
 }
-
 const cities = [
     {name: "セントラルシティ", guild: true},
-    {name: "鉱山の街ドラゴラ", items: [{name: "鉄鉱石", minPrice: 20, maxPrice: 40}]},
-    {name: "農村エルグリーン", items: [{name: "薬草", minPrice: 10, maxPrice: 30}]},
-    {name: "商人の街バザリア", items: [{name: "スパイス", minPrice: 40, maxPrice: 70}]},
-    {name: "宝石の街クリスタリス", items: [{name: "宝石", minPrice: 80, maxPrice: 150}]}
+    {name: "鉱山の街ドラゴラ", items: [{name: "鉄鉱石", minPrice: 10, maxPrice: 20}]},
+    {name: "農村エルグリーン", items: [{name: "薬草", minPrice: 5, maxPrice: 10}]},
+    {name: "商人の街バザリア", items: [{name: "スパイス", minPrice: 7, maxPrice: 14}]},
+    {name: "宝石の街クリスタリス", items: [{name: "宝石", minPrice: 15, maxPrice: 30}]}
 ];
 
 
