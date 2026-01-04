@@ -3162,25 +3162,54 @@ function renderBattle() {
     document.getElementById('battleContent').innerHTML = topHtml + enemiesHtml + teamHtml;
 }
 function getCharType(adv) {
+    // Specific character name overrides (priority: name > image prefix > stats)
+    if (adv.name) {
+        const nameLower = adv.name.toLowerCase().trim();
+        const nameExact = adv.name.trim();
+
+        if (nameLower === 'luna' || nameExact === 'ルナ') {
+            return 'WIS';
+        }
+        if (nameLower === 'kaito' || nameExact === 'カイト') {
+            return 'STR';
+        }
+    }
+
+    // Image filename prefix checks (case-insensitive)
     const img = (adv.image || '').toLowerCase();
     if (img.includes('str_')) return 'STR';
     if (img.includes('wis_')) return 'WIS';
     if (img.includes('dex_')) return 'DEX';
     if (img.includes('luc_')) return 'LUC';
 
-    // Fallback: highest stat
+    // Fallback: highest stat (with tie-breaker preferring STR > WIS > DEX > LUC)
     const stats = {
         strength: getEffectiveStat(adv, 'strength'),
         wisdom: getEffectiveStat(adv, 'wisdom'),
         dexterity: getEffectiveStat(adv, 'dexterity'),
         luck: getEffectiveStat(adv, 'luck')
     };
+
     let max = -1;
     let type = 'STR';
-    if (stats.strength > max) { max = stats.strength; type = 'STR'; }
-    if (stats.wisdom > max) { max = stats.wisdom; type = 'WIS'; }
-    if (stats.dexterity > max) { max = stats.dexterity; type = 'DEX'; }
-    if (stats.luck > max) type = 'LUC';
+
+    if (stats.strength > max) {
+        max = stats.strength;
+        type = 'STR';
+    }
+    if (stats.wisdom > max) {
+        max = stats.wisdom;
+        type = 'WIS';
+    }
+    if (stats.dexterity > max) {
+        max = stats.dexterity;
+        type = 'DEX';
+    }
+    if (stats.luck > max) {
+        max = stats.luck;       // Fixed: was missing max update
+        type = 'LUC';
+    }
+
     return type;
 }
 
