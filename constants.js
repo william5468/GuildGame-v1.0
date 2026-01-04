@@ -7,6 +7,8 @@ const resources = [
     t('resource_gem')
 ];
 
+
+
 // baseMarketPrices も翻訳された表示名をキーにする
 const baseMarketPrices = {
     [resources[0]]: 30,
@@ -22,6 +24,13 @@ const tradeCities = [
     {id: "spaisis", name: t('city_spaisis'), specialty: "spice"},
     {id: "gemheart", name: t('city_gemheart'), specialty: "gem"},
 ];
+
+const keyToDisplay = {
+    iron_ore: t('resource_iron_ore'),
+    medicinal_herb: t('resource_medicinal_herb'),
+    spice: t('resource_spice'),
+    gem: t('resource_gem')
+};
 
 const specialtyMultiplier = 0.5; // 専門都市では市場価格50%安（大幅安）
 const priceSpread = 0.1;         // 購入価 +10%、売却価 -10%
