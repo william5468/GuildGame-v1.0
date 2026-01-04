@@ -1920,3 +1920,110 @@ h1, h3, button, .adventurer-card, .quest-card {
 #battleModal .modal-content::-webkit-scrollbar {
     display: none;                /* Safari and Chrome */
 }
+
+/* === イントロモーダルのレスポンシブ対応（PC大画面～スマホ小画面まで対応） === */
+/* 既存の <style> タグ内（sprite関連の後）または style.css に追加してください */
+
+#introModal {
+    display: none;                     /* デフォルトは非表示（JSでflexに切り替える） */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;               /* 基本は中央揃え（内容が小さいときはきれいに中央） */
+    padding: 10px;                     /* 超小画面でも端に張り付かないように余白 */
+    box-sizing: border-box;
+    overflow-y: auto;                   /* モーダル全体が画面より高くなった場合もスクロール可能（保険） */
+}
+
+#introModal > div {                    /* モーダルの内側コンテンツ（max-width:900px の div） */
+    max-height: 92vh;                  /* 画面高さの92%までに制限 → 超えたら内部スクロール */
+    overflow-y: auto;                  /* 内容が長いときは内部にスクロールバーを出す */
+    width: 92%;                        /* スマホではほぼ全幅、PCではmax-widthで制限 */
+    max-width: 900px;
+    margin: 0 auto;
+    background: #484848;
+    border: 4px solid #535353;
+    border-radius: 15px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 0 30px rgba(57, 57, 57, 0.6);
+    box-sizing: border-box;
+    display: flex;                     /* 内部を縦に整列しやすくする */
+    flex-direction: column;
+    justify-content: center;           /* 内容が短いときは縦方向も中央寄せ */
+}
+
+/* スマホ・タブレット用調整（768px以下） */
+@media (max-width: 768px) {
+    #introModal {
+        align-items: flex-start;       /* スマホでは上寄せにしてすぐ読めるように（スクロールしやすく） */
+        padding-top: 5vh;              /* 上に少し余白 */
+    }
+
+    #introModal > div {
+        padding: 20px 15px;            /* パディングを抑えて縦スペース節約 */
+        border-radius: 12px;
+        max-height: 95vh;
+    }
+
+    #introModal h1 {
+        font-size: 1.8em !important;   /* タイトルを少し小さく */
+        margin-bottom: 20px;
+    }
+
+    #introModal p {
+        font-size: 1.15em !important;  /* 説明文を読みやすく調整 */
+        line-height: 1.7;
+    }
+
+    #playerNameInput {
+        width: 90% !important;         /* 名前入力欄を画面幅にフィット */
+        max-width: 300px;
+        padding: 12px !important;
+        font-size: 1.1em !important;
+        margin: 15px auto !important;
+    }
+
+    #introModal button,
+    #nextBtn {
+        padding: 12px 35px !important;
+        font-size: 1.2em !important;
+        margin-top: 15px !important;
+    }
+
+    #dialogueBox {
+        min-height: 220px !important;  /* 対話ボックスも少し小さく */
+        font-size: 1.1em !important;
+        padding: 15px;
+    }
+}
+
+/* 超小画面（480px以下）用の追加調整 */
+@media (max-width: 480px) {
+    #introModal > div {
+        padding: 15px 10px;
+    }
+
+    #introModal h1 {
+        font-size: 1.6em !important;
+    }
+
+    #introModal p {
+        font-size: 1.05em !important;
+    }
+
+    #playerNameInput {
+        font-size: 1em !important;
+    }
+
+    #introModal button,
+    #nextBtn {
+        padding: 10px 30px !important;
+        font-size: 1.1em !important;
+    }
+}
