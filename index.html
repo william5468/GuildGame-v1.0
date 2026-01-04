@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ギルドマスターゲーム</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <!-- === 更新された共通スタイル： <head> 内の重複した <style> を削除し、この1つの <style> に置き換えてください === -->
 <style>
 .sprite-wrapper {
@@ -122,9 +124,9 @@
             </div>
         </div>
     </div>    
-
+    <div id="day"></div>
     <div class="buttons">
-        <div id="day"></div>
+        
         <button onclick="playTutorialDialogue()" data-i18n="tutorial">説明</button>
 
 

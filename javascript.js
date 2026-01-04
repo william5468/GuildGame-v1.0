@@ -8,6 +8,67 @@ let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
 let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 
 
+/**
+ * better_alert(message, type = "basic")
+ * 
+ * Shows a Toastify toast notification.
+ * Falls back to native window.alert() if Toastify is unavailable or fails (e.g., script didn't load, JS error).
+ * This ensures your alerts always work, even in edge cases.
+ */
+function better_alert(message, type = "basic") {
+    // Build config first (same as before)
+    const toastConfig = {
+        text: message,
+        duration: 4000,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+        style: {
+            background: '#1a1a1a',
+            color: '#ffffff'
+        },
+        className: 'game-toast',
+        close: true,
+        clickToClose: true
+    };
+
+    // Basic type override
+    if (type === "basic") {
+        toastConfig.style.background = '#f32521ff'; // Your custom red-ish color
+        toastConfig.style.color = '#ffffff';
+    }
+
+    // Future expansion
+    /*
+    else if (type === "success") {
+        toastConfig.style.background = '#4CAF50';
+    } else if (type === "error") {
+        toastConfig.style.background = '#f44336';
+    } else if (type === "warning") {
+        toastConfig.style.background = '#ff9800';
+    }
+    */
+
+    // === TOAST WITH FALLBACK ===
+    if (typeof Toastify === 'function') {
+        try {
+            Toastify(toastConfig).showToast();
+            return; // Success – exit early
+        } catch (error) {
+            // Toastify threw an error (rare, but possible – e.g., DOM issue)
+            console.warn('Toastify failed to show toast:', error);
+        }
+    } else {
+        // Toastify not loaded/defined
+        console.warn('Toastify is not available – falling back to native alert');
+    }
+
+    // === FALLBACK: Native alert() ===
+    // This is blocking (pauses game), but guarantees the message is seen
+    // It only triggers if toast completely fails
+    alert(message);
+}
+
 function openTradeForm(cityId) {
     const city = gameState.tradeCityStates.find(c => c.id === cityId);
     if (!city) return;
@@ -147,7 +208,7 @@ function postTrade(cityId) {
         const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
         const stock = item ? item.qty : 0;
         if (data.sell[r] > stock) {
-            alert(t('trade_insufficient_stock', { item: r }));
+            better_alert(t('trade_insufficient_stock', { item: r }));
             hasStockIssue = true;
         }
         if (data.sell[r] > 0 && item) {
@@ -158,7 +219,7 @@ function postTrade(cityId) {
 
     // 購入コストを事前に全額扣除（資本が必要になる現実的な貿易に）
     if (gameState.gold < data.cost) {
-        alert(t('trade_insufficient_gold', {
+        better_alert(t('trade_insufficient_gold', {
             cost: data.cost,
             current: gameState.gold
         }));
@@ -216,7 +277,7 @@ function postTrade(cityId) {
     };
 
     gameState.quests.push(quest);
-    alert(t('trade_post_success'));
+    better_alert(t('trade_post_success'));
     showMainSelection();
     updateDisplays();
 }
@@ -463,20 +524,28 @@ function getQuestRank(difficulty) {
 }
 
 // === javascript.js に新関数追加（価格計算） ===
+// === 更新された getMarketPrice 関数（keyToDisplayのみ使用、表示名から内部キーを逆引き） ===
 function getMarketPrice(cityState, resource, isHome = false) {
-    // 安全ガード：undefined対策（optional chaining + fallback）
+    // 表示名（resource）から内部キーを逆引き（keyToDisplayのみ使用）
+    const internalKey = Object.keys(keyToDisplay).find(key => keyToDisplay[key] === resource) || resource; // フォールバック
+
+    // variance と baseMarketPrices は表示名キー前提（既存互換）
     const variance = isHome 
         ? (gameState.homeVariances?.[resource] ?? 1) 
         : (cityState?.variances?.[resource] ?? 1);
     
     let price = baseMarketPrices[resource] * variance;
     
-    if (!isHome && cityState?.specialty === resource) {
+    // specialty は内部キー比較
+    if (!isHome && cityState?.specialty === internalKey) {
         price *= specialtyMultiplier;
     }
     
-    if (!isHome && cityState?.event?.multipliers?.[resource] !== undefined) {
-        price *= cityState.event.multipliers[resource];
+    // イベント乗算：内部キー（internalKey）でアクセス
+    if (!isHome && cityState?.event?.multipliers?.[internalKey] !== undefined) {
+        const multiplier = cityState.event.multipliers[internalKey];
+        price *= multiplier;
+        console.log(`Event multiplier applied: ${multiplier} to resource "${resource}" (internal key: "${internalKey}"), city: ${cityState.name}, new price: ${price}`);
     }
     
     return Math.round(price / 5) * 5; // 5g単位に丸め
@@ -539,7 +608,7 @@ function saveGame() {
     };
 
     localStorage.setItem('guildMasterSave', JSON.stringify(savableState));
-    alert('ゲームを保存しました！');
+    better_alert('ゲームを保存しました！');
 }
 
 function loadGame() {
@@ -698,9 +767,9 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
         checkGameOver();
         updateDisplays();
         ensureTrainingQuest();
-        alert('ゲームを読み込みました！');
+        better_alert('ゲームを読み込みました！');
     } else {
-        alert('セーブデータが見つかりません！');
+        better_alert('セーブデータが見つかりません！');
     }
 }
 
@@ -750,7 +819,7 @@ function addToInventory(template, qty = 1) {
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
-        alert("ゴールドが不足しています");
+        better_alert("ゴールドが不足しています");
         return false;
     }
     gameState.gold -= amount;
@@ -774,7 +843,7 @@ function addBattleLog(msg) {
 
 function corrupt() {
     if (gameState.reputation < 10) {
-        alert("評判が不足しています");
+        better_alert("評判が不足しています");
         return;
     }
     gameState.reputation -= 10;
@@ -787,7 +856,7 @@ function checkGameOver() {
     if (gameState.gameOver) return;
     if (gameState.gold <= 0 || gameState.reputation <= 0) {
         const reason = gameState.gold <= 0 ? "資金不足" : "評判ゼロ";
-        alert(`ゲームオーバー！ギルドは${reason}により崩壊しました。`);
+        better_alert(`ゲームオーバー！ギルドは${reason}により崩壊しました。`);
         gameState.gameOver = true;
         const endBtn = document.querySelector('button[onclick="playDay()"]');
         if (endBtn) endBtn.disabled = true;
@@ -798,7 +867,7 @@ function checkGameOver() {
 function buyExpansion() {
     const current = gameState.maxPermanentSlots;
     if (current >= 12) {
-        alert('最大拡張に達しました');
+        better_alert('最大拡張に達しました');
         return;
     }
     const next = current + 1;
@@ -1267,7 +1336,7 @@ function usePotionOnChar(charIdx, potionName) {
     if (!adv) return;
     const stackIdx = gameState.inventory.findIndex(i => i.name === potionName);
     if (stackIdx === -1) {
-        alert('ポーションが見つかりません');
+        better_alert('ポーションが見つかりません');
         return;
     }
     const potion = gameState.inventory[stackIdx];
@@ -1535,17 +1604,17 @@ function assign(questId, advId){
     const q=gameState.quests.find(q=>q.id===questId);
     if(!q) return;
     if (q.inProgress && !q.training && q.type !== 8) {
-        alert("クエスト進行中は冒険者を追加できません");
+        better_alert("クエスト進行中は冒険者を追加できません");
         return;
     }
     const maxSlots = q.training ? 2 : 4;
     if(q.assigned.length >= maxSlots){
-        alert(q.training ? "トレーニングクエストは最大2人までです。" : "クエストは満員です");
+        better_alert(q.training ? "トレーニングクエストは最大2人までです。" : "クエストは満員です");
         return;
     }
     const adv=findAdv(advId);
     if(!adv) return;
-    if(adv.mp <= 0){ alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`); return; }
+    if(adv.mp <= 0){ better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`); return; }
     const cost=adv.temp?adv.hiringCost:0;
     if(cost > 0 && !spendGold(cost)) return;
     q.assigned.push(advId);
@@ -1580,7 +1649,7 @@ function rejectQuest(qId) {
     if (idx !== -1) {
         gameState.quests.splice(idx, 1);
     }
-    alert(`クエストを拒否しました！評判 -${penalty.toFixed(1)}`);
+    better_alert(`クエストを拒否しました！評判 -${penalty.toFixed(1)}`);
     updateDisplays();
 }
 
@@ -1597,7 +1666,7 @@ function buy(i,qty){
 function recruit(i){
     const numPerms = gameState.adventurers.filter(a => !a.temp).length;
     if(numPerms >= gameState.maxPermanentSlots){
-        alert('ギルドは満杯です！拡張を購入してさらに募集してください。');
+        better_alert('ギルドは満杯です！拡張を購入してさらに募集してください。');
         return;
     }
     const adv=gameState.recruitPending[i];
@@ -1618,7 +1687,7 @@ function firePerm(pIdx){
     const adv=perms[pIdx];
     if (!adv) return;
     if (adv.busy) {
-        alert("現在クエスト中の冒険者を解雇できません！");
+        better_alert("現在クエスト中の冒険者を解雇できません！");
         return;
     }
     if(confirm(`${adv.name}を解雇しますか？取り消せません。`)){
@@ -1643,7 +1712,7 @@ function equipToChar(pIdx, itemId) {
     const adv = perms[pIdx];
     if (!adv) return;
     if (adv.equipment.length >= 2) {
-        alert('最大2つまで装備可能です');
+        better_alert('最大2つまで装備可能です');
         return;
     }
     const itemIdx = gameState.inventory.findIndex(it => it.id === itemId);
@@ -1903,7 +1972,7 @@ function sellStackedItem(name, amount) {
                        (gameState.sellables ? gameState.sellables.find(i => i.name === name) : null);
 
     if (!sampleItem) {
-        alert('売却するアイテムが見つかりません。');
+        better_alert('売却するアイテムが見つかりません。');
         return;
     }
 
@@ -1964,12 +2033,12 @@ function sellStackedItem(name, amount) {
     }
 
     if (remaining > 0) {
-        alert('在庫が不足しています。');
+        better_alert('在庫が不足しています。');
         return;
     }
 
     gameState.gold += totalGold;
-    alert(`${name} を ${amount}個 売却しました！ +${totalGold}g`);
+    better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}g`);
 
     // ショップモーダルを更新（価格が日固定なので再計算しても同じ値になる）
     document.getElementById('shopContent').innerHTML = renderCurrentShopPage();
@@ -2183,7 +2252,7 @@ function startDay(){
         }
     }
 
-    if (gameState.day > 30 && Math.random() < 0.01 && !gameState.quests.some(q => q.defense)) {
+    if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
         gameState.quests.push(dq);
     }
@@ -4183,7 +4252,7 @@ function showTradeQuest() {
                 const playerSellPrice = isHome ? getSellPrice(null, r, true) : getSellPrice(cityState, r); // プレイヤー売却価格（都市買い値）
                 const playerBuyPrice = isHome ? getBuyPrice(null, r, true) : getBuyPrice(cityState, r);  // プレイヤー購入価格（都市売り値）
 
-                const isSpecialty = !isHome && cityState?.specialty === r;
+                const isSpecialty = !isHome && keyToDisplay[cityState?.specialty] === r;
                 const rowStyle = isSpecialty ? 'background:rgba(0,100,0,0.2); font-weight:bold;' : '';
 
                 html += `
@@ -4303,7 +4372,7 @@ function performAlchemy() {
     const qty = parseInt(document.getElementById('alchemyQty').value) || 1;
 
     if (!ing1 || !ing2 || ing1 === ing2) {
-        alert('異なる有効な材料を2つ選択してください。');
+        better_alert('異なる有効な材料を2つ選択してください。');
         return;
     }
 
@@ -4314,12 +4383,12 @@ function performAlchemy() {
     });
 
     if (!recipe) {
-        alert('この組み合わせにはレシピがありません。');
+        better_alert('この組み合わせにはレシピがありません。');
         return;
     }
 
     if (countItem(ing1) < qty || countItem(ing2) < qty) {
-        alert('材料が不足しています！');
+        better_alert('材料が不足しています！');
         return;
     }
 
@@ -4332,14 +4401,14 @@ function performAlchemy() {
     document.getElementById('alchemyIng2').innerHTML = optionsHtml;
     updateAlchemyPreview();
 
-    alert(`${recipe.output.name} を ${qty}個 作成しました！`);
+    better_alert(`${recipe.output.name} を ${qty}個 作成しました！`);
     renderFacilities(); // 在庫更新のため再描画
 }
 
 function orderTavernItem(recipeIdx) {
     const r = currentTavernRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています');
         return;
     }
 
@@ -4347,7 +4416,7 @@ function orderTavernItem(recipeIdx) {
     if (r.materials) {
         for (let m of r.materials) {
             if (countItem(m.name) < (m.qty || 1)) {
-                alert('素材が不足しています');
+                better_alert('素材が不足しています');
                 return;
             }
         }
@@ -4355,7 +4424,7 @@ function orderTavernItem(recipeIdx) {
 
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
-        alert('永久冒険者がいないため適用できません');
+        better_alert('永久冒険者がいないため適用できません');
         return;
     }
 
@@ -4410,7 +4479,7 @@ function applyTavernBuff(recipeIdx, advId) {
     buffCopy.daysLeft = buffCopy.days;
     adv.buffs.push(buffCopy);
 
-    alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`);
+    better_alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`);
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
 }
@@ -4431,7 +4500,7 @@ function enhanceEquipment(advId, itemId) {
 
     if (!item || !item.stat || typeof item.bonus !== 'number') {
         console.warn("Invalid item or item not enhanceable");
-        alert("強化対象のアイテムが見つかりません。画面を更新してください。");
+        better_alert("強化対象のアイテムが見つかりません。画面を更新してください。");
         return;
     }
 
@@ -4456,7 +4525,7 @@ function enhanceEquipment(advId, itemId) {
     }
 
     if (!consumed) {
-        alert(t('blacksmith_insufficient_crystals'));
+        better_alert(t('blacksmith_insufficient_crystals'));
         return;
     }
 
@@ -4464,7 +4533,7 @@ function enhanceEquipment(advId, itemId) {
     item.enhancement = (item.enhancement || 0) + 1;
 
     const statFull = t(`stat_${item.stat}`) || t(`stat_${item.stat}`);
-    alert(t('blacksmith_enhance_success', {
+    better_alert(t('blacksmith_enhance_success', {
         item: item.name,
         bonus: item.bonus,
         enhancement: item.enhancement,
@@ -4479,13 +4548,13 @@ function enhanceEquipment(advId, itemId) {
 function produceBlacksmith(recipeIdx) {
     const r = currentBlacksmithRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています');
         return;
     }
     if (r.materials) {
         for (let m of r.materials) {
             if (countItem(m.name) < (m.qty || 1)) {
-                alert('素材が不足しています');
+                better_alert('素材が不足しています');
                 return;
             }
         }
@@ -4499,7 +4568,7 @@ function produceBlacksmith(recipeIdx) {
     }
 
     addToInventory({name: r.name, stat: r.stat, bonus: r.bonus});
-    alert(`${r.name} を製作しました！`);
+    better_alert(`${r.name} を製作しました！`);
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
     updateDisplays();
@@ -4801,7 +4870,7 @@ function craftAlchemyRecipe(index, qty) {
 
     const recipe = currentAlchemyRecipes[index];
     if (!recipe) {
-        alert("無効なレシピです。");
+        better_alert("無効なレシピです。");
         return;
     }
 
@@ -4809,7 +4878,7 @@ function craftAlchemyRecipe(index, qty) {
     const costPer = recipe.cost || 0;
     const totalCost = costPer * qty;
     if (gameState.gold < totalCost) {
-        alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`);
+        better_alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`);
         return;
     }
 
@@ -4824,7 +4893,7 @@ function craftAlchemyRecipe(index, qty) {
         const needed = reqPer * qty;
         const have = countItem(inputName);
         if (have < needed) {
-            alert(`素材不足: ${inputName} が ${needed} 個必要ですが、${have} 個しかありません！`);
+            better_alert(`素材不足: ${inputName} が ${needed} 個必要ですが、${have} 個しかありません！`);
             return;
         }
     }
@@ -4863,7 +4932,7 @@ function craftAlchemyRecipe(index, qty) {
         const restoreText = output.restore === 'hp' ? 'HP' : 'MP';
         msg += ` (${restoreText} +${output.amount})`;
     }
-    alert(msg);
+    better_alert(msg);
 
     // UI更新
     updateDisplays();
@@ -4918,7 +4987,7 @@ function upgradeFacility(fac) {
     const maxLevel = facilityMaxLevels[fac];
 
     if (currentLevel >= maxLevel) {
-        alert('この施設はすでに最大レベルです');
+        better_alert('この施設はすでに最大レベルです');
         return;
     }
 
@@ -4929,9 +4998,9 @@ function upgradeFacility(fac) {
         gameState.facilities[fac]++;
         renderFacilities();
         if (typeof updateGold === 'function') updateGold();
-        alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`);
+        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`);
     } else {
-        alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています');
     }
     updateDisplays();
 }
@@ -4951,18 +5020,18 @@ function postGuildQuest() {
 
     if (type === 'story') {
         if (gameState.mainProgress >= mainQuests.length) {
-            alert('すべてのメインクエストを完了しました！');
+            better_alert('すべてのメインクエストを完了しました！');
             return;
         }
 
         if (gameState.quests.some(q => q.type === 6)) {
-            alert('既にメインクエストが進行中です。現在のメインクエストを完了してください。');
+            better_alert('既にメインクエストが進行中です。現在のメインクエストを完了してください。');
             return;
         }
 
         let mq = mainQuests[gameState.mainProgress];
         if (gameState.reputation < (mq.repRequired || 0)) {
-            alert(`評判が不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`);
+            better_alert(`評判が不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`);
             return;
         }
 
@@ -4988,7 +5057,7 @@ function postGuildQuest() {
     } else if (type === 'dungeon') {
         let floorEl = document.getElementById('dungeonFloor');
         if (!floorEl) {
-            alert('エラー: ダンジョン階層の入力が見つかりません。');
+            better_alert('エラー: ダンジョン階層の入力が見つかりません。');
             return;
         }
         let floor = parseInt(floorEl.value) || 1;
@@ -5018,7 +5087,7 @@ function postGuildQuest() {
         let qtyEl = document.getElementById('tradeQty');
         let maxPriceEl = document.getElementById('tradeMaxPrice');
         if (!cityEl || !qtyEl || !maxPriceEl) {
-            alert('エラー: トレード情報の入力が見つかりません。');
+            better_alert('エラー: トレード情報の入力が見つかりません。');
             return;
         }
         let cityName = cityEl.value;
@@ -5047,7 +5116,7 @@ function postGuildQuest() {
     if (q) {
         gameState.quests.push(q);
         updateDisplays();
-        alert(alertMessage);
+        better_alert(alertMessage);
         closeGuildQuests();  // 投稿後にモーダルを閉じる
     }
 }
@@ -5112,13 +5181,13 @@ function useSpecificPotion(charIndex, itemId) {
 function receiveSideQuest(idx) {
     const existing = gameState.quests.find(q => q.side && q.npcIdx === idx);
     if (existing) {
-        alert('このNPCのサイドクエストは既に受注中です。');
+        better_alert('このNPCのサイドクエストは既に受注中です。');
         return;
     }
     const sq = generateSideQuest(idx);
     gameState.quests.push(sq);
     updateDisplays();
-    alert(`${discoveryNPCs[idx]}からサイドクエストを受注しました！`);
+    better_alert(`${discoveryNPCs[idx]}からサイドクエストを受注しました！`);
 }
 
 function getNameHtml(adv) {
@@ -5153,7 +5222,7 @@ function useExpOrbOnChar(charIndex, itemId) {
         gameState.inventory.splice(itemIdx, 1);
     }
 
-    alert(`${adv.name} が${orb.name}を使用！レベルが${levelsToAdd}アップしました！`);
+    better_alert(`${adv.name} が${orb.name}を使用！レベルが${levelsToAdd}アップしました！`);
 
     renderCurrentCharacter();  // 即時反映
     updateDisplays();
@@ -5376,20 +5445,40 @@ function renderCurrentCharacter() {
     const settings = breathingAnimationSettings[baseKey] || defaultBreathingSettings;
 
     // 汎用関数呼び出し（全パラメータ渡し）
-    const breathingDiv = generateBreathingAnimation(
-      adv.image,                  // baseImage (fallback用)
-      220,                        // displayWidth
-      400,                        // maxHeight
-      settings.cycleDuration,     // cycleDuration
-      '_Breathing.png',           // suffix（必要に応じて変更可能）
-      settings.rows,
-      settings.cols,
-      settings.frameW,
-      settings.frameH,
-      settings.scaleFactor,
-      settings.innerHeight,
-      settings.innerWidth,
+// Add this helper if you don't have it already
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Your existing code with fallback added
+    const primarySuffix = '_Breathing.png';
+    const fallbackSuffix = '_breathing.png';
+
+    // First, generate with the preferred (capital B) version
+    let breathingDiv = generateBreathingAnimation(
+        adv.image,                  // baseImage
+        220,                        // displayWidth
+        400,                        // maxHeight
+        settings.cycleDuration,     // cycleDuration
+        primarySuffix,              // suffix - try Breathing first
+        settings.rows,
+        settings.cols,
+        settings.frameW,
+        settings.frameH,
+        settings.scaleFactor,
+        settings.innerHeight,
+        settings.innerWidth,
     );
+
+    // Construct the expected sprite URLs (matches common pattern: base.png → base_Breathing.png)
+    const basePath = adv.image.replace(/\.png$/i, '');
+    const primaryUrl = basePath + primarySuffix;
+    const fallbackUrl = basePath + fallbackSuffix;
+
+    // Add CSS multi-background fallback: if Breathing sprite 404s → automatically show breathing sprite
+    // Browser skips failed layers → perfect sync fallback, no async/preload needed
+    const urlRegex = new RegExp(`(url\\(\\s*["']?${escapeRegExp(primaryUrl)}["']?\\s*\\))`, 'gi');
+    breathingDiv = breathingDiv.replace(urlRegex, `$1, url("${fallbackUrl}")`);
 
     html += breathingDiv;
 
@@ -5978,7 +6067,7 @@ let dialogueIndex = 0;
 function startIntroDialogue() {
     playerName = document.getElementById('playerNameInput').value.trim();
     if (playerName === "") {
-        alert("名前を入力してください！");
+        better_alert("名前を入力してください！");
         return;
     }
     // Use language-specific intro

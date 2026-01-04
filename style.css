@@ -7,8 +7,54 @@ button:hover {background:#2980b9;}
 button:disabled {background:#bdc3c7; cursor:not-allowed;}
 ul {list-style:none; padding:0;}
 .left, .right {flex:1;}
-.buttons {display:flex; justify-content:center; gap:10px; margin:20px 0; flex-wrap:wrap;}
 .stats {font-size:0.85em; color:#555;}
+
+/* === CSS ISOLATION FOR TOASTIFY === */
+/* High-specificity + !important to block game CSS leaks (fonts, colors, etc.) */
+
+.game-toast {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    padding: 16px 20px !important;
+    border-left: 4px solid rgba(255, 255, 255, 0.3) !important; /* Subtle accent */
+    backdrop-filter: blur(8px) !important; /* Modern glass effect */
+    animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.game-toast:hover {
+    transform: translateX(-4px) !important; /* Hover lift */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+.game-toast .toastify-close {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 20px !important;
+}
+
+.game-toast .toastify-close:hover {
+    color: #ffffff !important;
+}
+
+/* Custom slide-in animation (overrides Toastify default for polish) */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Ensure toast container doesn't inherit game styles */
+.toastify {
+    z-index: 9999 !important;
+    font-family: inherit !important;
+}
 
 
 /* === UPDATED: Corruption & Expansion Sections – Semi-transparent glass to match shop scene === */
@@ -293,6 +339,8 @@ body {
     -webkit-backdrop-filter: blur(10px);    /* Safari support */
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    
 }
 /* Panels – larger width with min-width for wider screens, right slightly prioritized for large quest cards */
 .left {
@@ -325,22 +373,24 @@ body {
 
 /* Force white text for #day and all content inside it */
 #day {
+    display: block;                    /* Block-level for margin auto centering */
+    width: fit-content;                /* Shrink-to-fit content (respects min-width) */
+    min-width: 240px;                  /* Keeps minimum prominence */
+    margin: 15px auto;                 /* Vertical 15px, horizontal auto → perfect center */
+    padding: 14px 32px;                /* Slightly more horizontal padding for balance */
     text-align: center;
-    color: #ffffff !important;       /* Pure white, forced override */
+    color: #ffffff !important;
     font-size: 1em;
     font-weight: bold;
     text-shadow: 
         0 0 12px rgba(0, 0, 0, 0.9),
-        0 2px 10px rgba(0, 0, 0, 1);      /* Even stronger black glow for max readability */
-    margin: 15px 0;
-    padding: 14px 28px;
-    background: rgba(0, 0, 0, 0.3);   /* Slightly darker backing to help on bright background areas */
+        0 2px 10px rgba(0, 0, 0, 1);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 16px;
-    display: inline-block;
-    min-width: 240px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
+    box-sizing: border-box;            /* Ensures padding doesn't affect centering */
 }
 
 /* Ensure any inner text (e.g., spans, p) inside #day is also white */
@@ -502,33 +552,116 @@ h1 {
 
 
 
+/* === UPDATED: Button Bar – Pure Horizontal Scroll, Invisible Scrollbar, All Buttons Accessible === */
+/* Key fixes:
+   - Force single row (nowrap) + left-aligned (flex-start) → No centering clip, scroll starts from first button
+   - overflow-x: auto → Horizontal scroll when narrow (buttons never "disappear" – accessible via scroll)
+   - Invisible scrollbar (clean look, works on mobile swipe/PC drag)
+   - Buttons highly shrinkable (low min-width, aggressive font clamp) → Fit more on narrow screens
+   - Padding for thumb-friendly scrolling
+   - No wrapping/centering issues
+*/
+
 .buttons {
-    background: rgba(255, 255, 255, 0.32);
     display: flex;
-    align-items: center;              /* Vertically centers the buttons */
-    justify-content: center;          /* Horizontally centers the buttons (remove if you don't want this) */
-    gap: 12px;                         /* Optional: adds consistent spacing between buttons */
-    /* The parent must have a height greater than the buttons for vertical centering to be visible */
-    height: 100%;                      /* Example: inherit full height from its parent */
-    /* or use a fixed height like: height: 400px; */
+    flex-direction: row;
+    flex-wrap: nowrap;                 /* Critical: Single row only */
+    align-items: center;
+    justify-content: flex-start;       /* Left-align → Full access from start, no center clip */
+    gap: 10px;
+    padding: 12px 16px;                /* Extra side padding for scroll thumb space */
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    overflow-x: auto;                  /* Horizontal scroll enabled */
+    overflow-y: hidden;
+    box-sizing: border-box;
+    margin: 20px 0;
+    min-height: 68px;                  /* Consistent height for buttons */
+
+    /* Touch-friendly scrolling */
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;                      /* Intuitive drag cue */
 }
 
+.buttons:active {
+    cursor: grabbing;
+}
+
+/* Completely hide scrollbar */
+.buttons::-webkit-scrollbar {
+    display: none;
+    height: 0;
+    width: 0;
+}
+
+.buttons {
+    -ms-overflow-style: none;          /* IE/Edge */
+    scrollbar-width: none;             /* Firefox */
+}
+
+/* Buttons – Extremely shrinkable + responsive text */
 .buttons button {
+    flex: 1 1 auto;                    /* Allow grow/shrink */
+    min-width: 60px;                   /* Very low min → Fits extreme narrow screens */
+    max-width: 200px;                  /* Optional: Prevent one button dominating */
+    padding: 12px clamp(6px, 1.8vw, 20px);
+    height: 48px;
     background: rgba(254, 255, 255, 0.7);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    max-height: 40px;
-    /* Optional improvements */
-    padding: 0 20px;                   /* Makes buttons feel better sized */
-    height: 40px;                      /* Fixed height to match max-height */
-    line-height: 40px;                 /* Helps with internal text vertical alignment */
-    border-radius: 8px;                /* Slight rounding for modern look */
     cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Text scales down aggressively */
+    font-size: clamp(0.6rem, 2.2vw, 1rem);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .buttons button:hover {
     background: rgba(168, 208, 235, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Narrow screens – Tighter for more buttons visible */
+@media (max-width: 600px) {
+    .buttons {
+        gap: 8px;
+        padding: 10px 12px;
+        min-height: 60px;
+    }
+
+    .buttons button {
+        min-width: 55px;
+        height: 44px;
+        padding: 10px clamp(4px, 1.5vw, 12px);
+        font-size: clamp(0.4rem, 2.5vw, 0.9rem);
+    }
+}
+
+@media (max-width: 400px) {
+    .buttons {
+        gap: 6px;
+        padding: 8px 10px;
+    }
+
+    .buttons button {
+        min-width: 48px;               /* Extreme min – all buttons accessible via scroll */
+        font-size: clamp(0.5rem, 3vw, 0.8rem);
+    }
 }
 
 /* 利用可能冒険者・募集冒険者・クエストセクションに統一されたセミトランスペアレントガラス背景を追加 */
@@ -1651,6 +1784,7 @@ h1, h3, button, .adventurer-card, .quest-card {
         flex-direction: column;      /* Stack left and right panels */
         gap: 15px;
         padding: 10px;
+        
     }
 
     .left,
@@ -1780,37 +1914,168 @@ h1, h3, button, .adventurer-card, .quest-card {
 
 
 
-/* Success parchment – enlarged proportionally by 1.1x (110%) while centered */
-.quest-scroll.quest-scroll-success {
+/* === FINAL UPDATED: Quest Scroll Responsive Design – Fixed Aspect Ratio (1264x816) === */
+/* This version locks the scroll container to the exact 1264:816 aspect ratio of the parchment images */
+/* Background uses 'contain' to show the FULL parchment without cropping or distortion */
+/* Content scales proportionally via % padding, vw-based fonts, and forced stacking on mobile */
+/* No overflow: text wraps naturally, images shrink, gaps reduce – entire scroll looks identical (just smaller) on mobile */
+
+.quest-scroll-success,
+.quest-scroll-fail {
+    width: min(95vw, 1264px);              /* Full width on mobile, capped at original 1264px on PC */
+    max-width: 1264px;
+    aspect-ratio: 1264 / 816;              /* EXACT ratio of QuestScroll_Success/Fail.jpg – height auto-adjusts */
+    margin: 20px auto;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    background-size: contain;              /* Full parchment visible, proportionally scaled */
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Specific images */
+.quest-scroll-success {
     background-image: url('Images/QuestScroll_Success.jpg');
-    background-size: 110%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: transparent;         /* No fallback color to block image */
 }
 
-/* Fail parchment – enlarged proportionally by 1.1x (110%) while centered */
-.quest-scroll.quest-scroll-fail {
+.quest-scroll-fail {
     background-image: url('Images/QuestScroll_Fail.jpg');
-    background-size: 110%;                 /* 1.1x proportional enlargement (adjust as needed, e.g., 120% for more zoom) */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: transparent;         /* No fallback color to block image */
-    min-height: 600px;                     /* Increased minimum height to make the failed quest scroll taller/longer */
-    box-sizing: border-box;                /* Ensures padding doesn't add extra height beyond min-height */
 }
-/* Force all backgrounds transparent in .scroll-content and its children */
-/* This ensures nothing blocks the parchment background image */
 
+/* Content overlay – use % padding so it scales with container size */
+.scroll-content {
+    position: absolute;
+    inset: 6% 5% 8% 5%;                    /* Top/right/bottom/left % – leaves "parchment border" visible */
+                                           /* Adjust % values if needed: higher = more border, lower = more content space */
+    overflow: hidden;                      /* Safety: clip any extreme overflow */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;                         /* Small base padding – overridden by media queries */
+}
+
+/* Base adventurer image scaling */
+.adventurer-img {
+    max-width: 140px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* ==== Mobile/Tablet Optimizations ==== */
+@media (max-width: 1024px) {
+    .quest-scroll-success,
+    .quest-scroll-fail {
+        width: min(98vw, 1264px);
+    }
+
+    .scroll-content {
+        inset: 7% 6% 9% 6%;                /* Slightly more border space on medium screens */
+        padding: 15px;
+    }
+
+    /* Force all flex rows to stack vertically */
+    .scroll-content > div,
+    .scroll-content div[style*="display: flex"] {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 30px !important;
+    }
+
+    /* Scale fonts relative to viewport (overrides inline px) */
+    .scroll-content *,
+    .scroll-content div {
+        font-size: 2.8vw !important;       /* Base scaling */
+        line-height: 1.5 !important;
+    }
+
+    /* Specific size overrides */
+    .scroll-content h2,
+    .scroll-content div[style*="font-size: 36px"],
+    .scroll-content div[style*="font-size: 20px"] {
+        font-size: 4.5vw !important;
+    }
+
+    .scroll-content div[style*="font-size: 15px"] {
+        font-size: 3.2vw !important;
+    }
+
+    .scroll-content div[style*="font-size: 12px"] {
+        font-size: 2.6vw !important;
+    }
+
+    .scroll-content div[style*="font-size: 50px"] {
+        font-size: 6vw !important;
+    }
+
+    .adventurer-img {
+        max-width: 22vw !important;
+    }
+
+    /* Reduce margins/gaps from inline styles */
+    .scroll-content div[style*="margin-bottom: 40px"] {
+        margin-bottom: 5vw !important;
+    }
+
+    .scroll-content div[style*="margin: 20px 0"] {
+        margin: 4vw 0 !important;
+    }
+
+    .scroll-content div[style*="gap: 60px"],
+    .scroll-content div[style*="gap: 0px"] {
+        gap: 5vw !important;
+    }
+}
+
+/* Small phones */
+@media (max-width: 600px) {
+    .scroll-content {
+        inset: 8% 7% 10% 7%;               /* Even more border to prevent text touching edges */
+        padding: 10px;
+    }
+
+    .scroll-content * {
+        font-size: 3.2vw !important;       /* Slightly larger base for readability */
+    }
+
+    .scroll-content h2,
+    .scroll-content div[style*="font-size: 36px"],
+    .scroll-content div[style*="font-size: 20px"] {
+        font-size: 5.5vw !important;
+    }
+
+    .adventurer-img {
+        max-width: 28vw !important;
+    }
+
+    .scroll-content div[style*="gap: 60px"],
+    .scroll-content div[style*="gap: 0px"] {
+        gap: 6vw !important;
+    }
+}
+
+/* Ultra-small phones – final safety */
+@media (max-width: 400px) {
+    .scroll-content * {
+        font-size: 3.5vw !important;
+    }
+
+    .adventurer-img {
+        max-width: 32vw !important;
+    }
+}
+
+/* Keep existing transparent rules */
 .scroll-content,
 .scroll-content * {
-
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
 }
+
 
 .modal-content h3{
     color:#ffffff;
