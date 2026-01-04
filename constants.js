@@ -126,7 +126,7 @@ const defaultBreathingSettings = {
 
 const assetsToLoad = [
     "Images/LUC_RankF_F_Breathing.png",
-    "Images/ルナ_Breathing.png",
+    "Images/ルナ_breathing.png",
     "Images/カイト_Breathing.png",
     "Images/WIS_RankF_F_Breathing.png",
     // Images folder (all images)
