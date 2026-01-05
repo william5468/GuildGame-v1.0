@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ギルドマスターゲーム</title>
+    <title>失われし冒険の旅</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="icon" type="image/png" href="favicon.png">
 <!-- === 更新された共通スタイル： <head> 内の重複した <style> を削除し、この1つの <style> に置き換えてください === -->
 <style>
 .sprite-wrapper {
@@ -69,7 +70,7 @@
         </select>        
     </div>
 
-    <h2 data-i18n="game_title">ギルドマスター v1.0</h2>
+    <h2 data-i18n="game_title">失われし冒険の旅 v1.0</h2>
 
     <!-- メインBGM -->
     <audio id="bgm" loop preload="auto">
@@ -82,10 +83,20 @@
         <source src="Audio/yume.mp3" type="audio/mpeg">
         ブラウザがオーディオをサポートしていません。
     </audio>
+    <audio id="dialogueBgm" loop preload="auto">
+        <source src="Audio/dialogue_bgm.mp3" type="audio/mpeg">
+        ブラウザがオーディオをサポートしていません。
+    </audio>   
+        <audio id="GameoverBgm" loop preload="auto">
+        <source src="Audio/Gameover.mp3" type="audio/mpeg">
+        ブラウザがオーディオをサポートしていません。
+    </audio>  
     <audio id="battleBgm" loop preload="auto">
         <source src="Audio/battle.mp3" type="audio/mpeg">
     </audio>
-
+    <audio id="battleBgm2" loop preload="auto">
+        <source src="Audio/battle2.mp3" type="audio/mpeg">
+    </audio>
     <div id="introModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center;">
         <div>
             
@@ -131,8 +142,8 @@
 
 
 
-        <button onclick="saveGame()" data-i18n="save">保存</button>
-        <button onclick="loadGame()" data-i18n="load">読み込み</button>
+        <button onclick="openSlotMenu('save')" data-i18n="save">保存</button>
+        <button onclick="openSlotMenu('load')" data-i18n="load">読み込み</button>
         <button onclick="toggleShop()" data-i18n="shop">店</button>
         <button onclick="toggleCharacters()" data-i18n="characters">キャラクター</button>
         <button onclick="toggleNPCs()" data-i18n="npcs">NPC</button>

@@ -2,8 +2,8 @@
 
 const translations = {
   ja: {
-    page_title: "ギルドマスターゲーム",
-    game_title: "ギルドマスター v1.0",
+    page_title: "失われし冒険の旅",
+    game_title: "失われし冒険の旅 v1.0",
     tutorial: "説明",
     save: "保存",
     load: "読み込み",
@@ -360,8 +360,8 @@ const translations = {
 
   },
   en: {
-    page_title: "Guild Master Game",
-    game_title: "Guild Master v1.0",
+    page_title: "Journey of the Lost Adventure",
+    game_title: "Journey of the Lost Adventure v1.0",
     tutorial: "Tutorial",
     save: "Save",
     load: "Load",
@@ -703,8 +703,8 @@ const translations = {
     city_gemheart: "Gem Capital Gemheart",
   },
   zh: {  // Traditional Chinese (繁體中文 - Taiwan/HK style)
-    page_title: "公會大師遊戲",
-    game_title: "公會大師 v1.0",
+    page_title: "失落的冒險之旅",
+    game_title: "失落的冒險之旅 v1.0",
     tutorial: "教學",
     save: "儲存",
     load: "讀取",
@@ -1079,7 +1079,7 @@ const tavernRecipes = {
     {level: 2, name: "巨人の煮込み", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力の粉", qty: 2}]},
     {level: 1, name: "知恵の茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
     {level: 2, name: "予言者の飲料", buff: {stat: "wisdom", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "魔法の結晶", qty: 1}]},
-    {level: 1, name: "回復のパン", buff: {type: "hpRegen", bonus: 10, days: 3}, cost: 200, materials: []},
+    {level: 1, name: "回復のパン", buff: {type: "hpRegen", bonus: 10, days: 14}, cost: 100, materials: []},
 
     // === STR料理 ===
     {level: 3, name: "獣肉の活力シチュー", buff: {stat: "strength", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "獣皮エキス", qty: 2}, {name: "狼の毛皮", qty: 1}]},
@@ -1112,11 +1112,11 @@ const tavernRecipes = {
     {level: 11, name: "滅び深淵の神運料理", buff: {stat: "luck", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
 
     // === 回復/再生系 ===
-    {level: 2, name: "キノコの活力パン", buff: {type: "hpRegen", bonus: 15, days: 5}, cost: 600, materials: [{name: "キノコ", qty: 3}]},
-    {level: 4, name: "解毒聖水の癒しスープ", buff: {type: "hpRegen", bonus: 25, days: 10}, cost: 2500, materials: [{name: "解毒聖水", qty: 2}]},
-    {level: 6, name: "天使癒薬の神パン", buff: {type: "hpRegen", bonus: 30, days: 15}, cost: 5500, materials: [{name: "天使癒薬", qty: 2}]},
-    {level: 8, name: "神涙神薬の至高スープ", buff: {type: "hpRegen", bonus: 40, days: 20}, cost: 9800, materials: [{name: "神涙神薬", qty: 1}]},
-    {level: 10, name: "世界源神薬の永遠パン", buff: {type: "hpRegen", bonus: 60, days: 30}, cost: 16800, materials: [{name: "世界源神薬", qty: 1}]},
+    {level: 2, name: "キノコの活力パン", buff: {type: "hpRegen", bonus: 15, days: 14}, cost: 200, materials: [{name: "キノコ", qty: 3}]},
+    {level: 4, name: "解毒聖水の癒しスープ", buff: {type: "hpRegen", bonus: 20, days: 14}, cost: 300, materials: [{name: "解毒聖水", qty: 2}]},
+    {level: 6, name: "天使癒薬の神パン", buff: {type: "hpRegen", bonus: 25, days: 14}, cost: 400, materials: [{name: "天使癒薬", qty: 2}]},
+    {level: 8, name: "神涙神薬の至高スープ", buff: {type: "hpRegen", bonus: 30, days: 14}, cost: 500, materials: [{name: "神涙神薬", qty: 1}]},
+    {level: 10, name: "世界源神薬の永遠パン", buff: {type: "hpRegen", bonus: 35, days: 14}, cost: 600, materials: [{name: "世界源神薬", qty: 1}]},
 
     {level: 3, name: "小魔力ポーションの魔茶", buff: {type: "mpRegen", bonus: 30, days: 8}, cost: 1500, materials: [{name: "小魔力ポーション", qty: 2}]},
     {level: 6, name: "星風ポーションの星茶", buff: {type: "mpRegen", bonus: 80, days: 15}, cost: 5200, materials: [{name: "星風ポーション", qty: 2}]},
@@ -1133,7 +1133,7 @@ const tavernRecipes = {
     {level: 2, name: "Giant's Stew", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "Vitality Powder", qty: 2}]},
     {level: 1, name: "Wisdom Tea", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
     {level: 2, name: "Prophet's Elixir", buff: {stat: "wisdom", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "Magic Crystal", qty: 1}]},
-    {level: 1, name: "Healing Bread", buff: {type: "hpRegen", bonus: 15, days: 3}, cost: 200, materials: []},
+    {level: 1, name: "Healing Bread", buff: {type: "hpRegen", bonus: 10, days: 14}, cost: 100, materials: []},
 
     {level: 3, name: "Beast Vitality Stew", buff: {stat: "strength", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "Beast Skin Extract", qty: 2}, {name: "Wolf Pelt", qty: 1}]},
     {level: 5, name: "Fang-Steel Power Stew", buff: {stat: "strength", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "Fang Steel Ingot", qty: 2}, {name: "Orc Tusk", qty: 2}]},
@@ -1161,11 +1161,11 @@ const tavernRecipes = {
     {level: 9, name: "Apocalypse Luck Banquet", buff: {stat: "luck", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "Apocalypse Destruction Powder", qty: 3}, {name: "Crystal of Destruction", qty: 2}]},
     {level: 11, name: "Abyss God Luck Dish", buff: {stat: "luck", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "Destruction Abyss Crystal", qty: 4}, {name: "World Origin Stone", qty: 1}]},
 
-    {level: 2, name: "Mushroom Vitality Bread", buff: {type: "hpRegen", bonus: 30, days: 5}, cost: 600, materials: [{name: "Mushroom", qty: 3}]},
-    {level: 4, name: "Detoxified Healing Soup", buff: {type: "hpRegen", bonus: 60, days: 10}, cost: 2500, materials: [{name: "Detoxified Holy Water", qty: 2}]},
-    {level: 6, name: "Angel Divine Bread", buff: {type: "hpRegen", bonus: 100, days: 15}, cost: 5500, materials: [{name: "Angel Healing Potion", qty: 2}]},
-    {level: 8, name: "Divine Tear Supreme Soup", buff: {type: "hpRegen", bonus: 150, days: 20}, cost: 9800, materials: [{name: "Divine Tear Divine Potion", qty: 1}]},
-    {level: 10, name: "World Source Eternal Bread", buff: {type: "hpRegen", bonus: 250, days: 30}, cost: 16800, materials: [{name: "World Source Divine Potion", qty: 1}]},
+    {level: 2, name: "Mushroom Vitality Bread", buff: {type: "hpRegen", bonus: 15, days: 14}, cost: 200, materials: [{name: "Mushroom", qty: 3}]},
+    {level: 4, name: "Detoxified Healing Soup", buff: {type: "hpRegen", bonus: 20, days: 14}, cost: 300, materials: [{name: "Detoxified Holy Water", qty: 2}]},
+    {level: 6, name: "Angel Divine Bread", buff: {type: "hpRegen", bonus: 25, days: 14}, cost: 400, materials: [{name: "Angel Healing Potion", qty: 2}]},
+    {level: 8, name: "Divine Tear Supreme Soup", buff: {type: "hpRegen", bonus: 30, days: 14}, cost: 500, materials: [{name: "Divine Tear Divine Potion", qty: 1}]},
+    {level: 10, name: "World Source Eternal Bread", buff: {type: "hpRegen", bonus: 35, days: 14}, cost: 600, materials: [{name: "World Source Divine Potion", qty: 1}]},
 
     {level: 3, name: "Minor Mana Magic Tea", buff: {type: "mpRegen", bonus: 30, days: 8}, cost: 1500, materials: [{name: "Minor Mana Potion", qty: 2}]},
     {level: 6, name: "Star Wind Tea", buff: {type: "mpRegen", bonus: 80, days: 15}, cost: 5200, materials: [{name: "Star Wind Potion", qty: 2}]},
@@ -1181,7 +1181,7 @@ const tavernRecipes = {
     {level: 2, name: "巨人燉煮", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力粉末", qty: 2}]},
     {level: 1, name: "智慧茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: []},
     {level: 2, name: "預言者飲料", buff: {stat: "wisdom", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "魔法結晶", qty: 1}]},
-    {level: 1, name: "回復麵包", buff: {type: "hpRegen", bonus: 15, days: 3}, cost: 200, materials: []},
+    {level: 1, name: "回復麵包", buff: {type: "hpRegen", bonus: 10, days: 14}, cost: 100, materials: []},
 
     {level: 3, name: "獸肉活力燉湯", buff: {stat: "strength", percent: true, bonus: 60, days: 10}, cost: 1800, materials: [{name: "獸皮精華", qty: 2}, {name: "狼皮", qty: 1}]},
     {level: 5, name: "牙鋼強力燉煮", buff: {stat: "strength", percent: true, bonus: 90, days: 14}, cost: 4200, materials: [{name: "牙鋼錠", qty: 2}, {name: "獸人獠牙", qty: 2}]},
@@ -1209,11 +1209,11 @@ const tavernRecipes = {
     {level: 9, name: "終焉幸運盛宴", buff: {stat: "luck", percent: true, bonus: 180, days: 25}, cost: 12800, materials: [{name: "終焉破壞粉", qty: 3}, {name: "滅亡結晶", qty: 2}]},
     {level: 11, name: "滅亡深淵神運料理", buff: {stat: "luck", percent: true, bonus: 260, days: 30}, cost: 24800, materials: [{name: "滅亡深淵晶", qty: 4}, {name: "世界源石", qty: 1}]},
 
-    {level: 2, name: "蘑菇活力麵包", buff: {type: "hpRegen", bonus: 30, days: 5}, cost: 600, materials: [{name: "蘑菇", qty: 3}]},
-    {level: 4, name: "解毒療癒湯", buff: {type: "hpRegen", bonus: 60, days: 10}, cost: 2500, materials: [{name: "解毒聖水", qty: 2}]},
-    {level: 6, name: "天使神聖麵包", buff: {type: "hpRegen", bonus: 100, days: 15}, cost: 5500, materials: [{name: "天使癒藥", qty: 2}]},
-    {level: 8, name: "神淚至高湯", buff: {type: "hpRegen", bonus: 150, days: 20}, cost: 9800, materials: [{name: "神淚神藥", qty: 1}]},
-    {level: 10, name: "世界源永遠麵包", buff: {type: "hpRegen", bonus: 250, days: 30}, cost: 16800, materials: [{name: "世界源神藥", qty: 1}]},
+    {level: 2, name: "蘑菇活力麵包", buff: {type: "hpRegen", bonus: 15, days: 14}, cost: 200, materials: [{name: "蘑菇", qty: 3}]},
+    {level: 4, name: "解毒療癒湯", buff: {type: "hpRegen", bonus: 20, days: 14}, cost: 300, materials: [{name: "解毒聖水", qty: 2}]},
+    {level: 6, name: "天使神聖麵包", buff: {type: "hpRegen", bonus: 25, days: 14}, cost: 400, materials: [{name: "天使癒藥", qty: 2}]},
+    {level: 8, name: "神淚至高湯", buff: {type: "hpRegen", bonus: 30, days: 14}, cost: 500, materials: [{name: "神淚神藥", qty: 1}]},
+    {level: 10, name: "世界源永遠麵包", buff: {type: "hpRegen", bonus: 35, days: 14}, cost: 600, materials: [{name: "世界源神藥", qty: 1}]},
 
     {level: 3, name: "小型魔力魔茶", buff: {type: "mpRegen", bonus: 30, days: 8}, cost: 1500, materials: [{name: "小型魔力藥劑", qty: 2}]},
     {level: 6, name: "星風茶", buff: {type: "mpRegen", bonus: 80, days: 15}, cost: 5200, materials: [{name: "星風藥劑", qty: 2}]},
@@ -1552,16 +1552,16 @@ const alchemyRecipes = {
 
 const mainCharacterNames = {
   ja: {
-    kaito: 'カイト',
-    luna: 'ルナ'
+    Kaito: 'カイト',
+    Luna: 'ルナ'
   },
   en: {
-    kaito: 'Kaito',
-    luna: 'Luna'
+    Kaito: 'Kaito',
+    Luna: 'Luna'
   },
   zh: {  // Traditional Chinese (matches intro dialogue translations)
-    kaito: 'Kaito',
-    luna: 'Luna'
+    Kaito: 'Kaito',
+    Luna: 'Luna'
   }
 };
 

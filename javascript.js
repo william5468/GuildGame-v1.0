@@ -6,7 +6,7 @@ let currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
 let currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
 let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
 let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
-
+let playerName = "";
 
 /**
  * better_alert(message, type = "basic")
@@ -16,57 +16,105 @@ let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || Que
  * This ensures your alerts always work, even in edge cases.
  */
 function better_alert(message, type = "basic") {
-    // Build config first (same as before)
+    let prefix = '';
+    let background = '#1a1a1a';
+    let textColor = '#ffffff';
+
+    // Play levelup sound as early as possible (for both toast and fallback)
+    if (type === "levelup" && typeof levelupSound !== 'undefined') {
+        levelupSound.currentTime = 0; // Rewind in case it was played before
+        levelupSound.play().catch(err => {
+            console.warn('Level up sound could not play (autoplay policy or error):', err);
+        });
+    }
+
+    // Type-specific designs with gradients, emojis, and better contrast
+    if (type === "success") {
+        prefix = '✅ ';
+        background = 'linear-gradient(to right, #11998e, #38ef7d)'; // Vibrant teal → light green
+    } else if (type === "error" || type === "failure") {
+        prefix = '❌ ';
+        background = 'linear-gradient(to right, #ff0844, #ffb199)'; // Deep red → soft coral
+    } else if (type === "warning") {
+        prefix = '⚠️ ';
+        background = 'linear-gradient(to right, #fc4a1a, #f7b733)'; // Orange → warm yellow
+        textColor = '#000000';
+    } else if (type === "levelup") {
+        prefix = '🌟 ';
+        background = 'linear-gradient(to right, #ffe259, #ffa751)'; // Warm shiny golden-yellow gradient (celebratory feel)
+        textColor = '#000000'; // Dark text for high contrast on bright yellow
+    } else if (type === "death") {
+        prefix = '☠️ ';
+        background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)'; // Deep black → dark grey for somber feel
+        textColor = '#ffffff';
+    } else if (type === "basic") {
+        prefix = ''; 
+        background = 'linear-gradient(to right, #f12711, #f5af19)'; // Intense red → bright orange
+    }
+
     const toastConfig = {
-        text: message,
-        duration: 4000,
+        text: prefix + message,
+        duration: 5000,
         gravity: "top",
         position: "right",
         stopOnFocus: true,
         style: {
-            background: '#1a1a1a',
-            color: '#ffffff'
+            background: background,
+            color: textColor,
+            borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            minWidth: '320px',
+            maxWidth: '480px',
+            border: 'none',
+            backdropFilter: 'blur(10px)',
         },
         className: 'game-toast',
         close: true,
-        clickToClose: true
+        clickToClose: true,
+        escapeMarkup: true
     };
 
-    // Basic type override
-    if (type === "basic") {
-        toastConfig.style.background = '#f32521ff'; // Your custom red-ish color
-        toastConfig.style.color = '#ffffff';
+    // Special enhancements for levelup (longer display, glow, bigger text)
+    if (type === "levelup") {
+        toastConfig.duration = 7000;
+        toastConfig.style.boxShadow = '0 12px 50px rgba(255, 165, 0, 0.7)'; // Strong warm yellow/orange glow
+        toastConfig.style.border = '3px solid #FFD700'; // Golden border for extra shine
+        toastConfig.style.fontSize = '18px';
+        toastConfig.style.fontWeight = '700';
+        toastConfig.style.padding = '20px 30px';
     }
 
-    // Future expansion
-    /*
-    else if (type === "success") {
-        toastConfig.style.background = '#4CAF50';
-    } else if (type === "error") {
-        toastConfig.style.background = '#f44336';
-    } else if (type === "warning") {
-        toastConfig.style.background = '#ff9800';
+    // Special enhancements for death (somber, prominent, lingering)
+    if (type === "death") {
+        toastConfig.duration = 10000; // Longer duration to let the sorrow sink in
+        toastConfig.gravity = "bottom";
+        toastConfig.position = "center";
+        toastConfig.style.boxShadow = '0 12px 50px rgba(0, 0, 0, 0.8)'; // Deep dark shadow, no bright glow
+        toastConfig.style.border = '3px solid #444444'; // Subtle dark border
+        toastConfig.style.fontSize = '20px';
+        toastConfig.style.fontWeight = '800';
+        toastConfig.style.padding = '28px 40px';
+        toastConfig.style.minWidth = '380px';
+        toastConfig.style.backdropFilter = 'blur(16px)';
     }
-    */
 
     // === TOAST WITH FALLBACK ===
     if (typeof Toastify === 'function') {
         try {
             Toastify(toastConfig).showToast();
-            return; // Success – exit early
+            return;
         } catch (error) {
-            // Toastify threw an error (rare, but possible – e.g., DOM issue)
             console.warn('Toastify failed to show toast:', error);
         }
     } else {
-        // Toastify not loaded/defined
         console.warn('Toastify is not available – falling back to native alert');
     }
 
     // === FALLBACK: Native alert() ===
-    // This is blocking (pauses game), but guarantees the message is seen
-    // It only triggers if toast completely fails
-    alert(message);
+    alert((prefix ? prefix + ' ' : '') + message);
 }
 
 function openTradeForm(cityId) {
@@ -208,7 +256,7 @@ function postTrade(cityId) {
         const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
         const stock = item ? item.qty : 0;
         if (data.sell[r] > stock) {
-            better_alert(t('trade_insufficient_stock', { item: r }));
+            better_alert(t('trade_insufficient_stock', { item: r }),"error");
             hasStockIssue = true;
         }
         if (data.sell[r] > 0 && item) {
@@ -222,7 +270,7 @@ function postTrade(cityId) {
         better_alert(t('trade_insufficient_gold', {
             cost: data.cost,
             current: gameState.gold
-        }));
+        }),"error");
         // 売却素材を戻す（扣除取り消し）
         resources.forEach(r => {
             const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
@@ -277,7 +325,7 @@ function postTrade(cityId) {
     };
 
     gameState.quests.push(quest);
-    better_alert(t('trade_post_success'));
+    better_alert(t('trade_post_success'),"success");
     showMainSelection();
     updateDisplays();
 }
@@ -333,9 +381,9 @@ function Render_Mainadventurer() {
     const names = mainCharacterNames[currentLang] || mainCharacterNames.ja;  // Fallback to ja
 
     // カイト (STR/DEX 特化の二刀流騎士)
-    const kaito = {
+    const Kaito = {
         id: gameState.nextId++,
-        name: names.kaito,
+        name: names.Kaito,
         gender: 'male',
         image: 'カイト.png',
         strength: 30,
@@ -357,12 +405,12 @@ function Render_Mainadventurer() {
         primary: 0
     };
 
-    gameState.adventurers.push(kaito);
+    gameState.adventurers.push(Kaito);
 
     // ルナ (WIS 特化の魔法使い)
-    const luna = {
+    const Luna = {
         id: gameState.nextId++,
-        name: names.luna,
+        name: names.Luna,
         gender: 'female',
         image: 'ルナ.png',
         strength: 10,
@@ -384,7 +432,7 @@ function Render_Mainadventurer() {
         primary: 1
     };
 
-    gameState.adventurers.push(luna);
+    gameState.adventurers.push(Luna);
 }
 
 
@@ -419,7 +467,7 @@ function skipIntro(){
     document.getElementById('introModal').style.display = 'none';
     console.log("CurrentLang is:"+currentLang);
     
-    loadGame();
+    loadGame(1);
     updateDisplays();
 
 }
@@ -449,6 +497,8 @@ const defenseFSound = new Audio('Audio/Defense_F.mp3');
 const counterMSound = new Audio('Audio/CounterAttack_M.mp3');
 const counterFSound = new Audio('Audio/CounterAttack_F.mp3');
 const counterTriggerSound = new Audio('Audio/CounterAttack_trigger.mp3');
+
+const levelupSound = new Audio('Audio/levelup.mp3');
 
 let currentCharIndex = 0;
 let selectedMix1 = null;
@@ -600,41 +650,653 @@ function cleanupAdventurers() {
     gameState.recruitPending = gameState.recruitPending.filter(adv => adv.generatedDay >= gameState.day - 2);
 }
 
-function saveGame() {
-    // Set は JSON に直接シリアライズできないので、Array に変換したコピーを作成
+// === セーブ時にタイムスタンプを追加 ===
+function saveGame(slot = 1) {
+    if (slot < 1 || slot > 4) {
+        better_alert('無効なスロット番号です（1～4）',"error");
+        return;
+    }
+
     const savableState = {
         ...gameState,
-        seenCompletionDialogues: Array.from(gameState.seenCompletionDialogues || new Set())
+        seenCompletionDialogues: Array.from(gameState.seenCompletionDialogues || new Set()),
+        saveTimestamp: new Date().toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        })
     };
 
-    localStorage.setItem('guildMasterSave', JSON.stringify(savableState));
-    better_alert('ゲームを保存しました！');
+    const key = `guildMasterSave${slot}`;
+    localStorage.setItem(key, JSON.stringify(savableState));
+    better_alert(`スロット ${slot} にゲームを保存しました！`,"success");
+    
+    // メニューが開いている場合は即時更新
+    if (document.getElementById('save-load-modal')) {
+        openSlotMenu(currentMode); // 再描画
+    }
 }
 
-function loadGame() {
-    // === javascript.js の gameState 初期化部分（startGame() 内や新ゲーム開始時に追加） ===
-gameState.tradeCityStates = tradeCities.map(city => ({
-    ...city,
-    event: getRandomEvent(),
-    variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
-}));
+// === スロット情報の取得（表示用）===
+function getSlotSummary(slot) {
+    const key = `guildMasterSave${slot}`;
+    const saved = localStorage.getItem(key);
+    
+    if (!saved) {
+        return { empty: true };
+    }
+    
+    try {
+        const data = JSON.parse(saved);
+        
+        // プレイヤー名（セーブにplayernameまたはplayerNameで保存されている可能性を考慮）
+        // 旧セーブ互換性 + カスタム名なし時の言語別デフォルト
+        const defaultPlayerName = {
+            ja: '冒険者',
+            en: 'Adventurer',
+            zh: '冒險者'
+        }[currentLang] || 'Adventurer';
+        
+        const playerName = data.playername || data.playerName || defaultPlayerName;
+        
+        let highestLevel = 1;
+        let advCount = 0;
+        if (Array.isArray(data.adventurers)) {
+            advCount = data.adventurers.length;
+            if (advCount > 0) {
+                highestLevel = Math.max(...data.adventurers.map(a => a.level || 1));
+            }
+        }
+        
+        return {
+            empty: false,
+            time: data.saveTimestamp || '古いセーブ',
+            day: `Day ${data.day || 1}`,
+            gold: data.gold || 0,
+            highestLevel,
+            advCount,
+            playerName  // スロットプレビューでプレイヤー名を表示するために返す
+        };
+    } catch (e) {
+        console.warn(`スロット ${slot} のデータが破損しています`);
+        return { empty: true, corrupted: true };
+    }
+}
+// === 現在のモードを保持 ===
+let currentMode = null; // 'save' または 'load'
 
-gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
-gameState.materialPrices = {}; // ギルドショップ用（後述）
-    const saved = localStorage.getItem('guildMasterSave');
-    console.log("Current Lang is"+currentLang);
+// === セーブ/ロードメニューを表示（エクスポート機能追加版）===
+function openSlotMenu(mode) {
+    currentMode = mode;
+    
+    // 既存のモーダルがあれば削除
+    closeSlotMenu();
+    
+    const modal = document.createElement('div');
+    modal.id = 'save-load-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.75)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '1000';
+    
+    // 背景クリックで閉じる
+    modal.onclick = (e) => {
+        if (e.target === modal) closeSlotMenu();
+    };
+    
+    const content = document.createElement('div');
+    content.style.background = '#1a1a1a';
+    content.style.color = '#ffffff';
+    content.style.padding = '30px';
+    content.style.borderRadius = '15px';
+    content.style.maxWidth = '700px';
+    content.style.width = '90%';
+    content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
+    
+    const title = document.createElement('h2');
+    title.textContent = mode === 'save' ? 'セーブスロットを選択' : 'ロードスロットを選択';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '20px';
+    title.style.fontSize = '24px';
+    content.appendChild(title);
+    
+    for (let i = 1; i <= 4; i++) {
+        const slotDiv = document.createElement('div');
+        slotDiv.style.padding = '16px';
+        slotDiv.style.margin = '12px 0';
+        slotDiv.style.background = '#2d2d2d';
+        slotDiv.style.borderRadius = '10px';
+        slotDiv.style.cursor = 'pointer';
+        slotDiv.style.transition = 'background 0.2s';
+        slotDiv.style.fontSize = '18px';
+        
+        slotDiv.onmouseover = () => { slotDiv.style.background = '#3d3d3d'; };
+        slotDiv.onmouseout = () => { slotDiv.style.background = '#2d2d2d'; };
+        
+        const info = getSlotSummary(i);
+        let text = `スロット ${i} : `;
+        
+        if (info.empty) {
+            text += info.corrupted ? '破損' : '空';
+            slotDiv.style.opacity = '0.6';
+        } else {
+            text += `${info.time}<br>Player: ${info.playerName} | ${info.day} │ ${info.gold} G │ Level: ${info.highestLevel}`;
+            slotDiv.innerHTML = text;
+        }
+        if (info.empty) slotDiv.innerHTML = text;
+        
+        slotDiv.onclick = (e) => {
+            e.stopPropagation(); // 背景クリック防止
+            
+            if (mode === 'save') {
+                if (!info.empty && !confirm(`スロット ${i} を上書きしますか？`)) {
+                    return;
+                }
+                saveGame(i);
+                closeSlotMenu();
+            } else { // load
+                if (info.empty) {
+                    better_alert('このスロットは空です！',"warning");
+                    return;
+                }
+                if (confirm(`スロット ${i} からロードしますか？`)) {
+                    loadGame(i);
+                    closeSlotMenu();
+                }
+            }
+        };
+        
+        content.appendChild(slotDiv);
+    }
+    
+    // === セーブモードの場合、5番目の「現在のゲームをテキストにエクスポート」オプションを追加 ===
+    if (mode === 'save') {
+        const exportDiv = document.createElement('div');
+        exportDiv.style.padding = '20px';
+        exportDiv.style.margin = '20px 0 10px';
+        exportDiv.style.background = '#7c2d12'; // 暖かいオレンジブラウンでセーブらしい目立つ色
+        exportDiv.style.borderRadius = '10px';
+        exportDiv.style.cursor = 'pointer';
+        exportDiv.style.transition = 'background 0.2s';
+        exportDiv.style.fontSize = '18px';
+        exportDiv.style.textAlign = 'center';
+        exportDiv.style.border = '2px dashed #fb923c';
+        
+        exportDiv.onmouseover = () => { exportDiv.style.background = '#9a3412'; };
+        exportDiv.onmouseout = () => { exportDiv.style.background = '#7c2d12'; };
+        
+        exportDiv.innerHTML = '<strong>📄 現在のゲームをテキストにエクスポート</strong><br><small>現在のゲーム状態を文字列として出力（他のPCへ転送可能）</small>';
+        
+        exportDiv.onclick = (e) => {
+            e.stopPropagation();
+            closeSlotMenu(); // メニューを閉じてエクスポートモーダルを開く
+            openTextExportModal();
+        };
+        
+        content.appendChild(exportDiv);
+    }
+    
+    // === ロードモードの場合、5番目の「テキストからインポート」オプションを追加（既存）===
+    if (mode === 'load') {
+        const importDiv = document.createElement('div');
+        importDiv.style.padding = '20px';
+        importDiv.style.margin = '20px 0 10px';
+        importDiv.style.background = '#1e40af'; // 青系
+        importDiv.style.borderRadius = '10px';
+        importDiv.style.cursor = 'pointer';
+        importDiv.style.transition = 'background 0.2s';
+        importDiv.style.fontSize = '18px';
+        importDiv.style.textAlign = 'center';
+        importDiv.style.border = '2px dashed #60a5fa';
+        
+        importDiv.onmouseover = () => { importDiv.style.background = '#2563eb'; };
+        importDiv.onmouseout = () => { importDiv.style.background = '#1e40af'; };
+        
+        importDiv.innerHTML = '<strong>📄 テキストからインポートしてロード</strong><br><small>エクスポートされた文字列を貼り付けて直接ゲームをロード</small>';
+        
+        importDiv.onclick = (e) => {
+            e.stopPropagation();
+            closeSlotMenu();
+            openTextImportModal();
+        };
+        
+        content.appendChild(importDiv);
+    }
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'キャンセル';
+    cancelBtn.style.display = 'block';
+    cancelBtn.style.margin = '20px auto 0';
+    cancelBtn.style.padding = '12px 30px';
+    cancelBtn.style.fontSize = '18px';
+    cancelBtn.style.background = '#f44336';
+    cancelBtn.style.color = '#fff';
+    cancelBtn.style.border = 'none';
+    cancelBtn.style.borderRadius = '8px';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeSlotMenu();
+    };
+    content.appendChild(cancelBtn);
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+// === 現在のゲームをテキストにエクスポートする専用モーダル ===
+function openTextExportModal() {
+    // 現在のゲーム状態をセーブ形式で準備（タイムスタンプ付き）
+    const savableState = {
+        ...gameState,
+        seenCompletionDialogues: Array.from(gameState.seenCompletionDialogues || new Set()),
+        saveTimestamp: new Date().toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        })
+    };
+
+    const jsonString = JSON.stringify(savableState);
+    const encodedData = btoa(unescape(encodeURIComponent(jsonString))); // UTF-8対応Base64
+
+    const modal = document.createElement('div');
+    modal.id = 'text-export-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.75)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '1100';
+    modal.onclick = (e) => { if (e.target === modal) closeTextExportModal(); };
+
+    const content = document.createElement('div');
+    content.style.background = '#1a1a1a';
+    content.style.color = '#ffffff';
+    content.style.padding = '30px';
+    content.style.borderRadius = '15px';
+    content.style.maxWidth = '800px';
+    content.style.width = '90%';
+    content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
+
+    const title = document.createElement('h2');
+    title.textContent = '現在のゲームをテキストにエクスポート';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '20px';
+    content.appendChild(title);
+
+    const info = document.createElement('p');
+    info.textContent = '以下の文字列をコピーして、他のPCやブラウザでインポートできます。この文字列は現在のゲーム状態を完全に表しています。';
+    info.style.marginBottom = '20px';
+    content.appendChild(info);
+
+    const textarea = document.createElement('textarea');
+    textarea.value = encodedData;
+    textarea.style.width = '100%';
+    textarea.style.height = '300px';
+    textarea.style.background = '#2d2d2d';
+    textarea.style.color = '#ffffff';
+    textarea.style.padding = '12px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.fontSize = '14px';
+    textarea.style.resize = 'vertical';
+    textarea.readOnly = true;
+    content.appendChild(textarea);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = 'クリップボードにコピー';
+    copyBtn.style.display = 'block';
+    copyBtn.style.margin = '20px auto';
+    copyBtn.style.padding = '12px 30px';
+    copyBtn.style.background = '#f97316'; // オレンジでエクスポートらしい
+    copyBtn.style.color = '#fff';
+    copyBtn.style.border = 'none';
+    copyBtn.style.borderRadius = '8px';
+    copyBtn.style.cursor = 'pointer';
+    copyBtn.onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(encodedData);
+            better_alert('クリップボードにコピーしました！',"success");
+        } catch (err) {
+            textarea.select();
+            document.execCommand('copy');
+            better_alert('コピーしました（古いブラウザモード）',"success");
+        }
+    };
+    content.appendChild(copyBtn);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '閉じる';
+    closeBtn.style.display = 'block';
+    closeBtn.style.margin = '10px auto 0';
+    closeBtn.style.padding = '10px 24px';
+    closeBtn.style.background = '#f44336';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.border = 'none';
+    closeBtn.style.borderRadius = '8px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => closeTextExportModal();
+    content.appendChild(closeBtn);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+// === テキストエクスポートモーダルを閉じる ===
+function closeTextExportModal() {
+    const modal = document.getElementById('text-export-modal');
+    if (modal) modal.remove();
+}
+
+function openTextImportModal() {
+    const modal = document.createElement('div');
+    modal.id = 'text-import-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.75)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '1100';
+    modal.onclick = (e) => { if (e.target === modal) closeTextImportModal(); };
+
+    const content = document.createElement('div');
+    content.style.background = '#1a1a1a';
+    content.style.color = '#ffffff';
+    content.style.padding = '30px';
+    content.style.borderRadius = '15px';
+    content.style.maxWidth = '800px';
+    content.style.width = '90%';
+    content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
+
+    const title = document.createElement('h2');
+    title.textContent = 'テキストからセーブデータをインポートしてロード';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '20px';
+    content.appendChild(title);
+
+    const info = document.createElement('p');
+    info.textContent = 'エクスポートされた文字列を以下に貼り付けてください。貼り付け後、「ロード実行」を押すとゲームが直接ロードされます（スロットは使用しません）。';
+    info.style.marginBottom = '20px';
+    content.appendChild(info);
+
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'ここにエクスポートされたテキストを貼り付け...';
+    textarea.style.width = '100%';
+    textarea.style.height = '300px';
+    textarea.style.background = '#2d2d2d';
+    textarea.style.color = '#ffffff';
+    textarea.style.padding = '12px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.fontSize = '14px';
+    textarea.style.resize = 'vertical';
+    content.appendChild(textarea);
+
+    const loadBtn = document.createElement('button');
+    loadBtn.textContent = 'ロード実行';
+    loadBtn.style.display = 'block';
+    loadBtn.style.margin = '20px auto';
+    loadBtn.style.padding = '12px 30px';
+    loadBtn.style.background = '#10b981';
+    loadBtn.style.color = '#fff';
+    loadBtn.style.border = 'none';
+    loadBtn.style.borderRadius = '8px';
+    loadBtn.style.cursor = 'pointer';
+    loadBtn.onclick = () => {
+        const text = textarea.value.trim();
+        if (!text) {
+            better_alert('テキストが空です！',"error");
+            return;
+        }
+
+        let decoded;
+        try {
+            decoded = decodeURIComponent(escape(atob(text)));
+        } catch (e) {
+            better_alert('無効なデータ形式です（Base64デコード失敗）',"error");
+            return;
+        }
+
+        let loadedState;
+        try {
+            loadedState = JSON.parse(decoded);
+        } catch (e) {
+            better_alert('データが壊れています（JSON解析失敗）',"error");
+            return;
+        }
+
+        // === 初期化（loadGameと同じ）===
+        gameState.tradeCityStates = tradeCities.map(city => ({
+            ...city,
+            event: getRandomEvent(),
+            variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {})
+        }));
+
+        gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+        gameState.materialPrices = {};
+
+        if (!gameState.dungeonCooldowns) {
+            gameState.dungeonCooldowns = {};
+        }
+
+        currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+        currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+        currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+        currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
+
+        // === ロード処理（loadGameと同じ）===
+        Object.assign(gameState, loadedState);
+
+        if (!gameState.facilities) gameState.facilities = {blacksmith: 0, tavern: 0, alchemy: 0};
+        if (!gameState.dailyPrices) gameState.dailyPrices = {};
+        if (gameState.mainProgress === undefined) gameState.mainProgress = 0;
+
+        if (Array.isArray(gameState.seenCompletionDialogues)) {
+            gameState.seenCompletionDialogues = new Set(gameState.seenCompletionDialogues);
+        } else if (!gameState.seenCompletionDialogues) {
+            gameState.seenCompletionDialogues = new Set();
+        }
+
+        gameState.adventurers.forEach(a => {
+            if (!a.buffs) a.buffs = [];
+        });
+
+        // === アイテム名言語変換（省略せず完全コピー）===
+        const itemMap = {};
+
+        const fetchRanks = Object.keys(fetchQuestsByRank.ja);
+        fetchRanks.forEach(rank => {
+            const currentQuests = fetchQuestsByRank[currentLang][rank] || fetchQuestsByRank.ja[rank];
+            ['ja', 'en', 'zh'].forEach(lang => {
+                if (lang === currentLang) return;
+                const oldQuests = fetchQuestsByRank[lang][rank];
+                if (oldQuests && oldQuests.length === currentQuests.length) {
+                    oldQuests.forEach((q, i) => {
+                        if (currentQuests[i]) {
+                            itemMap[q.itemName] = currentQuests[i].itemName;
+                        }
+                    });
+                }
+            });
+        });
+
+        const alchemyLangs = ['ja', 'en', 'zh'];
+        const currentAlchemy = alchemyRecipes[currentLang];
+        alchemyLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldAlchemy = alchemyRecipes[lang];
+            if (oldAlchemy && oldAlchemy.length === currentAlchemy.length) {
+                oldAlchemy.forEach((rec, i) => {
+                    const curRec = currentAlchemy[i];
+                    rec.inputs.forEach((inp, j) => {
+                        if (curRec.inputs[j]) {
+                            itemMap[inp] = curRec.inputs[j];
+                        }
+                    });
+                    itemMap[rec.output.name] = curRec.output.name;
+                });
+            }
+        });
+
+        const tavernLangs = ['ja', 'en', 'zh'];
+        const currentTavern = tavernRecipes[currentLang];
+        tavernLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldTavern = tavernRecipes[lang];
+            if (oldTavern && oldTavern.length === currentTavern.length) {
+                oldTavern.forEach((rec, i) => {
+                    const curRec = currentTavern[i];
+                    rec.materials.forEach((mat, j) => {
+                        const curMat = curRec.materials[j];
+                        if (curMat) {
+                            itemMap[mat.name] = curMat.name;
+                        }
+                    });
+                    itemMap[rec.name] = curRec.name;
+                });
+            }
+        });
+
+        const blacksmithLangs = ['ja', 'en', 'zh'];
+        const currentBlacksmith = blacksmithRecipes[currentLang];
+        blacksmithLangs.forEach(lang => {
+            if (lang === currentLang) return;
+            const oldBlacksmith = blacksmithRecipes[lang];
+            if (oldBlacksmith && oldBlacksmith.length === currentBlacksmith.length) {
+                oldBlacksmith.forEach((rec, i) => {
+                    const curRec = currentBlacksmith[i];
+                    rec.materials.forEach((mat, j) => {
+                        const curMat = curRec.materials[j];
+                        if (curMat) {
+                            itemMap[mat.name] = curMat.name;
+                        }
+                    });
+                    itemMap[rec.name] = curRec.name;
+                });
+            }
+        });
+
+        gameState.inventory = gameState.inventory.map(item => {
+            if (itemMap[item.name]) {
+                return { ...item, name: itemMap[item.name] };
+            }
+            return item;
+        });
+
+        gameState.adventurers.forEach(adv => {
+            if (adv.equipment && adv.equipment.length > 0) {
+                adv.equipment = adv.equipment.map(eq => {
+                    if (itemMap[eq.name]) {
+                        return { ...eq, name: itemMap[eq.name] };
+                    }
+                    return eq;
+                });
+            }
+        });
+
+        cleanupAdventurers();
+        checkGameOver();
+        updateDisplays();
+        ensureTrainingQuest();
+        
+        better_alert('テキストからゲームをロードしました！',"success");
+        closeTextImportModal();
+    };
+    content.appendChild(loadBtn);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'キャンセル';
+    closeBtn.style.display = 'block';
+    closeBtn.style.margin = '10px auto 0';
+    closeBtn.style.padding = '10px 24px';
+    closeBtn.style.background = '#f44336';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.border = 'none';
+    closeBtn.style.borderRadius = '8px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => closeTextImportModal();
+    content.appendChild(closeBtn);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+// === テキストインポートモーダルを閉じる ===
+function closeTextImportModal() {
+    const modal = document.getElementById('text-import-modal');
+    if (modal) modal.remove();
+}
+
+
+// === メニューを閉じる ===
+function closeSlotMenu() {
+    const modal = document.getElementById('save-load-modal');
+    if (modal) {
+        modal.remove();
+    }
+    currentMode = null;
+}
+
+// スロット番号（1～4）を指定して読み込み
+function loadGame(slot) {
+    if (slot < 1 || slot > 4) {
+        better_alert('無効なスロット番号です（1～4）',"error");
+        return;
+    }
+
+    const key = `guildMasterSave${slot}`;
+
+    // === 初期化（新規ゲーム時やセーブがない場合のデフォルト）===
+    gameState.tradeCityStates = tradeCities.map(city => ({
+        ...city,
+        event: getRandomEvent(),
+        variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
+    }));
+
+    gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+    gameState.materialPrices = {}; // ギルドショップ用
 
     if (!gameState.dungeonCooldowns) {
-    gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
-}
-    // 現在の言語に応じたレシピをグローバルに設定（言語変更時にも有効）
+        gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
+    }
+
+    // 現在の言語に応じたレシピをグローバルに設定
     currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
     currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
     currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
     currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 
+    const saved = localStorage.getItem(key);
+    console.log("Current Lang is" + currentLang);
+
     if (saved) {
-        const loadedState = JSON.parse(saved);
+        let loadedState;
+        try {
+            loadedState = JSON.parse(saved);
+        } catch (e) {
+            better_alert(`スロット ${slot} のセーブデータが破損しています！`,"error");
+            console.warn('Save data parse error:', e);
+            return;
+        }
 
         // 既存の gameState にマージ
         Object.assign(gameState, loadedState);
@@ -659,7 +1321,7 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
         // === アイテム名言語変換（セーブが古い言語の場合に対応）===
         const itemMap = {};
 
-        // 1. Fetchクエスト素材（ランクごとに配列長が一致することを前提）
+        // 1. Fetchクエスト素材
         const fetchRanks = Object.keys(fetchQuestsByRank.ja);
         fetchRanks.forEach(rank => {
             const currentQuests = fetchQuestsByRank[currentLang][rank] || fetchQuestsByRank.ja[rank];
@@ -676,7 +1338,7 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             });
         });
 
-        // 2. Alchemyレシピ（inputsとoutput.nameを変換）
+        // 2. Alchemyレシピ
         const alchemyLangs = ['ja', 'en', 'zh'];
         const currentAlchemy = alchemyRecipes[currentLang];
         alchemyLangs.forEach(lang => {
@@ -685,19 +1347,17 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             if (oldAlchemy && oldAlchemy.length === currentAlchemy.length) {
                 oldAlchemy.forEach((rec, i) => {
                     const curRec = currentAlchemy[i];
-                    // inputs
                     rec.inputs.forEach((inp, j) => {
                         if (curRec.inputs[j]) {
                             itemMap[inp] = curRec.inputs[j];
                         }
                     });
-                    // output name
                     itemMap[rec.output.name] = curRec.output.name;
                 });
             }
         });
 
-        // 3. Tavernレシピ（materialsとproduct name）
+        // 3. Tavernレシピ
         const tavernLangs = ['ja', 'en', 'zh'];
         const currentTavern = tavernRecipes[currentLang];
         tavernLangs.forEach(lang => {
@@ -706,20 +1366,18 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             if (oldTavern && oldTavern.length === currentTavern.length) {
                 oldTavern.forEach((rec, i) => {
                     const curRec = currentTavern[i];
-                    // materials
                     rec.materials.forEach((mat, j) => {
                         const curMat = curRec.materials[j];
                         if (curMat) {
                             itemMap[mat.name] = curMat.name;
                         }
                     });
-                    // product name
                     itemMap[rec.name] = curRec.name;
                 });
             }
         });
 
-        // 4. Blacksmithレシピ（materialsとproduct name）
+        // 4. Blacksmithレシピ
         const blacksmithLangs = ['ja', 'en', 'zh'];
         const currentBlacksmith = blacksmithRecipes[currentLang];
         blacksmithLangs.forEach(lang => {
@@ -728,14 +1386,12 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             if (oldBlacksmith && oldBlacksmith.length === currentBlacksmith.length) {
                 oldBlacksmith.forEach((rec, i) => {
                     const curRec = currentBlacksmith[i];
-                    // materials
                     rec.materials.forEach((mat, j) => {
                         const curMat = curRec.materials[j];
                         if (curMat) {
                             itemMap[mat.name] = curMat.name;
                         }
                     });
-                    // product name
                     itemMap[rec.name] = curRec.name;
                 });
             }
@@ -749,7 +1405,7 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             return item;
         });
 
-        // === 冒険者の装備に適用（装備名も言語依存）===
+        // === 冒険者の装備に適用 ===
         gameState.adventurers.forEach(adv => {
             if (adv.equipment && adv.equipment.length > 0) {
                 adv.equipment = adv.equipment.map(eq => {
@@ -761,15 +1417,15 @@ gameState.materialPrices = {}; // ギルドショップ用（後述）
             }
         });
 
-        //（必要に応じて他の場所、例: sellables なども同様に処理可能）
-
         cleanupAdventurers();
         checkGameOver();
         updateDisplays();
         ensureTrainingQuest();
-        better_alert('ゲームを読み込みました！');
+        better_alert(`スロット ${slot} からゲームを読み込みました！`,"success");
     } else {
-        better_alert('セーブデータが見つかりません！');
+        // この分岐は通常到達しない（メニューで空スロットをブロックしている）が、安全のため
+        better_alert(`スロット ${slot} にセーブデータがありません！`,"warning");
+        updateDisplays(); // 新規ゲーム相当の表示更新
     }
 }
 
@@ -819,7 +1475,7 @@ function addToInventory(template, qty = 1) {
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
-        better_alert("ゴールドが不足しています");
+        better_alert("ゴールドが不足しています","error");
         return false;
     }
     gameState.gold -= amount;
@@ -843,31 +1499,73 @@ function addBattleLog(msg) {
 
 function corrupt() {
     if (gameState.reputation < 10) {
-        better_alert("評判が不足しています");
+        better_alert("評判が不足しています","error");
         return;
     }
     gameState.reputation -= 10;
     gameState.gold += 100;
+    better_alert("商人から100G貰ったけど、評判は"+gameState.reputation+"まで下がりました","success");
     checkGameOver();
     updateDisplays();
 }
 
 function checkGameOver() {
-    if (gameState.gameOver) return;
-    if (gameState.gold <= 0 || gameState.reputation <= 0) {
-        const reason = gameState.gold <= 0 ? "資金不足" : "評判ゼロ";
-        better_alert(`ゲームオーバー！ギルドは${reason}により崩壊しました。`);
-        gameState.gameOver = true;
-        const endBtn = document.querySelector('button[onclick="playDay()"]');
-        if (endBtn) endBtn.disabled = true;
-        updateDisplays();
+    if (gameState.gameOver || gameState.pendingGameOver) return true;
+
+    // Luna と Kaito を image で特定（固定）
+    const Luna = gameState.adventurers.find(a => a.image === 'ルナ.png');
+    const Kaito = gameState.adventurers.find(a => a.image === 'カイト.png');
+
+    // HPクランプ（存在する場合のみ、負値防止）
+    if (Luna) {
+        Luna.hp = Math.max(0, Luna.hp);
     }
+    if (Kaito) {
+        Kaito.hp = Math.max(0, Kaito.hp);
+    }
+
+    // 金・評判もクランプ
+    gameState.gold = Math.max(0, gameState.gold);
+    gameState.reputation = Math.max(0, gameState.reputation);
+
+    // 死亡状態の判定（オブジェクト不存在 OR HP <= 0）
+    const isLunaDead = !Luna || (Luna && Luna.hp <= 0);
+    const isKaitoDead = !Kaito || (Kaito && Kaito.hp <= 0);
+
+    let reason = null;
+
+    // 優先順位:
+    // 1. 両方死亡 → lunaKaitoDeath
+    // 2. Lunaのみ死亡 → lunaDeath
+    // 3. Kaitoのみ死亡 → kaitoDeath
+    // 4. 金欠 → gold
+    // 5. 評判ゼロ → rep
+    if (isLunaDead && isKaitoDead) {
+        reason = 'lunaKaitoDeath';
+    } else if (isLunaDead) {
+        reason = 'lunaDeath';
+    } else if (isKaitoDead) {
+        reason = 'kaitoDeath';
+    } else if (gameState.gold <= 0) {
+        reason = 'gold';
+    } else if (gameState.reputation <= 0) {
+        reason = 'rep';
+    }
+
+    if (reason) {
+        const seq = getGameOverSequence(reason);
+        queueGameOverDialogue(seq);
+        gameState.gameOver = true;
+        updateDay();
+        return true;
+    }
+    return false;
 }
 
 function buyExpansion() {
     const current = gameState.maxPermanentSlots;
     if (current >= 12) {
-        better_alert('最大拡張に達しました');
+        better_alert('最大拡張に達しました',"error");
         return;
     }
     const next = current + 1;
@@ -1253,7 +1951,7 @@ function generateTempAdventurer(){
     const statAbbr = ['STR','WIS','DEX','LUC'][primary];
     
     let image;
-    if (gameState.reputation <= 100) {
+    if (gameState.reputation <= 1000) {
         image = `${statAbbr}_RankF_${gender}.png`;
     } else {
         image = `${statAbbr}_${gender}.png`;
@@ -1336,7 +2034,7 @@ function usePotionOnChar(charIdx, potionName) {
     if (!adv) return;
     const stackIdx = gameState.inventory.findIndex(i => i.name === potionName);
     if (stackIdx === -1) {
-        better_alert('ポーションが見つかりません');
+        better_alert('ポーションが見つかりません',"error");
         return;
     }
     const potion = gameState.inventory[stackIdx];
@@ -1597,6 +2295,13 @@ function levelUp(adv, forceLevels = 0) {
         adv.hp = adv.maxHp;  // Full heal on each level up
         adv.mp = adv.maxMp;
     }
+
+    // === LEVEL UP CELEBRATION (only for natural EXP-based levels, never for forceLevels) ===
+    if (forceLevels === 0 && levelsGained > 0) {
+        let message = adv.name+" Level Up! (Level: "+adv.level+")";
+        better_alert(message, "levelup");
+        // Sound is automatically played inside better_alert when type === "levelup"
+    }
 }
 function findAdv(id){return gameState.adventurers.find(a=>a.id===id);}
 
@@ -1604,17 +2309,17 @@ function assign(questId, advId){
     const q=gameState.quests.find(q=>q.id===questId);
     if(!q) return;
     if (q.inProgress && !q.training && q.type !== 8) {
-        better_alert("クエスト進行中は冒険者を追加できません");
+        better_alert("クエスト進行中は冒険者を追加できません","error");
         return;
     }
     const maxSlots = q.training ? 2 : 4;
     if(q.assigned.length >= maxSlots){
-        better_alert(q.training ? "トレーニングクエストは最大2人までです。" : "クエストは満員です");
+        better_alert(q.training ? "トレーニングクエストは最大2人までです。" : "クエストは満員です","error");
         return;
     }
     const adv=findAdv(advId);
     if(!adv) return;
-    if(adv.mp <= 0){ better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`); return; }
+    if(adv.mp <= 0){ better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`,"error"); return; }
     const cost=adv.temp?adv.hiringCost:0;
     if(cost > 0 && !spendGold(cost)) return;
     q.assigned.push(advId);
@@ -1649,15 +2354,19 @@ function rejectQuest(qId) {
     if (idx !== -1) {
         gameState.quests.splice(idx, 1);
     }
-    better_alert(`クエストを拒否しました！評判 -${penalty.toFixed(1)}`);
+    better_alert(`クエストを拒否しました！評判 -${penalty.toFixed(1)}`,"error");
     updateDisplays();
 }
 
 function buy(i,qty){
     const it=shopItems[i];
     const totalcost = it.cost * qty;
-    if(!spendGold(totalcost)) return;
+    if(!spendGold(totalcost)){
+        return;
+    } 
+    
     addToInventory(it, qty);
+    better_alert(it.name+" x "+qty+"を購入した、合計："+totalcost+"G、 残り："+gameState.gold+"G","success");
     updateDisplays();
 }
 
@@ -1666,7 +2375,7 @@ function buy(i,qty){
 function recruit(i){
     const numPerms = gameState.adventurers.filter(a => !a.temp).length;
     if(numPerms >= gameState.maxPermanentSlots){
-        better_alert('ギルドは満杯です！拡張を購入してさらに募集してください。');
+        better_alert('ギルドは満杯です！拡張を購入してさらに募集してください。',"error");
         return;
     }
     const adv=gameState.recruitPending[i];
@@ -1679,6 +2388,7 @@ function recruit(i){
     newAdv.buffs = [];
     gameState.adventurers.push(newAdv);
     gameState.recruitPending.splice(i,1);
+    better_alert(adv.name+"が新しいメンバーになりました","success");
     updateDisplays();
 }
 
@@ -1687,7 +2397,7 @@ function firePerm(pIdx){
     const adv=perms[pIdx];
     if (!adv) return;
     if (adv.busy) {
-        better_alert("現在クエスト中の冒険者を解雇できません！");
+        better_alert("現在クエスト中の冒険者を解雇できません！","error");
         return;
     }
     if(confirm(`${adv.name}を解雇しますか？取り消せません。`)){
@@ -1712,7 +2422,7 @@ function equipToChar(pIdx, itemId) {
     const adv = perms[pIdx];
     if (!adv) return;
     if (adv.equipment.length >= 2) {
-        better_alert('最大2つまで装備可能です');
+        better_alert('最大2つまで装備可能です',"error");
         return;
     }
     const itemIdx = gameState.inventory.findIndex(it => it.id === itemId);
@@ -1972,7 +2682,7 @@ function sellStackedItem(name, amount) {
                        (gameState.sellables ? gameState.sellables.find(i => i.name === name) : null);
 
     if (!sampleItem) {
-        better_alert('売却するアイテムが見つかりません。');
+        better_alert('売却するアイテムが見つかりません。',"error");
         return;
     }
 
@@ -2033,12 +2743,12 @@ function sellStackedItem(name, amount) {
     }
 
     if (remaining > 0) {
-        better_alert('在庫が不足しています。');
+        better_alert('在庫が不足しています。',"error");
         return;
     }
 
     gameState.gold += totalGold;
-    better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}g`);
+    better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}g`,"success");
 
     // ショップモーダルを更新（価格が日固定なので再計算しても同じ値になる）
     document.getElementById('shopContent').innerHTML = renderCurrentShopPage();
@@ -2523,7 +3233,7 @@ if (q.buy) {
                 gameState.reputation = Math.max(-100, gameState.reputation - 10);
             }
             let deathMsg = `${adventurer.name} が "${q.desc}" で${isPerm ? '死亡しました' : '失われました'}！${isPerm ? ' 評判 -10。' : ''}`;
-            gameState.eventHistory.unshift({day: eventDay, message: deathMsg});
+            better_alert(deathMsg,"death");
             const mainIdx = gameState.adventurers.findIndex(a => a.id === adventurerId);
             if (mainIdx > -1) gameState.adventurers.splice(mainIdx, 1);
             const pendingIdx = gameState.recruitPending.findIndex(a => a.id === adventurerId);
@@ -2912,7 +3622,7 @@ function playDay(){
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day-1) * 10);
         gameState.gold -= tax;
-        gameState.eventHistory.unshift({day: evDay, message: `税金の日！${tax}g を徴収。`});
+        better_alert(`税金の日！${tax}G を徴収。`,"warning");
         checkGameOver();
     }
 
@@ -2991,7 +3701,7 @@ function playDay(){
             } else {
                 const penalty = 0.5 * q.difficulty;
                 gameState.reputation -= penalty;
-                gameState.eventHistory.unshift({day: evDay, message: `無視されたクエスト "${q.desc}" が期限切れ。評判 -${penalty}。`});
+                better_alert(`無視されたクエスト "${q.desc}" が期限切れ。評判 -${penalty}。`,"error");
             }
             gameState.quests.splice(i, 1);
         }
@@ -3001,7 +3711,7 @@ function playDay(){
     // まず割り当てなしの戦闘クエストを処理（防衛のみゲームオーバー）
     const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
     if (unassignedDefense) {
-        gameState.eventHistory.unshift({day: evDay, message: `防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`});
+        better_alert(`防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`,"error");
         gameState.gameOver = true;
         showModal(evDay);
         updateDisplays();
@@ -3053,15 +3763,18 @@ function playDay(){
             combatants: []
         };
 
-        const titleText = currentQ.defense ? `防衛戦: ${currentQ.desc}` : `ダンジョン${currentQ.floor}階探索: ${currentQ.desc}`;
+        const titleText = currentQ.defense ? `防衛戦: ${currentQ.desc}` : `ダンジョン${currentQ.floor}階探索`;
         CurrentQuestType = currentQ.defense ? 'defense' : 'dungeon';
         console.log(CurrentQuestType);
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
-
-        crossfadeTo('battleBgm', 1500);
-
+        if (CurrentQuestType="dungeon"){
+            renderBattlebgm(CurrentQuestType,currentQ.floor);
+        }
+        else{
+           renderBattlebgm(CurrentQuestType); 
+        }
         return; // 戦闘中は日処理中断
     }
 
@@ -3069,6 +3782,20 @@ function playDay(){
     checkGameOver();
     showModal(evDay);
 }
+
+function renderBattlebgm(QuestType,floor=0){
+        if (QuestType="dungeon"){
+            if(floor>=3){
+        crossfadeTo('battleBgm2', 1500);
+            }else{
+                crossfadeTo('battleBgm', 1500);
+            }
+        }else{
+        crossfadeTo('battleBgm', 1500);
+        }
+
+}
+
 
 function renderBattle() {
     if (!currentBattle) return;
@@ -3167,10 +3894,10 @@ function getCharType(adv) {
         const nameLower = adv.name.toLowerCase().trim();
         const nameExact = adv.name.trim();
 
-        if (nameLower === 'luna' || nameExact === 'ルナ') {
+        if (nameLower === 'Luna' || nameExact === 'ルナ') {
             return 'WIS';
         }
-        if (nameLower === 'kaito' || nameExact === 'カイト') {
+        if (nameLower === 'Kaito' || nameExact === 'カイト') {
             return 'STR';
         }
     }
@@ -3906,7 +4633,6 @@ function startRound() {
 
 function endBattle(win) {
     document.getElementById('battleModal').style.display = 'none';
-    crossfadeTo('bgm', 2000);
 
     const q = currentBattle.quest;
     const day = currentBattle.day;
@@ -3920,18 +4646,11 @@ function endBattle(win) {
                 // Permanent adventurers dying always costs reputation (same for defense/dungeon)
                 if (!battleAdv.temp) {
                     gameState.reputation = Math.max(-100, gameState.reputation - 10);
-                    gameState.eventHistory.unshift({ 
-                        day: day, 
-                        message: `${battleAdv.name} が戦闘で死亡しました！ 評判 -10。` 
-                    });
+                    better_alert(`${battleAdv.name} が戦闘で死亡しました！ 評判 -10。`,"death");
+                    
                     const idx = gameState.adventurers.findIndex(a => a.id === battleAdv.id);
                     if (idx > -1) gameState.adventurers.splice(idx, 1);
-                } else {
-                    gameState.eventHistory.unshift({ 
-                        day: day, 
-                        message: `${battleAdv.name} が戦闘で失われました。` 
-                    });
-                }
+                } 
             }
         }
     });
@@ -4000,8 +4719,13 @@ function endBattle(win) {
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
-
-        crossfadeTo('battleBgm', 1500);
+        CurrentQuestType = currentQ.defense ? 'defense' : 'dungeon';
+        if (CurrentQuestType="dungeon"){
+            renderBattlebgm(CurrentQuestType,currentQ.floor);
+        }
+        else{
+           renderBattlebgm(CurrentQuestType); 
+        }
 
         // If no more pending, clean up
         if (gameState.pendingBattles.length === 0) {
@@ -4012,6 +4736,9 @@ function endBattle(win) {
         delete gameState.pendingBattles;
         showModal(day);
         updateDisplays();
+    }
+    if (!checkGameOver()){
+    crossfadeTo('bgm', 2000);
     }
 }
 
@@ -4401,7 +5128,7 @@ function performAlchemy() {
     const qty = parseInt(document.getElementById('alchemyQty').value) || 1;
 
     if (!ing1 || !ing2 || ing1 === ing2) {
-        better_alert('異なる有効な材料を2つ選択してください。');
+        better_alert('異なる有効な材料を2つ選択してください。',"error");
         return;
     }
 
@@ -4412,12 +5139,12 @@ function performAlchemy() {
     });
 
     if (!recipe) {
-        better_alert('この組み合わせにはレシピがありません。');
+        better_alert('この組み合わせにはレシピがありません。',"error");
         return;
     }
 
     if (countItem(ing1) < qty || countItem(ing2) < qty) {
-        better_alert('材料が不足しています！');
+        better_alert('材料が不足しています！',"error");
         return;
     }
 
@@ -4430,14 +5157,14 @@ function performAlchemy() {
     document.getElementById('alchemyIng2').innerHTML = optionsHtml;
     updateAlchemyPreview();
 
-    better_alert(`${recipe.output.name} を ${qty}個 作成しました！`);
+    better_alert(`${recipe.output.name} を ${qty}個 作成しました！`,"success");
     renderFacilities(); // 在庫更新のため再描画
 }
 
 function orderTavernItem(recipeIdx) {
     const r = currentTavernRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        better_alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています',"error");
         return;
     }
 
@@ -4445,7 +5172,7 @@ function orderTavernItem(recipeIdx) {
     if (r.materials) {
         for (let m of r.materials) {
             if (countItem(m.name) < (m.qty || 1)) {
-                better_alert('素材が不足しています');
+                better_alert('素材が不足しています',"error");
                 return;
             }
         }
@@ -4453,7 +5180,7 @@ function orderTavernItem(recipeIdx) {
 
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
-        better_alert('永久冒険者がいないため適用できません');
+        better_alert('永久冒険者がいないため適用できません',"error");
         return;
     }
 
@@ -4508,7 +5235,7 @@ function applyTavernBuff(recipeIdx, advId) {
     buffCopy.daysLeft = buffCopy.days;
     adv.buffs.push(buffCopy);
 
-    better_alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`);
+    better_alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`,"success");
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
 }
@@ -4529,7 +5256,7 @@ function enhanceEquipment(advId, itemId) {
 
     if (!item || !item.stat || typeof item.bonus !== 'number') {
         console.warn("Invalid item or item not enhanceable");
-        better_alert("強化対象のアイテムが見つかりません。画面を更新してください。");
+        better_alert("強化対象のアイテムが見つかりません。画面を更新してください。","error");
         return;
     }
 
@@ -4554,7 +5281,7 @@ function enhanceEquipment(advId, itemId) {
     }
 
     if (!consumed) {
-        better_alert(t('blacksmith_insufficient_crystals'));
+        better_alert(t('blacksmith_insufficient_crystals'),"error");
         return;
     }
 
@@ -4567,7 +5294,7 @@ function enhanceEquipment(advId, itemId) {
         bonus: item.bonus,
         enhancement: item.enhancement,
         stat: statFull
-    }));
+    }),"success");
 
     // UI更新
     renderFacilities();
@@ -4577,13 +5304,13 @@ function enhanceEquipment(advId, itemId) {
 function produceBlacksmith(recipeIdx) {
     const r = currentBlacksmithRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        better_alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています',"error");
         return;
     }
     if (r.materials) {
         for (let m of r.materials) {
             if (countItem(m.name) < (m.qty || 1)) {
-                better_alert('素材が不足しています');
+                better_alert('素材が不足しています',"error");
                 return;
             }
         }
@@ -4597,7 +5324,7 @@ function produceBlacksmith(recipeIdx) {
     }
 
     addToInventory({name: r.name, stat: r.stat, bonus: r.bonus});
-    better_alert(`${r.name} を製作しました！`);
+    better_alert(`${r.name} を製作しました！`,"success");
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
     updateDisplays();
@@ -4899,7 +5626,7 @@ function craftAlchemyRecipe(index, qty) {
 
     const recipe = currentAlchemyRecipes[index];
     if (!recipe) {
-        better_alert("無効なレシピです。");
+        better_alert("無効なレシピです。","error");
         return;
     }
 
@@ -4907,7 +5634,7 @@ function craftAlchemyRecipe(index, qty) {
     const costPer = recipe.cost || 0;
     const totalCost = costPer * qty;
     if (gameState.gold < totalCost) {
-        better_alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`);
+        better_alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`,"error");
         return;
     }
 
@@ -4922,7 +5649,7 @@ function craftAlchemyRecipe(index, qty) {
         const needed = reqPer * qty;
         const have = countItem(inputName);
         if (have < needed) {
-            better_alert(`素材不足: ${inputName} が ${needed} 個必要ですが、${have} 個しかありません！`);
+            better_alert(`素材不足: ${inputName} が ${needed} 個必要ですが、${have} 個しかありません！`,"error");
             return;
         }
     }
@@ -4961,7 +5688,7 @@ function craftAlchemyRecipe(index, qty) {
         const restoreText = output.restore === 'hp' ? 'HP' : 'MP';
         msg += ` (${restoreText} +${output.amount})`;
     }
-    better_alert(msg);
+    better_alert(msg,"success");
 
     // UI更新
     updateDisplays();
@@ -5016,7 +5743,7 @@ function upgradeFacility(fac) {
     const maxLevel = facilityMaxLevels[fac];
 
     if (currentLevel >= maxLevel) {
-        better_alert('この施設はすでに最大レベルです');
+        better_alert('この施設はすでに最大レベルです',"warning");
         return;
     }
 
@@ -5027,9 +5754,9 @@ function upgradeFacility(fac) {
         gameState.facilities[fac]++;
         renderFacilities();
         if (typeof updateGold === 'function') updateGold();
-        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`);
+        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`,"success");
     } else {
-        better_alert('ゴールドが不足しています');
+        better_alert('ゴールドが不足しています',"error");
     }
     updateDisplays();
 }
@@ -5049,18 +5776,18 @@ function postGuildQuest() {
 
     if (type === 'story') {
         if (gameState.mainProgress >= mainQuests.length) {
-            better_alert('すべてのメインクエストを完了しました！');
+            better_alert('すべてのメインクエストを完了しました！',"success");
             return;
         }
 
         if (gameState.quests.some(q => q.type === 6)) {
-            better_alert('既にメインクエストが進行中です。現在のメインクエストを完了してください。');
+            better_alert('既にメインクエストが進行中です。現在のメインクエストを完了してください。',"error");
             return;
         }
 
         let mq = mainQuests[gameState.mainProgress];
         if (gameState.reputation < (mq.repRequired || 0)) {
-            better_alert(`評判が不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`);
+            better_alert(`評判が不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`,"error");
             return;
         }
 
@@ -5086,7 +5813,7 @@ function postGuildQuest() {
     } else if (type === 'dungeon') {
         let floorEl = document.getElementById('dungeonFloor');
         if (!floorEl) {
-            better_alert('エラー: ダンジョン階層の入力が見つかりません。');
+            better_alert('エラー: ダンジョン階層の入力が見つかりません。',"error");
             return;
         }
         let floor = parseInt(floorEl.value) || 1;
@@ -5116,7 +5843,7 @@ function postGuildQuest() {
         let qtyEl = document.getElementById('tradeQty');
         let maxPriceEl = document.getElementById('tradeMaxPrice');
         if (!cityEl || !qtyEl || !maxPriceEl) {
-            better_alert('エラー: トレード情報の入力が見つかりません。');
+            better_alert('エラー: トレード情報の入力が見つかりません。',"error");
             return;
         }
         let cityName = cityEl.value;
@@ -5145,7 +5872,7 @@ function postGuildQuest() {
     if (q) {
         gameState.quests.push(q);
         updateDisplays();
-        better_alert(alertMessage);
+        better_alert(alertMessage,"success");
         closeGuildQuests();  // 投稿後にモーダルを閉じる
     }
 }
@@ -5210,13 +5937,13 @@ function useSpecificPotion(charIndex, itemId) {
 function receiveSideQuest(idx) {
     const existing = gameState.quests.find(q => q.side && q.npcIdx === idx);
     if (existing) {
-        better_alert('このNPCのサイドクエストは既に受注中です。');
+        better_alert('このNPCのサイドクエストは既に受注中です。',"error");
         return;
     }
     const sq = generateSideQuest(idx);
     gameState.quests.push(sq);
     updateDisplays();
-    better_alert(`${discoveryNPCs[idx]}からサイドクエストを受注しました！`);
+    better_alert(`${discoveryNPCs[idx]}からサイドクエストを受注しました！`,"success");
 }
 
 function getNameHtml(adv) {
@@ -5251,7 +5978,7 @@ function useExpOrbOnChar(charIndex, itemId) {
         gameState.inventory.splice(itemIdx, 1);
     }
 
-    better_alert(`${adv.name} が${orb.name}を使用！レベルが${levelsToAdd}アップしました！`);
+    better_alert(`${adv.name} が${orb.name}を使用！レベルが${levelsToAdd}アップしました！`,"success");
 
     renderCurrentCharacter();  // 即時反映
     updateDisplays();
@@ -5911,7 +6638,10 @@ function crossfadeTo(newBgmId, duration = 2000) {
     const currentBgms = [
         document.getElementById('bgm'),
         document.getElementById('introBgm'),
-        document.getElementById('battleBgm')
+        document.getElementById('battleBgm'),
+        document.getElementById('battleBgm2'),
+        document.getElementById('dialogueBgm'),
+        document.getElementById('GameoverBgm')
     ].filter(b => b !== newBgm && !b.paused);
 
     // 現在再生中のBGMをすべてフェードアウト（複数対応安全策）
@@ -5920,7 +6650,7 @@ function crossfadeTo(newBgmId, duration = 2000) {
     newBgm.volume = 0;
     newBgm.play().catch(e => console.log('BGM再生エラー:', e));
 
-    const targetVol = 0.3;
+    const targetVol = 0.2;
     const startTime = Date.now();
 
     const interval = setInterval(() => {
@@ -5957,9 +6687,11 @@ document.addEventListener('dragend', e => {
 
 startDay();
 
-document.getElementById('bgm').volume = 0.3;
+document.getElementById('bgm').volume = 0.2;
 document.getElementById('introBgm').volume = 0.3;  // ← 新規追加
 document.getElementById('battleBgm').volume = 0.3;
+document.getElementById('battleBgm2').volume = 0.3;
+document.getElementById('dialogueBgm').volume = 0.1;
 let audioPlayed = false;
 document.addEventListener('click', function() {
     if (!audioPlayed) {
@@ -6087,7 +6819,7 @@ scrollContainer.addEventListener('wheel', (e) => {
 scrollContainer.style.cursor = 'grab'; // つかめる感じでヒント
 
 // 導入対話を管理する変数
-let playerName = "";
+
 let dialogueIndex = 0;
 
 
@@ -6096,9 +6828,10 @@ let dialogueIndex = 0;
 function startIntroDialogue() {
     playerName = document.getElementById('playerNameInput').value.trim();
     if (playerName === "") {
-        better_alert("名前を入力してください！");
+        better_alert("名前を入力してください！","warning");
         return;
     }
+    gameState.playerName = playerName;
     // Use language-specific intro
     const currentIntro = introDialogues[currentLang] || introDialogues.ja;
     dialogues = currentIntro;  // Temporarily assign to global dialogues variable used by render/next
@@ -6226,13 +6959,28 @@ let isTyping = false;       // タイピング中フラグ
 let completionQueue = [];     // 完了ダイアログのキュー（複数同時完了対応）
 let isPlayingDialogue = false; // 現在ダイアログ再生中フラグ
 
-function queueQuestCompletionDialogue(sequence) {
-    if (!sequence || sequence.length === 0) return;
+function queueQuestCompletionDialogue(rawSequence) {
+    if (!rawSequence || rawSequence.length === 0) return;
 
-    completionQueue.push(sequence);
+    // プレースホルダー置換処理（constant.js が純粋定数のまま）
+    const defaultName = {
+        ja: '冒険者',
+        en: 'Adventurer',
+        zh: '冒險者'
+    }[currentLang] || 'Adventurer';
 
-    // 再生中でなければ即開始
+    const playerName = gameState.playerName || defaultName;
+
+    const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker.replace('{PLAYER}', playerName),
+        text: line.text.replace(/{PLAYER}/g, playerName)
+    }));
+
+    completionQueue.push(processedSequence);
+
+    // 再生中でなければ即開始（ここで新しいダイアログセッション開始時にdialogueBgmへクロスフェード）
     if (!isPlayingDialogue) {
+        crossfadeTo('dialogueBgm', 2000);  // 開始時は2000msでフェード（必要に応じて調整可能）
         playNextDialogue();
     }
 }
@@ -6240,6 +6988,8 @@ function queueQuestCompletionDialogue(sequence) {
 function playNextDialogue() {
     if (completionQueue.length === 0) {
         isPlayingDialogue = false;
+        // すべてのダイアログが完全に終了した時点でメインBGMに戻す
+        crossfadeTo('bgm', 2000);
         return;
     }
 
@@ -6304,7 +7054,6 @@ function playNextDialogue() {
         dialogueBox.style.lineHeight = '1.6';
 
         const nextBtn = document.createElement('button');
-        nextBtn.textContent = '次へ';
         nextBtn.disabled = true;
         nextBtn.style.opacity = '0.6';
         nextBtn.style.padding = '12px 30px';
@@ -6329,6 +7078,13 @@ function playNextDialogue() {
         let localTyping = false;
         let localInterval = null;
 
+        // プレイヤー名（表示用に再取得）
+        const playerName = gameState.playerName || {
+            ja: '冒険者',
+            en: 'Adventurer',
+            zh: '冒險者'
+        }[currentLang] || 'Adventurer';
+
         function typeText(targetText, speaker) {
             localTyping = true;
             nextBtn.disabled = true;
@@ -6339,12 +7095,12 @@ function playNextDialogue() {
 
             let i = 0;
 
-            // 言語に応じたタイピング速度（英語は速く、その他は標準）
-            let delay = 30; // デフォルト（日本語・中文）
+            // 言語に応じたタイピング速度
+            let delay = 30; // デフォルト
             if (currentLang === 'en') {
-                delay = 15; // 英語は約2倍速く（読みやすさ重視で調整可能）
+                delay = 15;
             } else if (currentLang === 'zh') {
-                delay = 35; // 繁體中文は少し遅め（漢字の複雑さ考慮）
+                delay = 35;
             }
 
             localInterval = setInterval(() => {
@@ -6359,9 +7115,9 @@ function playNextDialogue() {
 
                     // ボタンテキストを翻訳対応
                     if (localIndex === seq.length - 1) {
-                        nextBtn.textContent = t('dialogue_close'); // "Close" / "閉じる" / "關閉"
+                        nextBtn.textContent = t('dialogue_close');
                     } else {
-                        nextBtn.textContent = t('dialogue_next'); // "Next" / "次へ" / "下一頁"
+                        nextBtn.textContent = t('dialogue_next');
                     }
                 }
             }, delay);
@@ -6369,20 +7125,20 @@ function playNextDialogue() {
 
         function renderCurrent() {
             const current = seq[localIndex];
-            let imageSrc = 'Images/main_char.png'; 
-            
-            // 多言語対応: 冒険者（Adventurer）の場合、ランダム画像
-            const adventurerNames = {
-                ja: '冒険者',
-                en: 'Adventurer',
-                zh: '冒險者'  // 繁體中文での一般的な翻訳（必要に応じて調整）
-            };
-            if (current.speaker === adventurerNames[currentLang] || 
-                current.speaker === adventurerNames.ja ||  // フォールバック
-                current.speaker === adventurerNames.en ||
-                current.speaker === adventurerNames.zh) {
-                const images = [
-                    'Images/STR_RankF_F.png',
+            let imageSrc = 'Images/main_char.png'; // デフォルト（ペア画像やギルドシーンを想定）
+
+            // プレイヤー（ギルドマスター）の場合：専用画像 or ランダム冒険者画像（カスタム名でも統一感を保つ）
+
+            // Kaito
+            if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
+                imageSrc = 'Images/カイト.png';
+            } 
+            // Luna
+            else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
+                imageSrc = 'Images/ルナ.png';
+            }else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
+                const playerImages = [
+                    'Images/STR_RankF_F.png',  // 必要に応じてギルドマスター専用画像に変更可能
                     'Images/STR_RankF_M.png',
                     'Images/DEX_RankF_F.png',
                     'Images/DEX_RankF_M.png',
@@ -6391,23 +7147,15 @@ function playNextDialogue() {
                     'Images/LUC_RankF_F.png',
                     'Images/LUC_RankF_M.png'
                 ];
-                
-                const randomIndex = Math.floor(Math.random() * images.length);
-                imageSrc = images[randomIndex];
-            }     
-            // Kaito（固有名詞だが英語でもほぼ同じ）
-            else if (current.speaker === 'カイト' || current.speaker === 'Kaito') {
-                imageSrc = 'Images/カイト.png';
-            } 
-            // Luna（固有名詞）
-            else if (current.speaker === 'ルナ' || current.speaker === 'Luna') {
-                imageSrc = 'Images/ルナ.png';
+                const randomIndex = Math.floor(Math.random() * playerImages.length);
+                imageSrc = playerImages[randomIndex];
+            }else if (current.speaker != playerName){
+                imageSrc = 'Images/'+current.speaker+'.png';
             }
-            // その他（依頼主、ギルドマスター、Narratorなど）はデフォルトのペア画像
-            // 必要に応じて追加可能（例: Guild Master用の専用画像）
+            // その他（依頼主など）はデフォルトペア画像
 
             charImage.src = imageSrc;
-            charImage.style.display = 'block'; // 常に表示
+            charImage.style.display = 'block';
 
             typeText(current.text, current.speaker);
         }
@@ -6422,9 +7170,9 @@ function playNextDialogue() {
                 nextBtn.style.opacity = '1';
 
                 if (localIndex === seq.length - 1) {
-                    nextBtn.textContent = '閉じる';
+                    nextBtn.textContent = t('dialogue_close');
                 } else {
-                    nextBtn.textContent = '次へ';
+                    nextBtn.textContent = t('dialogue_next');
                 }
             } else {
                 localIndex++;
@@ -6447,4 +7195,343 @@ function playNextDialogue() {
 
         renderCurrent();
     })(sequence);
+}
+
+
+// 新規追加: ゲームオーバーダイアログシーケンス取得関数
+function getGameOverSequence(reason) {
+    const lang = currentLang;
+
+    const playerSpeaker = gameState.playerName || {
+        ja: '冒険者',
+        en: 'Adventurer',
+        zh: '冒險者'
+    }[lang] || 'Adventurer';
+
+    const narratorPlayer = playerSpeaker;
+
+    const capitalizedNarratorPlayer = narratorPlayer.charAt(0).toUpperCase() + narratorPlayer.slice(1);
+
+    const dialogues = {
+        lunaKaitoDeath: {
+    ja: [
+        {speaker: 'ルナ', text: `${playerSpeaker}…ごめん…ね…もう…限界…`},
+        {speaker: 'カイト', text: '相棒…すまねえ…俺も…もうダメだ…'},
+        {speaker: playerSpeaker, text: 'ルナ！カイト！待ってくれ！回復魔法を掛ける！'},
+        {speaker: playerSpeaker, text: '二人とも…これを飲め！まだ間に合う！'},
+        {speaker: 'ルナ', text: '…遅いよ…傷が…深すぎて…'},
+        {speaker: 'カイト', text: '…無駄だ…致命傷だぜ…'},
+        {speaker: 'ルナ', text: `${playerSpeaker}に救われて…三人で冒険できて…本当に…幸せだった…`},
+        {speaker: 'カイト', text: 'ああ…お前と一緒なら…どんな戦いも…楽しかった…'},
+        {speaker: playerSpeaker, text: 'そんなこと言うな！二人とも死ぬなんて許さない！'},
+        {speaker: 'ルナ', text: `${playerSpeaker}…ありがとう…大好き…だったよ…`},
+        {speaker: 'カイト', text: 'お前は…絶対に…生きろよ…相棒…'},
+        {speaker: playerSpeaker, text: 'やめろ…頼む…二人とも…'},
+        {speaker: 'ルナ', text: `さよなら…${playerSpeaker}…`},
+        {speaker: 'カイト', text: `じゃあな…${playerSpeaker}…`},
+        {speaker: 'ナレーター', text: 'ルナとカイトの体から力が抜け、二人は同時に静かに息を引き取った。'},
+        {speaker: playerSpeaker, text: 'ルナァァ…カイトォォォ！！！'},
+        {speaker: playerSpeaker, text: '俺のせいだ…二人を守れなかった…全部俺のせいだ…'},
+        {speaker: 'ナレーター', text: `最愛の仲間二人を同時に失った${playerSpeaker}は、心が完全に砕け散った。剣を握る気力すら失い、永遠に冒険の道を捨てた。物語は深い悲しみと絶望のうちに終わりを迎えた…`}
+    ],
+    en: [
+        {speaker: 'Luna', text: `${playerSpeaker}... sorry... I\'ve... reached my limit...`},
+        {speaker: 'Kaito', text: 'Buddy... damn it... I\'m done too...'},
+        {speaker: playerSpeaker, text: 'Luna! Kaito! Hold on! I\'m casting healing magic!'},
+        {speaker: playerSpeaker, text: 'Both of you—drink this! There\'s still time!'},
+        {speaker: 'Luna', text: '...It\'s too late... the wounds... are too deep...'},
+        {speaker: 'Kaito', text: '...No use... fatal wounds...'},
+        {speaker: 'Luna', text: 'Being saved by you... adventuring together as three... I was truly... happy...'},
+        {speaker: 'Kaito', text: 'Yeah... every battle with you... was the best...'},
+        {speaker: playerSpeaker, text: 'Stop it! I wont let either of you die!'},
+        {speaker: 'Luna', text: `${playerSpeaker}... thank you... I loved... you...`},
+        {speaker: 'Kaito', text: 'You gotta... keep living... buddy...'},
+        {speaker: playerSpeaker, text: 'No... please... both of you...'},
+        {speaker: 'Luna', text: 'Goodbye... ${playerSpeaker}...'},
+        {speaker: 'Kaito', text: 'See ya... ${playerSpeaker}...'},
+        {speaker: 'Narrator', text: 'The strength left Luna and Kaito\'s bodies, and they quietly passed away at the same moment.'},
+        {speaker: playerSpeaker, text: 'LUNAAAA... KAITOOOO!!!!'},
+        {speaker: playerSpeaker, text: 'It\'s my fault... I couldn\'t protect either of them... it\'s all my fault...'},
+        {speaker: 'Narrator', text: `Having lost both closest friends at once, ${playerSpeaker}\'s heart was utterly shattered. No longer able to even hold a sword, they abandoned the path of adventure forever. The story ended in profound sorrow and despair...`}
+    ],
+    zh: [
+        {speaker: 'Luna', text: `${playerSpeaker}…對不起…我已經…到極限了…`},
+        {speaker: 'Kaito', text: '夥伴…抱歉…我也…不行了…'},
+        {speaker: playerSpeaker, text: 'Luna！Kaito！等等！我要施放治療魔法！'},
+        {speaker: playerSpeaker, text: '你們兩個…喝這個！還有時間！'},
+        {speaker: 'Luna', text: '…太遲了…傷口…太深…'},
+        {speaker: 'Kaito', text: '…沒用了…致命傷…'},
+        {speaker: 'Luna', text: '被你救出…三人一起冒險…真的…好幸福…'},
+        {speaker: 'Kaito', text: '是啊…跟你一起的每場戰鬥…都超棒…'},
+        {speaker: playerSpeaker, text: '別這樣說！你們兩個都不准死！'},
+        {speaker: 'Luna', text: `${playerSpeaker}…謝謝…我好喜歡…你…`},
+        {speaker: 'Kaito', text: '你要…好好活下去…夥伴…'},
+        {speaker: playerSpeaker, text: '不要…求你們…兩個都…'},
+        {speaker: 'Luna', text: `再見…${playerSpeaker}…`},
+        {speaker: 'Kaito', text: `再見了…${playerSpeaker}…`},
+        {speaker: '敘述者', text: 'Luna與Kaito的身體失去力量，兩人同時安靜地離去了。'},
+        {speaker: playerSpeaker, text: 'Luna啊啊…Kaito啊啊！！！'},
+        {speaker: playerSpeaker, text: '都是我的錯…沒能保護他們兩個…全都是我的錯…'},
+        {speaker: '敘述者', text: `同時失去兩位最親密的夥伴，${playerSpeaker}的心完全碎裂。再也無法握劍，永遠放棄了冒險之路。故事在深刻的悲傷與絕望中結束…`}
+    ]
+},
+        gold: {
+            ja: [
+                {speaker: '商人', text: 'おい！借金と利息がとんでもない額になってるぞ！今すぐ返せ、金が底をついたそうだな！'},
+                {speaker: playerSpeaker, text: 'すみません…本当に一文無しで…'},
+                {speaker: '商人', text: '謝って済むか！何ヶ月も逃げ回ってたじゃないか！'},
+                {speaker: 'カイト', text: '待てよ、落ち着け！もう少し待ってくれよ！'},
+                {speaker: '商人', text: '待つ？もう限界だ！お前ら、このリーダーを捕まえろ！'},
+                {speaker: 'ルナ', text: `${playerSpeaker}に触らないでください！`},
+                {speaker: 'カイト', text: '俺たちを倒してからにしろ！'},
+                {speaker: '商人', text: 'はっ、面白い。全員捕まえてもいいぞ、リーダーだけは確実に連れてけ！'},
+                {speaker: playerSpeaker, text: 'やめろ！カイト、ルナ、私の借金のせいで巻き込むな！'},
+                {speaker: 'ルナ', text: `${playerSpeaker}…私たちは離れません…`},
+                {speaker: 'カイト', text: 'そうだ！一緒に戦うんだ！'},
+                {speaker: '商人', text: '感心な絆だな。だが借金は返してもらう。奴隷として一生働け！'},
+                {speaker: playerSpeaker, text: '……わかりました。私だけなら…行きます。'},
+                {speaker: 'カイト', text: 'ふざけんな！絶対に渡さない！'},
+                {speaker: 'ナレーター', text: 'だが雇われた手下の数は圧倒的で、パーティーはあっさり制圧された。'},
+                {speaker: 'ナレーター', text: `${playerSpeaker}は富豪の奴隷として売られ、カイトとルナは解放された。輝かしい冒険の日々は永遠に終わりを告げた…`}
+            ],
+            en: [
+                {speaker: 'Moneylender', text: 'Hey! The debt and interest are insane now! Pay up—I heard you\'re completely broke!'},
+                {speaker: playerSpeaker, text: 'I\'m sorry... I really don\'t have a single coin left...'},
+                {speaker: 'Moneylender', text: 'You think sorry fixes this? You\'ve been dodging me for months!'},
+                {speaker: 'Kaito', text: 'Hold on, calm down! Just give us a little more time!'},
+                {speaker: 'Moneylender', text: 'Time? I\'ve waited long enough! You lot—grab the leader!'},
+                {speaker: 'Luna', text: 'Don\'t touch Master!'},
+                {speaker: 'Kaito', text: 'You\'ll have to get past us first!'},
+                {speaker: 'Moneylender', text: 'Hah, amusing. Take them all if you have to—just make sure you bring me the leader!'},
+                {speaker: playerSpeaker, text: 'Stop! Kaito, Luna, don\'t get involved because of my debt!'},
+                {speaker: 'Luna', text: 'Master... we won\'t leave you...'},
+                {speaker: 'Kaito', text: 'Yeah! We fight together!'},
+                {speaker: 'Moneylender', text: 'What admirable loyalty. Too bad—debts must be paid. You\'ll work as a slave for life!'},
+                {speaker: playerSpeaker, text: '...Fine. If it\'s just me... I\'ll go.'},
+                {speaker: 'Kaito', text: 'Like hell! We\'re not handing you over!'},
+                {speaker: 'Narrator', text: 'But the hired thugs outnumbered them overwhelmingly, and the party was quickly subdued.'},
+                {speaker: 'Narrator', text: `${playerSpeaker} was sold into slavery to a wealthy lord, while Kaito and Luna were set free. The days of glorious adventure came to an eternal end...`}
+            ],
+            zh: [
+                {speaker: '商人', text: '喂！債務和利息已經瘋狂累積了！馬上還錢—聽說你徹底破產了！'},
+                {speaker: playerSpeaker, text: '對不起…我真的身無分文…'},
+                {speaker: '商人', text: '道歉就想解決？你躲了我好幾個月！'},
+                {speaker: 'Kaito', text: '等等，冷靜！再給我們一點時間！'},
+                {speaker: '商人', text: '時間？我等夠了！你們—抓住那個領袖！'},
+                {speaker: 'Luna', text: `不准碰${playerSpeaker}！`},
+                {speaker: 'Kaito', text: '先打倒我們再說！'},
+                {speaker: '商人', text: '哈，有趣。要抓就全抓，但領袖一定要帶走！'},
+                {speaker: playerSpeaker, text: '住手！Kaito、Luna，別因為我的債務被牽連！'},
+                {speaker: 'Luna', text: `${playerSpeaker}…我們不會離開你…`},
+                {speaker: 'Kaito', text: '對！一起戰鬥！'},
+                {speaker: '商人', text: '真感人的羈絆。可惜—債務必須償還。你要一輩子當奴隸！'},
+                {speaker: playerSpeaker, text: '……好吧。如果只是我一個…我去。'},
+                {speaker: 'Kaito', text: '開什麼玩笑！絕對不交出去！'},
+                {speaker: '敘述者', text: '然而雇來的打手人數壓倒性，隊伍很快被制伏。'},
+                {speaker: '敘述者', text: `${playerSpeaker}被賣給富豪當奴隸，Kaito和Luna被釋放。輝煌的冒險日子永遠結束了…`}
+            ]
+        },
+        rep: {
+            ja: [
+                {speaker: '商人A', text: 'このギルドの評判が最低だ！もう絶対に取引しない！'},
+                {speaker: '商人B', text: '俺もだ！報酬の支払いが遅いし、クエストも怪しい！'},
+                {speaker: '怒りの冒険者', text: 'そうだ！こんなゴミギルドは冒険者の名を汚すだけだ！'},
+                {speaker: '別の冒険者', text: '解散しろ！王国に恥をかかせるな！'},
+                {speaker: playerSpeaker, text: '待ってください！私たちは必死に頑張ってきたんです！'},
+                {speaker: 'カイト', text: 'そうだよ！ちゃんと成功したクエストだってたくさんある！'},
+                {speaker: 'ルナ', text: `どうか信じてください…${playerSpeaker}を…`},
+                {speaker: '商人A', text: '信じる？評判が地に落ちてるんだぞ！'},
+                {speaker: '群衆', text: '解散だ！解散！逮捕しろ！'},
+                {speaker: '群衆', text: 'ギルドを潰せ！'},
+                {speaker: '王国衛兵', text: '王命により、このギルドを即時解散する！'},
+                {speaker: '王国衛兵', text: 'ギルドマスターとその仲間二名を、王国の信用失墜罪で逮捕する！'},
+                {speaker: playerSpeaker, text: 'そんな…これが終わりだなんて…'},
+                {speaker: 'カイト', text: 'くそっ…どうしてこうなる…'},
+                {speaker: 'ルナ', text: `${playerSpeaker}…私、怖いです…`},
+                {speaker: 'ナレーター', text: '嘲笑と怒号の中、三人は鎖で繋がれ、王国牢獄へと連行された。かつての栄光は跡形もなく、物語は恥辱のうちに幕を閉じた…'}
+            ],
+            en: [
+                {speaker: 'Merchant A', text: 'This guild\'s reputation is rock bottom! I\'m done doing business!'},
+                {speaker: 'Merchant B', text: 'Same here! Payments are always late, and the quests are shady!'},
+                {speaker: 'Angry Adventurer', text: 'Yeah! A garbage guild like this only stains the name of adventurers!'},
+                {speaker: 'Another Adventurer', text: 'Disband it! Stop embarrassing the kingdom!'},
+                {speaker: playerSpeaker, text: 'Please wait! We\'ve been working desperately hard!'},
+                {speaker: 'Kaito', text: 'That\'s right! We\'ve successfully completed tons of quests too!'},
+                {speaker: 'Luna', text: 'Please believe... believe in Master...'},
+                {speaker: 'Merchant A', text: 'Believe? Your reputation is in the dirt!'},
+                {speaker: 'Crowd', text: 'Disband it! Disband it! Arrest them!'},
+                {speaker: 'Crowd', text: 'Shut down the guild!'},
+                {speaker: 'Kingdom Guard', text: 'By order of the king, this guild is immediately disbanded!'},
+                {speaker: 'Kingdom Guard', text: 'The guild master and his two companions are under arrest for discrediting the kingdom!'},
+                {speaker: playerSpeaker, text: 'No... it can\'t end like this...'},
+                {speaker: 'Kaito', text: 'Damn it... how did it come to this...'},
+                {speaker: 'Luna', text: 'Master... I\'m scared...'},
+                {speaker: 'Narrator', text: 'Amid jeers and shouts of anger, the three were chained and dragged to the kingdom prison. All traces of former glory vanished, and the story ended in disgrace...'}
+            ],
+            zh: [
+                {speaker: '商人A', text: '這個公會評價墊底！絕不再交易！'},
+                {speaker: '商人B', text: '我也是！報酬總是拖延，任務還可疑！'},
+                {speaker: '憤怒的冒險者', text: '對！這種垃圾公會只會玷污冒險者名聲！'},
+                {speaker: '另一冒險者', text: '解散！別給王國丟臉！'},
+                {speaker: playerSpeaker, text: '請等一下！我們一直拼命努力啊！'},
+                {speaker: 'Kaito', text: '沒錯！我們也成功完成了很多任務！'},
+                {speaker: 'Luna', text: `請相信…相信${playerSpeaker}…`},
+                {speaker: '商人A', text: '相信？評價已經爛透了！'},
+                {speaker: '群眾', text: '解散！解散！逮捕他們！'},
+                {speaker: '群眾', text: '關閉公會！'},
+                {speaker: '王國衛兵', text: '奉王命，即刻解散此公會！'},
+                {speaker: '王國衛兵', text: '公會長及其兩名夥伴，以損害王國信譽罪逮捕！'},
+                {speaker: playerSpeaker, text: '不…怎麼會這樣結束…'},
+                {speaker: 'Kaito', text: '可惡…怎麼會變成這樣…'},
+                {speaker: 'Luna', text: `${playerSpeaker}…我好怕…`},
+                {speaker: '敘述者', text: '在嘲笑與怒吼中，三人被鎖鏈捆綁，押往王國監獄。昔日的榮光蕩然無存，故事在恥辱中落幕…'}
+            ]
+        },
+        lunaDeath: {
+            ja: [
+                {speaker: 'ルナ', text: `${playerSpeaker}…ごめんなさい…もう…力尽きて…`},
+                {speaker: playerSpeaker, text: 'ルナ！しっかりしろ！回復魔法を掛ける！'},
+                {speaker: 'カイト', text: '薬！回復薬はどこだ！'},
+                {speaker: playerSpeaker, text: 'ルナ、これを飲め！'},
+                {speaker: 'ルナ', text: '…遅いです…傷が…深すぎて…'},
+                {speaker: 'ルナ', text: `${playerSpeaker}に救われて…一緒にいられて…本当に…幸せでした…`},
+                {speaker: playerSpeaker, text: 'そんな最期の言葉を言うな！絶対に助ける！'},
+                {speaker: 'カイト', text: 'ルナ！目を覚ませ！まだ終わってないんだ！'},
+                {speaker: 'ルナ', text: 'カイト…あなたも…ありがとう…強くなって…'},
+                {speaker: 'ルナ', text: `${playerSpeaker}…大好き…でした…`},
+                {speaker: playerSpeaker, text: 'ルナ…やめろ…頼む…'},
+                {speaker: 'ルナ', text: `さよなら…${playerSpeaker}…`},
+                {speaker: 'ナレーター', text: 'ルナの体から力が抜け、静かに息を引き取った。'},
+                {speaker: playerSpeaker, text: 'ルナァァァァ！！！'},
+                {speaker: 'カイト', text: '嘘だろ…ルナ…'},
+                {speaker: playerSpeaker, text: '俺が…守れなかった…俺のせいだ…'},
+                {speaker: 'ナレーター', text: `深い絶望に沈んだ${playerSpeaker}は、もう剣を握る気力を失い、冒険の道を捨てた。物語は悲しみのうちに終わりを迎えた…`}
+            ],
+            en: [
+                {speaker: 'Luna', text: `${playerSpeaker}... I\'m sorry... I\'ve... run out of strength...`},
+                {speaker: playerSpeaker, text: 'Luna! Stay with me! I\'m casting healing magic!'},
+                {speaker: 'Kaito', text: 'Potion! Where\'s the healing potion?!'},
+                {speaker: playerSpeaker, text: 'Luna, drink this!'},
+                {speaker: 'Luna', text: '...It\'s too late... the wound... is too deep...'},
+                {speaker: 'Luna', text: 'Being saved by you... being together... I was truly... happy...'},
+                {speaker: playerSpeaker, text: 'Don\'t say farewell words! I\'ll definitely save you!'},
+                {speaker: 'Kaito', text: 'Luna! Wake up! It\'s not over yet!'},
+                {speaker: 'Luna', text: 'Kaito... thank you too... get stronger...'},
+                {speaker: 'Luna', text: `${playerSpeaker}... I loved... you...`},
+                {speaker: playerSpeaker, text: 'Luna... stop... please...'},
+                {speaker: 'Luna', text: `Goodbye... ${playerSpeaker}...`},
+                {speaker: 'Narrator', text: 'The strength left Luna\'s body, and she quietly passed away.'},
+                {speaker: playerSpeaker, text: 'LUNAAAAAAA!!!!'},
+                {speaker: 'Kaito', text: 'No way... Luna...'},
+                {speaker: playerSpeaker, text: 'I... couldn\'t protect her... it\'s my fault...'},
+                {speaker: 'Narrator', text: `Sunk in deep despair, ${playerSpeaker} lost the will to hold a sword and abandoned the path of adventure. The story ended in sorrow...`}
+            ],
+            zh: [
+                {speaker: 'Luna', text: `${playerSpeaker}…對不起…我已經…沒力氣了…`},
+                {speaker: playerSpeaker, text: 'Luna！撐住！我要施放治療魔法！'},
+                {speaker: 'Kaito', text: '藥水！治療藥水在哪！'},
+                {speaker: playerSpeaker, text: 'Luna，喝這個！'},
+                {speaker: 'Luna', text: '…太遲了…傷口…太深…'},
+                {speaker: 'Luna', text: '被你救出…能在一起…真的…好幸福…'},
+                {speaker: playerSpeaker, text: '別說遺言！ 我一定救你！'},
+                {speaker: 'Kaito', text: 'Luna！醒醒！還沒結束啊！'},
+                {speaker: 'Luna', text: 'Kaito…也謝謝你…要變強…'},
+                {speaker: 'Luna', text: `${playerSpeaker}…我好喜歡…你…`},
+                {speaker: playerSpeaker, text: 'Luna…別這樣…求你…'},
+                {speaker: 'Luna', text: `再見…${playerSpeaker}…`},
+                {speaker: '敘述者', text: 'Luna身體失去力量，安靜地離去了。'},
+                {speaker: playerSpeaker, text: 'Luna啊啊啊啊！！！'},
+                {speaker: 'Kaito', text: '不會吧…Luna…'},
+                {speaker: playerSpeaker, text: '我…沒能保護她…都是我的錯…'},
+                {speaker: '敘述者', text: `陷入深深絕望的${playerSpeaker}，再也沒有握劍的意志，放棄了冒險之路。故事在悲傷中結束…`}
+            ]
+        },
+        kaitoDeath: {
+            ja: [
+                {speaker: 'カイト', text: '相棒…すまねえ…俺、もう…持たねえ…'},
+                {speaker: playerSpeaker, text: 'カイト！目を覚ませ！今すぐ回復する！'},
+                {speaker: 'ルナ', text: '回復薬！早く！'},
+                {speaker: playerSpeaker, text: 'カイト、これを飲め！'},
+                {speaker: 'カイト', text: '…無駄だよ…致命傷だ…'},
+                {speaker: 'カイト', text: 'お前と冒険できて…最高だったぜ…'},
+                {speaker: 'カイト', text: 'ルナ…お前も…よく頑張ったな…'},
+                {speaker: playerSpeaker, text: '死ぬな！まだ一緒に戦うんだ！'},
+                {speaker: 'ルナ', text: 'カイトさん！諦めないで！'},
+                {speaker: 'カイト', text: 'お前ら…俺の分まで…幸せになれよ…'},
+                {speaker: 'カイト', text: '約束だ…絶対に…強くなれ…'},
+                {speaker: playerSpeaker, text: 'カイト…頼む…'},
+                {speaker: 'カイト', text: 'じゃあな…相棒…'},
+                {speaker: 'ナレーター', text: 'カイトは静かに目を閉じ、二度と開かなかった。'},
+                {speaker: playerSpeaker, text: 'カイトォォォ！！！'},
+                {speaker: 'ルナ', text: 'うそ…カイトさん…'},
+                {speaker: playerSpeaker, text: '俺が弱いせいで…相棒を失った…'},
+                {speaker: 'ナレーター', text: `親友を失った痛みに耐えきれず、${playerSpeaker}は冒険者の道を捨てた。物語は悲劇のまま終わった…`}
+            ],
+            en: [
+                {speaker: 'Kaito', text: 'Buddy... sorry... I can\'t... hold on anymore...'},
+                {speaker: playerSpeaker, text: 'Kaito! Stay awake! I\'m healing you now!'},
+                {speaker: 'Luna', text: 'Healing potion! Hurry!'},
+                {speaker: playerSpeaker, text: 'Kaito, drink this!'},
+                {speaker: 'Kaito', text: '...It\'s no use... fatal wound...'},
+                {speaker: 'Kaito', text: 'Adventuring with you... was the best...'},
+                {speaker: 'Kaito', text: 'Luna... you did great too...'},
+                {speaker: playerSpeaker, text: 'Don\'t die! We\'re still fighting together!'},
+                {speaker: 'Luna', text: 'Kaito! Don\'t give up!'},
+                {speaker: 'Kaito', text: 'You two... be happy... for my share too...'},
+                {speaker: 'Kaito', text: 'Promise me... get stronger... no matter what...'},
+                {speaker: playerSpeaker, text: 'Kaito... please...'},
+                {speaker: 'Kaito', text: 'See ya... buddy...'},
+                {speaker: 'Narrator', text: 'Kaito quietly closed his eyes, never to open them again.'},
+                {speaker: playerSpeaker, text: 'KAITOOOO!!!!'},
+                {speaker: 'Luna', text: 'No... Kaito...'},
+                {speaker: playerSpeaker, text: 'Because I was weak... I lost my best friend...'},
+                {speaker: 'Narrator', text: `Unable to bear the pain of losing his closest friend, ${playerSpeaker} abandoned the path of adventure. The story ended in tragedy...`}
+            ],
+            zh: [
+                {speaker: 'Kaito', text: '夥伴…抱歉…我…撐不住了…'},
+                {speaker: playerSpeaker, text: 'Kaito！醒醒！馬上治療你！'},
+                {speaker: 'Luna', text: '治療藥水！快！'},
+                {speaker: playerSpeaker, text: 'Kaito，喝這個！'},
+                {speaker: 'Kaito', text: '…沒用了…致命傷…'},
+                {speaker: 'Kaito', text: '和你冒險…最棒了…'},
+                {speaker: 'Kaito', text: 'Luna…你也很努力…'},
+                {speaker: playerSpeaker, text: '別死！我們還要一起戰鬥！'},
+                {speaker: 'Luna', text: 'Kaito！別放棄！'},
+                {speaker: 'Kaito', text: '你們…也要為我…幸福…'},
+                {speaker: 'Kaito', text: '答應我…一定要…變強…'},
+                {speaker: playerSpeaker, text: 'Kaito…求你…'},
+                {speaker: 'Kaito', text: '再見…夥伴…'},
+                {speaker: '敘述者', text: 'Kaito靜靜閉上眼睛，再也沒睜開。'},
+                {speaker: playerSpeaker, text: 'Kaito啊啊啊！！！'},
+                {speaker: 'Luna', text: '不…Kaito…'},
+                {speaker: playerSpeaker, text: '因為我太弱…失去了最好的朋友…'},
+                {speaker: '敘述者', text: `無法承受失去摯友的痛苦，${playerSpeaker}放棄了冒險之路。故事以悲劇結束…`}
+            ]
+        },
+        
+        
+    };
+
+    return dialogues[reason][lang] || dialogues[reason].ja; // フォールバック: 日本語
+}
+
+// 新規追加: ゲームオーバー専用ダイアログキュー関数（既存のcompletionQueueを再利用）
+function queueGameOverDialogue(sequence) {
+    if (!sequence || sequence.length === 0) return;
+
+    // 即座に1日終了ボタンを無効化
+    const endBtn = document.querySelector('button[onclick="playDay()"]');
+    if (endBtn) endBtn.disabled = true;
+
+    // ゲームオーバーpendingフラグを設定（複数トリガー防止）
+    gameState.pendingGameOver = true;
+
+    // 既存のcompletionQueueにpush（クエスト完了と混在OK、gameOver優先で後続処理なし）
+    completionQueue.push(sequence);
+
+    // 再生中でなければ即開始（dialogueBgmへクロスフェード）
+    if (!isPlayingDialogue) {
+        crossfadeTo('GameoverBgm', 2000);
+        playNextDialogue();
+    }
 }

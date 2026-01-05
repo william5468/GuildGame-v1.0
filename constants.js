@@ -1,4 +1,5 @@
 
+
 // === constants.js に追加（既存のmaterialShopの下あたりに） ===
 const resources = [
     t('resource_iron_ore'),
@@ -201,6 +202,10 @@ const assetsToLoad = [
     "Audio/bgm.mp3",
     "Audio/yume.mp3",
     "Audio/battle.mp3",
+    "Audio/battle2.mp3",
+    "Audio/dialogue_bgm.mp3",
+    "Audio/levelup.mp3",
+    "Audio/Gameover.mp3",
     "Audio/STR_lightAttack.mp3",
     "Audio/WIS_lightAttack.mp3",
     "Audio/DEX_lightAttack.mp3",
@@ -230,29 +235,47 @@ const QuestCompletionDialogue = {
         'F': [
             // 0: スライム5匹討伐（依頼主: 農夫）
             [
-                {speaker: "冒険者", text: "村周辺のスライム5匹をすべて倒してきました。……正直、跳ねまくって疲れました。"},
-                {speaker: "カイト", text: "ははっ！スライムごときでヘトヘトかよ？俺なら一撃でゼリーみたいに潰してたぜ！"},
-                {speaker: "ギルドマスター", text: "カイト、黙ってろ。依頼主の農夫が待ってるぞ。"},
-                {speaker: "農夫", text: "スライムを5匹とも倒してくれたんだね！作物が溶けずに済んでほんと助かるよ……って、ゼリーって食べ物じゃないよね？怖い怖い！ありがとう冒険者さん！"},
-                {speaker: "ギルドマスター", text: "報酬だ。次はカイトを連れてったらスライム汁まみれになるかもな。"}
-            ],
-            // 1: 巨大ネズミ退治（依頼主: 酒場主人）
+            {speaker: 'ルナ', text: 'ただいま戻りました。村周辺のスライム5匹、すべて討伐完了です。'},
+            {speaker: 'カイト', text: 'おお、スライム退治か！跳ねまくって面倒くさかっただろ？俺なら一瞬で潰してたぜ！'},
+            {speaker: 'ルナ', text: '確かに疲れました…体中スライム液まみれで…'},
+            {speaker: '{PLAYER}', text: 'お疲れ様、ルナ。よくやってくれた。カイトは黙ってろよ、依頼主の農夫さんが待ってるぞ。'},
+            {speaker: 'カイト', text: 'ちぇっ、俺も行きたかったなあ～。スライム汁で滑って転ぶとこ見たかったぜ！'},
+            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。農夫さんに報告に行きましょう。`},
+            {speaker: '農夫', text: 'おお、冒険者さん！スライムを全部倒してくれたんだね！作物が溶けずに済んで本当に助かったよ！'},
+            {speaker: '農夫', text: 'あのゼリーみたいなスライム…食べ物じゃないよね？怖い怖い！ありがとう！'},
+            {speaker: '{PLAYER}', text: '無事で何よりだ。こちらが報酬だよ。次はカイトを連れてったらスライムまみれになるかもな。'},
+            {speaker: 'カイト', text: 'おっ！俺の出番キター！'},
+            {speaker: 'ルナ', text: 'それは…ご勘弁を…'}
+        ],
             [
-                {speaker: "冒険者", text: "酒場の地下室の巨大ネズミを全部退治しました。……噛まれそうでヒヤヒヤしました。"},
-                {speaker: "カイト", text: "巨大ネズミ！？でかかったんだろ？俺も行きたかったな～、剣でぶった斬ってやりたかったぜ！"},
-                {speaker: "ギルドマスター", text: "カイト、お前がいると酒場が血の海になる。酒場主人に報告だ。"},
-                {speaker: "酒場主人", text: "巨大ネズミを全部退治してくれたか！これで地下室がまた使えるよ。一杯おごるぜ……って、血の海は勘弁な！本当に感謝だ！"},
-                {speaker: "ギルドマスター", text: "これが報酬だ。カイト、次はネズミ狩りお前に行かせてやるからな。"}
-            ],
+            {speaker: 'ルナ', text: '酒場の地下室にいた巨大ネズミ、すべて退治しました。'},
+            {speaker: 'カイト', text: '巨大ネズミ！？どれくらいデカかったんだ？俺の剣でぶった斬りたかったぜ！'},
+            {speaker: 'ルナ', text: 'かなり大きくて…噛まれそうで怖かったです…'},
+            {speaker: '{PLAYER}', text: 'よくやったな、ルナ。無事でよかった。カイト、お前がいると酒場が血まみれになるぞ。'},
+            {speaker: 'カイト', text: 'それがいいんじゃないか！派手でカッコいいだろ！'},
+            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。酒場主人に報告しましょう。`},
+            {speaker: '酒場主人', text: 'おお！巨大ネズミを全部片付けてくれたのか！これで地下室がまた使えるよ！'},
+            {speaker: '酒場主人', text: '一杯おごるぜ…って、血の海は遠慮したいがな！本当に助かった、ありがとう！'},
+            {speaker: '{PLAYER}', text: 'よかったな。これが報酬だ。カイト、次はネズミ狩りお前に任せてやるよ。'},
+            {speaker: 'カイト', text: 'マジか！？楽しみだぜ！'},
+            {speaker: 'ルナ', text: '酒場が…大変なことになりそうです…'}
+        ],
             // 2: 野犬3匹討伐（依頼主: 農夫）
             [
-                {speaker: "冒険者", text: "農場を襲っていた野犬3匹を倒してきました。家畜は無事です。"},
-                {speaker: "カイト", text: "野犬か！いいねえ、追いかけっこ楽しそうだぜ！次は俺に任せろよ！"},
-                {speaker: "ギルドマスター", text: "お前が行ったら家畜まで追いかけそうだ。農夫に伝えてやろう。"},
-                {speaker: "農夫", text: "野犬3匹を倒してくれて家畜が無事だよ！みんな感謝してる……って、追いかけっこって遊びじゃないよね？ありがとう冒険者さん！"},
-                {speaker: "ギルドマスター", text: "報酬だ。カイトは次回お留守番な。"}
-            ]
-        ],
+            {speaker: 'ルナ', text: '農場を襲っていた野犬3匹、すべて倒してきました。家畜は無事です。'},
+            {speaker: 'カイト', text: '野犬か！追いかけっこして斬りまくりたかったぜ！'},
+            {speaker: 'ルナ', text: '速くて…本当に危なかったです…'},
+            {speaker: '{PLAYER}', text: 'お疲れ、ルナ。家畜が無事でよかったな。カイト、お前が行ったら家畜まで追いかけそうだ。'},
+            {speaker: 'カイト', text: 'ははっ！それも楽しそうだろ！犬も家畜も大運動会だ！'},
+            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。農夫さんに報告に行きましょう。`},
+            {speaker: '農夫', text: '野犬を全部倒してくれたんだね！家畜が無事でみんな安心だよ！'},
+            {speaker: '農夫', text: '追いかけっこって…遊びじゃないよね？怖いなあ、本当にありがとう！'},
+            {speaker: '{PLAYER}', text: '安心してくれて何よりだ。これが報酬だ。カイトは次回お留守番な。'},
+            {speaker: 'カイト', text: 'えー！俺も行きたいのにー！'},
+            {speaker: 'ルナ', text: 'それが…一番安全かもしれません…'}
+        ]
+    ],
+        
         'F+': [
             // 0: ゴブリン8匹討伐（依頼主: 街道の衛兵）
             [
@@ -527,29 +550,54 @@ const QuestCompletionDialogue = {
     {
         'F': [
             // 0: ペンダント探索
-            [
-                {speaker: "冒険者", text: "町で失くされた大切なペンダントを見つけました。"},
-                {speaker: "ルナ", text: "ふふ、私ならもっと早く見つけてたかも。でもよく頑張ったわね。"},
-                {speaker: "ギルドマスター", text: "ルナ、自慢は後にしろ。おばあさんに返してやれ。"},
-                {speaker: "おばあさん", text: "失くしたペンダントを見つけてくれたのね……大事な思い出の品だったのよ。涙が出ちゃう……本当にありがとう！"},
-                {speaker: "ギルドマスター", text: "報酬を受け取ってくれ。ルナ、次は探し物競争でもするか？"}
-            ],
+[
+            {speaker: 'ルナ', text: '町で失くされたおばあさんのペンダント、無事に見つけました！路地裏の石の下に落ちてました。'},
+            {speaker: '{PLAYER}', text: 'よく見つけたな、ルナ。細かいところまで探すのが上手いよ。'},
+            {speaker: 'カイト', text: 'へっ、そんな小さいもん俺なら一瞬で嗅ぎつけてたぜ！ルナ、ただの運だろ？'},
+            {speaker: 'ルナ', text: 'ふふ、カイトさんには無理ですよ。ちゃんと推理しないと♪'},
+            {speaker: 'カイト', text: 'なんだと！？…って、この彫刻…なんか見たことあるな。昔のギルドマスターの…'},
+            {speaker: 'ルナ', text: `カ、カイトさん！今はダメです！{PLAYER}、早くおばあさんに返しましょう。`},
+            {speaker: '{PLAYER}', text: '…ギルドマスターの？まあいい、後で聞く。おばあさん、ペンダントです。'},
+            {speaker: 'おばあさん', text: 'ああ、私の大事なペンダント…！この彫刻は昔の収穫祭でもらったものなの。戦争の噂がない平和な頃の思い出よ…'},
+            {speaker: 'おばあさん', text: '最近また国境で兵が動いてるって聞いて心配だったわ。本当にありがとう、涙が出ちゃう…'},
+            {speaker: '{PLAYER}', text: '無事でよかった。これが報酬だよ。祭りの思い出、大事にしてください。'},
+            {speaker: 'カイト', text: '国境の話か…旅人から聞いたぜ、王国軍が強化されてるらしいな。'},
+            {speaker: 'ルナ', text: '{PLAYER}、私たちも気を引き締めないとですね…'},
+            {speaker: '{PLAYER}', text: 'ああ、そうだな。少しずつ、昔のことが気になり始めてるよ。'}
+        ],
             // 1: 隠し宝箱発見
             [
-                {speaker: "冒険者", text: "近所の森に隠された小さな宝箱を発見しました。"},
-                {speaker: "ルナ", text: "隠し場所のヒントは木の根元だったんでしょう？私の推理通りね～。"},
-                {speaker: "ギルドマスター", text: "ルナ、後で解説しろ。まずは村人に報告だ。"},
-                {speaker: "村人", text: "森の隠し宝箱を見つけてくれたんだ！よくそんなところに気づいたな。中身は君の報酬だよ、受け取ってくれ！"},
-                {speaker: "ギルドマスター", text: "報酬はしっかりと。ルナの推理料は別料金だ。"}
-            ],
+            {speaker: 'カイト', text: '森の隠し宝箱、見つけたぜ！木の根元に埋まってた…って、中身金貨3枚だけかよ！？'},
+            {speaker: '{PLAYER}', text: '見つけただけで大したもんだ、カイト。小さくても価値はあるさ。'},
+            {speaker: 'ルナ', text: 'カイトさん、期待しすぎです。この古銭、昔の王政時代のものですね。珍しいですよ。'},
+            {speaker: 'カイト', text: `ちっ、もっと山盛り想像してたのに…あれ？この場所、前のギルドマスターが{PLAYER}を連れて隠れんぼしてた…`},
+            {speaker: 'ルナ', text: 'カイトさん！余計なこと言わないで！村人に報告しましょう。'},
+            {speaker: '{PLAYER}', text: '隠れんぼ…？子供の頃ここで遊んでたのか？'},
+            {speaker: 'カイト', text: 'お、おっと！忘れてくれ！村人待ってるぜ！'},
+            {speaker: '村人', text: '本当に隠し宝箱を見つけてくれたのか！子供の頃聞いた伝説が本当だったんだ。中身は報酬として受け取ってくれ！'},
+            {speaker: '村人', text: 'この古銭、王政時代のだ。最近王族の血筋がどうのって噂があって、みんなざわついてるよ。'},
+            {speaker: '{PLAYER}', text: '伝説が本当でよかった。これで報酬だ。王政の話、気になりますね。'},
+            {speaker: 'ルナ', text: `{PLAYER}、この場所で何か思い出せそうですか？懐かしい感じしませんか？`},
+            {speaker: 'カイト', text: 'ゆっくりでいいさ。俺たちはずっと一緒にいるぜ。'},
+            {speaker: '{PLAYER}', text: '…うん、少し温かい気持ちになるな。ありがとう。'}
+        ],
             // 2: 井戸の秘密
-            [
-                {speaker: "冒険者", text: "古い井戸の底に隠された秘密を見つけました。"},
-                {speaker: "ルナ", text: "井戸の秘密……もしかして古代の魔法陣？私の本に載ってたわ！"},
-                {speaker: "ギルドマスター", text: "ルナ、興奮しすぎ。学者に伝えてやろう。"},
-                {speaker: "学者", text: "井戸の底の秘密を暴いてくれたか！昔の謎が解けて最高に面白いよ。報告ありがとう！"},
-                {speaker: "ギルドマスター", text: "これが報酬だ。ルナ、次は一緒に本読むか？"}
-            ]
+[
+            {speaker: 'ルナ', text: '古い井戸の底の秘密、発見しました！苔の下に古代の魔法陣が光ってました。'},
+            {speaker: '{PLAYER}', text: '危なかったろ？無事でよかった、ルナ。よく潜れたな。'},
+            {speaker: 'カイト', text: '魔法陣！？すげえ！俺も飛び込みたかったぜ、井戸の底って冒険っぽいだろ！'},
+            {speaker: 'ルナ', text: 'カイトさん、落ちたら死にますよ…あ、{PLAYER}も昔ここで…'},
+            {speaker: 'カイト', text: `ああ！前のギルドマスターが{PLAYER}を助けに飛び込んだんだよな！…って、言っちゃった！`},
+            {speaker: '{PLAYER}', text: '俺が井戸に落ちた…？それで記憶が…？'},
+            {speaker: 'ルナ', text: '今は学者さんに報告を優先しましょう！魔法陣、最近すごく輝いてるんです。'},
+            {speaker: '学者', text: '井戸の魔法陣を暴いてくれたのか！素晴らしい！古代の封印陣だよ、興奮する！'},
+            {speaker: '学者', text: '最近首都でも似た陣が反応してるって報告があってね。魔力の大きな異変が起きているのかもしれない…大発見だ！'},
+            {speaker: '{PLAYER}', text: '魔力異変か…気になるな。これが報酬だ。研究を続けてください。'},
+            {speaker: 'カイト', text: '異変のせいで魔物も強くなってんのか？冒険が熱くなりそうぜ！'},
+            {speaker: 'ルナ', text: `{PLAYER}、昔の井戸の話…いつかちゃんと話しますね。`},
+            {speaker: '{PLAYER}', text: 'ああ、頼む。少しずつ、思い出が戻ってきそうな気がする。'},
+            {speaker: 'カイト', text: `俺たちがいれば大丈夫だぜ、{PLAYER}！`}
+        ]
         ],
         'F+': [
             // 0: 滝の裏の洞窟発見（依頼主: 探検家）
@@ -819,30 +867,54 @@ const QuestCompletionDialogue = {
         'F': [
             // 0: 農夫護衛
             [
-                {speaker: "冒険者", text: "農夫さんを近くの市場まで無事に護衛しました。"},
-                {speaker: "カイト", text: "道中何も起きなかったのか？つまんねーな！"},
-                {speaker: "ルナ", text: "カイト、何も起きないのが一番良いのよ。"},
-                {speaker: "ギルドマスター", text: "二人とも静かに。農夫さん、感想をどうぞ。"},
-                {speaker: "農夫", text: "無事に市場まで着けたよ。怖い思いせずに済んで本当に助かった！ありがとう冒険者さん！"},
-                {speaker: "ギルドマスター", text: "報酬を受け取れ。次はカイトも護衛につけたら面白くなりそうだな……。"}
+            {speaker: 'カイト', text: '農夫さんを市場まで無事護衛完了！道中何も起きねえで超つまんねえ旅だったぜ！'},
+            {speaker: '{PLAYER}', text: '無事で何よりだ、カイト。平和が一番だろ。'},
+            {speaker: 'ルナ', text: 'カイトさん、事件が起きなくてよかったですよ。あなたが暴れ出したら農夫さんが可哀想ですもの。'},
+            {speaker: 'カイト', text: `おいおい、俺の活躍見たかっただろ農夫さん！…あれ？この道、昔前のギルドマスターが商隊護衛してた…`},
+            {speaker: 'ルナ', text: 'カイトさん！今は黙ってて！{PLAYER}、農夫さんに報告しましょう。'},
+            {speaker: '{PLAYER}', text: '商隊護衛…？父さんの話か？まあ後で聞くよ。農夫さん、無事着きましたね。'},
+            {speaker: '農夫', text: '本当にありがとう！最近交易路で盗賊が増えて怖くて一人じゃ行けなかったんだ。市場で高く売れたよ！'},
+            {speaker: '農夫', text: '国境で税金も上がってるって噂で、物価高騰しそう…君たちのおかげで助かった！'},
+            {speaker: '{PLAYER}', text: '盗賊増加か…危ないな。これが報酬だ。気をつけて帰ってください。'},
+            {speaker: 'カイト', text: '税金アップ？王国が金集めて戦争準備かよ。面白くなってきたぜ！'},
+            {speaker: 'ルナ', text: '{PLAYER}、昔の護衛話…少し気になりますか？'},
+            {speaker: '{PLAYER}', text: 'ああ、なんか懐かしい道だな。もっと知りたくなってきた。'},
+            {speaker: 'カイト', text: 'へへ、ゆっくり思い出せよ。俺たちがついてるぜ！'}
             ],
-            // 1: 子供送迎
+            // 1: 子供送迎（依頼主: 親）
+            // ユーモア: ルナの過保護母性爆発 vs カイトの剣遊び提案、過去ヒント: 父が子供時代に似た橋護衛、ニュース: 橋崩落事故と魔物接近
             [
-                {speaker: "冒険者", text: "子供を危険な橋を渡って無事に家まで送りました。"},
-                {speaker: "ルナ", text: "子供って可愛いわよね～。私もお菓子あげたくなっちゃう。"},
-                {speaker: "カイト", text: "俺は一緒に剣の練習したかったけどな！"},
-                {speaker: "ギルドマスター", text: "二人とも子供の前では大人しくしろ。親御さんに確認しよう。"},
-                {speaker: "親", text: "子供を無事に送ってくれて本当にありがとう！心配で死にそうだったわ……感謝してもしきれないよ。"},
-                {speaker: "ギルドマスター", text: "報酬だ。優しい心が伝わったな。"}
+            {speaker: 'ルナ', text: '危険な橋を渡って子供を無事家まで送りました！途中で手つないであげましたよ～。'},
+            {speaker: '{PLAYER}', text: '優しいな、ルナ。子供も喜んでたろ。よくやった。'},
+            {speaker: 'カイト', text: '橋渡りだけかよ！俺なら子供に木剣渡して一緒に魔物退治ごっこしたのに！'},
+            {speaker: 'ルナ', text: `カイトさん、それは危ないです！子供が怖がっちゃいます…あ、この橋、{PLAYER}小さい頃に…`},
+            {speaker: 'カイト', text: `そうだよな！前のギルドマスターが{PLAYER}を抱えて渡ったんだぜ！…あ、口滑った！`},
+            {speaker: '{PLAYER}', text: '俺がこの橋で…？抱えられて渡ったのか？詳しく教えてくれ。'},
+            {speaker: 'ルナ', text: '今は親御さんに報告優先です！最近橋近くで魔物出没してるんですよ。'},
+            {speaker: '親', text: '子供が無事帰ってきた！あの崩落しそうな橋、一人じゃ怖くて…本当にありがとう！'},
+            {speaker: '親', text: '最近事故も増えてるし、魔物が近づいてきてるって村で話題だよ。君たちに頼んで正解だった！'},
+            {speaker: '{PLAYER}', text: '魔物接近か…用心しないとな。これが報酬だ。子供も元気で。'},
+            {speaker: 'カイト', text: '橋事故？魔物絡みだろ。次は俺が子供守って派手にやるぜ！'},
+            {speaker: 'ルナ', text: '{PLAYER}、あの橋の記憶…少し蘇りそうですか？'},
+            {speaker: '{PLAYER}', text: '…うん、風の感じとか、懐かしいよ。ありがとうな。'}
             ],
-            // 2: 使者護衛
+            // 2: 使者護衛（依頼主: 村長）
+            // ユーモア: カイトのスパイ妄想 vs ルナの現実突き、過去ヒント: 父が重要な手紙護衛、ニュース: 村間同盟の手紙と王都政変噂
             [
-                {speaker: "冒険者", text: "手紙を届ける使者を無事に守りきりました。"},
-                {speaker: "カイト", text: "スパイとか出てこなかったのか？出てきたら俺がぶった斬ってたのに！"},
-                {speaker: "ルナ", text: "カイト、平和が一番よ。"},
-                {speaker: "ギルドマスター", text: "お前ら、たまには静かにしろ。村長に報告だ。"},
-                {speaker: "村長", text: "使者を守って手紙を無事届けられたよ。重要な内容だったんだ、君のおかげで村が救われた。本当にありがとう！"},
-                {speaker: "ギルドマスター", text: "これが報酬だ。次はカイトとルナも同行させたらドラマになりそうだな。"}
+            {speaker: 'カイト', text: '使者の手紙護衛完了！スパイ一匹も出てこねえでガッカリだぜ！'},
+            {speaker: '{PLAYER}', text: '無事に届いてよかったよ、カイト。平和が一番だ。'},
+            {speaker: 'ルナ', text: 'カイトさん、妄想しすぎです。使者さんもホッとしてましたよ。'},
+            {speaker: 'カイト', text: 'スパイ出てきたら俺が一閃だろ！…この道、昔前のギルドマスターが大事な手紙運んだ…'},
+            {speaker: 'ルナ', text: `カイトさん！今言うことじゃないです！{PLAYER}、村長さんに報告を。`},
+            {speaker: '{PLAYER}', text: '大事な手紙…？父さんが？気になるな。村長、無事届きました。'},
+            {speaker: '村長', text: '使者が無事で手紙届いたよ！これで村の同盟が決まるんだ。本当に感謝だ！'},
+            {speaker: '村長', text: '王都で政変の噂もある中、こんな重要な書状を守ってくれて…君たちのギルドは頼りになる！'},
+            {speaker: '{PLAYER}', text: '同盟と政変か…世の中変わりそうだな。これが報酬だ。お役に立ててよかった。'},
+            {speaker: 'カイト', text: '政変！？王様交代か？冒険の予感しかしねえぜ！'},
+            {speaker: 'ルナ', text: `{PLAYER}、手紙護衛の昔話…いつか聞きたいですか？`},
+            {speaker: 'カイト', text: `そうだぜ、{PLAYER}。俺たちが全部知ってるからな！`},
+            {speaker: '{PLAYER}', text: 'ああ、頼むよ。少しずつ、俺の過去が見えてきそうで…楽しみだ。'},
+            {speaker: 'ルナ', text: 'ふふ、私たちも嬉しいです。一緒に思い出しましょう♪'}
             ]
         ],
         'F+': [
@@ -1123,31 +1195,55 @@ const QuestCompletionDialogue = {
     {
         'F': [
             // 0: 薬草集め
-            [
-                {speaker: "冒険者", text: "錬金術師のために頼まれた薬草をしっかり集めてきました。"},
-                {speaker: "ルナ", text: "この薬草、回復ポーションに最適ね！私も少し欲しいわ～。"},
-                {speaker: "ギルドマスター", text: "ルナ、後で分けてやるから我慢しろ。錬金術師に見せてやろう。"},
-                {speaker: "錬金術師", text: "薬草をちゃんと集めてきてくれたね！これで新しい薬が作れるよ。本当に助かる、ありがとう！"},
-                {speaker: "ギルドマスター", text: "報酬を受け取ってくれ。ルナのポーション実験はまた今度な。"}
-            ],
-            // 1: キノコ集め
-            [
-                {speaker: "冒険者", text: "料理人に頼まれた新鮮なキノコを持ってきました。"},
-                {speaker: "カイト", text: "キノコ！？今夜はキノコ鍋だろ！？俺、5杯はいけるぜ！"},
-                {speaker: "ルナ", text: "カイト、食べすぎたらお腹壊すわよ。"},
-                {speaker: "ギルドマスター", text: "二人とも食うことしか考えてないな。料理人に渡そう。"},
-                {speaker: "料理人", text: "新鮮なキノコを持ってきてくれたか！今夜の料理が最高になるよ。みんな喜ぶぜ、感謝だ！"},
-                {speaker: "ギルドマスター", text: "報酬だ。……夕飯はキノコ尽くしになりそうだな。"}
-            ],
-            // 2: 花集め
-            [
-                {speaker: "冒険者", text: "村人に頼まれたきれいな花を集めて届けました。"},
-                {speaker: "ルナ", text: "この花、香りがとっても良いわ！ギルドに飾りましょうよ～。"},
-                {speaker: "カイト", text: "花より団子だろ……って、ルナに怒られそうだから黙っとく。"},
-                {speaker: "ギルドマスター", text: "たまには二人とも可愛いこと言うな。村人に感想を聞いてみよう。"},
-                {speaker: "村人", text: "きれいな花を届けてくれたんだね！みんな笑顔になってるよ。君の優しさが伝わった、本当にありがとう！"},
-                {speaker: "ギルドマスター", text: "報酬を受け取れ。ギルドが花畑みたいになりそうだ。"}
-            ]
+[
+        {speaker: 'ルナ', text: '錬金術師さん依頼の薬草、指定通り全部集めてきました！新鮮ですよ～。'},
+        {speaker: '{PLAYER}', text: 'よくやった、ルナ。森の奥まで行ったんだろ？お疲れ。'},
+        {speaker: 'カイト', text: '薬草かあ。俺なら踏み潰してたかもな！でもポーション作れるなら悪くねえぜ。'},
+        {speaker: 'ルナ', text: 'カイトさん、これで強力な回復ポーションが作れます！最近魔力が薄れてるから、貴重なんですよ。'},
+        {speaker: '{PLAYER}', text: '魔力薄い？最近魔物も弱ってるって話は聞いてたけど…。'},
+        {speaker: 'カイト', text: 'じゃあこの薬草で魔力増幅ポーションとか作れねえかな？俺の剣に塗ったら最強だろ！'},
+        {speaker: 'ルナ', text: '面白いアイデアですね！でも爆発しそうで怖いです…錬金術師さんに聞いてみましょう。'},
+        {speaker: '錬金術師', text: 'おお、完璧な薬草だ！これで通常の回復ポーションが20個は作れるよ。最近魔力枯渇で材料が高騰しててね…助かる！'},
+        {speaker: '錬金術師', text: '魔力増幅剤？いいアイデアだね！失敗したら大爆発だけど、成功したら武器強化に革命だよ。実験してみる価値ありだ！'},
+        {speaker: '{PLAYER}', text: '実験成功したらギルドにも分けてくれよ。これが報酬だ。楽しみだな。'},
+        {speaker: 'カイト', text: 'やったぜ！俺の剣が無敵になる日が来るかも！'},
+        {speaker: 'ルナ', text: '{PLAYER}、私たちは回復ポーション優先でお願いしますね♪'},
+        {speaker: '{PLAYER}', text: 'はは、わかったよ。世界が変わりそうな予感がするな。'}
+    ],
+    // 1: 料理人のためのキノコ集め
+    // 焦点: キノコの料理用途、新たなレシピアイデア（スタミナ料理）、世界: 豊作の年で祭り準備、キノコで保存食増加
+    [
+        {speaker: 'カイト', text: '料理人依頼の新鮮キノコ、大量に集めてきたぜ！今夜はキノコ祭りだろ！？'},
+        {speaker: '{PLAYER}', text: '大量すぎるだろ、カイト。よくそんなに採れたな。お疲れ。'},
+        {speaker: 'ルナ', text: 'このキノコ、香りが最高です！普通のスープがごちそうになりますよ～。'},
+        {speaker: 'カイト', text: '俺はキノコステーキがいいぜ！冒険者のスタミナが3倍になるやつ！'},
+        {speaker: 'ルナ', text: 'スタミナアップ料理？いいですね！この年の豊作でキノコがいっぱいだから、保存食にも最適です。'},
+        {speaker: '{PLAYER}', text: '豊作の年か。最近村が賑わってるのはそれか…祭りの準備も進んでるみたいだな。'},
+        {speaker: 'カイト', text: '祭り！？キノコ料理コンテストとかやったら俺が優勝だぜ！新レシピ考えとくか！'},
+        {speaker: '料理人', text: '素晴らしいキノコだ！今夜の宴会メニューが決まったよ。この豊作でみんな腹いっぱい食える！'},
+        {speaker: '料理人', text: 'スタミナ料理のアイデア？冒険者向けに開発してみるか！キノコの乾燥粉末で長期保存もできるし、交易品にもなるよ。'},
+        {speaker: '{PLAYER}', text: '交易品か…村がもっと栄えそうだな。これが報酬だ。宴会楽しみにしてるよ。'},
+        {speaker: 'ルナ', text: '{PLAYER}、私たちも新レシピ試食会しましょう♪'},
+        {speaker: 'カイト', text: 'もちろん俺が一番食うぜ！腹減ったー！'},
+        {speaker: '{PLAYER}', text: 'はは、みんなで楽しもう。いい年になりそうだ。'}
+    ],
+    // 2: 村人のための花集め
+    // 焦点: 花の装飾・染料用途、新たなアイデア（香り袋や癒し茶）、世界: 花の季節で結婚式増加、花粉症対策の需要
+    [
+        {speaker: 'ルナ', text: '村人さん依頼のきれいな花、たくさん集めてきました！香りが素晴らしいです～。'},
+        {speaker: '{PLAYER}', text: 'いい匂いだな、ルナ。ギルドに飾ったら癒されそうだ。よく採れたな。'},
+        {speaker: 'カイト', text: '花かあ…俺なら踏んづけてたかも。って、ルナに殺されるから黙っとく！'},
+        {speaker: 'ルナ', text: 'この花、染料にもなるんですよ！服が鮮やかになってみんな喜びます。'},
+        {speaker: '{PLAYER}', text: '染料か。最近結婚式が多いって聞いたけど、花の季節だからか？'},
+        {speaker: 'カイト', text: '結婚式！？花束投げで俺がキャッチしたら次は俺の番だぜ！…って冗談だよ。'},
+        {speaker: 'ルナ', text: '面白いアイデアですけど…この花で香り袋作ったら？部屋がずっと良い匂いで癒されますよ！'},
+        {speaker: '村人', text: '美しい花をありがとう！村の広場が花畑みたいになるよ。最近結婚ラッシュでちょうど欲しかったんだ！'},
+        {speaker: '村人', text: '香り袋や癒しのお茶にも使えるね。花粉症の薬草と混ぜたら今年の需要に応えられるよ。みんな助かる！'},
+        {speaker: '{PLAYER}', text: '癒し茶か…冒険者の疲れも取れそうだな。これが報酬だ。村が華やかになるな。'},
+        {speaker: 'ルナ', text: '{PLAYER}、ギルドにも香り袋作りましょう！私、手伝います♪'},
+        {speaker: 'カイト', text: '俺は…匂い嗅ぐだけにするぜ。花粉症になんねえよう祈っとく！'},
+        {speaker: '{PLAYER}', text: 'はは、みんなで作ろう。村もギルドも明るくなりそうだ。'}
+    ]
         ],
         'F+': [
             // 0: 鉄の欠片集め（依頼主: 鍛冶屋）
@@ -1432,28 +1528,45 @@ const QuestCompletionDialogue = {
       'F': [
         // 0: Kill 5 Slimes (Client: Farmer)
         [
-          {speaker: "Adventurer", text: "I took down all 5 slimes around the village... Honestly, they were bouncing everywhere and it wore me out."},
-          {speaker: "Kaito", text: "Hah! You got tired from slimes? I'd have squashed them into jelly with one hit!"},
-          {speaker: "Guild Master", text: "Kaito, shut it. The farmer client is waiting."},
-          {speaker: "Farmer", text: "You really got all 5 slimes! My crops are safe from dissolving now... Wait, jelly isn't food, right? Scary! Thank you so much, adventurer!"},
-          {speaker: "Guild Master", text: "Here's your reward. Next time we bring Kaito, you might end up covered in slime juice."}
-        ],
-        // 1: Exterminate Giant Rats (Client: Tavern Owner)
-        [
-          {speaker: "Adventurer", text: "I cleared out all the giant rats in the tavern basement... Nearly got bitten, it was nerve-wracking."},
-          {speaker: "Kaito", text: "Giant rats!? How big were they? I wanted to go and slice them up!"},
-          {speaker: "Guild Master", text: "If you'd gone, Kaito, the tavern would be a sea of blood. Let's report to the owner."},
-          {speaker: "Tavern Owner", text: "You wiped out all the giant rats! I can use the basement again. I'll treat you to a drink... but no bloodbaths, please! Really, thank you!"},
-          {speaker: "Guild Master", text: "Here's your reward. Kaito, next rat hunt is all yours."}
-        ],
-        // 2: Kill 3 Wild Dogs (Client: Farmer)
-        [
-          {speaker: "Adventurer", text: "I took down the 3 wild dogs attacking the farm. The livestock is safe."},
-          {speaker: "Kaito", text: "Wild dogs! Sounds fun—like a chase! Leave the next one to me!"},
-          {speaker: "Guild Master", text: "If you went, Kaito, you'd chase the livestock too. Let's tell the farmer."},
-          {speaker: "Farmer", text: "You got all 3 wild dogs and saved my livestock! Everyone's grateful... Wait, chasing isn't a game, right? Thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward time. Kaito, you're on standby next round."}
+            {speaker: 'Luna', text: 'We\'re back. All five slimes around the village have been defeated.'},
+            {speaker: 'Kaito', text: 'Oh, slime hunting! Must\'ve been annoying with all that bouncing, huh? I\'d have squashed \'em in one hit!'},
+            {speaker: 'Luna', text: 'It was exhausting... I\'m covered in slime goo...'},
+            {speaker: '{PLAYER}', text: 'Good work, Luna. You did great. Kaito, be quiet—the farmer client is waiting.'},
+            {speaker: 'Kaito', text: 'Tch, I wanted to go too~ Would\'ve loved seeing someone slip in slime juice!'},
+            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s go report to the farmer.`},
+            {speaker: 'Farmer', text: 'Oh, adventurers! You took care of all the slimes? My crops are safe—thank you so much!'},
+            {speaker: 'Farmer', text: 'Those jelly-like slimes... they\'re not food, right? Scary! Thanks again!'},
+            {speaker: '{PLAYER}', text: 'Glad everything\'s okay. Here\'s your reward. If I send Kaito next time, you might get covered in slime.'},
+            {speaker: 'Kaito', text: 'Yes! My turn next!'},
+            {speaker: 'Luna', text: 'Please... spare me that...'}
         ]
+        // 1: Exterminate Giant Rats (Client: Tavern Owner)
+[
+            {speaker: 'Luna', text: 'All the giant rats in the tavern basement have been exterminated.'},
+            {speaker: 'Kaito', text: 'Giant rats!? How big were they? I wanted to slice \'em up with my sword!'},
+            {speaker: 'Luna', text: 'Pretty big... I was scared of getting bitten...'},
+            {speaker: '{PLAYER}', text: 'Nice job, Luna. Glad you\'re safe. Kaito, if you went, the tavern would be a bloodbath.'},
+            {speaker: 'Kaito', text: 'That\'s what makes it cool! Flashy and awesome!'},
+            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s report to the tavern owner.`},
+            {speaker: 'Tavern Owner', text: 'Oh! You got rid of all the giant rats? Now I can use the basement again!'},
+            {speaker: 'Tavern Owner', text: 'Drinks on the house... but no bloodbaths, please! Really, thank you!'},
+            {speaker: '{PLAYER}', text: 'Good to hear. Here\'s the reward. Kaito, next rat hunt is all yours.'},
+            {speaker: 'Kaito', text: 'For real!? Can\'t wait!'},
+            {speaker: 'Luna', text: 'The tavern... is going to be a mess...'}
+        ],
+[
+            {speaker: 'Luna', text: 'The three wild dogs attacking the farm have all been taken down. The livestock is safe.'},
+            {speaker: 'Kaito', text: 'Wild dogs! I wanted to chase \'em down and slash away!'},
+            {speaker: 'Luna', text: 'They were fast... it was really dangerous...'},
+            {speaker: '{PLAYER}', text: 'Good work, Luna. Glad the livestock is unharmed. Kaito, if you went, you\'d chase the livestock too.'},
+            {speaker: 'Kaito', text: 'Haha! That\'d be fun too! Dogs and livestock in a big race!'},
+            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s go report to the farmer.`},
+            {speaker: 'Farmer', text: 'You defeated all the wild dogs? Everyone\'s relieved the livestock is safe!'},
+            {speaker: 'Farmer', text: 'Chasing games... that\'s not playing, right? Scary! Thank you so much!'},
+            {speaker: '{PLAYER}', text: 'Good to hear. Here\'s the reward. Kaito, you\'re staying home next time.'},
+            {speaker: 'Kaito', text: 'Aww! I wanna go too!'},
+            {speaker: 'Luna', text: 'That... might be the safest option...'}
+        ],
       ],
       'F+': [
         // 0: Kill 8 Goblins (Client: Road Guard)
