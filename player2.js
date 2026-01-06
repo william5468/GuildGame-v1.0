@@ -1,19 +1,20 @@
 // === Player2 Integration Variables ===
-let p2Token = null;          // Will hold the player's Bearer token
-let lunaNpcId = null;        // Player2 NPC ID for Luna
-let p2EventSource = null;   // For streaming responses
+let p2Token = null;
+let lunaNpcId = null;
+let p2EventSource = null;
 
-
+const API_BASE = 'https://api.player2.game/v1';
+const OAUTH_BASE = 'https://player2.game';
 
 async function player2Login() {
-    if (p2Token) return; // already logged in
+    if (p2Token) return;
 
     const verifier = generateCodeVerifier();
     const challenge = await generateCodeChallenge(verifier);
     localStorage.setItem('p2_verifier', verifier);
 
     const params = new URLSearchParams({
-        client_id: '019b93e3-f6e6-74a6-83da-fc4774460837', // ← ここに自分のclient_idを入れる
+        client_id: '019b93e3-f6e6-74a6-83da-fc4774460837',
         redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
         response_type: 'code',
         scope: 'npc.spawn npc.chat npc.responses',
@@ -21,7 +22,7 @@ async function player2Login() {
         code_challenge_method: 'S256'
     });
 
-    window.location.href = `https://player2.game/authorize?${params}`;
+    window.location.href = `${OAUTH_BASE}/authorize?${params}`;
 }
 
 function generateCodeVerifier() {
@@ -38,7 +39,7 @@ async function generateCodeChallenge(verifier) {
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-// Handle redirect back from Player2
+// Handle redirect back
 function handlePlayer2Callback() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
@@ -47,11 +48,11 @@ function handlePlayer2Callback() {
     const verifier = localStorage.getItem('p2_verifier');
     if (!verifier) return;
 
-    fetch('https://player2.game/oauth/token', {
+    fetch(`${OAUTH_BASE}/oauth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            grant_type: "authorization_code",  // ← This was missing!
+            grant_type: 'authorization_code',
             code,
             code_verifier: verifier,
             redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
@@ -59,24 +60,22 @@ function handlePlayer2Callback() {
         })
     })
     .then(res => {
-        if (!res.ok) {
-            return res.json().then(err => { throw err; });
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
     })
     .then(data => {
         p2Token = data.p2Key;
         localStorage.setItem('p2_token', p2Token);
-        history.replaceState(null, '', window.location.pathname);
-        better_alert('Player2ログイン成功！Lunaと話せます', 'success');
+        localStorage.removeItem('p2_verifier'); // cleanup
+        history.replaceState(null, '', '/GuildGame-v1.0/');
+        better_alert('Player2ログイン成功！ルナと話せます', 'success');
     })
     .catch(err => {
-        console.error('Token exchange error:', err);
-        better_alert('Player2ログイン失敗: ' + (err.error_description || err.error || '不明なエラー'), 'error');
+        console.error('Token error:', err);
+        better_alert('ログイン失敗: ' + err.message, 'error');
     });
 }
 
-// Call this on page load
 window.addEventListener('load', () => {
     p2Token = localStorage.getItem('p2_token');
     handlePlayer2Callback();
@@ -88,9 +87,9 @@ async function spawnLuna() {
         player2Login();
         return;
     }
-    if (lunaNpcId) return; // already spawned
+    if (lunaNpcId) return;
 
-    const res = await fetch('https://api.player2.game/v1/npcs/spawn', {
+    const res = await fetch(`${API_BASE}/npcs/spawn`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${p2Token}`,
@@ -102,34 +101,40 @@ async function spawnLuna() {
         })
     });
 
+    if (!res.ok) {
+        const err = await res.json();
+        better_alert('Spawn失敗: ' + (err.error || res.status), 'error');
+        return;
+    }
+
     const data = await res.json();
     lunaNpcId = data.npc_id;
-    startResponseListener(); // start streaming
+    startResponseListener();
 }
 
 function startResponseListener() {
     if (p2EventSource) return;
 
-    p2EventSource = new EventSource(`https://api.player2.game/v1/npcs/responses?auth=${p2Token}`);
+    // Use ?token= for EventSource auth (docs recommend this for browsers)
+    p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
 
     p2EventSource.addEventListener('npc_response', (e) => {
         const data = JSON.parse(e.data);
         if (data.npc_id !== lunaNpcId) return;
-
-        if (data.message) {
-            appendLunaMessage(data.message);
-        }
+        if (data.message) appendLunaMessage(data.message);
     });
 
     p2EventSource.onerror = () => {
-        console.error('Player2 stream error');
-        better_alert('接続が切れました。再読み込みしてください', 'error');
+        console.error('Stream error');
+        better_alert('接続エラー。再読み込みしてください', 'error');
+        p2EventSource.close();
     };
 }
 
+// Chat functions remain the same (open/close/append/send)
 function openLunaChat() {
     document.getElementById('lunaChatModal').style.display = 'flex';
-    spawnLuna(); // spawn if not already
+    spawnLuna();
     document.getElementById('lunaInput').focus();
 }
 
@@ -163,13 +168,12 @@ function appendPlayerMessage(text) {
 async function sendLunaMessage() {
     const input = document.getElementById('lunaInput');
     const message = input.value.trim();
-    if (!message) return;
-    if (!lunaNpcId) return;
+    if (!message || !lunaNpcId) return;
 
     appendPlayerMessage(message);
     input.value = '';
 
-    await fetch(`https://api.player2.game/v1/npcs/${lunaNpcId}/chat`, {
+    await fetch(`${API_BASE}/npcs/${lunaNpcId}/chat`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${p2Token}`,
