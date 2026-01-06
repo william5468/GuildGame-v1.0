@@ -138,6 +138,7 @@ function startResponseListener() {
         try {
             const data = JSON.parse(e.data);
             console.log("parsed data:"+data);  
+            console.log("Current msg npc_id:"+data.npc_id+" Stored lunanpcid:"+lunaNpcId);
             if (data.npc_id !== lunaNpcId) return;
             console.log("after id check");
             if (data.message) {
