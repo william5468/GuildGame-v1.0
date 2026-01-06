@@ -14,7 +14,7 @@ async function player2Login() {
 
     const params = new URLSearchParams({
         client_id: '019b93e3-f6e6-74a6-83da-fc4774460837', // ← ここに自分のclient_idを入れる
-        redirect_uri: window.location.href,
+        redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
         response_type: 'code',
         scope: 'npc.spawn npc.chat npc.responses',
         code_challenge: challenge,
@@ -53,7 +53,7 @@ function handlePlayer2Callback() {
         body: JSON.stringify({
             code,
             code_verifier: verifier,
-            redirect_uri: window.location.href,
+            redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
             client_id: '019b93e3-f6e6-74a6-83da-fc4774460837' // ← 同じclient_id
         })
     })
