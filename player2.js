@@ -47,13 +47,10 @@ function handlePlayer2Callback() {
 
     const verifier = localStorage.getItem('p2_verifier');
     if (!verifier) return;
-
-fetch(`${OAUTH_BASE}/oauth/token`, {  // Keep https://player2.game/oauth/token
+fetch('https://api.player2.game/v1/login/authorization_code/token', {
     method: 'POST',
-    headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'  // ← Critical change
-    },
-    body: new URLSearchParams({
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
         grant_type: 'authorization_code',
         code: code,
         code_verifier: verifier,
@@ -63,16 +60,16 @@ fetch(`${OAUTH_BASE}/oauth/token`, {  // Keep https://player2.game/oauth/token
 })
 .then(res => {
     if (!res.ok) {
-        res.text().then(text => console.error('Token error response:', text));
+        res.text().then(text => console.error('Token response:', text));
         throw new Error(`HTTP ${res.status}`);
     }
     return res.json();
 })
 .then(data => {
-    p2Token = data.p2Key || data.access_token;  // Fallback in case field name varies
+    p2Token = data.p2Key;
     localStorage.setItem('p2_token', p2Token);
     localStorage.removeItem('p2_verifier');
-    history.replaceState(null, '', '/GuildGame-v1.0/');  // Clean URL
+    history.replaceState(null, '', '/GuildGame-v1.0/');
     better_alert('Player2ログイン成功！ルナと話せます', 'success');
 })
 .catch(err => {
