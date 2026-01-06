@@ -131,39 +131,47 @@ function startResponseListener() {
 
     p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
 
-    // Listen to all 'message' events (catches named events like npc-message)
-    p2EventSource.onmessage = (e) => {
-        // Ignore pings/keep-alive
-        if (e.data.includes('"type": "ping"') || e.data === 'ping') return;
+    // Primary: Listen specifically for 'npc-message' events
+    p2EventSource.addEventListener('npc-message', (e) => {
+        console.log('Received npc-message event:', e.data);  // This will now log!
 
         try {
             const data = JSON.parse(e.data);
-            console.log(data);
+
             if (data.npc_id !== lunaNpcId) return;
 
             if (data.message) {
-                // Decode Unicode escapes and strip <Luna> tag if desired (or keep for styling)
                 let message = data.message
-                    .replace(/\\u003c/g, '<')  // Fix < 
-                    .replace(/\\u003e/g, '>')  // Fix >
-                    .replace('<Luna>', '')     // Remove speaker tag (or style it)
+                    .replace(/\\u003c/g, '<')
+                    .replace(/\\u003e/g, '>')
+                    .replace('<Luna>', 'ルナ: ')  // Keep speaker name nicely formatted
                     .replace('</Luna>', '')
                     .trim();
 
-                // Replace {player} placeholder with actual name (fallback to 'あなた')
+                // Replace {player} with real name from game
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
                 appendLunaMessage(message);
             }
         } catch (err) {
-            console.warn('Failed to parse stream data:', e.data);
+            console.warn('Parse error:', e.data, err);
         }
+    });
+
+    // Optional fallback for any unnamed events (debug)
+    p2EventSource.onmessage = (e) => {
+        console.log('Generic message event:', e.data);
     };
 
+    // Ping handling (some streams send named ping events)
+    p2EventSource.addEventListener('ping', (e) => {
+        console.log('Ping received');
+    });
+
     p2EventSource.onerror = () => {
-        console.error('Stream error');
+        console.error('Stream error – reconnecting or closed');
         better_alert('接続が切れました。再読み込みしてください', 'error');
-        p2EventSource.close();
+        if (p2EventSource) p2EventSource.close();
     };
 }
 
