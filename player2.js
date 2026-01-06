@@ -48,32 +48,37 @@ function handlePlayer2Callback() {
     const verifier = localStorage.getItem('p2_verifier');
     if (!verifier) return;
 
-    fetch(`${OAUTH_BASE}/oauth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            grant_type: 'authorization_code',
-            code,
-            code_verifier: verifier,
-            redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
-            client_id: '019b93e3-f6e6-74a6-83da-fc4774460837'
-        })
+fetch(`${OAUTH_BASE}/oauth/token`, {  // Keep https://player2.game/oauth/token
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'  // ← Critical change
+    },
+    body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        code_verifier: verifier,
+        redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
+        client_id: '019b93e3-f6e6-74a6-83da-fc4774460837'
     })
-    .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        p2Token = data.p2Key;
-        localStorage.setItem('p2_token', p2Token);
-        localStorage.removeItem('p2_verifier'); // cleanup
-        history.replaceState(null, '', '/GuildGame-v1.0/');
-        better_alert('Player2ログイン成功！ルナと話せます', 'success');
-    })
-    .catch(err => {
-        console.error('Token error:', err);
-        better_alert('ログイン失敗: ' + err.message, 'error');
-    });
+})
+.then(res => {
+    if (!res.ok) {
+        res.text().then(text => console.error('Token error response:', text));
+        throw new Error(`HTTP ${res.status}`);
+    }
+    return res.json();
+})
+.then(data => {
+    p2Token = data.p2Key || data.access_token;  // Fallback in case field name varies
+    localStorage.setItem('p2_token', p2Token);
+    localStorage.removeItem('p2_verifier');
+    history.replaceState(null, '', '/GuildGame-v1.0/');  // Clean URL
+    better_alert('Player2ログイン成功！ルナと話せます', 'success');
+})
+.catch(err => {
+    console.error('Token exchange failed:', err);
+    better_alert('ログイン失敗 - 再試行してください', 'error');
+});
 }
 
 window.addEventListener('load', () => {
