@@ -99,18 +99,26 @@ async function spawnLuna() {
         },
         body: JSON.stringify({
             ...lunaConfig,
-            keep_game_state: true
+            keep_game_state: true,
+            tts: {
+                audio_format: "mp3",       // Required
+                voice_gender: "female"     // Picks a default female voice (perfect for Luna)
+                // Optional: speed: 1.0,
+                // Optional later: voice_ids: ["some-voice-id"] for specific voice
+            }
         })
     });
 
     if (!res.ok) {
-        const err = await res.json();
-        better_alert('Spawn失敗: ' + (err.error || res.status), 'error');
+        const errText = await res.text();
+        console.error('Spawn error:', res.status, errText);
+        better_alert('NPC作成失敗: ' + res.status + ' - ' + errText, 'error');
         return;
     }
 
-    const data = await res.json();
-    lunaNpcId = data.npc_id;
+    // Response is a plain UUID string (not JSON object)
+    lunaNpcId = await res.text();
+    console.log('Luna spawned with ID:', lunaNpcId);
     startResponseListener();
 }
 
