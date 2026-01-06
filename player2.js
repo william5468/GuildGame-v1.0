@@ -47,17 +47,23 @@ function handlePlayer2Callback() {
     const verifier = localStorage.getItem('p2_verifier');
     if (!verifier) return;
 
-    fetch('https://api.player2.game/v1/exchange_code', {
+    fetch('https://player2.game/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+            grant_type: "authorization_code",  // ← This was missing!
             code,
             code_verifier: verifier,
             redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
-            client_id: '019b93e3-f6e6-74a6-83da-fc4774460837' // ← 同じclient_id
+            client_id: '019b93e3-f6e6-74a6-83da-fc4774460837'
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
+        return res.json();
+    })
     .then(data => {
         p2Token = data.p2Key;
         localStorage.setItem('p2_token', p2Token);
@@ -65,8 +71,8 @@ function handlePlayer2Callback() {
         better_alert('Player2ログイン成功！Lunaと話せます', 'success');
     })
     .catch(err => {
-        console.error(err);
-        better_alert('Player2ログイン失敗', 'error');
+        console.error('Token exchange error:', err);
+        better_alert('Player2ログイン失敗: ' + (err.error_description || err.error || '不明なエラー'), 'error');
     });
 }
 
