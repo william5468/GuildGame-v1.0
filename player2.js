@@ -91,35 +91,39 @@ async function spawnLuna() {
     }
     if (lunaNpcId) return;
 
+    const spawnBody = {
+        ...lunaConfig,
+        keep_game_state: true,
+        tts: {
+            audio_format: "mp3",          // Required
+            speed: 1.0,                   // Required
+            voice_ids: ["01955d76-ed5b-7451-92d6-5ef579d3ed28"]  // ← At least one valid ID (from docs example)
+            // Add voice_gender/voice_language if desired, but not needed with explicit ID
+        }
+    };
+
+    console.log('Spawning Luna with body:', JSON.stringify(spawnBody, null, 2));
+
     const res = await fetch(`${API_BASE}/npcs/spawn`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${p2Token}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            ...lunaConfig,
-            keep_game_state: true,
-            tts: {
-                audio_format: "mp3",       // Required
-                voice_gender: "female"     // Picks a default female voice (perfect for Luna)
-                // Optional: speed: 1.0,
-                // Optional later: voice_ids: ["some-voice-id"] for specific voice
-            }
-        })
+        body: JSON.stringify(spawnBody)
     });
 
     if (!res.ok) {
         const errText = await res.text();
         console.error('Spawn error:', res.status, errText);
-        better_alert('NPC作成失敗: ' + res.status + ' - ' + errText, 'error');
+        better_alert('NPC作成失敗: ' + errText, 'error');
         return;
     }
 
-    // Response is a plain UUID string (not JSON object)
     lunaNpcId = await res.text();
-    console.log('Luna spawned with ID:', lunaNpcId);
+    console.log('Luna spawned! ID:', lunaNpcId);
     startResponseListener();
+    better_alert('ルナが準備できました！話しかけてください♪', 'success');
 }
 
 function startResponseListener() {
