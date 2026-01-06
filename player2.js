@@ -120,8 +120,9 @@ async function spawnLuna() {
         return;
     }
 
-    lunaNpcId = await res.text();
-    console.log('Luna spawned! ID:', lunaNpcId);
+    lunaNpcId = (await res.text()).trim();  // ← Add .trim() here
+    console.log('Luna spawned! Raw ID length:', (await res.text()).length);  // Debug raw
+    console.log('Trimmed ID:', lunaNpcId, 'length:', lunaNpcId.length);
     startResponseListener();
     better_alert('ルナが準備できました！話しかけてください♪', 'success');
 }
@@ -139,7 +140,6 @@ function startResponseListener() {
             const data = JSON.parse(e.data);
             console.log("parsed data:"+data);  
             console.log("Current msg npc_id:"+data.npc_id+" Stored lunanpcid:"+lunaNpcId);
-            if (data.npc_id !== lunaNpcId) return;
             console.log("after id check");
             if (data.message) {
                 let message = data.message
