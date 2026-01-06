@@ -3,17 +3,7 @@ let p2Token = null;          // Will hold the player's Bearer token
 let lunaNpcId = null;        // Player2 NPC ID for Luna
 let p2EventSource = null;   // For streaming responses
 
-// Luna's configuration (backstory + personality)
-const lunaConfig = {
-    name: "ルナ",
-    short_name: "Luna",
-    character_description: "プレイヤーの幼なじみで優しく支えてくれる少女。記憶を失ったプレイヤーを心配し、いつも励ましてくれる。少し照れ屋で、プレイヤーのことが大好き。",
-    system_prompt: `あなたはルナです。プレイヤーの幼なじみで、優しくて少し照れ屋な少女です。
-プレイヤーの名前は${playerName || '{player}'}です（会話中は自然に名前を呼んでください）。
-記憶を失ったプレイヤーを心配し、いつも励まし、ギルド再建を一緒に頑張ろうとします。
-口調は柔らかく丁寧で、たまに「…」を使って恥ずかしがる感じにしてください。
-短めに、親しみやすい返事をしてください。`,
-};
+
 
 async function player2Login() {
     if (p2Token) return; // already logged in
