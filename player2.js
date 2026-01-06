@@ -137,9 +137,9 @@ function startResponseListener() {
 
         try {
             const data = JSON.parse(e.data);
-
+            console.log("parsed data:"+data);  
             if (data.npc_id !== lunaNpcId) return;
-
+            console.log("after id check");
             if (data.message) {
                 let message = data.message
                     .replace(/\\u003c/g, '<')
@@ -147,7 +147,7 @@ function startResponseListener() {
                     .replace('<Luna>', 'ルナ: ')  // Keep speaker name nicely formatted
                     .replace('</Luna>', '')
                     .trim();
-
+                console.log("msg:"+message); 
                 // Replace {player} with real name from game
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
