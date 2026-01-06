@@ -129,18 +129,39 @@ async function spawnLuna() {
 function startResponseListener() {
     if (p2EventSource) return;
 
-    // Use ?token= for EventSource auth (docs recommend this for browsers)
     p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
 
-    p2EventSource.addEventListener('npc_response', (e) => {
-        const data = JSON.parse(e.data);
-        if (data.npc_id !== lunaNpcId) return;
-        if (data.message) appendLunaMessage(data.message);
-    });
+    // Listen to all 'message' events (catches named events like npc-message)
+    p2EventSource.onmessage = (e) => {
+        // Ignore pings/keep-alive
+        if (e.data.includes('"type": "ping"') || e.data === 'ping') return;
+
+        try {
+            const data = JSON.parse(e.data);
+            if (data.npc_id !== lunaNpcId) return;
+
+            if (data.message) {
+                // Decode Unicode escapes and strip <Luna> tag if desired (or keep for styling)
+                let message = data.message
+                    .replace(/\\u003c/g, '<')  // Fix < 
+                    .replace(/\\u003e/g, '>')  // Fix >
+                    .replace('<Luna>', '')     // Remove speaker tag (or style it)
+                    .replace('</Luna>', '')
+                    .trim();
+
+                // Replace {player} placeholder with actual name (fallback to 'あなた')
+                message = message.replace(/\{player\}/g, playerName || 'あなた');
+
+                appendLunaMessage(message);
+            }
+        } catch (err) {
+            console.warn('Failed to parse stream data:', e.data);
+        }
+    };
 
     p2EventSource.onerror = () => {
         console.error('Stream error');
-        better_alert('接続エラー。再読み込みしてください', 'error');
+        better_alert('接続が切れました。再読み込みしてください', 'error');
         p2EventSource.close();
     };
 }
