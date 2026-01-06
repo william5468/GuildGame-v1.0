@@ -138,6 +138,7 @@ function startResponseListener() {
 
         try {
             const data = JSON.parse(e.data);
+            console.log(data);
             if (data.npc_id !== lunaNpcId) return;
 
             if (data.message) {
