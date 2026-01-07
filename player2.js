@@ -317,7 +317,6 @@ async function openNpcChat(npcKey) {
                 sender_name: playerName || 'Player',
                 sender_message: '',
                 game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`,
-                tts: "server" // Enable voice for proactive greeting
             })
         });
     }
@@ -379,7 +378,6 @@ async function sendNpcMessage() {
             sender_name: playerName || 'Player',
             sender_message: message,
             game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`,
-            tts: "server" // Enable voice for normal responses
         })
     });
 }
