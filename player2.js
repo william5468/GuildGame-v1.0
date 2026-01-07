@@ -215,12 +215,13 @@ function startResponseListener() {
                         if (adventurer) {
                             adventurer.Friendliness = Math.max(0, Math.min(100, (adventurer.Friendliness || 70) + delta));
                             console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${adventurer.Friendliness}`);
-
+                            better_alert(`${currentNpcKey}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
                             // Update DOM display in real-time
                             const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
                             if (friendlinessEl) {
                                 friendlinessEl.textContent = `好感度: ${adventurer.Friendliness}`;
                             }
+                            
                         }
                     }
                 });

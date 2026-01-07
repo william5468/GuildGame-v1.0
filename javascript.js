@@ -15,7 +15,7 @@ let playerName = "";
  * Falls back to native window.alert() if Toastify is unavailable or fails (e.g., script didn't load, JS error).
  * This ensures your alerts always work, even in edge cases.
  */
-function better_alert(message, type = "basic") {
+function better_alert(message, type = "basic", extra = {}) {
     let prefix = '';
     let background = '#1a1a1a';
     let textColor = '#ffffff';
@@ -41,12 +41,27 @@ function better_alert(message, type = "basic") {
         textColor = '#000000';
     } else if (type === "levelup") {
         prefix = '🌟 ';
-        background = 'linear-gradient(to right, #ffe259, #ffa751)'; // Warm shiny golden-yellow gradient (celebratory feel)
-        textColor = '#000000'; // Dark text for high contrast on bright yellow
+        background = 'linear-gradient(to right, #ffe259, #ffa751)'; // Warm shiny golden-yellow gradient
+        textColor = '#000000';
     } else if (type === "death") {
         prefix = '☠️ ';
-        background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)'; // Deep black → dark grey for somber feel
+        background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)'; // Deep black → dark grey
         textColor = '#ffffff';
+    } else if (type === "friendliness") {
+        // New friendliness change toast
+        const delta = extra.delta || 0;
+        if (delta > 0) {
+            prefix = '💖 '; // Sparkling heart for increase
+            background = 'linear-gradient(to right, #ff9a9e, #fad0c4)'; // Soft pink → peach (warm, loving feel)
+            textColor = '#800080'; // Deep purple text for contrast
+        } else if (delta < 0) {
+            prefix = '💔 '; // Broken heart for decrease
+            background = 'linear-gradient(to right, #8b0000, #4b0000)'; // Dark red → deeper red (somber, hurt feel)
+            textColor = '#ffffff';
+        } else {
+            prefix = '❤️ '; // Neutral heart
+            background = 'linear-gradient(to right, #d63384, #ff8e53)'; // Pink → orange
+        }
     } else if (type === "basic") {
         prefix = ''; 
         background = 'linear-gradient(to right, #f12711, #f5af19)'; // Intense red → bright orange
@@ -70,6 +85,7 @@ function better_alert(message, type = "basic") {
             maxWidth: '480px',
             border: 'none',
             backdropFilter: 'blur(10px)',
+            zIndex: '999999'  // Extremely high to ensure always on top
         },
         className: 'game-toast',
         close: true,
@@ -77,28 +93,40 @@ function better_alert(message, type = "basic") {
         escapeMarkup: true
     };
 
-    // Special enhancements for levelup (longer display, glow, bigger text)
+    // Special enhancements for levelup
     if (type === "levelup") {
         toastConfig.duration = 7000;
-        toastConfig.style.boxShadow = '0 12px 50px rgba(255, 165, 0, 0.7)'; // Strong warm yellow/orange glow
-        toastConfig.style.border = '3px solid #FFD700'; // Golden border for extra shine
+        toastConfig.style.boxShadow = '0 12px 50px rgba(255, 165, 0, 0.7)';
+        toastConfig.style.border = '3px solid #FFD700';
         toastConfig.style.fontSize = '18px';
         toastConfig.style.fontWeight = '700';
         toastConfig.style.padding = '20px 30px';
+        toastConfig.style.zIndex = '999999';
     }
 
-    // Special enhancements for death (somber, prominent, lingering)
+    // Special enhancements for death
     if (type === "death") {
-        toastConfig.duration = 10000; // Longer duration to let the sorrow sink in
+        toastConfig.duration = 10000;
         toastConfig.gravity = "bottom";
         toastConfig.position = "center";
-        toastConfig.style.boxShadow = '0 12px 50px rgba(0, 0, 0, 0.8)'; // Deep dark shadow, no bright glow
-        toastConfig.style.border = '3px solid #444444'; // Subtle dark border
+        toastConfig.style.boxShadow = '0 12px 50px rgba(0, 0, 0, 0.8)';
+        toastConfig.style.border = '3px solid #444444';
         toastConfig.style.fontSize = '20px';
         toastConfig.style.fontWeight = '800';
         toastConfig.style.padding = '28px 40px';
         toastConfig.style.minWidth = '380px';
         toastConfig.style.backdropFilter = 'blur(16px)';
+        toastConfig.style.zIndex = '999999';
+    }
+
+    // Friendliness-specific enhancements
+    if (type === "friendliness") {
+        toastConfig.duration = 6000;
+        toastConfig.style.fontSize = '18px';
+        toastConfig.style.fontWeight = '700';
+        toastConfig.style.padding = '20px 30px';
+        toastConfig.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+        toastConfig.style.zIndex = '999999';
     }
 
     // === TOAST WITH FALLBACK ===
@@ -116,7 +144,6 @@ function better_alert(message, type = "basic") {
     // === FALLBACK: Native alert() ===
     alert((prefix ? prefix + ' ' : '') + message);
 }
-
 function openTradeForm(cityId) {
     const city = gameState.tradeCityStates.find(c => c.id === cityId);
     if (!city) return;
