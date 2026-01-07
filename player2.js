@@ -186,7 +186,8 @@ function startResponseListener() {
     p2EventSource.addEventListener('npc-message', (e) => {
         try {
             const data = JSON.parse(e.data);
-
+            console.log('Parsed full data:', data);  // Entire object
+            console.log('Commands received:', data.command);  // Specifically check if command array exists
             if (data.npc_id !== currentNpcId) return;
 
             // Handle commands (friendliness adjustment)
