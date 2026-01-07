@@ -6,9 +6,14 @@ let currentNpcKey = null;   // e.g., "ルナ" or "カイト"
 let currentNpcId = null;    // UUID of the currently open NPC
 
 const npcIds = {};          // Persistent storage: { "ルナ": "uuid", "カイト": "uuid", ... }
+let npcFriendliness = {     // Friendliness level per NPC (0-100)
+    "ルナ": 70,
+    "カイト": 70
+};
 
 const API_BASE = 'https://api.player2.game/v1';
 const OAUTH_BASE = 'https://player2.game';
+
 
 
 async function player2Login() {
@@ -108,6 +113,8 @@ async function spawnNpc(npcKey) {
         return;
     }
 
+    const currentFriendliness = npcFriendliness[npcKey] || 70;
+
     const spawnBody = {
         name: config.name,
         short_name: config.short_name,
@@ -118,7 +125,23 @@ async function spawnNpc(npcKey) {
             audio_format: "mp3",
             speed: 1.0,
             voice_ids: ["01955d76-ed5b-7451-92d6-5ef579d3ed28"]
-        }
+        },
+        commands: [
+            {
+                name: "adjust_friendliness",
+                description: "Adjust your friendliness toward the player based on their message.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        delta: {
+                            type: "integer",
+                            description: "Change in friendliness (-20 to +20). Positive for kind/nice messages, negative for rude/insulting."
+                        }
+                    },
+                    required: ["delta"]
+                }
+            }
+        ]
     };
 
     console.log(`Spawning ${npcKey} with body:`, JSON.stringify(spawnBody, null, 2));
@@ -140,13 +163,11 @@ async function spawnNpc(npcKey) {
     }
 
     const idText = await res.text();
-    const id = idText.replace(/^"|"$/g, '').trim();  // Remove quotes + whitespace/newlines
+    const id = idText.replace(/^"|"$/g, '').trim();
     npcIds[npcKey] = id;
     currentNpcId = id;
-    console.log('Raw response:', idText);
     console.log(`${npcKey} spawned! Cleaned ID:`, id);
 
-    // Start global listener if not running
     if (!p2EventSource) startResponseListener();
 
     better_alert(`${npcKey}が準備できました！話しかけてください♪`, 'success');
@@ -161,18 +182,32 @@ function startResponseListener() {
         try {
             const data = JSON.parse(e.data);
 
-            // Only show messages for the currently open NPC
             if (data.npc_id !== currentNpcId) return;
+
+            // Handle commands (friendliness adjustment)
+            if (data.command && Array.isArray(data.command)) {
+                data.command.forEach(cmd => {
+                    if (cmd.name === 'adjust_friendliness' && cmd.arguments && typeof cmd.arguments.delta === 'number') {
+                        const delta = Math.max(-20, Math.min(20, cmd.arguments.delta)); // Clamp
+                        npcFriendliness[currentNpcKey] = Math.max(0, Math.min(100, (npcFriendliness[currentNpcKey] || 70) + delta));
+                        console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${npcFriendliness[currentNpcKey]}`);
+                        const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
+                        if (friendlinessEl) {
+                            friendlinessEl.textContent = `好感度: ${npcFriendliness[currentNpcKey]}`;
+                        }
+                        
+                    }
+                });
+            }
 
             if (data.message) {
                 let message = data.message
                     .replace(/\\u003c/g, '<')
                     .replace(/\\u003e/g, '>')
-                    .replace(/<(Luna|Kaito)>/g, '')  // Remove any old speaker tags
+                    .replace(/<(Luna|Kaito)>/g, '')
                     .replace(/<\/(Luna|Kaito)>/g, '')
                     .trim();
 
-                // Fallback name replacement
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
                 appendNpcMessage(message);
@@ -182,9 +217,7 @@ function startResponseListener() {
         }
     });
 
-    p2EventSource.addEventListener('ping', () => {
-        // Silent keep-alive
-    });
+    p2EventSource.addEventListener('ping', () => { /* silent */ });
 
     p2EventSource.onerror = () => {
         console.error('Stream error');
@@ -201,11 +234,9 @@ function openNpcChat(npcKey) {
 
     currentNpcKey = npcKey;
 
-    // Update modal title dynamically
     const titleEl = document.querySelector('#lunaChatModal h2');
     if (titleEl) titleEl.textContent = `${npcKey}と会話`;
 
-    // Clear chat log for new conversation
     const log = document.getElementById('lunaChatLog');
     if (log) log.innerHTML = '';
 
@@ -239,7 +270,7 @@ function appendPlayerMessage(text) {
     div.style.color = '#000000ff';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
-    div.innerHTML = `<strong>あなた:</strong> ${text.replace(/\n/g, '<br>')}`;
+    div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
 }
@@ -252,6 +283,8 @@ async function sendNpcMessage() {
     appendPlayerMessage(message);
     input.value = '';
 
+    const currentFriendliness = npcFriendliness[currentNpcKey] || 70;
+
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
         headers: {
@@ -260,7 +293,8 @@ async function sendNpcMessage() {
         },
         body: JSON.stringify({
             sender_name: playerName || 'Player',
-            sender_message: message
+            sender_message: message,
+            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`
         })
     });
 }
