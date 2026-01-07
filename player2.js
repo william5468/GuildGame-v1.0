@@ -1,10 +1,15 @@
 // === Player2 Integration Variables ===
 let p2Token = null;
-let lunaNpcId = null;
 let p2EventSource = null;
+
+let currentNpcKey = null;   // e.g., "ルナ" or "カイト"
+let currentNpcId = null;    // UUID of the currently open NPC
+
+const npcIds = {};          // Persistent storage: { "ルナ": "uuid", "カイト": "uuid", ... }
 
 const API_BASE = 'https://api.player2.game/v1';
 const OAUTH_BASE = 'https://player2.game';
+
 
 async function player2Login() {
     if (p2Token) return;
@@ -47,35 +52,36 @@ function handlePlayer2Callback() {
 
     const verifier = localStorage.getItem('p2_verifier');
     if (!verifier) return;
-fetch('https://api.player2.game/v1/login/authorization_code/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        grant_type: 'authorization_code',
-        code: code,
-        code_verifier: verifier,
-        redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
-        client_id: '019b93e3-f6e6-74a6-83da-fc4774460837'
+
+    fetch('https://api.player2.game/v1/login/authorization_code/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            grant_type: 'authorization_code',
+            code: code,
+            code_verifier: verifier,
+            redirect_uri: 'https://william5468.github.io/GuildGame-v1.0/',
+            client_id: '019b93e3-f6e6-74a6-83da-fc4774460837'
+        })
     })
-})
-.then(res => {
-    if (!res.ok) {
-        res.text().then(text => console.error('Token response:', text));
-        throw new Error(`HTTP ${res.status}`);
-    }
-    return res.json();
-})
-.then(data => {
-    p2Token = data.p2Key;
-    localStorage.setItem('p2_token', p2Token);
-    localStorage.removeItem('p2_verifier');
-    history.replaceState(null, '', '/GuildGame-v1.0/');
-    better_alert('Player2ログイン成功！ルナと話せます', 'success');
-})
-.catch(err => {
-    console.error('Token exchange failed:', err);
-    better_alert('ログイン失敗 - 再試行してください', 'error');
-});
+    .then(res => {
+        if (!res.ok) {
+            res.text().then(text => console.error('Token response:', text));
+            throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        p2Token = data.p2Key;
+        localStorage.setItem('p2_token', p2Token);
+        localStorage.removeItem('p2_verifier');
+        history.replaceState(null, '', '/GuildGame-v1.0/');
+        better_alert('Player2ログイン成功！NPCと話せます', 'success');
+    })
+    .catch(err => {
+        console.error('Token exchange failed:', err);
+        better_alert('ログイン失敗 - 再試行してください', 'error');
+    });
 }
 
 window.addEventListener('load', () => {
@@ -83,26 +89,39 @@ window.addEventListener('load', () => {
     handlePlayer2Callback();
 });
 
-async function spawnLuna() {
+async function spawnNpc(npcKey) {
     if (!p2Token) {
         better_alert('Player2にログインしてください', 'warning');
         player2Login();
         return;
     }
-    if (lunaNpcId) return;
+
+    // Reuse if already spawned
+    if (npcIds[npcKey]) {
+        currentNpcId = npcIds[npcKey];
+        return;
+    }
+
+    const config = npcConfigs[npcKey];
+    if (!config) {
+        better_alert('このキャラクターは未対応です', 'error');
+        return;
+    }
 
     const spawnBody = {
-        ...lunaConfig,
+        name: config.name,
+        short_name: config.short_name,
+        character_description: config.character_description,
+        system_prompt: config.system_prompt.replace(/\{player\}/g, playerName || 'あなた'),
         keep_game_state: true,
         tts: {
-            audio_format: "mp3",          // Required
-            speed: 1.0,                   // Required
-            voice_ids: ["01955d76-ed5b-7451-92d6-5ef579d3ed28"]  // ← At least one valid ID (from docs example)
-            // Add voice_gender/voice_language if desired, but not needed with explicit ID
+            audio_format: "mp3",
+            speed: 1.0,
+            voice_ids: ["01955d76-ed5b-7451-92d6-5ef579d3ed28"]
         }
     };
 
-    console.log('Spawning Luna with body:', JSON.stringify(spawnBody, null, 2));
+    console.log(`Spawning ${npcKey} with body:`, JSON.stringify(spawnBody, null, 2));
 
     const res = await fetch(`${API_BASE}/npcs/spawn`, {
         method: 'POST',
@@ -121,11 +140,16 @@ async function spawnLuna() {
     }
 
     const idText = await res.text();
-    lunaNpcId = idText.replace(/^"|"$/g, '').trim();  // Remove leading/trailing " and whitespace/newlines
+    const id = idText.replace(/^"|"$/g, '').trim();  // Remove quotes + whitespace/newlines
+    npcIds[npcKey] = id;
+    currentNpcId = id;
     console.log('Raw response:', idText);
-    console.log('Cleaned ID:', lunaNpcId);
-    startResponseListener();
-    better_alert('ルナが準備できました！話しかけてください♪', 'success');
+    console.log(`${npcKey} spawned! Cleaned ID:`, id);
+
+    // Start global listener if not running
+    if (!p2EventSource) startResponseListener();
+
+    better_alert(`${npcKey}が準備できました！話しかけてください♪`, 'success');
 }
 
 function startResponseListener() {
@@ -133,69 +157,77 @@ function startResponseListener() {
 
     p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
 
-    // Primary: Listen specifically for 'npc-message' events
     p2EventSource.addEventListener('npc-message', (e) => {
-        console.log('Received npc-message event:', e.data);  // This will now log!
-
         try {
             const data = JSON.parse(e.data);
-            console.log("parsed data:"+data);  
-            console.log("Current msg npc_id:"+data.npc_id+" Stored lunanpcid:"+lunaNpcId);
-            if (data.npc_id !== lunaNpcId) return;
-            console.log("after id check");
+
+            // Only show messages for the currently open NPC
+            if (data.npc_id !== currentNpcId) return;
+
             if (data.message) {
                 let message = data.message
                     .replace(/\\u003c/g, '<')
                     .replace(/\\u003e/g, '>')
-                    .replace('<Luna>', 'ルナ: ')  // Keep speaker name nicely formatted
-                    .replace('</Luna>', '')
+                    .replace(/<(Luna|Kaito)>/g, '')  // Remove any old speaker tags
+                    .replace(/<\/(Luna|Kaito)>/g, '')
                     .trim();
-                console.log("msg:"+message); 
-                // Replace {player} with real name from game
-                message = message.replace(/\{player\}/g, gameState.playerName || 'あなた');
 
-                appendLunaMessage(message);
+                // Fallback name replacement
+                message = message.replace(/\{player\}/g, playerName || 'あなた');
+
+                appendNpcMessage(message);
             }
         } catch (err) {
             console.warn('Parse error:', e.data, err);
         }
     });
 
-    // Optional fallback for any unnamed events (debug)
-    p2EventSource.onmessage = (e) => {
-        console.log('Generic message event:', e.data);
-    };
-
-    // Ping handling (some streams send named ping events)
-    p2EventSource.addEventListener('ping', (e) => {
-        console.log('Ping received');
+    p2EventSource.addEventListener('ping', () => {
+        // Silent keep-alive
     });
 
     p2EventSource.onerror = () => {
-        console.error('Stream error – reconnecting or closed');
+        console.error('Stream error');
         better_alert('接続が切れました。再読み込みしてください', 'error');
         if (p2EventSource) p2EventSource.close();
     };
 }
 
-// Chat functions remain the same (open/close/append/send)
-function openLunaChat() {
+function openNpcChat(npcKey) {
+    if (!npcConfigs[npcKey]) {
+        better_alert('このキャラクターのAIチャットは未対応です', 'warning');
+        return;
+    }
+
+    currentNpcKey = npcKey;
+
+    // Update modal title dynamically
+    const titleEl = document.querySelector('#lunaChatModal h2');
+    if (titleEl) titleEl.textContent = `${npcKey}と会話`;
+
+    // Clear chat log for new conversation
+    const log = document.getElementById('lunaChatLog');
+    if (log) log.innerHTML = '';
+
     document.getElementById('lunaChatModal').style.display = 'flex';
-    spawnLuna();
     document.getElementById('lunaInput').focus();
+
+    spawnNpc(npcKey);
 }
 
-function closeLunaChat() {
+function closeNpcChat() {
     document.getElementById('lunaChatModal').style.display = 'none';
+    currentNpcKey = null;
+    currentNpcId = null;
 }
 
-function appendLunaMessage(text) {
+function appendNpcMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
     div.style.color = '#a0d8ff';
     div.style.fontSize = '1.1em';
-    div.innerHTML = `<strong>ルナ:</strong> ${text.replace(/\n/g, '<br>')}`;
+    div.innerHTML = `<strong>${currentNpcKey}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
 }
@@ -204,7 +236,7 @@ function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#ffffa0';
+    div.style.color = '#000000ff';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>あなた:</strong> ${text.replace(/\n/g, '<br>')}`;
@@ -212,15 +244,15 @@ function appendPlayerMessage(text) {
     log.scrollTop = log.scrollHeight;
 }
 
-async function sendLunaMessage() {
+async function sendNpcMessage() {
     const input = document.getElementById('lunaInput');
     const message = input.value.trim();
-    if (!message || !lunaNpcId) return;
+    if (!message || !currentNpcId) return;
 
     appendPlayerMessage(message);
     input.value = '';
 
-    await fetch(`${API_BASE}/npcs/${lunaNpcId}/chat`, {
+    await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${p2Token}`,

@@ -6238,12 +6238,10 @@ function renderCurrentCharacter() {
 
     html += breathingDiv;
 
+    html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
+        ${adv.name}と話す (AI)
+    </button>`;
     html += `</div>`;
-
-    html += `<button onclick="openLunaChat()" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
-    ルナと話す (AI)
-</button>`;
-
     html += `</div>`; // flexコンテナ閉じ
     document.getElementById('charactersContent').innerHTML = html;
 }
