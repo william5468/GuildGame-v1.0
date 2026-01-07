@@ -119,7 +119,10 @@ async function spawnNpc(npcKey) {
         return;
     }
 
-    const currentFriendliness = adventurer.Friendliness || 70;
+    // Choose specific high-quality Japanese voice IDs
+    const voiceId = npcKey === "ルナ" 
+        ? "01955d76-ed5b-757a-9bdb-94fa0a2b7893"  // Sakura (cute female)
+        : "01955d76-ed5b-75b8-b70f-dfaf400b7c42"; // Takashi (male)
 
     const spawnBody = {
         name: config.name,
@@ -129,10 +132,8 @@ async function spawnNpc(npcKey) {
         keep_game_state: true,
         tts: {
             audio_format: "mp3",
-            speed: 1.05, // Slightly faster for natural feel (adjust as needed)
-            voice_language: "ja_JP",
-            voice_gender: npcKey === "ルナ" ? "female" : "male" // ルナ: female voice, カイト: male voice
-            // If you want a specific voice later, replace with voice_ids: ["specific-uuid"]
+            speed: 1.05,
+            voice_ids: [voiceId]  // Fixed specific voice for reliability and quality
         },
         commands: [
             {
@@ -184,13 +185,13 @@ async function spawnNpc(npcKey) {
 function startResponseListener() {
     if (p2EventSource) return;
 
-    p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
+    // Enable streaming TTS: text arrives immediately, audio follows separately if generated
+    p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}&tts-streaming=true`);
 
     p2EventSource.addEventListener('npc-message', (e) => {
         try {
             const data = JSON.parse(e.data);
             console.log('Parsed full data:', data);
-            console.log('Commands received:', data.command);
 
             if (data.npc_id !== currentNpcId) return;
 
@@ -198,11 +199,9 @@ function startResponseListener() {
             if (data.command && Array.isArray(data.command)) {
                 data.command.forEach(cmd => {
                     let args = cmd.arguments;
-
                     if (typeof args === 'string') {
                         try {
                             args = JSON.parse(args);
-                            console.log('Parsed string arguments:', args);
                         } catch (parseErr) {
                             console.warn('Failed to parse string arguments:', args, parseErr);
                             return;
@@ -230,35 +229,41 @@ function startResponseListener() {
                 let message = data.message
                     .replace(/\\u003c/g, '<')
                     .replace(/\\u003e/g, '>')
-                    .replace(/<(Luna|Kaito)>/g, '')
-                    .replace(/<\/(Luna|Kaito)>/g, '')
+                    .replace(/<(Luna|Kaito|.*?)>/g, '')  // Remove any <Speaker> tags
+                    .replace(/<\/(Luna|Kaito|.*?)>/g, '')
                     .trim();
 
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
                 appendNpcMessage(message);
 
-                // === TTS Audio Playback ===
+                // === TTS Audio Playback (handles streaming or full audio) ===
                 if (data.audio) {
-                    let base64 = typeof data.audio === 'object' && data.audio.base64 ? data.audio.base64 : data.audio;
-
-                    const binary = atob(base64);
-                    const array = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) {
-                        array[i] = binary.charCodeAt(i);
-                    }
-                    const blob = new Blob([array], { type: 'audio/mp3' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    const audio = new Audio(audioUrl);
-
-                    // Stop previous audio if playing
-                    if (currentNpcAudio) {
-                        currentNpcAudio.pause();
-                        currentNpcAudio = null;
+                    let base64 = null;
+                    if (typeof data.audio === 'string') {
+                        base64 = data.audio;
+                    } else if (data.audio && (data.audio.base64 || data.audio.data)) {
+                        base64 = data.audio.base64 || data.audio.data;
                     }
 
-                    audio.play().catch(err => console.warn('Audio playback failed:', err));
-                    currentNpcAudio = audio;
+                    if (base64) {
+                        const binary = atob(base64);
+                        const array = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++) {
+                            array[i] = binary.charCodeAt(i);
+                        }
+                        const blob = new Blob([array], { type: 'audio/mp3' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        const audio = new Audio(audioUrl);
+
+                        if (currentNpcAudio) {
+                            currentNpcAudio.pause();
+                            currentNpcAudio = null;
+                        }
+
+                        audio.play().catch(err => console.warn('Audio playback failed:', err));
+                        currentNpcAudio = audio;
+                    }
                 }
             }
         } catch (err) {
@@ -315,8 +320,9 @@ async function openNpcChat(npcKey) {
             },
             body: JSON.stringify({
                 sender_name: playerName || 'Player',
-                sender_message: '',
+                sender_message: '.',  // Minimal non-empty trigger
                 game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`,
+                tts: "server"  // Request audio generation
             })
         });
     }
@@ -327,7 +333,6 @@ function closeNpcChat() {
     currentNpcKey = null;
     currentNpcId = null;
 
-    // Stop any playing audio when closing chat
     if (currentNpcAudio) {
         currentNpcAudio.pause();
         currentNpcAudio = null;
@@ -338,7 +343,7 @@ function appendNpcMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#000000ff';
+    div.style.color = '#a0d8ff';  // Nice blue for NPC
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${currentNpcKey}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
@@ -349,7 +354,7 @@ function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#000000ff';
+    div.style.color = '#ffffa0';  // Yellow for player
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
@@ -378,6 +383,7 @@ async function sendNpcMessage() {
             sender_name: playerName || 'Player',
             sender_message: message,
             game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`,
+            tts: "server"  // Request audio generation
         })
     });
 }
