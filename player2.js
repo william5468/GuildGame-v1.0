@@ -6,15 +6,14 @@ let currentNpcKey = null;   // e.g., "ルナ" or "カイト"
 let currentNpcId = null;    // UUID of the currently open NPC
 
 const npcIds = {};          // Persistent storage: { "ルナ": "uuid", "カイト": "uuid", ... }
-let npcFriendliness = {     // Friendliness level per NPC (0-100)
-    "ルナ": 70,
-    "カイト": 70
-};
 
 const API_BASE = 'https://api.player2.game/v1';
 const OAUTH_BASE = 'https://player2.game';
 
 
+function getAdventurerByName(name) {
+    return gameState.adventurers.find(adv => adv.name === name);
+}
 
 async function player2Login() {
     if (p2Token) return;
@@ -113,7 +112,13 @@ async function spawnNpc(npcKey) {
         return;
     }
 
-    const currentFriendliness = npcFriendliness[npcKey] || 70;
+    const adventurer = getAdventurerByName(npcKey);
+    if (!adventurer) {
+        better_alert('冒険者データが見つかりません', 'error');
+        return;
+    }
+
+    const currentFriendliness = adventurer.Friendliness || 70;
 
     const spawnBody = {
         name: config.name,
@@ -189,13 +194,17 @@ function startResponseListener() {
                 data.command.forEach(cmd => {
                     if (cmd.name === 'adjust_friendliness' && cmd.arguments && typeof cmd.arguments.delta === 'number') {
                         const delta = Math.max(-20, Math.min(20, cmd.arguments.delta)); // Clamp
-                        npcFriendliness[currentNpcKey] = Math.max(0, Math.min(100, (npcFriendliness[currentNpcKey] || 70) + delta));
-                        console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${npcFriendliness[currentNpcKey]}`);
-                        const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
-                        if (friendlinessEl) {
-                            friendlinessEl.textContent = `好感度: ${npcFriendliness[currentNpcKey]}`;
+                        const adventurer = getAdventurerByName(currentNpcKey);
+                        if (adventurer) {
+                            adventurer.Friendliness = Math.max(0, Math.min(100, (adventurer.Friendliness || 70) + delta));
+                            console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${adventurer.Friendliness}`);
+
+                            // Update DOM display in real-time
+                            const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
+                            if (friendlinessEl) {
+                                friendlinessEl.textContent = `好感度: ${adventurer.Friendliness}`;
+                            }
                         }
-                        
                     }
                 });
             }
@@ -267,7 +276,7 @@ function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#000000ff';
+    div.style.color = '#ffffa0';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
@@ -283,7 +292,8 @@ async function sendNpcMessage() {
     appendPlayerMessage(message);
     input.value = '';
 
-    const currentFriendliness = npcFriendliness[currentNpcKey] || 70;
+    const adventurer = getAdventurerByName(currentNpcKey);
+    const currentFriendliness = adventurer ? (adventurer.Friendliness || 70) : 70;
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',

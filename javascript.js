@@ -6241,7 +6241,7 @@ function renderCurrentCharacter() {
 
     html += breathingDiv;
     html += `<p id="friendliness-${adv.name}" style="font-size:1.2em; color:#ffd700; margin-bottom:8px;">
-                            好感度: ${friendliness}
+                            好感度: ${adv.Friendliness}
                         </p>`;
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
         ${adv.name}と話す (AI)
