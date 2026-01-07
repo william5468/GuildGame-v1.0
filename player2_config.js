@@ -233,30 +233,13 @@ function toRomaji(jp) {
     return jp.split('').map(c => map[c] || c).join('');
 }
 
-// === 女性NPCグループ分け（ほぼ均等） ===
-const femaleNames = [
-    'アヤカ', 'ハルカ', 'ミカ', 'サクラ', 'ユイ', 'リナ', 'モモ', 'ナナ', 'ユナ', 'アカリ',
-    'ヒナタ', 'ソラ', 'ミユ', 'リコ', 'サヤ', 'マユ', 'ノゾミ', 'エマ', 'キラ', 'ツムギ',
-    'ミオ', 'スイ', 'リン', 'ヒマリ', 'エイ', 'ユイナ', 'アオイ', 'メイ', 'ハナ', 'リオ',
-    'チヒロ', 'アイ', 'ミズキ', 'カナ', 'サキ', 'ホノカ', 'アミ', 'レナ', 'マオ', 'ユズキ',
-    'コハル', 'スズ', 'ミナ', 'ヒカリ', 'ナツキ', 'サトミ', 'ユカリ', 'レイナ', 'ミサキ', 'アンナ',
-    'ハナカ', 'サナ', 'マナ'
-];
 
 const femaleGroupSize = Math.ceil(femaleNames.length / 3);
 const femaleGroup1 = femaleNames.slice(0, femaleGroupSize);              // パターン1: 優しく照れ屋
 const femaleGroup2 = femaleNames.slice(femaleGroupSize, femaleGroupSize * 2); // パターン2: 元気明るい
 const femaleGroup3 = femaleNames.slice(femaleGroupSize * 2);            // パターン3: クール知的な
 
-// === 男性NPCグループ分け ===
-const maleNames = [
-    'アキラ', 'ハルト', 'ケン', 'リュウ', 'ソラ', 'タイチ', 'ユウト', 'カズキ', 'リョウ', 'ショウ',
-    'トモヤ', 'ダイキ', 'ヒロ', 'マサト', 'ナオキ', 'ユウキ', 'レイ', 'セイジ', 'タカシ', 'ノブ',
-    'ミナト', 'レン', 'アオト', 'リク', 'ソウタ', 'ユイト', 'ハヤト', 'ショウタ', 'コウタ', 'タクミ',
-    'ヒロト', 'レオ', 'イオリ', 'アサヒ', 'ヤマト', 'エイジ', 'トア', 'ユウマ', 'ラン', 'ジン',
-    'シン', 'トウヤ', 'ケント', 'ハルキ', 'ソウスケ', 'リョウタ', 'ナツメ', 'コウキ', 'タイガ',
-    'リュウセイ', 'カケル', 'テツヤ', 'マヒロ'
-];
+
 
 const maleGroupSize = Math.ceil(maleNames.length / 3);
 const maleGroup1 = maleNames.slice(0, maleGroupSize);                    // パターン1: 元気ツンデレ
