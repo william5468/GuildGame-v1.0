@@ -312,7 +312,7 @@ function appendNpcMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#a0d8ff';
+    div.style.color = '#000000ff';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${currentNpcKey}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
@@ -323,7 +323,7 @@ function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#ffffa0';
+    div.style.color = '#000000ff';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
