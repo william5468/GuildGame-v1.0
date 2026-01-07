@@ -141,6 +141,7 @@ function startResponseListener() {
             const data = JSON.parse(e.data);
             console.log("parsed data:"+data);  
             console.log("Current msg npc_id:"+data.npc_id+" Stored lunanpcid:"+lunaNpcId);
+            if (data.npc_id !== lunaNpcId) return;
             console.log("after id check");
             if (data.message) {
                 let message = data.message
@@ -151,7 +152,7 @@ function startResponseListener() {
                     .trim();
                 console.log("msg:"+message); 
                 // Replace {player} with real name from game
-                message = message.replace(/\{player\}/g, playerName || 'あなた');
+                message = message.replace(/\{player\}/g, gameState.playerName || 'あなた');
 
                 appendLunaMessage(message);
             }
