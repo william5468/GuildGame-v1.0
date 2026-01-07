@@ -22,6 +22,7 @@ ul {list-style:none; padding:0;}
     border-left: 4px solid rgba(255, 255, 255, 0.3) !important; /* Subtle accent */
     backdrop-filter: blur(8px) !important; /* Modern glass effect */
     animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    z-index: 9999999 !important;
 }
 
 .game-toast:hover {
@@ -52,7 +53,7 @@ ul {list-style:none; padding:0;}
 
 /* Ensure toast container doesn't inherit game styles */
 .toastify {
-    z-index: 9999 !important;
+    z-index: 9999999 !important;  /* Same for the container */
     font-family: inherit !important;
 }
 

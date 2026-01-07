@@ -253,7 +253,7 @@ function startResponseListener() {
     };
 }
 
-function openNpcChat(npcKey) {
+async function openNpcChat(npcKey) {  // ← Add "async" here
     if (!npcConfigs[npcKey]) {
         better_alert('このキャラクターのAIチャットは未対応です', 'warning');
         return;
@@ -270,7 +270,36 @@ function openNpcChat(npcKey) {
     document.getElementById('lunaChatModal').style.display = 'flex';
     document.getElementById('lunaInput').focus();
 
-    spawnNpc(npcKey);
+    await spawnNpc(npcKey);  // ← Add "await" so we wait for spawn/reuse
+
+    if (!currentNpcId) return;  // Safety
+
+    // === Proactive initiation logic ===
+    const adventurer = getAdventurerByName(npcKey);
+    const friendliness = adventurer?.Friendliness ?? 70;
+
+    let chance = 0;
+    if (friendliness >= 80) chance = 0.95;      // Very likely when they really like you
+    else if (friendliness >= 60) chance = 0.7;
+    else if (friendliness >= 40) chance = 0.4;
+    else if (friendliness >= 20) chance = 0.15; // Rare when low
+    // Below 20: almost never
+
+    if (Math.random() < chance) {
+        await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${p2Token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender_name: playerName || 'Player',
+                sender_message: '',  // Empty — no player message shown in log
+                game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`
+            })
+        });
+        // NPC will respond proactively due to the system prompt + this context
+    }
 }
 
 function closeNpcChat() {
