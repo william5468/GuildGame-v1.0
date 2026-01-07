@@ -120,10 +120,10 @@ async function spawnLuna() {
         return;
     }
 
-    const idText = await res.text();  // Read once
-    lunaNpcId = idText.trim();        // Trim any trailing newline/CRLF
-    console.log('Luna spawned! Raw ID:', idText);
-    console.log('Trimmed ID:', lunaNpcId);
+    const idText = await res.text();
+    lunaNpcId = idText.replace(/^"|"$/g, '').trim();  // Remove leading/trailing " and whitespace/newlines
+    console.log('Raw response:', idText);
+    console.log('Cleaned ID:', lunaNpcId);
     startResponseListener();
     better_alert('ルナが準備できました！話しかけてください♪', 'success');
 }
