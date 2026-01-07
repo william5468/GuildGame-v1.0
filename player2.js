@@ -185,8 +185,8 @@ async function spawnNpc(npcKey) {
 function startResponseListener() {
     if (p2EventSource) return;
 
-    // Enable streaming TTS: text arrives immediately, audio follows separately if generated
-    p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}&tts-streaming=true`);
+    // Non-streaming mode for reliable mp3 audio (text may have slight delay, but no interruption error)
+    p2EventSource = new EventSource(`${API_BASE}/npcs/responses?token=${p2Token}`);
 
     p2EventSource.addEventListener('npc-message', (e) => {
         try {
@@ -229,15 +229,14 @@ function startResponseListener() {
                 let message = data.message
                     .replace(/\\u003c/g, '<')
                     .replace(/\\u003e/g, '>')
-                    .replace(/<(Luna|Kaito|.*?)>/g, '')  // Remove any <Speaker> tags
-                    .replace(/<\/(Luna|Kaito|.*?)>/g, '')
+                    .replace(/<.*?>/g, '')  // Remove ALL <tags> including <Kaito>
                     .trim();
 
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
                 appendNpcMessage(message);
 
-                // === TTS Audio Playback (handles streaming or full audio) ===
+                // === TTS Audio Playback ===
                 if (data.audio) {
                     let base64 = null;
                     if (typeof data.audio === 'string') {
@@ -265,6 +264,11 @@ function startResponseListener() {
                         currentNpcAudio = audio;
                     }
                 }
+            }
+
+            // Log TTS errors but don't block text
+            if (data.error && data.error.error_message.includes('TTS')) {
+                console.warn('TTS error (ignored):', data.error.error_message);
             }
         } catch (err) {
             console.warn('Parse error:', e.data, err);
@@ -322,7 +326,7 @@ async function openNpcChat(npcKey) {
                 sender_name: playerName || 'Player',
                 sender_message: '.',  // Minimal non-empty trigger
                 game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`,
-                tts: "server"  // Request audio generation
+                tts: "server"
             })
         });
     }
@@ -343,7 +347,7 @@ function appendNpcMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#a0d8ff';  // Nice blue for NPC
+    div.style.color = '#000000ff';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${currentNpcKey}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
@@ -354,7 +358,7 @@ function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
-    div.style.color = '#ffffa0';  // Yellow for player
+    div.style.color = '#000000ff';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
     div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
@@ -383,7 +387,7 @@ async function sendNpcMessage() {
             sender_name: playerName || 'Player',
             sender_message: message,
             game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`,
-            tts: "server"  // Request audio generation
+            tts: "server"
         })
     });
 }
