@@ -402,7 +402,8 @@ function Render_Mainadventurer() {
         temp: false,
         busy: false,
         critChance: 10,
-        primary: 0
+        primary: 0,
+        Friendliness: 70,
     };
 
     gameState.adventurers.push(Kaito);
@@ -429,7 +430,8 @@ function Render_Mainadventurer() {
         temp: false,
         busy: false,
         critChance: 10,
-        primary: 1
+        primary: 1,
+        Friendliness: 70,
     };
 
     gameState.adventurers.push(Luna);
@@ -1979,6 +1981,7 @@ function generateTempAdventurer(){
         generatedDay: 0,
         primary: primary,
         critChance: 10,
+        Friendliness: 50,
     };
     
     // Target level = floor(reputation / 20), minimum 1 → matches (reputation / 10)/2
@@ -6237,7 +6240,9 @@ function renderCurrentCharacter() {
     breathingDiv = breathingDiv.replace(urlRegex, `$1, url("${fallbackUrl}")`);
 
     html += breathingDiv;
-
+    html += `<p id="friendliness-${adv.name}" style="font-size:1.2em; color:#ffd700; margin-bottom:8px;">
+                            好感度: ${friendliness}
+                        </p>`;
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
         ${adv.name}と話す (AI)
     </button>`;
