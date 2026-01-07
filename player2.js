@@ -5,11 +5,12 @@ let p2EventSource = null;
 let currentNpcKey = null;   // e.g., "ルナ" or "カイト"
 let currentNpcId = null;    // UUID of the currently open NPC
 
-const npcIds = {};          // Persistent storage: { "ルナ": "uuid", "カイト": "uuid", ... }
+const npcIds = {};          // In-memory storage: { "ルナ": "uuid", "カイト": "uuid", ... }
 
 const API_BASE = 'https://api.player2.game/v1';
 const OAUTH_BASE = 'https://player2.game';
 
+let currentNpcAudio = null; // Global to manage previous audio (prevent overlap)
 
 function getAdventurerByName(name) {
     return gameState.adventurers.find(adv => adv.name === name);
@@ -128,8 +129,10 @@ async function spawnNpc(npcKey) {
         keep_game_state: true,
         tts: {
             audio_format: "mp3",
-            speed: 1.0,
-            voice_ids: ["01955d76-ed5b-7451-92d6-5ef579d3ed28"]
+            speed: 1.05, // Slightly faster for natural feel (adjust as needed)
+            voice_language: "ja_JP",
+            voice_gender: npcKey === "ルナ" ? "female" : "male" // ルナ: female voice, カイト: male voice
+            // If you want a specific voice later, replace with voice_ids: ["specific-uuid"]
         },
         commands: [
             {
@@ -196,7 +199,6 @@ function startResponseListener() {
                 data.command.forEach(cmd => {
                     let args = cmd.arguments;
 
-                    // Handle case where arguments are stringified JSON (common bug)
                     if (typeof args === 'string') {
                         try {
                             args = JSON.parse(args);
@@ -208,20 +210,17 @@ function startResponseListener() {
                     }
 
                     if (cmd.name === 'adjust_friendliness' && args && typeof args.delta === 'number') {
-                        const delta = Math.max(-20, Math.min(20, args.delta)); // Clamp
+                        const delta = Math.max(-20, Math.min(20, args.delta));
                         const adventurer = getAdventurerByName(currentNpcKey);
-                        console.log('Adventurer object:', adventurer);
 
                         if (adventurer) {
                             adventurer.Friendliness = Math.max(0, Math.min(100, (adventurer.Friendliness || 70) + delta));
                             console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${adventurer.Friendliness}`);
                             better_alert(`${currentNpcKey}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
-                            // Update DOM display in real-time
                             const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
                             if (friendlinessEl) {
                                 friendlinessEl.textContent = `好感度: ${adventurer.Friendliness}`;
                             }
-                            
                         }
                     }
                 });
@@ -238,6 +237,29 @@ function startResponseListener() {
                 message = message.replace(/\{player\}/g, playerName || 'あなた');
 
                 appendNpcMessage(message);
+
+                // === TTS Audio Playback ===
+                if (data.audio) {
+                    let base64 = typeof data.audio === 'object' && data.audio.base64 ? data.audio.base64 : data.audio;
+
+                    const binary = atob(base64);
+                    const array = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        array[i] = binary.charCodeAt(i);
+                    }
+                    const blob = new Blob([array], { type: 'audio/mp3' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(audioUrl);
+
+                    // Stop previous audio if playing
+                    if (currentNpcAudio) {
+                        currentNpcAudio.pause();
+                        currentNpcAudio = null;
+                    }
+
+                    audio.play().catch(err => console.warn('Audio playback failed:', err));
+                    currentNpcAudio = audio;
+                }
             }
         } catch (err) {
             console.warn('Parse error:', e.data, err);
@@ -253,7 +275,7 @@ function startResponseListener() {
     };
 }
 
-async function openNpcChat(npcKey) {  // ← Add "async" here
+async function openNpcChat(npcKey) {
     if (!npcConfigs[npcKey]) {
         better_alert('このキャラクターのAIチャットは未対応です', 'warning');
         return;
@@ -270,20 +292,19 @@ async function openNpcChat(npcKey) {  // ← Add "async" here
     document.getElementById('lunaChatModal').style.display = 'flex';
     document.getElementById('lunaInput').focus();
 
-    await spawnNpc(npcKey);  // ← Add "await" so we wait for spawn/reuse
+    await spawnNpc(npcKey);
 
-    if (!currentNpcId) return;  // Safety
+    if (!currentNpcId) return;
 
     // === Proactive initiation logic ===
     const adventurer = getAdventurerByName(npcKey);
     const friendliness = adventurer?.Friendliness ?? 70;
 
     let chance = 0;
-    if (friendliness >= 80) chance = 0.95;      // Very likely when they really like you
+    if (friendliness >= 80) chance = 0.95;
     else if (friendliness >= 60) chance = 0.7;
     else if (friendliness >= 40) chance = 0.4;
-    else if (friendliness >= 20) chance = 0.15; // Rare when low
-    // Below 20: almost never
+    else if (friendliness >= 20) chance = 0.15;
 
     if (Math.random() < chance) {
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
@@ -294,11 +315,11 @@ async function openNpcChat(npcKey) {  // ← Add "async" here
             },
             body: JSON.stringify({
                 sender_name: playerName || 'Player',
-                sender_message: '',  // Empty — no player message shown in log
-                game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`
+                sender_message: '',
+                game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak.`,
+                tts: "server" // Enable voice for proactive greeting
             })
         });
-        // NPC will respond proactively due to the system prompt + this context
     }
 }
 
@@ -306,6 +327,12 @@ function closeNpcChat() {
     document.getElementById('lunaChatModal').style.display = 'none';
     currentNpcKey = null;
     currentNpcId = null;
+
+    // Stop any playing audio when closing chat
+    if (currentNpcAudio) {
+        currentNpcAudio.pause();
+        currentNpcAudio = null;
+    }
 }
 
 function appendNpcMessage(text) {
@@ -351,7 +378,8 @@ async function sendNpcMessage() {
         body: JSON.stringify({
             sender_name: playerName || 'Player',
             sender_message: message,
-            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`
+            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100`,
+            tts: "server" // Enable voice for normal responses
         })
     });
 }
