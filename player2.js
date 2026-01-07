@@ -186,16 +186,32 @@ function startResponseListener() {
     p2EventSource.addEventListener('npc-message', (e) => {
         try {
             const data = JSON.parse(e.data);
-            console.log('Parsed full data:', data);  // Entire object
-            console.log('Commands received:', data.command);  // Specifically check if command array exists
+            console.log('Parsed full data:', data);
+            console.log('Commands received:', data.command);
+
             if (data.npc_id !== currentNpcId) return;
 
             // Handle commands (friendliness adjustment)
             if (data.command && Array.isArray(data.command)) {
                 data.command.forEach(cmd => {
-                    if (cmd.name === 'adjust_friendliness' && cmd.arguments && typeof cmd.arguments.delta === 'number') {
-                        const delta = Math.max(-20, Math.min(20, cmd.arguments.delta)); // Clamp
+                    let args = cmd.arguments;
+
+                    // Handle case where arguments are stringified JSON (common bug)
+                    if (typeof args === 'string') {
+                        try {
+                            args = JSON.parse(args);
+                            console.log('Parsed string arguments:', args);
+                        } catch (parseErr) {
+                            console.warn('Failed to parse string arguments:', args, parseErr);
+                            return;
+                        }
+                    }
+
+                    if (cmd.name === 'adjust_friendliness' && args && typeof args.delta === 'number') {
+                        const delta = Math.max(-20, Math.min(20, args.delta)); // Clamp
                         const adventurer = getAdventurerByName(currentNpcKey);
+                        console.log('Adventurer object:', adventurer);
+
                         if (adventurer) {
                             adventurer.Friendliness = Math.max(0, Math.min(100, (adventurer.Friendliness || 70) + delta));
                             console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${adventurer.Friendliness}`);
