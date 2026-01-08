@@ -443,7 +443,7 @@ async function giveItemToNpc() {
 
     let qty = 1;
     if (!item.stat) { // スタック品
-        qty = parseelderInt(document.getElementById('giftQtyInput').value) || 0;
+        qty = parseInt(document.getElementById('giftQtyInput').value) || 0;
         if (qty <= 0 || qty > (item.qty || 1)) {
             better_alert('数量が無効です', 'error');
             return;
