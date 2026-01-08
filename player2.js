@@ -288,43 +288,52 @@ function startResponseListener() {
                             }
                         }
 
+                        // === 強化版 give_to_player: 名前完全一致で検索 + 詳細コピー ===
                         for (const [key, value] of Object.entries(items)) {
-                            let itemName = key;
+                            let targetName = key;
                             let giveQty = 1;
-                            let itemDetails = {};
+                            let providedDetails = {};
 
                             if (typeof value === 'object' && value !== null) {
                                 giveQty = value.qty || 1;
-                                itemDetails = value;
-                                itemName = value.name || key;
+                                providedDetails = { ...value };
+                                delete providedDetails.qty;
+                                targetName = value.name || key;
                             } else {
                                 giveQty = value;
                             }
 
-                            const itemObj = adv.bag.items.find(i => i.name === itemName);
-                            const available = itemObj ? (itemObj.qty || 1) : 0;
-                            giveQty = Math.min(giveQty, available);
-                            if (giveQty <= 0) continue;
-
-                            if (itemObj) {
-                                itemObj.qty = (itemObj.qty || 1) - giveQty;
-                                if (itemObj.qty <= 0) adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
+                            // NPCバッグから名前一致のアイテムを検索（複数候補から最初のもの）
+                            const itemObj = adv.bag.items.find(i => i.name === targetName);
+                            if (!itemObj || (itemObj.qty || 1) < giveQty) {
+                                console.warn(`Give failed: insufficient ${targetName}`);
+                                continue;
                             }
 
-                            let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat && Object.keys(itemDetails).length === 0);
-                            if (playerItem) {
-                                playerItem.qty += giveQty;
+                            // NPCから減らす
+                            itemObj.qty = (itemObj.qty || 1) - giveQty;
+                            if (itemObj.qty <= 0) {
+                                adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
+                            }
+
+                            // プレイヤーinventoryに追加（詳細を優先的に使用）
+                            const finalDetails = { ...itemObj, ...providedDetails }; // providedDetailsが優先（AI指定のbonusなど）
+                            delete finalDetails.qty; // qtyは別
+
+                            let playerItem = gameState.inventory.find(i => i.name === targetName && JSON.stringify({ ...i, qty: undefined, id: undefined }) === JSON.stringify({ ...finalDetails, qty: undefined }));
+                            if (playerItem && !finalDetails.stat && !finalDetails.type) {
+                                playerItem.qty = (playerItem.qty || 1) + giveQty;
                             } else {
                                 const newItem = {
-                                    name: itemName,
+                                    name: targetName,
                                     qty: giveQty,
-                                    id: gameState.nextId++
+                                    id: gameState.nextId++,
+                                    ...finalDetails
                                 };
-                                Object.assign(newItem, itemDetails);
                                 gameState.inventory.push(newItem);
                             }
 
-                            better_alert(`${currentNpcKey}が${itemName} x${giveQty}をくれた！`, 'success');
+                            better_alert(`${currentNpcKey}が${targetName} x${giveQty}をくれた！`, 'success');
                         }
                         updateNpcBagDisplay();
                         populateGiftItems();
@@ -349,15 +358,14 @@ function startResponseListener() {
                             if (itemObj.qty <= 0) adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
                         }
 
-                        // 投資総額計算（gameState.inventoryから価格取得）
+                        // 投資総額計算（動的価格）
                         let total_value = consume_gold;
                         for (const [itemName, qty] of Object.entries(consume_items)) {
-                            let price = 50; // デフォルト
+                            let price = 50;
                             const template = gameState.inventory.find(i => i.name === itemName);
                             if (template) {
-                                if (template.cost !== undefined) {
-                                    price = template.cost;
-                                } else if (template.minPrice !== undefined && template.maxPrice !== undefined) {
+                                if (template.cost !== undefined) price = template.cost;
+                                else if (template.minPrice !== undefined && template.maxPrice !== undefined) {
                                     price = (template.minPrice + template.maxPrice) / 2;
                                 }
                             }
@@ -372,7 +380,7 @@ function startResponseListener() {
                             bad: 0.6
                         }[quality] || 1.0;
 
-                        // 効果計算（調整可能）
+                        // 効果計算
                         let itemDetails = {};
                         if (type === 'potion') {
                             let amount = Math.floor(total_value * 0.8 * qualityMult);
