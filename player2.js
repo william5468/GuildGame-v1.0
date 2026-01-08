@@ -16,10 +16,10 @@ function getAdventurerByName(name) {
     return gameState.adventurers.find(adv => adv.name === name);
 }
 
-// === バッグ初期化（保険） ===
+// === バッグ初期化（保険） - itemsを配列に変更（詳細保持のため） ===
 function initializeAdventurerBag(adventurer) {
-    if (!adventurer.bag) {
-        adventurer.bag = { gold: 0, items: {} };
+    if (!adventurer.bag || !Array.isArray(adventurer.bag.items)) {
+        adventurer.bag = { gold: 0, items: [] };
     }
 }
 
@@ -28,7 +28,6 @@ function showNpcTyping() {
     const log = document.getElementById('lunaChatLog');
     if (!log) return;
 
-    // 既存のタイピングバブルを削除
     const existing = document.getElementById('npcTypingBubble');
     if (existing) existing.remove();
 
@@ -139,7 +138,6 @@ async function spawnNpc(npcKey) {
         return;
     }
 
-    // Reuse if already spawned
     if (npcIds[npcKey]) {
         currentNpcId = npcIds[npcKey];
         return;
@@ -181,7 +179,7 @@ async function spawnNpc(npcKey) {
                     properties: {
                         delta: {
                             type: "integer",
-                            description: "Change in friendliness (-20 to +20). Positive for kind/nice messages, negative for rude/insulting."
+                            description: "Change in friendliness (-20 to +20)."
                         }
                     },
                     required: ["delta"]
@@ -193,31 +191,26 @@ async function spawnNpc(npcKey) {
                 parameters: {
                     type: "object",
                     properties: {
-                        gold: { type: "integer", description: "渡すゴールド量（0ならなし）" },
-                        items: { 
-                            type: "object", 
-                            description: "アイテム名: 数量 または フル詳細オブジェクト (作成アイテムの場合、stat/bonus/restore/amountを含む)" 
-                        }
+                        gold: { type: "integer" },
+                        items: { type: "object" }
                     },
                     required: []
                 }
             },
             {
                 name: "craft_item",
-                description: "バッグのアイテム2種またはゴールドを使って新しいアイテムを作成する",
+                description: "バッグのアイテムやゴールドを使って新しいアイテムを作成する（品質は投資額に応じて自然に）",
                 parameters: {
                     type: "object",
                     properties: {
-                        name: { type: "string", description: "作成するアイテムの名前" },
-                        type: { type: "string", enum: ["potion", "equipment"], description: "potion (HP/MP回復) または equipment (ステータス増加)" },
-                        details: {
-                            type: "object",
-                            description: "potionの場合 {restore: 'hp' or 'mp', amount: number}, equipmentの場合 {stat: 'strength'|'wisdom'|'dexterity'|'luck'|'defense', bonus: number}"
-                        },
-                        consume_gold: { type: "integer", description: "消費するゴールド（0ならなし）" },
-                        consume_items: { type: "object", description: "消費するアイテム {itemName: qty}（最大2種）" }
+                        name: { type: "string" },
+                        type: { type: "string", enum: ["potion", "equipment"] },
+                        subtype: { type: "string", description: "potion: 'hp'/'mp', equipment: stat名" },
+                        quality: { type: "string", enum: ["excellent", "good", "normal", "bad"] },
+                        consume_gold: { type: "integer" },
+                        consume_items: { type: "object" }
                     },
-                    required: ["name", "type", "details"]
+                    required: ["name", "type", "subtype", "quality"]
                 }
             }
         ]
@@ -257,41 +250,29 @@ function startResponseListener() {
     p2EventSource.addEventListener('npc-message', (e) => {
         try {
             const data = JSON.parse(e.data);
-            console.log('Parsed full data:', data);
 
             if (data.npc_id !== currentNpcId) return;
 
-            // 応答が来たらタイピング停止
             hideNpcTyping();
             if (proactiveTypingTimeout) {
                 clearTimeout(proactiveTypingTimeout);
                 proactiveTypingTimeout = null;
             }
 
-            // Handle commands
             if (data.command && Array.isArray(data.command)) {
                 data.command.forEach(cmd => {
                     let args = cmd.arguments;
-                    if (typeof args === 'string') {
-                        try {
-                            args = JSON.parse(args);
-                        } catch (parseErr) {
-                            console.warn('Failed to parse string arguments:', args, parseErr);
-                            return;
-                        }
-                    }
+                    if (typeof args === 'string') args = JSON.parse(args);
 
                     const adv = getAdventurerByName(currentNpcKey);
                     initializeAdventurerBag(adv);
 
-                    if (cmd.name === 'adjust_friendliness' && args && typeof args.delta === 'number') {
-                        const delta = Math.max(-20, Math.min(20, args.delta));
+                    if (cmd.name === 'adjust_friendliness') {
+                        const delta = Math.max(-20, Math.min(20, args.delta || 0));
                         adv.Friendliness = Math.max(0, Math.min(100, (adv.Friendliness || 70) + delta));
                         better_alert(`${currentNpcKey}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
                         const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
-                        if (friendlinessEl) {
-                            friendlinessEl.textContent = `好感度: ${adv.Friendliness}`;
-                        }
+                        if (friendlinessEl) friendlinessEl.textContent = `好感度: ${adv.Friendliness}`;
                     }
 
                     if (cmd.name === 'give_to_player') {
@@ -307,7 +288,6 @@ function startResponseListener() {
                             }
                         }
 
-                        // === 拡張: フル詳細対応のgive_to_player ===
                         for (const [key, value] of Object.entries(items)) {
                             let itemName = key;
                             let giveQty = 1;
@@ -321,16 +301,18 @@ function startResponseListener() {
                                 giveQty = value;
                             }
 
-                            const available = adv.bag.items[itemName] || 0;
+                            const itemObj = adv.bag.items.find(i => i.name === itemName);
+                            const available = itemObj ? (itemObj.qty || 1) : 0;
                             giveQty = Math.min(giveQty, available);
                             if (giveQty <= 0) continue;
 
-                            adv.bag.items[itemName] -= giveQty;
-                            if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
+                            if (itemObj) {
+                                itemObj.qty = (itemObj.qty || 1) - giveQty;
+                                if (itemObj.qty <= 0) adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
+                            }
 
-                            // プレイヤーinventoryに追加（フル詳細対応）
-                            let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat && !itemDetails.stat);
-                            if (playerItem && !itemDetails.stat && !itemDetails.type) {
+                            let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat && Object.keys(itemDetails).length === 0);
+                            if (playerItem) {
                                 playerItem.qty += giveQty;
                             } else {
                                 const newItem = {
@@ -338,16 +320,7 @@ function startResponseListener() {
                                     qty: giveQty,
                                     id: gameState.nextId++
                                 };
-                                // 詳細があれば追加
-                                if (itemDetails.stat) {
-                                    newItem.stat = itemDetails.stat;
-                                    newItem.bonus = itemDetails.bonus;
-                                }
-                                if (itemDetails.type === 'potion') {
-                                    newItem.type = 'potion';
-                                    newItem.restore = itemDetails.restore;
-                                    newItem.amount = itemDetails.amount;
-                                }
+                                Object.assign(newItem, itemDetails);
                                 gameState.inventory.push(newItem);
                             }
 
@@ -358,27 +331,67 @@ function startResponseListener() {
                         updateGiftQtyMax();
                     }
 
-                    // === craft_item コマンド処理 ===
                     if (cmd.name === 'craft_item') {
-                        const { name, type, details, consume_gold = 0, consume_items = {} } = args;
+                        const { name, type, subtype, quality, consume_gold = 0, consume_items = {} } = args;
 
                         // 消費チェック
                         if (consume_gold > adv.bag.gold) return;
                         for (const [itemName, qty] of Object.entries(consume_items)) {
-                            if ((adv.bag.items[itemName] || 0) < qty) return;
+                            const itemObj = adv.bag.items.find(i => i.name === itemName);
+                            if (!itemObj || (itemObj.qty || 1) < qty) return;
                         }
 
                         // 消費実行
                         adv.bag.gold -= consume_gold;
                         for (const [itemName, qty] of Object.entries(consume_items)) {
-                            adv.bag.items[itemName] -= qty;
-                            if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
+                            const itemObj = adv.bag.items.find(i => i.name === itemName);
+                            itemObj.qty -= qty;
+                            if (itemObj.qty <= 0) adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
                         }
 
-                        // 新アイテム追加 (qty=1, 名前のみ)
-                        adv.bag.items[name] = (adv.bag.items[name] || 0) + 1;
+                        // 投資総額計算（gameState.inventoryから価格取得）
+                        let total_value = consume_gold;
+                        for (const [itemName, qty] of Object.entries(consume_items)) {
+                            let price = 50; // デフォルト
+                            const template = gameState.inventory.find(i => i.name === itemName);
+                            if (template) {
+                                if (template.cost !== undefined) {
+                                    price = template.cost;
+                                } else if (template.minPrice !== undefined && template.maxPrice !== undefined) {
+                                    price = (template.minPrice + template.maxPrice) / 2;
+                                }
+                            }
+                            total_value += qty * price;
+                        }
 
-                        better_alert(`${currentNpcKey}が${name}を作成した！`, 'success');
+                        // 品質倍率
+                        const qualityMult = {
+                            excellent: 1.3,
+                            good: 1.0,
+                            normal: 0.8,
+                            bad: 0.6
+                        }[quality] || 1.0;
+
+                        // 効果計算（調整可能）
+                        let itemDetails = {};
+                        if (type === 'potion') {
+                            let amount = Math.floor(total_value * 0.8 * qualityMult);
+                            amount = Math.max(50, Math.min(amount, 600));
+                            itemDetails = { type: 'potion', restore: subtype, amount };
+                        } else if (type === 'equipment') {
+                            let bonus = Math.floor(total_value / 30 * qualityMult);
+                            bonus = Math.max(5, Math.min(bonus, 50));
+                            itemDetails = { stat: subtype, bonus };
+                        }
+
+                        // バッグに追加
+                        adv.bag.items.push({
+                            name,
+                            qty: 1,
+                            ...itemDetails
+                        });
+
+                        better_alert(`${currentNpcKey}が${name}（${quality}品質）を作成した！`, 'success');
                         updateNpcBagDisplay();
                     }
                 });
@@ -410,20 +423,24 @@ function startResponseListener() {
     };
 }
 
-// === 贈り物UI関連関数 ===
+// === updateNpcBagDisplay（詳細表示対応） ===
 function updateNpcBagDisplay() {
     const adv = getAdventurerByName(currentNpcKey);
     if (!adv || !adv.bag) return;
     const bag = adv.bag;
-    const itemList = Object.entries(bag.items)
-        .map(([name, qty]) => `${name} x${qty}`)
-        .join("<br>") || "なし";
+    const itemList = bag.items.map(it => {
+        let str = `${it.name} x${it.qty || 1}`;
+        if (it.type === 'potion') str += ` (回復: ${it.restore.toUpperCase()} +${it.amount})`;
+        if (it.stat) str += ` (${it.stat} +${it.bonus}%)`;
+        return str;
+    }).join("<br>") || "なし";
     const display = document.getElementById('npcBagDisplay');
     if (display) {
         display.innerHTML = `<strong>${currentNpcKey}のバッグ:</strong><br>ゴールド: ${bag.gold}<br>アイテム:<br>${itemList}`;
     }
 }
 
+// === 贈り物UI関連関数 ===
 function populateGiftItems() {
     const select = document.getElementById('giftItemSelect');
     if (!select) return;
@@ -504,7 +521,7 @@ async function giveGoldToNpc() {
     const recentGiftInfo = `You just received a real gift from player: Gold +${amount}.`;
 
     const friendliness = adv.Friendliness || 70;
-    const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
+    const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
     showNpcTyping();
@@ -556,10 +573,18 @@ async function giveItemToNpc() {
         item.qty -= qty;
     }
 
-    // NPCバッグに追加
+    // NPCバッグに追加（フル詳細対応）
     const adv = getAdventurerByName(currentNpcKey);
     initializeAdventurerBag(adv);
-    adv.bag.items[item.name] = (adv.bag.items[item.name] || 0) + qty;
+    const existing = adv.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
+    if (existing) {
+        existing.qty = (existing.qty || 1) + qty;
+    } else {
+        const newBagItem = { name: item.name, qty };
+        Object.assign(newBagItem, item);
+        delete newBagItem.id;
+        adv.bag.items.push(newBagItem);
+    }
 
     updateNpcBagDisplay();
     populateGiftItems();
@@ -571,7 +596,7 @@ async function giveItemToNpc() {
     const recentGiftInfo = `You just received a real gift from player: ${giftDesc}.`;
 
     const friendliness = adv.Friendliness || 70;
-    const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
+    const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
     showNpcTyping();
@@ -617,11 +642,9 @@ async function openNpcChat(npcKey) {
     updateGiftQtyMax();
     updateNpcBagDisplay();
 
-    // 贈り物セクション初期非表示
     document.getElementById('giftSection').style.display = 'none';
     document.getElementById('toggleGiftBtn').textContent = '贈り物 ▼';
 
-    // === Proactive initiation logic ===
     const friendliness = adv?.Friendliness ?? 70;
 
     let chance = 0;
@@ -638,7 +661,7 @@ async function openNpcChat(npcKey) {
             proactiveTypingTimeout = null;
         }, 15000);
 
-        const itemList = Object.entries(adv.bag.items).map(([k,v]) => `${k} x${v}`).join(", ") || "none";
+        const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
         const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
@@ -668,7 +691,7 @@ function closeNpcChat() {
 }
 
 function appendNpcMessage(text) {
-    hideNpcTyping(); // 保険
+    hideNpcTyping();
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
@@ -704,7 +727,7 @@ async function sendNpcMessage() {
     const adv = getAdventurerByName(currentNpcKey);
     initializeAdventurerBag(adv);
     const currentFriendliness = adv ? (adv.Friendliness || 70) : 70;
-    const itemList = Object.entries(adv.bag.items).map(([k,v]) => `${k} x${v}`).join(", ") || "none";
+    const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
