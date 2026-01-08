@@ -198,6 +198,24 @@ async function spawnNpc(npcKey) {
                     },
                     required: []
                 }
+            },
+            {
+                name: "craft_item",
+                description: "バッグのアイテム2種またはゴールドを使って新しいアイテムを作成する",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string", description: "作成するアイテムの名前" },
+                        type: { type: "string", enum: ["potion", "equipment"], description: "potion (HP/MP回復) または equipment (ステータス増加)" },
+                        details: {
+                            type: "object",
+                            description: "potionの場合 {restore: 'hp' or 'mp', amount: number}, equipmentの場合 {stat: 'strength'|'wisdom'|'dexterity'|'luck'|'defense', bonus: number (percent increase)}"
+                        },
+                        consume_gold: { type: "integer", description: "消費するゴールド（0ならなし）" },
+                        consume_items: { type: "object", description: "消費するアイテム {itemName: qty}（最大2種）" }
+                    },
+                    required: ["name", "type", "details"]
+                }
             }
         ]
     };
@@ -309,6 +327,30 @@ function startResponseListener() {
                         updateNpcBagDisplay();
                         populateGiftItems();
                         updateGiftQtyMax();
+                    }
+
+                    // === craft_item コマンド処理 ===
+                    if (cmd.name === 'craft_item') {
+                        const { name, type, details, consume_gold = 0, consume_items = {} } = args;
+
+                        // 消費チェック
+                        if (consume_gold > adv.bag.gold) return;
+                        for (const [itemName, qty] of Object.entries(consume_items)) {
+                            if ((adv.bag.items[itemName] || 0) < qty) return;
+                        }
+
+                        // 消費実行
+                        adv.bag.gold -= consume_gold;
+                        for (const [itemName, qty] of Object.entries(consume_items)) {
+                            adv.bag.items[itemName] -= qty;
+                            if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
+                        }
+
+                        // 新アイテム追加 (qty=1)
+                        adv.bag.items[name] = (adv.bag.items[name] || 0) + 1;
+
+                        better_alert(`${currentNpcKey}が${name}を作成した！`, 'success');
+                        updateNpcBagDisplay();
                     }
                 });
             }
@@ -436,7 +478,7 @@ async function giveGoldToNpc() {
     const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
-    showNpcTyping(); // タイピング開始
+    showNpcTyping();
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
@@ -503,7 +545,7 @@ async function giveItemToNpc() {
     const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
-    showNpcTyping(); // タイピング開始
+    showNpcTyping();
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
@@ -565,7 +607,7 @@ async function openNpcChat(npcKey) {
         proactiveTypingTimeout = setTimeout(() => {
             hideNpcTyping();
             proactiveTypingTimeout = null;
-        }, 15000); // 15秒でタイムアウト
+        }, 15000);
 
         const itemList = Object.entries(adv.bag.items).map(([k,v]) => `${k} x${v}`).join(", ") || "none";
         const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
@@ -628,7 +670,7 @@ async function sendNpcMessage() {
     appendPlayerMessage(message);
     input.value = '';
 
-    showNpcTyping(); // 送信後にタイピング開始
+    showNpcTyping();
 
     const adv = getAdventurerByName(currentNpcKey);
     initializeAdventurerBag(adv);

@@ -40,7 +40,7 @@ const translations = {
     intro_description: "あなたは記憶を失った状態で目を覚ました。<br>ルナとカイトという二人が、あなたの幼なじみだと名乗り、<br>あなたの名前や過去を教えてくれようとしています。<br><br>ゲーム内で使用するあなたの名前を入力してください。",
     intro_name_placeholder: "名前を入力...",
     intro_decide_button: "決定",
-    loading_header: "ギルドマスター v1.0<br>読み込み中...",
+    loading_header: "失われし冒険の旅 v1.0<br>読み込み中...",
     new_game_button: "最初から始める",
     continue_button: "続きから始める",
     shop_prev: "前",
