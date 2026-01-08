@@ -194,7 +194,10 @@ async function spawnNpc(npcKey) {
                     type: "object",
                     properties: {
                         gold: { type: "integer", description: "渡すゴールド量（0ならなし）" },
-                        items: { type: "object", description: "アイテム名: 数量 のオブジェクト（例: {\"薬草\": 3}）" }
+                        items: { 
+                            type: "object", 
+                            description: "アイテム名: 数量 または フル詳細オブジェクト (作成アイテムの場合、stat/bonus/restore/amountを含む)" 
+                        }
                     },
                     required: []
                 }
@@ -209,7 +212,7 @@ async function spawnNpc(npcKey) {
                         type: { type: "string", enum: ["potion", "equipment"], description: "potion (HP/MP回復) または equipment (ステータス増加)" },
                         details: {
                             type: "object",
-                            description: "potionの場合 {restore: 'hp' or 'mp', amount: number}, equipmentの場合 {stat: 'strength'|'wisdom'|'dexterity'|'luck'|'defense', bonus: number (percent increase)}"
+                            description: "potionの場合 {restore: 'hp' or 'mp', amount: number}, equipmentの場合 {stat: 'strength'|'wisdom'|'dexterity'|'luck'|'defense', bonus: number}"
                         },
                         consume_gold: { type: "integer", description: "消費するゴールド（0ならなし）" },
                         consume_items: { type: "object", description: "消費するアイテム {itemName: qty}（最大2種）" }
@@ -304,25 +307,51 @@ function startResponseListener() {
                             }
                         }
 
-                        for (const [itemName, qty] of Object.entries(items)) {
-                            const giveQty = Math.min(qty, adv.bag.items[itemName] || 0);
-                            if (giveQty > 0) {
-                                let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat);
-                                if (playerItem) {
-                                    playerItem.qty = (playerItem.qty || 1) + giveQty;
-                                } else {
-                                    gameState.inventory.push({
-                                        name: itemName,
-                                        qty: giveQty,
-                                        id: gameState.nextId++
-                                    });
-                                }
+                        // === 拡張: フル詳細対応のgive_to_player ===
+                        for (const [key, value] of Object.entries(items)) {
+                            let itemName = key;
+                            let giveQty = 1;
+                            let itemDetails = {};
 
-                                adv.bag.items[itemName] -= giveQty;
-                                if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
-
-                                better_alert(`${currentNpcKey}が${itemName} x${giveQty}をくれた！`, 'success');
+                            if (typeof value === 'object' && value !== null) {
+                                giveQty = value.qty || 1;
+                                itemDetails = value;
+                                itemName = value.name || key;
+                            } else {
+                                giveQty = value;
                             }
+
+                            const available = adv.bag.items[itemName] || 0;
+                            giveQty = Math.min(giveQty, available);
+                            if (giveQty <= 0) continue;
+
+                            adv.bag.items[itemName] -= giveQty;
+                            if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
+
+                            // プレイヤーinventoryに追加（フル詳細対応）
+                            let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat && !itemDetails.stat);
+                            if (playerItem && !itemDetails.stat && !itemDetails.type) {
+                                playerItem.qty += giveQty;
+                            } else {
+                                const newItem = {
+                                    name: itemName,
+                                    qty: giveQty,
+                                    id: gameState.nextId++
+                                };
+                                // 詳細があれば追加
+                                if (itemDetails.stat) {
+                                    newItem.stat = itemDetails.stat;
+                                    newItem.bonus = itemDetails.bonus;
+                                }
+                                if (itemDetails.type === 'potion') {
+                                    newItem.type = 'potion';
+                                    newItem.restore = itemDetails.restore;
+                                    newItem.amount = itemDetails.amount;
+                                }
+                                gameState.inventory.push(newItem);
+                            }
+
+                            better_alert(`${currentNpcKey}が${itemName} x${giveQty}をくれた！`, 'success');
                         }
                         updateNpcBagDisplay();
                         populateGiftItems();
@@ -346,7 +375,7 @@ function startResponseListener() {
                             if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
                         }
 
-                        // 新アイテム追加 (qty=1)
+                        // 新アイテム追加 (qty=1, 名前のみ)
                         adv.bag.items[name] = (adv.bag.items[name] || 0) + 1;
 
                         better_alert(`${currentNpcKey}が${name}を作成した！`, 'success');
