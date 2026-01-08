@@ -10,6 +10,8 @@ const npcIds = {};          // Persistent storage: { "ルナ": "uuid", "カイ�
 const API_BASE = 'https://api.player2.game/v1';
 const OAUTH_BASE = 'https://player2.game';
 
+let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
+
 function getAdventurerByName(name) {
     return gameState.adventurers.find(adv => adv.name === name);
 }
@@ -19,6 +21,37 @@ function initializeAdventurerBag(adventurer) {
     if (!adventurer.bag) {
         adventurer.bag = { gold: 0, items: {} };
     }
+}
+
+// === NPCがタイピング中を表示 ===
+function showNpcTyping() {
+    const log = document.getElementById('lunaChatLog');
+    if (!log) return;
+
+    // 既存のタイピングバブルを削除
+    const existing = document.getElementById('npcTypingBubble');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.id = 'npcTypingBubble';
+    div.style.marginBottom = '15px';
+    div.style.color = '#cccccc';
+    div.style.fontSize = '1.1em';
+    div.innerHTML = `
+        <strong>${currentNpcKey}:</strong>
+        <span style="margin-left:8px; opacity:0.7;">typing</span>
+        <div class="typing-indicator" style="display:inline-block; margin-left:8px;">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+
+// === タイピングインジケーターを非表示 ===
+function hideNpcTyping() {
+    const bubble = document.getElementById('npcTypingBubble');
+    if (bubble) bubble.remove();
 }
 
 async function player2Login() {
@@ -124,7 +157,7 @@ async function spawnNpc(npcKey) {
         return;
     }
 
-    initializeAdventurerBag(adventurer); // 保険
+    initializeAdventurerBag(adventurer);
 
     const currentFriendliness = adventurer.Friendliness || 70;
 
@@ -169,8 +202,6 @@ async function spawnNpc(npcKey) {
         ]
     };
 
-    console.log(`Spawning ${npcKey} with body:`, JSON.stringify(spawnBody, null, 2));
-
     const res = await fetch(`${API_BASE}/npcs/spawn`, {
         method: 'POST',
         headers: {
@@ -191,7 +222,6 @@ async function spawnNpc(npcKey) {
     const id = idText.replace(/^"|"$/g, '').trim();
     npcIds[npcKey] = id;
     currentNpcId = id;
-    console.log(`${npcKey} spawned! Cleaned ID:`, id);
 
     if (!p2EventSource) startResponseListener();
 
@@ -209,6 +239,13 @@ function startResponseListener() {
             console.log('Parsed full data:', data);
 
             if (data.npc_id !== currentNpcId) return;
+
+            // 応答が来たらタイピング停止
+            hideNpcTyping();
+            if (proactiveTypingTimeout) {
+                clearTimeout(proactiveTypingTimeout);
+                proactiveTypingTimeout = null;
+            }
 
             // Handle commands
             if (data.command && Array.isArray(data.command)) {
@@ -229,7 +266,6 @@ function startResponseListener() {
                     if (cmd.name === 'adjust_friendliness' && args && typeof args.delta === 'number') {
                         const delta = Math.max(-20, Math.min(20, args.delta));
                         adv.Friendliness = Math.max(0, Math.min(100, (adv.Friendliness || 70) + delta));
-                        console.log(`Friendliness for ${currentNpcKey} adjusted by ${delta}. New: ${adv.Friendliness}`);
                         better_alert(`${currentNpcKey}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
                         const friendlinessEl = document.getElementById(`friendliness-${currentNpcKey}`);
                         if (friendlinessEl) {
@@ -241,10 +277,6 @@ function startResponseListener() {
                         const gold = args.gold || 0;
                         const items = args.items || {};
 
-                        const adv = getAdventurerByName(currentNpcKey);
-                        initializeAdventurerBag(adv);
-
-                        // ゴールド
                         if (gold > 0) {
                             const giveGold = Math.min(gold, adv.bag.gold);
                             if (giveGold > 0) {
@@ -254,12 +286,9 @@ function startResponseListener() {
                             }
                         }
 
-                        // アイテム
                         for (const [itemName, qty] of Object.entries(items)) {
                             const giveQty = Math.min(qty, adv.bag.items[itemName] || 0);
                             if (giveQty > 0) {
-                                // プレイヤーのinventoryに追加（元のaddToInventoryロジックに準拠）
-                                // ここでは簡易的にスタック品として扱う（装備品も仮にスタック扱い、必要なら拡張）
                                 let playerItem = gameState.inventory.find(i => i.name === itemName && !i.stat);
                                 if (playerItem) {
                                     playerItem.qty = (playerItem.qty || 1) + giveQty;
@@ -271,14 +300,12 @@ function startResponseListener() {
                                     });
                                 }
 
-                                // NPCバッグから減らす
                                 adv.bag.items[itemName] -= giveQty;
                                 if (adv.bag.items[itemName] <= 0) delete adv.bag.items[itemName];
 
                                 better_alert(`${currentNpcKey}が${itemName} x${giveQty}をくれた！`, 'success');
                             }
                         }
-
                         updateNpcBagDisplay();
                         populateGiftItems();
                         updateGiftQtyMax();
@@ -340,45 +367,42 @@ function populateGiftItems() {
     gameState.inventory.forEach(item => {
         const name = item.name;
         const qty = item.qty || 1;
-        const isEquipment = !!item.stat; // statがあれば装備品
+        const isEquipment = !!item.stat;
 
         let label = name;
         if (!isEquipment) {
             label += ` (${qty}個)`;
         }
 
-        const opt = new Option(label, item.id); // valueはユニークID（装備品対応）
+        const opt = new Option(label, item.id);
         opt.dataset.isEquipment = isEquipment;
         opt.dataset.qty = qty;
         select.appendChild(opt);
     });
 }
 
-// === 贈り物UI: 数量入力の表示/最大値を更新 ===
 function updateGiftQtyMax() {
     const select = document.getElementById('giftItemSelect');
     const qtyInput = document.getElementById('giftQtyInput');
-    const qtyContainer = qtyInput.parentElement; // 数量入力全体のdiv
+    const qtySpan = document.querySelector('#giftSection span');
 
-    if (!select || !qtyInput || !qtyContainer) return;
+    if (!select || !qtyInput || !qtySpan) return;
 
     const selectedOption = select.options[select.selectedIndex];
     if (!selectedOption || !selectedOption.value) {
         qtyInput.style.display = 'none';
-        document.querySelector('#giftSection span')?.style.setProperty('display', 'none'); // "個"のspan
+        qtySpan.style.display = 'none';
         return;
     }
 
     const isEquipment = selectedOption.dataset.isEquipment === 'true';
     if (isEquipment) {
-        // 装備品: 数量入力非表示（1個固定）
         qtyInput.style.display = 'none';
-        document.querySelector('#giftSection span')?.style.setProperty('display', 'none');
+        qtySpan.style.display = 'none';
         qtyInput.value = 1;
     } else {
-        // スタック品: 数量入力表示
         qtyInput.style.display = 'inline-block';
-        document.querySelector('#giftSection span')?.style.setProperty('display', 'inline');
+        qtySpan.style.display = 'inline';
         const max = parseInt(selectedOption.dataset.qty) || 1;
         qtyInput.max = max;
         if (parseInt(qtyInput.value) > max || parseInt(qtyInput.value) < 1) {
@@ -402,13 +426,17 @@ async function giveGoldToNpc() {
     adv.bag.gold += amount;
 
     updateNpcBagDisplay();
-    appendPlayerMessage(`あなたは${currentNpcKey}に${amount}ゴールドを渡した`);
     document.getElementById('giftGoldInput').value = 0;
 
-    const playerMsg = `(プレイヤーが${amount}ゴールドを渡した)`;
+    appendPlayerMessage(`あなたは${currentNpcKey}に${amount}ゴールドを渡した`);
+
+    const recentGiftInfo = `You just received a real gift from player: Gold +${amount}.`;
+
     const friendliness = adv.Friendliness || 70;
-    const itemList = Object.entries(adv.bag.items).map(([k,v]) => `${k} x${v}`).join(", ") || "none";
+    const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
+
+    showNpcTyping(); // タイピング開始
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
@@ -418,8 +446,8 @@ async function giveGoldToNpc() {
         },
         body: JSON.stringify({
             sender_name: playerName || 'Player',
-            sender_message: playerMsg,
-            game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo}`
+            sender_message: '',
+            game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
     });
 }
@@ -435,14 +463,14 @@ async function giveItemToNpc() {
     }
 
     const itemId = selectedOption.value;
-    const item = gameState.inventory.find(i => i.id == itemId); // == で文字列/数値対応
+    const item = gameState.inventory.find(i => i.id == itemId);
     if (!item) {
         better_alert('アイテムが見つかりません', 'error');
         return;
     }
 
     let qty = 1;
-    if (!item.stat) { // スタック品
+    if (!item.stat) {
         qty = parseInt(document.getElementById('giftQtyInput').value) || 0;
         if (qty <= 0 || qty > (item.qty || 1)) {
             better_alert('数量が無効です', 'error');
@@ -452,14 +480,12 @@ async function giveItemToNpc() {
 
     // プレイヤーinventoryから削除/減らす
     if (item.stat || (item.qty || 1) === qty) {
-        // 装備品 or 全量: 完全削除
         gameState.inventory = gameState.inventory.filter(i => i !== item);
     } else {
-        // スタック品の一部: qty減らす
         item.qty -= qty;
     }
 
-    // NPCバッグに追加（シンプルにname: qty でスタック）
+    // NPCバッグに追加
     const adv = getAdventurerByName(currentNpcKey);
     initializeAdventurerBag(adv);
     adv.bag.items[item.name] = (adv.bag.items[item.name] || 0) + qty;
@@ -470,11 +496,14 @@ async function giveItemToNpc() {
 
     appendPlayerMessage(`あなたは${currentNpcKey}に${item.name}を${qty > 1 ? qty + '個' : ''}渡した`);
 
-    // NPCに通知
-    const playerMsg = `(プレイヤーが${item.name}を${qty > 1 ? qty + '個' : '1個'}渡した)`;
+    const giftDesc = qty > 1 ? `${item.name} x${qty}` : item.name;
+    const recentGiftInfo = `You just received a real gift from player: ${giftDesc}.`;
+
     const friendliness = adv.Friendliness || 70;
     const itemList = Object.entries(adv.bag.items).map(([k, v]) => `${k} x${v}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
+
+    showNpcTyping(); // タイピング開始
 
     await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
         method: 'POST',
@@ -484,8 +513,8 @@ async function giveItemToNpc() {
         },
         body: JSON.stringify({
             sender_name: playerName || 'Player',
-            sender_message: playerMsg,
-            game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo}`
+            sender_message: '',
+            game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
     });
 }
@@ -517,6 +546,10 @@ async function openNpcChat(npcKey) {
     updateGiftQtyMax();
     updateNpcBagDisplay();
 
+    // 贈り物セクション初期非表示
+    document.getElementById('giftSection').style.display = 'none';
+    document.getElementById('toggleGiftBtn').textContent = '贈り物 ▼';
+
     // === Proactive initiation logic ===
     const friendliness = adv?.Friendliness ?? 70;
 
@@ -527,6 +560,13 @@ async function openNpcChat(npcKey) {
     else if (friendliness >= 20) chance = 0.15;
 
     if (Math.random() < chance) {
+        showNpcTyping();
+
+        proactiveTypingTimeout = setTimeout(() => {
+            hideNpcTyping();
+            proactiveTypingTimeout = null;
+        }, 15000); // 15秒でタイムアウト
+
         const itemList = Object.entries(adv.bag.items).map(([k,v]) => `${k} x${v}`).join(", ") || "none";
         const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
 
@@ -549,9 +589,15 @@ function closeNpcChat() {
     document.getElementById('lunaChatModal').style.display = 'none';
     currentNpcKey = null;
     currentNpcId = null;
+    hideNpcTyping();
+    if (proactiveTypingTimeout) {
+        clearTimeout(proactiveTypingTimeout);
+        proactiveTypingTimeout = null;
+    }
 }
 
 function appendNpcMessage(text) {
+    hideNpcTyping(); // 保険
     const log = document.getElementById('lunaChatLog');
     const div = document.createElement('div');
     div.style.marginBottom = '15px';
@@ -582,6 +628,8 @@ async function sendNpcMessage() {
     appendPlayerMessage(message);
     input.value = '';
 
+    showNpcTyping(); // 送信後にタイピング開始
+
     const adv = getAdventurerByName(currentNpcKey);
     initializeAdventurerBag(adv);
     const currentFriendliness = adv ? (adv.Friendliness || 70) : 70;
@@ -600,4 +648,18 @@ async function sendNpcMessage() {
             game_state_info: `Current friendliness toward player: ${currentFriendliness}/100. ${bagInfo}`
         })
     });
+}
+
+function toggleGiftSection() {
+    const section = document.getElementById('giftSection');
+    const btn = document.getElementById('toggleGiftBtn');
+    if (!section || !btn) return;
+
+    if (section.style.display === 'none' || !section.style.display) {
+        section.style.display = 'block';
+        btn.textContent = '贈り物 ▲';
+    } else {
+        section.style.display = 'none';
+        btn.textContent = '贈り物 ▼';
+    }
 }

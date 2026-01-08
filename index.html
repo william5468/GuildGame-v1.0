@@ -54,7 +54,7 @@
         <!-- ローディング画面 -->
     <div id="loadingOverlay">
         <div class="loader">
-            <h2 data-i18n="loading_header">ギルドマスター v1.0<br>読み込み中...</h2>
+            <h2 data-i18n="loading_header">失われし冒険の旅 v1.0<br>読み込み中...</h2>
             <div class="spinner"></div>
             <p id="loadProgress">0%</p>
         </div>
@@ -246,16 +246,16 @@
         
         <h2 style="text-align:center; color:#ffd700; margin:0 0 15px 0; padding:0;">ルナと会話</h2>
         
-        <!-- チャットログ -->
+        <!-- チャットログ（贈り物閉時も最大スペース確保） -->
         <div style="flex:1; min-height:0; overflow-y:auto; background:#111; padding:15px; border-radius:8px; margin-bottom:15px;" id="lunaChatLog">
             <!-- メッセージがここに追加されます -->
         </div>
         
-        <!-- === 贈り物セクション（コンパクト化：ゴールドとアイテムを1行に） === -->
-        <div id="giftSection" style="margin-bottom:15px; padding:15px; background:#333; border-radius:8px; color:white;">
+        <!-- 贈り物セクション（初期非表示） -->
+        <div id="giftSection" style="display:none; margin-bottom:15px; padding:15px; background:#333; border-radius:8px; color:white;">
             <h3 style="margin:0 0 12px 0; color:#ffd700; text-align:center; font-size:1.2em;">贈り物</h3>
             
-            <!-- ゴールドとアイテムを横並び（flexで1行に） -->
+            <!-- ゴールドとアイテムを1行に -->
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center; justify-content:center;">
                 <!-- ゴールド -->
                 <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
@@ -278,16 +278,19 @@
             </div>
             
             <!-- NPCのバッグ表示 -->
-            <div id="npcBagDisplay" style="margin-top:15px; font-size:0.95em; line-height:1.5; background:#222; padding:10px; border-radius:4px; max-height:120px; overflow-y:auto;">
+            <div id="npcBagDisplay" style="margin-top:15px; font-size:0.95em; line-height:1.5; background:#222; padding:10px; border-radius:4px; max-height:100px; overflow-y:auto;">
                 <!-- ここにバッグ内容がJSで挿入されます -->
             </div>
         </div>
         
-        <!-- メッセージ入力 -->
-        <div style="display:flex; gap:10px;">
+        <!-- メッセージ入力 + 贈り物トグルボタン -->
+        <div style="display:flex; gap:10px; align-items:center;">
             <input type="text" id="lunaInput" placeholder="メッセージを入力..." style="flex:1; padding:12px; background:#333; color:white; border:none; border-radius:8px;" onkeypress="if(event.key==='Enter') sendNpcMessage()">
             <button onclick="sendNpcMessage()" style="padding:12px 24px; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer;">
                 送信
+            </button>
+            <button id="toggleGiftBtn" onclick="toggleGiftSection()" style="padding:12px 16px; background:#444; color:white; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
+                贈り物 ▼
             </button>
         </div>
     </div>
