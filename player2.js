@@ -12,12 +12,12 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
-function getAdventurerByName(name) {
+function getEntityByName(name) {
     return gameState.adventurers.find(adv => adv.name === name);
 }
 
 // === バッグ初期化（保険） - itemsを配列に変更（詳細保持のため） ===
-function initializeAdventurerBag(adventurer) {
+function initializeEntityBag(adventurer) {
     if (!adventurer.bag || !Array.isArray(adventurer.bag.items)) {
         adventurer.bag = { gold: 0, items: [] };
     }
@@ -151,12 +151,12 @@ async function spawnNpc(npcKey) {
     }
 
     // === 削除: 冒険者専用チェック（村人NPC対応のため） ===
-    // const adventurer = getAdventurerByName(npcKey);
+    // const adventurer = getEntityByName(npcKey);
     // if (!adventurer) {
     //     better_alert('冒険者データが見つかりません', 'error');
     //     return;
     // }
-    // initializeAdventurerBag(adventurer);
+    // initializeEntityBag(adventurer);
     // const currentFriendliness = adventurer.Friendliness || 70;
 
     const spawnBody = {
@@ -266,8 +266,8 @@ function startResponseListener() {
                     let args = cmd.arguments;
                     if (typeof args === 'string') args = JSON.parse(args);
 
-                    const adv = getAdventurerByName(currentNpcKey);
-                    initializeAdventurerBag(adv);
+                    const adv = getEntityByName(currentNpcKey);
+                    initializeEntityBag(adv);
 
                     if (cmd.name === 'adjust_friendliness') {
                         const delta = Math.max(-20, Math.min(20, args.delta || 0));
@@ -521,8 +521,8 @@ async function giveGoldToNpc() {
     }
 
     gameState.gold -= amount;
-    const adv = getAdventurerByName(currentNpcKey);
-    initializeAdventurerBag(adv);
+    const adv = getEntityByName(currentNpcKey);
+    initializeEntityBag(adv);
     adv.bag.gold += amount;
 
     updateNpcBagDisplay();
@@ -586,8 +586,8 @@ async function giveItemToNpc() {
     }
 
     // NPCバッグに追加（フル詳細対応）
-    const adv = getAdventurerByName(currentNpcKey);
-    initializeAdventurerBag(adv);
+    const adv = getEntityByName(currentNpcKey);
+    initializeEntityBag(adv);
     const existing = adv.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
     if (existing) {
         existing.qty = (existing.qty || 1) + qty;
@@ -744,8 +744,8 @@ async function sendNpcMessage() {
 
     showNpcTyping();
 
-    const adv = getAdventurerByName(currentNpcKey);
-    initializeAdventurerBag(adv);
+    const adv = getEntityByName(currentNpcKey);
+    initializeEntityBag(adv);
     const currentFriendliness = adv ? (adv.Friendliness || 70) : 70;
     const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
@@ -775,5 +775,27 @@ function toggleGiftSection() {
     } else {
         section.style.display = 'none';
         btn.textContent = '贈り物 ▼';
+    }
+}
+
+// === 新しい関数: NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
+function getEntityByName(name) {
+    // まず冒険者リストから検索（ルナ・カイトなど）
+    let entity = gameState.adventurers.find(adv => adv.name === name);
+    if (entity) return entity;
+
+    // なければvillageNPCsから検索
+    if (!gameState.villageNPCs) gameState.villageNPCs = {};
+    return gameState.villageNPCs[name];
+}
+
+// === バッグ初期化をエンティティ汎用化 ===
+function initializeEntityBag(entity) {
+    if (!entity.bag || !Array.isArray(entity.bag.items)) {
+        entity.bag = { gold: 0, items: [] };
+    }
+    // 好感度初期化（NPCの場合）
+    if (entity.Friendliness === undefined) {
+        entity.Friendliness = 70; // 初期好感度（恩があるNPCは80などに調整可能）
     }
 }

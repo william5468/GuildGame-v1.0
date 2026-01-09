@@ -7669,27 +7669,6 @@ function renderNPCList() {
     content.innerHTML = html;
 }
 
-// === 新しい関数: NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
-function getEntityByName(name) {
-    // まず冒険者リストから検索（ルナ・カイトなど）
-    let entity = gameState.adventurers.find(adv => adv.name === name);
-    if (entity) return entity;
-
-    // なければvillageNPCsから検索
-    if (!gameState.villageNPCs) gameState.villageNPCs = {};
-    return gameState.villageNPCs[name];
-}
-
-// === バッグ初期化をエンティティ汎用化 ===
-function initializeEntityBag(entity) {
-    if (!entity.bag || !Array.isArray(entity.bag.items)) {
-        entity.bag = { gold: 0, items: [] };
-    }
-    // 好感度初期化（NPCの場合）
-    if (entity.Friendliness === undefined) {
-        entity.Friendliness = 70; // 初期好感度（恩があるNPCは80などに調整可能）
-    }
-}
 
 // === unlockQuestNPC を拡張（villageNPCsにデータ作成） ===
 async function unlockQuestNPC(npcKey) {
