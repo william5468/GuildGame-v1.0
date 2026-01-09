@@ -7710,8 +7710,8 @@ async function unlockQuestNPC(npcKey) {
 // 個別初期設定があれば適用（なければデフォルトのまま）
     const setup = initialVillageNpcBags[npcKey];
     if (setup) {
-        entity.bag.gold = setup.gold;
-        entity.bag.items.push(...setup.items);
+        gameState.villageNPCs[npcKey].bag.gold = setup.gold;
+        gameState.villageNPCs[npcKey].bag.items.push(...setup.items);
     }
 
     console.log(`${npcKey} がアンロックされました（bagとFriendliness初期化済み）`);
