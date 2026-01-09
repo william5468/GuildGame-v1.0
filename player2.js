@@ -581,11 +581,11 @@ async function submitChatAndGifts() {
 
     const friendliness = entity.Friendliness || 70;
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
+    const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
 
     let recentGiftInfo = '';
     if (recentGiftInfos.length > 0) {
-        recentGiftInfo = recentGiftInfos.map(info => `You just received a real gift from player: ${info}.`).join(' ');
+        recentGiftInfo = recentGiftInfos.map(info => `プレイヤーから贈り物を受け取りました: ${info}.`).join(' ');
     }
 
     showNpcTyping();
@@ -599,7 +599,7 @@ async function submitChatAndGifts() {
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
             sender_message: message,
-            game_state_info: `Current friendliness toward player: ${friendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo} ${recentGiftInfo}`
+            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${sender_name}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
         })
     });
 
@@ -676,7 +676,7 @@ async function openNpcChat(npcKey) {
             body: JSON.stringify({
                 sender_name: gameState.playerName || 'Player',
                 sender_message: '',
-                game_state_info: `Current friendliness: ${friendliness}/100. Days passed since last message from player: ${daysSinceLast}. Player has just opened the chat and is waiting for you to speak. ${bagInfo}`
+                game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${sender_name}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
             })
         });
 
