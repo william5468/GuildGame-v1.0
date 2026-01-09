@@ -3314,16 +3314,16 @@ if (q.buy) {
     let additionalItemHTML = '';
 
     if (success) {
-        let payout = permanentCount * 0.1 * q.reward;
+        let payout = permanentCount * 0.2 * q.reward;
         let rewardGold = q.reward;
         if (goldOverride !== null) {
             rewardGold = goldOverride;
-            payout = permanentCount * 0.1 * goldOverride;
+            payout = permanentCount * 0.2 * goldOverride;
         }
         let netGold = rewardGold - payout;
         gameState.gold += netGold;
 
-        let repGain = q.difficulty * 0.5;
+        let repGain = q.difficulty * 0.2;
         gameState.reputation += repGain;
         if (q.defense) {
             const rep = Math.floor(gameState.reputation);
