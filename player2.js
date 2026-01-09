@@ -12,9 +12,6 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
-// === ラストチャット日トラッカー（NPCごと） ===
-if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
     // まず冒険者リストから検索（ルナ・カイトなど）
@@ -142,6 +139,13 @@ function handlePlayer2Callback() {
 window.addEventListener('load', () => {
     p2Token = localStorage.getItem('p2_token');
     handlePlayer2Callback();
+
+    // === ラストチャット日トラッカーの安全初期化（gameStateが定義済みの場合） ===
+    if (typeof gameState !== 'undefined') {
+        if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
+    } else {
+        console.warn('gameState not defined on load - lastNpcChatDay initialization delayed');
+    }
 });
 
 async function spawnNpc(npcKey) {
@@ -448,7 +452,8 @@ async function giveGoldToNpc() {
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
-    // 経過日数計算
+    // 経過日数計算（安全初期化）
+    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
 
@@ -530,7 +535,8 @@ async function giveItemToNpc() {
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
-    // 経過日数計算
+    // 経過日数計算（安全初期化）
+    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
 
@@ -591,7 +597,8 @@ async function openNpcChat(npcKey) {
 
     const friendliness = entity.Friendliness ?? 70;
 
-    // 経過日数計算
+    // 経過日数計算（安全初期化）
+    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[npcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
 
@@ -633,6 +640,45 @@ async function openNpcChat(npcKey) {
     }
 }
 
+async function sendNpcMessage() {
+    const input = document.getElementById('lunaInput');
+    const message = input.value.trim();
+    if (!message || !currentNpcId) return;
+
+    appendPlayerMessage(message);
+    input.value = '';
+
+    showNpcTyping();
+
+    const entity = getEntityByName(currentNpcKey);
+    initializeEntityBag(entity);
+    const currentFriendliness = entity ? (entity.Friendliness || 70) : 70;
+
+    // 経過日数計算（安全初期化）
+    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
+    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
+    const daysSinceLast = gameState.day - lastDay;
+
+    const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
+    const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
+
+    await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${p2Token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            sender_name: gameState.playerName || 'Player',
+            sender_message: message,
+            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo}`
+        })
+    });
+
+    // メッセージ送信後ラスト日更新
+    gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
+}
+
 function closeNpcChat() {
     document.getElementById('lunaChatModal').style.display = 'none';
     currentNpcKey = null;
@@ -666,44 +712,6 @@ function appendPlayerMessage(text) {
     div.innerHTML = `<strong>${gameState.playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
-}
-
-async function sendNpcMessage() {
-    const input = document.getElementById('lunaInput');
-    const message = input.value.trim();
-    if (!message || !currentNpcId) return;
-
-    appendPlayerMessage(message);
-    input.value = '';
-
-    showNpcTyping();
-
-    const entity = getEntityByName(currentNpcKey);
-    initializeEntityBag(entity);
-    const currentFriendliness = entity ? (entity.Friendliness || 70) : 70;
-
-    // 経過日数計算
-    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
-    const daysSinceLast = gameState.day - lastDay;
-
-    const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
-
-    await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${p2Token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            sender_name: gameState.playerName || 'Player',
-            sender_message: message,
-            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo}`
-        })
-    });
-
-    // メッセージ送信後ラスト日更新
-    gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
 function toggleGiftSection() {
