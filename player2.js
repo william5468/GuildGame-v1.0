@@ -599,7 +599,7 @@ async function submitChatAndGifts() {
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
             sender_message: message,
-            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
+            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo}. ${bagInfo}`
         })
     });
 
@@ -665,7 +665,7 @@ async function openNpcChat(npcKey) {
         }, 15000);
 
         const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-        const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
+        const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
 
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
             method: 'POST',
