@@ -3407,7 +3407,9 @@ if (q.buy) {
             }
         }
 
-        // 完了ダイアログ処理
+        // 完了ダイアログ処理（questStoryindex をすべてのクエストタイプで統一使用）
+        // ※ fetchクエストも生成時にquestStoryindex（配列のインデックス）を設定している前提
+        //   設定されていない場合、別途q.itemNameなどで判定する拡張が必要ですが、ここでは統一
         if (q.side) {
             if (sideQuestCompletionDialogue[q.npcIdx]) {
                 const key = `side-${q.npcIdx}`;
@@ -3422,10 +3424,25 @@ if (q.buy) {
             if (!gameState.seenCompletionDialogues.has(key)) {
                 const dialogue = currentQuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
                 queueQuestCompletionDialogue(dialogue);
+                console.log("QuestCompletionDialogue played for: "+key);
                 gameState.seenCompletionDialogues.add(key);
+
+                // === 新方式：マップからNPCアンロックを参照（すべてのタイプでquestStoryindex使用） ===
+                const unlockKey = `${q.questType}-${q.rank}-${q.questStoryindex}`;
+                const npcToUnlock = questCompletionNPCUnlocks[unlockKey];
+                console.log("npcToUnlock: "+npcToUnlock);
+                if (npcToUnlock) {
+                    // 文字列の場合（単体）→配列に変換
+                    const npcs = Array.isArray(npcToUnlock) ? npcToUnlock : [npcToUnlock];
+
+                    for (const npcKey of npcs) {
+                        unlockQuestNPC(npcKey);
+                    }
+                }
+                // === ここまで ===
             }
         }
-
+        console.log("Start building eventmodal");
         // Unified layout for success
         let leftHTML = `
             <div style="text-align: center;">
@@ -5931,10 +5948,11 @@ function toggleNPCs() {
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
     } else {
-        currentNPCIndex = 0;
-        renderCurrentNPC();
+        // リスト形式で全アンロックNPCを表示（カルーセル不要）
+        renderNPCList();
         modal.style.display = 'block';
     }
+
 }
 
 function closeNPCs() {
@@ -6564,6 +6582,7 @@ function renderCurrentNPC() {
     html += '</div>';
     html += '<div>';
     html += `<button onclick="receiveSideQuest(${idx})" style="background:#27ae60; color:white; padding:15px 30px; font-size:1.2em; border:none; border-radius:8px; cursor:pointer;">サイドクエスト受注</button>`;
+    html += `<button onclick="openNpcChat(${name})" style="background:#27ae60; color:white; padding:15px 30px; font-size:1.2em; border:none; border-radius:8px; cursor:pointer;">${name}と話す (AI)</button>`;
     html += '</div>';
     html += '</div>';
 
@@ -7567,5 +7586,141 @@ function queueGameOverDialogue(sequence) {
     if (!isPlayingDialogue) {
         crossfadeTo('GameoverBgm', 2000);
         playNextDialogue();
+    }
+}
+
+// === クエスト初回クリアでNPCをアンロック（spawnは遅延） ===
+function unlockQuestNPC(npcKey) {
+    if (!gameState.unlockedNPCs) gameState.unlockedNPCs = [];
+    if (gameState.unlockedNPCs.includes(npcKey)) return;
+
+    gameState.unlockedNPCs.push(npcKey);
+
+
+}
+
+
+function renderNPCList() {
+    const content = document.getElementById('npcsContent');
+    if (!content) return;
+
+    const unlocked = gameState.unlockedNPCs || [];
+
+    if (unlocked.length === 0) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:60px; color:#6c757d;">
+                <h3>チャット可能なNPC</h3>
+                <p style="font-size:1.2em;">まだ話せるNPCがいません。<br>
+                クエストをクリアしてNPCをアンロックしてください。</p>
+            </div>`;
+        return;
+    }
+
+    let html = `
+        <div style="max-width:800px; margin:0 auto; padding:20px;">
+            <h2 style="text-align:center; margin-bottom:30px; color:#ffd700; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+                チャット可能なNPC (${unlocked.length}人)
+            </h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">`;
+
+    unlocked.forEach(npcKey => {
+        const entity = getEntityByName(npcKey);
+        const friendliness = entity?.Friendliness ?? 70;
+
+        const isDiscovery = discoveryNPCs.includes(npcKey);
+        const idx = discoveryNPCs.indexOf(npcKey);
+
+        html += `
+            <div style="background:rgba(30,30,30,0.7); border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.6);">
+                <!-- 画像を固定高さコンテナで中央寄せ・完全収納 -->
+                <div style="height:220px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; margin-bottom:15px; background:#222;">
+                    <img src="Images/${npcKey}.png" alt="${npcKey}"
+                         style="max-width:100%; max-height:100%; object-fit:contain;"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTQwIDE4MCI+PHJlY3Qgd2lkdGg9IjE0MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSI3MCIgeT0iOTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7nlLvlg4/jgarjgZc8L3RleHQ+PC9zdmc+'; this.onerror=null;">
+                </div>
+                <h3 style="color:#ffd700; margin:10px 0;">${npcKey}</h3>
+                <!-- 好感度表示（冒険者と同じように） -->
+                <div style="color:#ff6b6b; font-size:1.1em; margin:10px 0;">
+                    好感度: ${friendliness}/100
+                </div>
+                <div style="margin:15px 0;">
+                    <button onclick="openNpcChat('${npcKey}')" 
+                            style="background:#3498db; color:white; padding:12px 24px; font-size:1.1em; border:none; border-radius:8px; cursor:pointer; margin:5px;">
+                        ${npcKey}と話す (AI)
+                    </button>`;
+
+        if (isDiscovery && idx !== -1) {
+            html += `
+                    <button onclick="receiveSideQuest(${idx})" 
+                            style="background:#27ae60; color:white; padding:12px 24px; font-size:1.1em; border:none; border-radius:8px; cursor:pointer; margin:5px;">
+                        サイドクエスト受注
+                    </button>`;
+        }
+
+        html += `
+                </div>
+            </div>`;
+    });
+
+    html += `
+            </div>
+        </div>`;
+
+    content.innerHTML = html;
+}
+
+// === 新しい関数: NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
+function getEntityByName(name) {
+    // まず冒険者リストから検索（ルナ・カイトなど）
+    let entity = gameState.adventurers.find(adv => adv.name === name);
+    if (entity) return entity;
+
+    // なければvillageNPCsから検索
+    if (!gameState.villageNPCs) gameState.villageNPCs = {};
+    return gameState.villageNPCs[name];
+}
+
+// === バッグ初期化をエンティティ汎用化 ===
+function initializeEntityBag(entity) {
+    if (!entity.bag || !Array.isArray(entity.bag.items)) {
+        entity.bag = { gold: 0, items: [] };
+    }
+    // 好感度初期化（NPCの場合）
+    if (entity.Friendliness === undefined) {
+        entity.Friendliness = 70; // 初期好感度（恩があるNPCは80などに調整可能）
+    }
+}
+
+// === unlockQuestNPC を拡張（villageNPCsにデータ作成） ===
+async function unlockQuestNPC(npcKey) {
+    if (!gameState.unlockedNPCs) gameState.unlockedNPCs = [];
+    if (gameState.unlockedNPCs.includes(npcKey)) return;
+
+    gameState.unlockedNPCs.push(npcKey);
+
+    if (!gameState.villageNPCs) gameState.villageNPCs = {};
+
+    // NPCデータ初期化
+    gameState.villageNPCs[npcKey] = {
+        name: npcKey,
+        Friendliness: 50, // 初期好感度（酒場主人など恩がある場合は80など調整）
+        bag: { gold: 300, items: [] } // 初期ゴールド（酒販売用に少し持たせる）
+    };
+
+    // 例: 酒場主人専用初期アイテム（ワイン在庫）
+    if (npcKey === '酒場主人') {
+        gameState.villageNPCs[npcKey].bag.items.push({
+            name: "酒場のワイン",
+            qty: 10, // 在庫10本
+            type: "potion",
+            restore: "hp",
+            amount: 100
+        });
+    }
+
+    console.log(`${npcKey} がアンロックされました（bagとFriendliness初期化済み）`);
+
+    if (document.getElementById('npcsContent')) {
+        renderNPCList();
     }
 }

@@ -2175,8 +2175,20 @@ const escortDescsByRank = {
   }
 };
 
+const questCompletionNPCUnlocks = {
+    // === Fランク killクエスト（ストーリー付き固定クエスト、questStoryindex 0〜2） ===
+    '0-F-0': '農夫',          // スライム5匹討伐（農夫登場）
+    '0-F-1': '酒場主人',      // 巨大ネズミ退治（酒場主人登場）
+    '0-F-2': '農夫',          // 野犬3匹討伐（農夫再登場、無害）
 
-
+    // === Fランク fetchクエスト（questStoryindex 0〜2 を使用） ===
+    // 配列の順番に基づく（ja/en/zh共通で同じ順序）
+    // 0: 薬草集め → 薬師アンロック
+    // 1: キノコ集め → 料理人アンロック
+    // 2: 花集め → 花屋アンロック
+    '3-F-0': '錬金術師',
+    '3-F-1': '料理人',
+};
 const fetchQuestsByRank = {
   ja: {
     'F': [

@@ -163,7 +163,7 @@ async function spawnNpc(npcKey) {
         name: config.name,
         short_name: config.short_name,
         character_description: config.character_description,
-        system_prompt: config.system_prompt.replace(/\{player\}/g, playerName || 'あなた'),
+        system_prompt: config.system_prompt.replace(/\{player\}/g, gameState.playerName || 'あなた'),
         keep_game_state: true,
         tts: {
             audio_format: "mp3",
@@ -288,7 +288,7 @@ function startResponseListener() {
                             }
                         }
 
-                        // === 強化版 give_to_player: 名前完全一致で検索 + 詳細コピー ===
+                        // === 強化版 give_to_player: 名前完全一致で検索 + 詳細をNPCバッグから正確にコピー（AI指定は無視してクラフト値を保持） ===
                         for (const [key, value] of Object.entries(items)) {
                             let targetName = key;
                             let giveQty = 1;
@@ -316,12 +316,13 @@ function startResponseListener() {
                                 adv.bag.items = adv.bag.items.filter(i => i !== itemObj);
                             }
 
-                            // プレイヤーinventoryに追加（詳細を優先的に使用）
-                            const finalDetails = { ...itemObj, ...providedDetails }; // providedDetailsが優先（AI指定のbonusなど）
-                            delete finalDetails.qty; // qtyは別
+                            // プレイヤーinventoryに追加（NPCバッグの詳細を正確にコピー）
+                            const finalDetails = { ...itemObj };
+                            delete finalDetails.qty; // qtyは別で扱う
 
                             let playerItem = gameState.inventory.find(i => i.name === targetName && JSON.stringify({ ...i, qty: undefined, id: undefined }) === JSON.stringify({ ...finalDetails, qty: undefined }));
-                            if (playerItem && !finalDetails.stat && !finalDetails.type) {
+                            if (playerItem) {
+                                // 完全一致（詳細も同じ）ならスタック（クラフトアイテムも同一ならスタック可能に改善）
                                 playerItem.qty = (playerItem.qty || 1) + giveQty;
                             } else {
                                 const newItem = {
@@ -413,7 +414,7 @@ function startResponseListener() {
                     .replace(/<\/(Luna|Kaito)>/g, '')
                     .trim();
 
-                message = message.replace(/\{player\}/g, playerName || 'あなた');
+                message = message.replace(/\{player\}/g, gameState.playerName || 'あなた');
 
                 appendNpcMessage(message);
             }
@@ -433,21 +434,22 @@ function startResponseListener() {
 
 // === updateNpcBagDisplay（詳細表示対応） ===
 function updateNpcBagDisplay() {
-    const adv = getAdventurerByName(currentNpcKey);
-    if (!adv || !adv.bag) return;
-    const bag = adv.bag;
+    const entity = getEntityByName(currentNpcKey);
+    if (!entity || !entity.bag) return;
+
+    const bag = entity.bag;
     const itemList = bag.items.map(it => {
         let str = `${it.name} x${it.qty || 1}`;
         if (it.type === 'potion') str += ` (回復: ${it.restore.toUpperCase()} +${it.amount})`;
         if (it.stat) str += ` (${it.stat} +${it.bonus}%)`;
         return str;
     }).join("<br>") || "なし";
+
     const display = document.getElementById('npcBagDisplay');
     if (display) {
         display.innerHTML = `<strong>${currentNpcKey}のバッグ:</strong><br>ゴールド: ${bag.gold}<br>アイテム:<br>${itemList}`;
     }
 }
-
 // === 贈り物UI関連関数 ===
 function populateGiftItems() {
     const select = document.getElementById('giftItemSelect');
@@ -541,7 +543,7 @@ async function giveGoldToNpc() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            sender_name: playerName || 'Player',
+            sender_name: gameState.playerName || 'Player',
             sender_message: '',
             game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
@@ -616,7 +618,7 @@ async function giveItemToNpc() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            sender_name: playerName || 'Player',
+            sender_name: gameState.playerName || 'Player',
             sender_message: '',
             game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
@@ -644,8 +646,16 @@ async function openNpcChat(npcKey) {
 
     if (!currentNpcId) return;
 
-    const adv = getAdventurerByName(npcKey);
-    initializeAdventurerBag(adv);
+    // 冒険者または村人NPCを統一的に取得
+    const entity = getEntityByName(npcKey);
+    if (!entity) {
+        better_alert('キャラクターが見つかりません', 'error');
+        return;
+    }
+
+    // バッグと好感度を初期化（NPCの場合も対応）
+    initializeEntityBag(entity);
+
     populateGiftItems();
     updateGiftQtyMax();
     updateNpcBagDisplay();
@@ -653,7 +663,7 @@ async function openNpcChat(npcKey) {
     document.getElementById('giftSection').style.display = 'none';
     document.getElementById('toggleGiftBtn').textContent = '贈り物 ▼';
 
-    const friendliness = adv?.Friendliness ?? 70;
+    const friendliness = entity.Friendliness ?? 70;
 
     let chance = 0;
     if (friendliness >= 80) chance = 0.95;
@@ -669,8 +679,8 @@ async function openNpcChat(npcKey) {
             proactiveTypingTimeout = null;
         }, 15000);
 
-        const itemList = adv.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-        const bagInfo = `Your bag: Gold ${adv.bag.gold}, Items: ${itemList}.`;
+        const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
+        const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
             method: 'POST',
@@ -679,7 +689,7 @@ async function openNpcChat(npcKey) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                sender_name: playerName || 'Player',
+                sender_name: gameState.playerName || 'Player',
                 sender_message: '',
                 game_state_info: `Current friendliness: ${friendliness}/100. Player has just opened the chat and is waiting for you to speak. ${bagInfo}`
             })
@@ -717,7 +727,7 @@ function appendPlayerMessage(text) {
     div.style.color = '#000000ff';
     div.style.textAlign = 'right';
     div.style.fontSize = '1.1em';
-    div.innerHTML = `<strong>${playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
+    div.innerHTML = `<strong>${gameState.playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
 }
@@ -745,7 +755,7 @@ async function sendNpcMessage() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            sender_name: playerName || 'Player',
+            sender_name: gameState.playerName || 'Player',
             sender_message: message,
             game_state_info: `Current friendliness toward player: ${currentFriendliness}/100. ${bagInfo}`
         })
