@@ -599,7 +599,7 @@ async function submitChatAndGifts() {
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
             sender_message: message,
-            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${sender_name}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
+            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
         })
     });
 
@@ -676,7 +676,7 @@ async function openNpcChat(npcKey) {
             body: JSON.stringify({
                 sender_name: gameState.playerName || 'Player',
                 sender_message: '',
-                game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${sender_name}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
+                game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
             })
         });
 
