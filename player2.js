@@ -510,10 +510,11 @@ async function giveGoldToNpc() {
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
-    // 経過日数計算（安全初期化）
+    // 経過日数計算（安全初期化 + デバッグログ）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
+    console.log(`[DEBUG] giveGoldToNpc - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
 
     showNpcTyping();
 
@@ -530,7 +531,9 @@ async function giveGoldToNpc() {
         })
     });
 
+    // 贈り物は明確なインタラクションなのでラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
+    console.log(`[DEBUG] lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
 }
 
 async function giveItemToNpc() {
@@ -590,10 +593,11 @@ async function giveItemToNpc() {
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
-    // 経過日数計算（安全初期化）
+    // 経過日数計算（安全初期化 + デバッグログ）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
+    console.log(`[DEBUG] giveItemToNpc - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
 
     showNpcTyping();
 
@@ -610,7 +614,9 @@ async function giveItemToNpc() {
         })
     });
 
+    // 贈り物は明確なインタラクションなのでラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
+    console.log(`[DEBUG] lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
 }
 
 async function openNpcChat(npcKey) {
@@ -651,10 +657,11 @@ async function openNpcChat(npcKey) {
 
     const friendliness = entity.Friendliness ?? 70;
 
-    // 経過日数計算（安全初期化）
+    // 経過日数計算（安全初期化 + デバッグログ）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[npcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
+    console.log(`[DEBUG] openNpcChat - NPC: ${npcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
 
     let chance = 0;
     if (friendliness >= 80) chance = 0.95;
@@ -686,10 +693,11 @@ async function openNpcChat(npcKey) {
             })
         });
 
+        // プロアクティブ（NPCが話した）場合のみインタラクションとしてカウント
         gameState.lastNpcChatDay[npcKey] = gameState.day;
-    } else {
-        gameState.lastNpcChatDay[npcKey] = gameState.day;
+        console.log(`[DEBUG] Proactive message sent - lastNpcChatDay updated for ${npcKey} to ${gameState.day}`);
     }
+    // プロアクティブなしの場合、更新しない（単なる閲覧はカウントせず、時間経過を許容）
 }
 
 async function sendNpcMessage() {
@@ -706,10 +714,11 @@ async function sendNpcMessage() {
     initializeEntityBag(entity);
     const currentFriendliness = entity ? (entity.Friendliness || 70) : 70;
 
-    // 経過日数計算（安全初期化）
+    // 経過日数計算（安全初期化 + デバッグログ）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
+    console.log(`[DEBUG] sendNpcMessage - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
 
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
@@ -727,7 +736,9 @@ async function sendNpcMessage() {
         })
     });
 
+    // プレイヤーメッセージ送信は明確なインタラクションなので更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
+    console.log(`[DEBUG] Player message sent - lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
 }
 
 function closeNpcChat() {
