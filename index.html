@@ -285,8 +285,8 @@
         
         <!-- メッセージ入力 + 贈り物トグルボタン -->
         <div style="display:flex; gap:10px; align-items:center;">
-            <input type="text" id="lunaInput" placeholder="メッセージを入力..." style="flex:1; padding:12px; background:#333; color:white; border:none; border-radius:8px;" onkeypress="if(event.key==='Enter') sendNpcMessage()">
-            <button onclick="sendNpcMessage()" style="padding:12px 24px; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer;">
+            <input type="text" id="lunaInput" placeholder="メッセージを入力..." style="flex:1; padding:12px; background:#333; color:white; border:none; border-radius:8px;" onkeypress="if(event.key==='Enter') submitChatAndGifts()">
+            <button onclick="submitChatAndGifts()" style="padding:12px 24px; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer;">
                 送信
             </button>
             <button id="toggleGiftBtn" onclick="toggleGiftSection()" style="padding:12px 16px; background:#444; color:white; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">

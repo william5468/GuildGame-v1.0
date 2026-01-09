@@ -12,6 +12,9 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
+// === ラストチャット日トラッカー（NPCごと） ===
+if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
+
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
     // まず冒険者リストから検索（ルナ・カイトなど）
@@ -140,7 +143,6 @@ window.addEventListener('load', () => {
     p2Token = localStorage.getItem('p2_token');
     handlePlayer2Callback();
 
-    // === ラストチャット日トラッカーの安全初期化（gameState定義済み時のみ） ===
     if (typeof gameState !== 'undefined') {
         if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     }
@@ -485,119 +487,108 @@ function updateGiftQtyMax() {
     }
 }
 
-// === 贈り物送信関数 ===
-async function giveGoldToNpc() {
-    if (!currentNpcId || !currentNpcKey) return;
-    const amount = parseInt(document.getElementById('giftGoldInput').value) || 0;
-    if (amount <= 0 || amount > gameState.gold) {
-        better_alert('ゴールドが不足しているか無効です', 'error');
-        return;
-    }
-
-    gameState.gold -= amount;
-    const entity = getEntityByName(currentNpcKey);
-    initializeEntityBag(entity);
-    entity.bag.gold += amount;
-
-    updateNpcBagDisplay();
-    document.getElementById('giftGoldInput').value = 0;
-
-    appendPlayerMessage(`あなたは${currentNpcKey}に${amount}ゴールドを渡した`);
-
-    const recentGiftInfo = `You just received a real gift from player: Gold +${amount}.`;
-
-    const friendliness = entity.Friendliness || 70;
-    const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
-
-    // 経過日数計算（安全初期化 + デバッグログ）
-    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
-    const daysSinceLast = gameState.day - lastDay;
-    console.log(`[DEBUG] giveGoldToNpc - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
-
-    showNpcTyping();
-
-    await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${p2Token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            sender_name: gameState.playerName || 'Player',
-            sender_message: `あなたは${currentNpcKey}に${amount}ゴールドを渡した`,
-            game_state_info: `Current friendliness: ${friendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo} ${recentGiftInfo}`
-        })
-    });
-
-    // 贈り物は明確なインタラクションなのでラスト日更新
-    gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
-    console.log(`[DEBUG] lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
-}
-
-async function giveItemToNpc() {
+// === 単一送信関数：メッセージ + ゴールド贈り物 + アイテム贈り物を1回のAPIコールで処理 ===
+async function submitChatAndGifts() {
     if (!currentNpcId || !currentNpcKey) return;
 
-    const select = document.getElementById('giftItemSelect');
-    const selectedOption = select.options[select.selectedIndex];
-    if (!selectedOption || !selectedOption.value) {
-        better_alert('アイテムを選択してください', 'error');
-        return;
-    }
+    // 入力取得
+    const chatInput = document.getElementById('lunaInput');
+    const message = chatInput.value.trim();
 
-    const itemId = selectedOption.value;
-    const item = gameState.inventory.find(i => i.id == itemId);
-    if (!item) {
-        better_alert('アイテムが見つかりません', 'error');
-        return;
-    }
+    const goldInput = document.getElementById('giftGoldInput');
+    const goldAmount = parseInt(goldInput.value) || 0;
 
-    let qty = 1;
-    if (!item.stat) {
-        qty = parseInt(document.getElementById('giftQtyInput').value) || 0;
-        if (qty <= 0 || qty > (item.qty || 1)) {
-            better_alert('数量が無効です', 'error');
-            return;
+    const itemSelect = document.getElementById('giftItemSelect');
+    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+    let itemGift = null;
+    let itemQty = 1;
+    if (selectedOption && selectedOption.value) {
+        const itemId = selectedOption.value;
+        const item = gameState.inventory.find(i => i.id == itemId);
+        if (item) {
+            if (!item.stat) {
+                itemQty = parseInt(document.getElementById('giftQtyInput').value) || 1;
+            }
+            itemGift = { item, qty: itemQty };
         }
     }
 
-    if (item.stat || (item.qty || 1) === qty) {
-        gameState.inventory = gameState.inventory.filter(i => i !== item);
-    } else {
-        item.qty -= qty;
+    // バリデーション
+    if (goldAmount > 0 && goldAmount > gameState.gold) {
+        better_alert('ゴールドが不足しています', 'error');
+        return;
     }
+    if (itemGift && itemQty > (itemGift.item.qty || 1)) {
+        better_alert('アイテム数量が不足しています', 'error');
+        return;
+    }
+
+    // 贈り物処理（バッグ更新）
+    let recentGiftInfos = [];
 
     const entity = getEntityByName(currentNpcKey);
     initializeEntityBag(entity);
-    const existing = entity.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
-    if (existing) {
-        existing.qty = (existing.qty || 1) + qty;
-    } else {
-        const newBagItem = { name: item.name, qty };
-        Object.assign(newBagItem, item);
-        delete newBagItem.id;
-        entity.bag.items.push(newBagItem);
+
+    if (goldAmount > 0) {
+        gameState.gold -= goldAmount;
+        entity.bag.gold += goldAmount;
+        recentGiftInfos.push(`Gold +${goldAmount}`);
+        goldInput.value = '';
     }
 
+    if (itemGift) {
+        const { item, qty } = itemGift;
+        // プレイヤーから削除
+        if (item.stat || qty === (item.qty || 1)) {
+            gameState.inventory = gameState.inventory.filter(i => i !== item);
+        } else {
+            item.qty -= qty;
+        }
+        // NPCに追加
+        const existing = entity.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
+        if (existing) {
+            existing.qty += qty;
+        } else {
+            const newItem = { name: item.name, qty };
+            Object.assign(newItem, item);
+            delete newItem.id;
+            entity.bag.items.push(newItem);
+        }
+        recentGiftInfos.push(`${item.name} x${qty}`);
+    }
+
+    // UI更新
     updateNpcBagDisplay();
     populateGiftItems();
     updateGiftQtyMax();
 
-    appendPlayerMessage(`あなたは${currentNpcKey}に${item.name}を${qty > 1 ? qty + '個' : ''}渡した`);
+    // ログ追加
+    if (message) {
+        appendPlayerMessage(message);
+    }
+    if (recentGiftInfos.length > 0) {
+        appendPlayerMessage(`あなたは${currentNpcKey}に贈り物を渡した`);
+    } else if (!message) {
+        // 何も送らない場合（空送信防止）
+        better_alert('メッセージまたは贈り物を入力してください', 'warning');
+        return;
+    }
 
-    const giftDesc = qty > 1 ? `${item.name} x${qty}` : item.name;
-    const recentGiftInfo = `You just received a real gift from player: ${giftDesc}.`;
+    chatInput.value = '';
+
+    // 経過日数計算
+    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
+    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
+    const daysSinceLast = gameState.day - lastDay;
 
     const friendliness = entity.Friendliness || 70;
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
 
-    // 経過日数計算（安全初期化 + デバッグログ）
-    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
-    const daysSinceLast = gameState.day - lastDay;
-    console.log(`[DEBUG] giveItemToNpc - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
+    let recentGiftInfo = '';
+    if (recentGiftInfos.length > 0) {
+        recentGiftInfo = recentGiftInfos.map(info => `You just received a real gift from player: ${info}.`).join(' ');
+    }
 
     showNpcTyping();
 
@@ -609,14 +600,13 @@ async function giveItemToNpc() {
         },
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
-            sender_message: `あなたは${currentNpcKey}に${item.name}を${qty > 1 ? qty + '個' : ''}渡した`,
-            game_state_info: `Current friendliness: ${friendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo} ${recentGiftInfo}`
+            sender_message: message,
+            game_state_info: `Current friendliness toward player: ${friendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo} ${recentGiftInfo}`
         })
     });
 
-    // 贈り物は明確なインタラクションなのでラスト日更新
+    // インタラクション発生でラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
-    console.log(`[DEBUG] lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
 }
 
 async function openNpcChat(npcKey) {
@@ -657,11 +647,10 @@ async function openNpcChat(npcKey) {
 
     const friendliness = entity.Friendliness ?? 70;
 
-    // 経過日数計算（安全初期化 + デバッグログ）
+    // 経過日数計算（安全初期化）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[npcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
-    console.log(`[DEBUG] openNpcChat - NPC: ${npcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
 
     let chance = 0;
     if (friendliness >= 80) chance = 0.95;
@@ -693,52 +682,10 @@ async function openNpcChat(npcKey) {
             })
         });
 
-        // プロアクティブ（NPCが話した）場合のみインタラクションとしてカウント
         gameState.lastNpcChatDay[npcKey] = gameState.day;
-        console.log(`[DEBUG] Proactive message sent - lastNpcChatDay updated for ${npcKey} to ${gameState.day}`);
+    } else {
+        gameState.lastNpcChatDay[npcKey] = gameState.day;
     }
-    // プロアクティブなしの場合、更新しない（単なる閲覧はカウントせず、時間経過を許容）
-}
-
-async function sendNpcMessage() {
-    const input = document.getElementById('lunaInput');
-    const message = input.value.trim();
-    if (!message || !currentNpcId) return;
-
-    appendPlayerMessage(message);
-    input.value = '';
-
-    showNpcTyping();
-
-    const entity = getEntityByName(currentNpcKey);
-    initializeEntityBag(entity);
-    const currentFriendliness = entity ? (entity.Friendliness || 70) : 70;
-
-    // 経過日数計算（安全初期化 + デバッグログ）
-    if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-    const lastDay = gameState.lastNpcChatDay[currentNpcKey] || 0;
-    const daysSinceLast = gameState.day - lastDay;
-    console.log(`[DEBUG] sendNpcMessage - NPC: ${currentNpcKey}, currentDay: ${gameState.day}, lastDay: ${lastDay}, daysSinceLast: ${daysSinceLast}`);
-
-    const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `Your bag: Gold ${entity.bag.gold}, Items: ${itemList}.`;
-
-    await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${p2Token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            sender_name: gameState.playerName || 'Player',
-            sender_message: message,
-            game_state_info: `Current friendliness toward player: ${currentFriendliness}/100. Days passed since last message from player: ${daysSinceLast}. ${bagInfo}`
-        })
-    });
-
-    // プレイヤーメッセージ送信は明確なインタラクションなので更新
-    gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
-    console.log(`[DEBUG] Player message sent - lastNpcChatDay updated for ${currentNpcKey} to ${gameState.day}`);
 }
 
 function closeNpcChat() {

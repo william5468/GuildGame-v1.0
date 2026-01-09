@@ -2091,7 +2091,10 @@ function usePotionOnChar(charIdx, potionName) {
 function generateKillRecruit(difficulty) {
     const primary = Math.floor(Math.random()*4);
     const repFactor = Math.max(0.1, (gameState.reputation + difficulty * 20 + 50) / 100);
-    let s = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), w = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), d = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), l = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor));
+    let s = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), 
+        w = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), 
+        d = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor)), 
+        l = Math.max(1, Math.floor((1 + Math.random() * 2) * repFactor));
     if (primary === 0) s = Math.floor(5 * repFactor + Math.random() * (5 * repFactor)) + Math.floor(gameState.reputation / 20) + Math.floor(difficulty / 2);
     else if (primary === 1) w = Math.floor(5 * repFactor + Math.random() * (5 * repFactor)) + Math.floor(gameState.reputation / 20) + Math.floor(difficulty / 2);
     else if (primary === 2) d = Math.floor(5 * repFactor + Math.random() * (5 * repFactor)) + Math.floor(gameState.reputation / 20) + Math.floor(difficulty / 2);
@@ -2103,14 +2106,28 @@ function generateKillRecruit(difficulty) {
     let adv = {
         id: gameState.nextId++,
         name: name,
-        level: 1, exp: 0,
-        strength: s, wisdom: w, dexterity: d, luck: l,defense:2,
-        hp: 100, maxHp: 100, mp: 50, maxMp: 50,
+        level: 1, 
+        exp: 0,
+        strength: s, 
+        wisdom: w, 
+        dexterity: d, 
+        luck: l,
+        defense: 2,
+        hp: 100, 
+        maxHp: 100, 
+        mp: 50, 
+        maxMp: 50,
         equipment: [],
         buffs: [],
         image: image,
         busy: false,
-        primary: primary
+        primary: primary,
+        // === 新規追加: AIチャット対応属性 ===
+        Friendliness: 50,                    // 初期好感度（村人NPCと同じ）
+        bag: {                               // バッグ初期化
+            gold: Math.floor(difficulty * 5 + 50),  // 少しゴールド持たせる（難易度依存）
+            items: []                        // 初期アイテムなし（後でcraft/give可能）
+        }
     };
     const startLevel = Math.max(1, Math.floor(difficulty / 2));
     for (let lv = 1; lv < startLevel; lv++) {
@@ -2128,10 +2145,14 @@ function generateKillRecruit(difficulty) {
         adv.maxMp += 10;
     }
     adv.level = startLevel;
-    adv.defense = startLevel *2;
+    adv.defense = startLevel * 2;
     adv.hp = adv.maxHp;
     adv.mp = adv.maxMp;
     adv.exp = 0;
+
+    // === 好感度微調整（難易度/評判が高いほど初期好感度アップ） ===
+    adv.Friendliness = Math.min(100, 70 + Math.floor(difficulty / 5) + Math.floor(gameState.reputation / 20));
+
     return adv;
 }
 
