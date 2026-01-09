@@ -12,8 +12,6 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
-// === ラストチャット日トラッカー（NPCごと） ===
-if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
 
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
