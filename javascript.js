@@ -7707,15 +7707,11 @@ async function unlockQuestNPC(npcKey) {
         bag: { gold: 300, items: [] } // 初期ゴールド（酒販売用に少し持たせる）
     };
 
-    // 例: 酒場主人専用初期アイテム（ワイン在庫）
-    if (npcKey === '酒場主人') {
-        gameState.villageNPCs[npcKey].bag.items.push({
-            name: "酒場のワイン",
-            qty: 10, // 在庫10本
-            type: "potion",
-            restore: "hp",
-            amount: 100
-        });
+// 個別初期設定があれば適用（なければデフォルトのまま）
+    const setup = initialVillageNpcBags[npcKey];
+    if (setup) {
+        entity.bag.gold = setup.gold;
+        entity.bag.items.push(...setup.items);
     }
 
     console.log(`${npcKey} がアンロックされました（bagとFriendliness初期化済み）`);

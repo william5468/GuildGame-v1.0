@@ -1,3 +1,42 @@
+const initialVillageNpcBags = {
+    '酒場主人': {
+        gold: 500,
+        items: [
+            { name: "酒場のワイン", qty: 10, type: "potion", restore: "hp", amount: 100 },
+            { name: "上等なエール", qty: 15, type: "potion", restore: "mp", amount: 80 }
+        ]
+    },
+    '農夫': {
+        gold: 200,
+        items: [
+            { name: "にんじん", qty: 20 },
+            { name: "じゃがいも", qty: 25 },
+            { name: "トマト", qty: 15 },
+            { name: "キャベツ", qty: 18 },
+            { name: "ぶどう", qty: 8 },
+            { name: "りんご", qty: 12 }
+        ]
+    },
+    '錬金術師': {
+        gold: 800,
+        items: [
+            { name: "薬草", qty: 30 },
+            { name: "魔力の結晶（小）", qty: 5 },
+            { name: "通常のHPポーション", qty: 8, type: "potion", restore: "hp", amount: 150 }
+        ]
+    },
+    '料理人': {
+        gold: 350,
+        items: [
+            { name: "キノコ", qty: 40 },
+            { name: "キノコステーキ", qty: 5, type: "potion", restore: "hp", amount: 250 },
+            { name: "キノコの乾燥粉末", qty: 12 },
+            { name: "新鮮な肉", qty: 10 }
+        ]
+    }
+    // 将来のNPC追加はここにオブジェクト追加するだけ
+};
+
 const npcConfigs = {};
 
 // === 共通プロンプト（最重要：バッグ・贈り物を最優先でトップに配置） ===
@@ -15,10 +54,6 @@ const commonBagPrompt = `【バッグ】
 
 const commonTimePrompt = `
 game_state_infoに「前回話してから経った日数: X」という情報が含まれています。これはプレイヤーが最後にあなたにメッセージを送ってから経過した日数です。
-- 長期間必要な作業（例: 作物栽培、ワイン熟成、複雑な錬金など）は即時完了せず、この日数を使って進捗を管理してください。
-  - 例: プレイヤーが依頼 → 次回チャット時daysSinceLast >= 必要日数ならcraft_itemで完成。
-  - 日数が不足なら「まだ時間がかかるよ」「あと少し待ってね」など進捗を報告。この場合待ち時間はリセットではなく、初めから過ごした時間で計算してください。
-- 短時間の作業（簡単な調合など）は即時可能ですが、状況に合わせて自然に。
 - 時間経過をロールプレイに活用（「久しぶりね、元気だった？」「この間植えた作物が育ったよ」など）。
 `;
 
@@ -372,9 +407,8 @@ ${commonProactivePrompt}
 - ワイン100ゴールド。
 - 在庫あり: 支払い確認後give_to_player。
 - 在庫なし:
-  - ぶどうあり: consume_items {"Grape":1} + consume_gold 50 → craft_item（熟成14日経過必須）。
+  - ぶどうあり: consume_items {"ぶどう":1} + consume_gold 50 → craft_item
   - ぶどうなし: consume_gold 50で「農夫から買う」 → craft_item。
-- 熟成はdaysSinceLast >= 14で完成。
 
 【秘密販売】
 - 200ゴールドで1つずつ明かす（支払い確認後テキストで）。
