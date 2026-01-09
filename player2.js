@@ -12,9 +12,6 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
-// === ラストチャット日トラッカー（NPCごと） ===
-if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
     // まず冒険者リストから検索（ルナ・カイトなど）
@@ -143,11 +140,9 @@ window.addEventListener('load', () => {
     p2Token = localStorage.getItem('p2_token');
     handlePlayer2Callback();
 
-    // === ラストチャット日トラッカーの安全初期化 ===
+    // === ラストチャット日トラッカーの安全初期化（gameState定義済み時のみ） ===
     if (typeof gameState !== 'undefined') {
         if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
-    } else {
-        console.warn('gameState not defined on load - lastNpcChatDay initialization delayed');
     }
 });
 
@@ -431,7 +426,7 @@ function startResponseListener() {
     };
 }
 
-// === 贈り物UI関連関数（復元） ===
+// === 贈り物UI関連関数 ===
 function populateGiftItems() {
     const select = document.getElementById('giftItemSelect');
     if (!select) return;
@@ -490,7 +485,7 @@ function updateGiftQtyMax() {
     }
 }
 
-// === 贈り物送信関数（完全版） ===
+// === 贈り物送信関数 ===
 async function giveGoldToNpc() {
     if (!currentNpcId || !currentNpcKey) return;
     const amount = parseInt(document.getElementById('giftGoldInput').value) || 0;
@@ -535,7 +530,6 @@ async function giveGoldToNpc() {
         })
     });
 
-    // 贈り物後ラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
@@ -565,14 +559,12 @@ async function giveItemToNpc() {
         }
     }
 
-    // プレイヤーinventoryから削除/減らす
     if (item.stat || (item.qty || 1) === qty) {
         gameState.inventory = gameState.inventory.filter(i => i !== item);
     } else {
         item.qty -= qty;
     }
 
-    // NPCバッグに追加（フル詳細対応）
     const entity = getEntityByName(currentNpcKey);
     initializeEntityBag(entity);
     const existing = entity.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
@@ -618,7 +610,6 @@ async function giveItemToNpc() {
         })
     });
 
-    // 贈り物後ラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
@@ -695,10 +686,8 @@ async function openNpcChat(npcKey) {
             })
         });
 
-        // プロアクティブ送信後ラスト日更新
         gameState.lastNpcChatDay[npcKey] = gameState.day;
     } else {
-        // プロアクティブなしでもオープンとしてラスト日初期化
         gameState.lastNpcChatDay[npcKey] = gameState.day;
     }
 }
@@ -738,7 +727,6 @@ async function sendNpcMessage() {
         })
     });
 
-    // メッセージ送信後ラスト日更新
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
