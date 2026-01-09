@@ -12,6 +12,9 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
+// === ラストチャット日トラッカー（NPCごと） ===
+if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
+
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
     // まず冒険者リストから検索（ルナ・カイトなど）
@@ -140,7 +143,7 @@ window.addEventListener('load', () => {
     p2Token = localStorage.getItem('p2_token');
     handlePlayer2Callback();
 
-    // === ラストチャット日トラッカーの安全初期化（gameStateが定義済みの場合） ===
+    // === ラストチャット日トラッカーの安全初期化 ===
     if (typeof gameState !== 'undefined') {
         if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     } else {
@@ -428,6 +431,66 @@ function startResponseListener() {
     };
 }
 
+// === 贈り物UI関連関数（復元） ===
+function populateGiftItems() {
+    const select = document.getElementById('giftItemSelect');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">アイテム選択</option>';
+
+    if (!gameState.inventory || !Array.isArray(gameState.inventory)) {
+        gameState.inventory = [];
+        return;
+    }
+
+    gameState.inventory.forEach(item => {
+        const name = item.name;
+        const qty = item.qty || 1;
+        const isEquipment = !!item.stat;
+
+        let label = name;
+        if (!isEquipment) {
+            label += ` (${qty}個)`;
+        }
+
+        const opt = new Option(label, item.id);
+        opt.dataset.isEquipment = isEquipment;
+        opt.dataset.qty = qty;
+        select.appendChild(opt);
+    });
+}
+
+function updateGiftQtyMax() {
+    const select = document.getElementById('giftItemSelect');
+    const qtyInput = document.getElementById('giftQtyInput');
+    const qtySpan = document.querySelector('#giftSection span');
+
+    if (!select || !qtyInput || !qtySpan) return;
+
+    const selectedOption = select.options[select.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        qtyInput.style.display = 'none';
+        qtySpan.style.display = 'none';
+        return;
+    }
+
+    const isEquipment = selectedOption.dataset.isEquipment === 'true';
+    if (isEquipment) {
+        qtyInput.style.display = 'none';
+        qtySpan.style.display = 'none';
+        qtyInput.value = 1;
+    } else {
+        qtyInput.style.display = 'inline-block';
+        qtySpan.style.display = 'inline';
+        const max = parseInt(selectedOption.dataset.qty) || 1;
+        qtyInput.max = max;
+        if (parseInt(qtyInput.value) > max || parseInt(qtyInput.value) < 1) {
+            qtyInput.value = max > 0 ? 1 : 0;
+        }
+    }
+}
+
+// === 贈り物送信関数（完全版） ===
 async function giveGoldToNpc() {
     if (!currentNpcId || !currentNpcKey) return;
     const amount = parseInt(document.getElementById('giftGoldInput').value) || 0;
