@@ -546,7 +546,7 @@ async function giveGoldToNpc() {
         },
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
-            sender_message: '',
+            sender_message: `あなたは${currentNpcKey}に${amount}ゴールドを渡した`,
             game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
     });
@@ -621,7 +621,7 @@ async function giveItemToNpc() {
         },
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
-            sender_message: '',
+            sender_message: `あなたは${currentNpcKey}に${item.name}を${qty > 1 ? qty + '個' : ''}渡した`,
             game_state_info: `Current friendliness: ${friendliness}/100. ${bagInfo} ${recentGiftInfo}`
         })
     });
