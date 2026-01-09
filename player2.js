@@ -138,6 +138,7 @@ async function spawnNpc(npcKey) {
         return;
     }
 
+    // 既にspawn済みなら即return（トークン消費なし）
     if (npcIds[npcKey]) {
         currentNpcId = npcIds[npcKey];
         return;
@@ -149,15 +150,14 @@ async function spawnNpc(npcKey) {
         return;
     }
 
-    const adventurer = getAdventurerByName(npcKey);
-    if (!adventurer) {
-        better_alert('冒険者データが見つかりません', 'error');
-        return;
-    }
-
-    initializeAdventurerBag(adventurer);
-
-    const currentFriendliness = adventurer.Friendliness || 70;
+    // === 削除: 冒険者専用チェック（村人NPC対応のため） ===
+    // const adventurer = getAdventurerByName(npcKey);
+    // if (!adventurer) {
+    //     better_alert('冒険者データが見つかりません', 'error');
+    //     return;
+    // }
+    // initializeAdventurerBag(adventurer);
+    // const currentFriendliness = adventurer.Friendliness || 70;
 
     const spawnBody = {
         name: config.name,
@@ -236,6 +236,8 @@ async function spawnNpc(npcKey) {
     const id = idText.replace(/^"|"$/g, '').trim();
     npcIds[npcKey] = id;
     currentNpcId = id;
+
+    localStorage.setItem('p2_npcIds', JSON.stringify(npcIds));
 
     if (!p2EventSource) startResponseListener();
 
