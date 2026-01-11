@@ -261,9 +261,7 @@
                 <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
                     <label style="white-space:nowrap;">ゴールド:</label>
                     <input type="number" id="giftGoldInput" min="0" value="0" style="width:100px; padding:6px; background:#444; color:white; border:none; border-radius:4px;">
-                    <button onclick="giveGoldToNpc()" style="padding:8px 14px; background:#5f5f5f; color:white; border:none; border-radius:4px; cursor:pointer; white-space:nowrap;">
-                        渡す
-                    </button>
+
                 </div>
                 
                 <!-- アイテム -->
@@ -271,9 +269,7 @@
                     <select id="giftItemSelect" onchange="updateGiftQtyMax()" style="flex:1; max-width:180px; padding:6px; background:#444; color:white; border:none; border-radius:4px;"></select>
                     <input type="number" id="giftQtyInput" min="1" value="1" style="width:70px; padding:6px; background:#444; color:white; border:none; border-radius:4px; margin-right:4px; display:none;">
                     <span style="display:none; margin-right:8px;">個</span>
-                    <button onclick="giveItemToNpc()" style="padding:8px 14px; background:#5f5f5f; color:white; border:none; border-radius:4px; cursor:pointer; white-space:nowrap;">
-                        渡す
-                    </button>
+
                 </div>
             </div>
             
@@ -296,12 +292,12 @@
     </div>
 </div>
     <!-- Load translations first -->
-    <script src="player2.js"></script>
-    <script src="translations.js"></script>
-    <script src="constants.js"></script>
-    
-    <script src="javascript.js"></script>
-    <script src="player2_config.js"></script>
+<script src="quests.js"></script>          <!-- 最初に（関数定義を先に） -->
+<script src="player2_config.js"></script>  <!-- npcConfigsを早く -->
+<script src="player2.js"></script>
+<script src="translations.js"></script>
+<script src="constants.js"></script>
+<script src="javascript.js"></script>      <!-- 最後にメインゲームロジック -->
 <!-- === 2. グローバルアニメーションスクリプト：この <script> ブロック全体を </body> の直前に直接貼り付けてください === -->
 <!-- （createElementを使わず、直接 <script> として記述。MutationObserverで動的追加にも完全対応） -->
 <!-- === 更新されたグローバルスクリプト： </body> 直前の <script> をこの新しいものに置き換え === -->

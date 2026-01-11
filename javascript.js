@@ -7019,6 +7019,10 @@ window.addEventListener('load', function() {
     if (gameState.day === 1) { // 初回起動判定
         document.getElementById('introModal').style.display = 'flex';
     }})
+    if (!gameState.activeQuests) {
+    gameState.activeQuests = {};  
+}
+
 
 // クエスト完了ダイアログ表示関数
 // introのダイアログシステム（introModal, stepDialogue, dialogueBox, nextBtn）を再利用
@@ -7610,12 +7614,31 @@ function queueGameOverDialogue(sequence) {
     }
 }
 
+
+function queueBirthdayParty() {
+    const playerSpeaker = gameState.playerName || 'あなた';
+    const sequence = [
+        {speaker: 'ナレーター', text: '酒場に戻ると、突然灯りが消えて…暗闇の中から声が響く！'},
+        {speaker: 'ルナ', text: 'サプライズ！！ お誕生日おめでとう、' + playerSpeaker + '！'},
+        {speaker: 'カイト', text: 'へへ、ようやく気づいたか！ パーティーだぜ！'},
+        {speaker: '酒場主人', text: 'ふふっ、みんなで何日も前から準備してたのよ。ケーキも特製よ♪'},
+        {speaker: playerSpeaker, text: 'みんな…ありがとう！ 本当に嬉しいよ…！'},
+        {speaker: 'ナレーター', text: '笑顔と祝福に包まれた温かい夜…。絆がさらに深まった。'}
+    ];
+    completionQueue.push(sequence);
+    if (!isPlayingDialogue) {
+        // crossfadeTo('PartyBgm', 2000);  // BGMがあれば
+        playNextDialogue();
+    }
+}
+
 // === クエスト初回クリアでNPCをアンロック（spawnは遅延） ===
 function unlockQuestNPC(npcKey) {
     if (!gameState.unlockedNPCs) gameState.unlockedNPCs = [];
     if (gameState.unlockedNPCs.includes(npcKey)) return;
 
     gameState.unlockedNPCs.push(npcKey);
+    
 
 
 }

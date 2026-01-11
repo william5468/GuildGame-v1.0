@@ -411,6 +411,7 @@ function startResponseListener() {
                 message = message.replace(/\{player\}/g, gameState.playerName || 'あなた');
 
                 appendNpcMessage(message);
+                checkQuestProgress(message);
             }
         } catch (err) {
             console.warn('Parse error:', e.data, err);
@@ -582,11 +583,21 @@ async function submitChatAndGifts() {
     const friendliness = entity.Friendliness || 70;
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
     const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+    const questGuidance = getQuestGuidance();
 
     let recentGiftInfo = '';
     if (recentGiftInfos.length > 0) {
         recentGiftInfo = recentGiftInfos.map(info => `プレイヤーから贈り物を受け取りました: ${info}.`).join(' ');
     }
+    // ... 贈り物処理後 ...
+
+    const giftedGold = goldAmount || 0;
+    const giftedItems = [];
+    if (goldAmount > 0) giftedItems.push({name: "ゴールド", qty: goldAmount});
+    if (itemGift) giftedItems.push({name: itemGift.item.name, qty: itemGift.qty});
+
+    // === クエスト進行チェック（贈り物トリガー）===
+    checkQuestProgress("", true, giftedGold, giftedItems);
 
     showNpcTyping();
 
@@ -599,7 +610,7 @@ async function submitChatAndGifts() {
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
             sender_message: message,
-            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo}. ${bagInfo}`
+            game_state_info: `好感度: ${friendliness}/100.${recentGiftInfo}. ${bagInfo} ${questGuidance}`
         })
     });
 
@@ -625,6 +636,7 @@ async function openNpcChat(npcKey) {
     document.getElementById('lunaInput').focus();
 
     await spawnNpc(npcKey);
+    checkQuestProgress("", false, 0, []);
 
     if (!currentNpcId) return;
 
@@ -666,6 +678,7 @@ async function openNpcChat(npcKey) {
 
         const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
         const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+        const questGuidance = getQuestGuidance();
 
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
             method: 'POST',
@@ -676,7 +689,7 @@ async function openNpcChat(npcKey) {
             body: JSON.stringify({
                 sender_name: gameState.playerName || 'Player',
                 sender_message: '',
-                game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}`
+                game_state_info: `好感度: ${friendliness}/100. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}.${questGuidance}`
             })
         });
 
