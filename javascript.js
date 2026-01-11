@@ -7041,8 +7041,9 @@ window.addEventListener('load', function() {
     }})
     if (!gameState.activeQuests) {
     gameState.activeQuests = {};  
+    
 }
-
+if (!gameState.completedQuests) gameState.completedQuests = [];
 
 // クエスト完了ダイアログ表示関数
 // introのダイアログシステム（introModal, stepDialogue, dialogueBox, nextBtn）を再利用
