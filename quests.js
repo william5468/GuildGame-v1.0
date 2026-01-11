@@ -281,19 +281,3 @@ function getQuestGuidance() {
     return guidance;
 }
 
-// 誕生日パーティーシーン（javascript.jsに移動推奨だが一時的にここに）
-function queueBirthdayParty() {
-    const playerSpeaker = gameState.playerName || 'あなた';
-    const sequence = [
-        {speaker: 'ナレーター', text: '酒場に戻ると、突然灯りが消えて…暗闇の中から声が響く！'},
-        {speaker: 'ルナ', text: 'サプライズ！！ お誕生日おめでとう、' + playerSpeaker + '！'},
-        {speaker: 'カイト', text: 'へへ、ようやく気づいたか！ パーティーだぜ！'},
-        {speaker: '酒場主人', text: 'ふふっ、みんなで何日も前から準備してたのよ。ケーキも特製よ♪'},
-        {speaker: playerSpeaker, text: 'みんな…ありがとう！ 本当に嬉しいよ…！'},
-        {speaker: 'ナレーター', text: '笑顔と祝福に包まれた温かい夜…。絆がさらに深まった。'}
-    ];
-    completionQueue.push(sequence);
-    if (!isPlayingDialogue) {
-        playNextDialogue();
-    }
-}
