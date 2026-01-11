@@ -784,12 +784,6 @@ function getRelevantKeywords(npcKey) {
         // 発見済みキーワードを追加（過去のもの、会話の文脈として便利）
         qState.discoveredKeywords.forEach(kw => keywords.add(kw));
 
-        // 現在ステージのkeywordToDiscoverのみ追加（次に言うべきもの、ヒントとして）
-        // 未来のキーワードは絶対追加しない（漏れ防止）
-        const currentStage = def.stages[qState.currentStage];
-        if (currentStage && currentStage.keywordToDiscover && (currentStage.npc === npcKey || currentStage.npc === "任何")) {
-            keywords.add(currentStage.keywordToDiscover);
-        }
     });
 
     return Array.from(keywords);
