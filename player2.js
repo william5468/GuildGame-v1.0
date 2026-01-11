@@ -12,6 +12,15 @@ const OAUTH_BASE = 'https://player2.game';
 
 let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 
+const langMap = {
+    'ja': '日本語',
+    'en': 'English',
+    'zh': '繁體中文'  // Traditional Chinese
+};
+
+const currentLang = localStorage.getItem('gameLang') || 'ja';
+const responseLanguage = langMap[currentLang] || '日本語';
+const languageInstruction = `【応答言語（最優先）】すべての応答（会話、ナレーション、説明）を${responseLanguage}でお願いします。プレイヤーのメッセージ言語に関わらず、常に${responseLanguage}で返答、ただし、アイテムの確認は常に日本語で（話す時は${responseLanguage}翻訳付き）。`;
 
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
 function getEntityByName(name) {
@@ -593,7 +602,7 @@ async function submitChatAndGifts() {
         recentGiftInfo = recentGiftInfos.map(info => `プレイヤーから贈り物を受け取りました: ${info}.`).join(' ');
     }
 
-    const game_state_info = `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo ? ' ' + recentGiftInfo : ''} ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
+    const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo ? ' ' + recentGiftInfo : ''} ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
     // 贈り物情報準備
     const giftedGold = goldAmount;
@@ -743,7 +752,7 @@ async function openNpcChat(npcKey) {
         const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
         const questGuidance = getQuestGuidance();
 
-        const game_state_info = `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
+        const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
             method: 'POST',
