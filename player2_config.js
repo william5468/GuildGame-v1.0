@@ -1,30 +1,10 @@
-const maleNames = [
-    'アキラ', 'ハルト', 'ケン', 'リュウ', 'ソラ',
-    'タイチ', 'ユウト', 'カズキ', 'リョウ', 'ショウ',
-    'トモヤ', 'ダイキ', 'ヒロ', 'マサト', 'ナオキ',
-    'ユウキ', 'レイ', 'セイジ', 'タカシ', 'ノブ',
-    'ミナト', 'レン', 'アオト', 'リク', 'ソウタ',
-    'ユイト', 'ハヤト', 'ショウタ', 'コウタ', 'タクミ',
-    'ヒロト', 'レオ', 'イオリ', 'アサヒ', 'ヤマト',
-    'エイジ', 'トア', 'ユウマ',
-    'ラン', 'ジン', 'シン', 'トウヤ', 'ケント',
-    'ハルキ', 'ソウスケ', 'リョウタ', 'ナツメ', 'コウキ',
-    'タイガ', 'リュウセイ', 'カケル', 'テツヤ', 'マヒロ'
-];
+const currentLang_player2_config = localStorage.getItem('gameLang') || 'ja';
 
-const femaleNames = [
-    'アヤカ', 'ハルカ', 'ミカ', 'サクラ', 'ユイ',
-    'リナ', 'モモ', 'ナナ', 'ユナ', 'アカリ',
-    'ヒナタ', 'ソラ', 'ミユ', 'リコ', 'サヤ',
-    'マユ', 'ノゾミ', /* 'ルナ' 使わないので削除 */ 'エマ', 'キラ',
-    'ツムギ', 'ミオ', 'スイ', 'リン', 'ヒマリ',
-    'エイ', 'ユイナ', 'アオイ', 'メイ', 'ハナ',
-    'リオ', 'チヒロ', 'アイ', 'ミズキ', 'カナ',
-    'サキ', 'ホノカ', 'アミ', 'レナ', 'マオ',
-    'ユズキ', 'コハル', 'スズ', 'ミナ', 'ヒカリ',
-    'ナツキ', 'サトミ', 'ユカリ', 'レイナ', 'ミサキ',
-    'アンナ', 'ハナカ', 'サナ', 'マナ'
-];
+const maleNames = adventurerNames[currentLang_player2_config]?.M || adventurerNames.ja.M;
+const femaleNames = adventurerNames[currentLang_player2_config]?.F || adventurerNames.ja.F;
+
+const lunaName = currentLang_player2_config === 'ja' ? 'ルナ' : 'Luna';
+const kaitoName = currentLang_player2_config === 'ja' ? 'カイト' : 'Kaito';
 
 const initialVillageNpcBags = {
     '酒場主人': {
@@ -66,6 +46,9 @@ const initialVillageNpcBags = {
 };
 
 const npcConfigs = {};
+
+
+
 
 // === 共通プロンプト（最重要：バッグ・贈り物を最優先でトップに配置） ===
 const commonBagPrompt = `
@@ -311,8 +294,8 @@ ${commonProactivePrompt}
 [...maleGroup2].forEach(name => createNpc(name, malePattern2));
 [...maleGroup3].forEach(name => createNpc(name, malePattern3));
 
-npcConfigs["ルナ"] = {
-    name: "ルナ",
+npcConfigs[lunaName] = {
+    name: lunaName,
     short_name: "Luna",
     character_description: "プレイヤーの幼なじみで優しく支えてくれる少女。記憶を失ったプレイヤーを心配し、いつも励ましてくれる。少し照れ屋で、プレイヤーのことが大好き。",
     system_prompt: `
@@ -370,8 +353,8 @@ ${commonProactivePrompt}
 `.trim()
 };
 
-npcConfigs["カイト"] = {
-    name: "カイト",
+npcConfigs[kaitoName] = {
+    name: kaitoName,
     short_name: "Kaito",
     character_description: "プレイヤーの幼なじみで元気で頼りになる少年。幼い頃からプレイヤーやルナと一緒に遊んで育った仲で、信頼できる存在として振る舞っている。",
     system_prompt: `
