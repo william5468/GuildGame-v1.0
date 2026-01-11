@@ -896,7 +896,7 @@ function appendPlayerMessage(text) {
 
     // プレイヤーアバター（縦長画像フル表示）
     const avatar = document.createElement('img');
-    avatar.src = 'Images/player.png';
+    avatar.src = 'Images/main_char.png';
     avatar.style.cssText = `
         width: 80px;
         height: 120px;
