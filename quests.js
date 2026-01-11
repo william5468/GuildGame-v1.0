@@ -18,7 +18,7 @@ const questDefinitions = [
                 nextStage: 1
             },
             {
-                npc: "ルナ",
+                npc: lunaName,
                 trigger: { type: "keyword", keywords: ["酒場によく見かけるルナ", "ルナ", "酒場", "夜で"] },
                 guidance_beforestage: "普段通り振る舞うけど、酒場によく見かけるルナの話題を出したら驚いた様子で「えっ！？ どうしてそれを…？ それは…カイトとの秘密なの。あまり聞いてこないで…ね？」と答え、自然に「カイトとの秘密」を落とす。プレイヤーの誕生日パーティーを準備するためだけど、絶対にネタバレしない。",
                 guidance_afterstage: "プレイヤーにカイトとの秘密を漏らしたことを覚えている。内容までは教えてなかったはずけど、プレイヤーがさらに聞きたがったら少し焦った様子で誤魔化す。これ以上は何も知らないと言う。プレイヤーの誕生日パーティーを準備するためだけど、絶対にネタバレしない。",
@@ -26,7 +26,7 @@ const questDefinitions = [
                 nextStage: 2
             },
             {
-                npc: "カイト",
+                npc: kaitoName,
                 trigger: { type: "keyword", keywords: ["カイトとの秘密", "秘密", "ルナと秘密"] },
                 guidance_beforestage: "普段通り振る舞うけど、もしプレイヤーがカイトとルナの秘密について話したらニヤリと笑って「おっ、バレちまったか。今夜酒場に戻ってみなよ、その時本当のこと教えるね！」と言う。プレイヤーの誕生日パーティーを準備するためだけど、絶対にネタバレしない。",
                 guidance_afterstage: "プレイヤーに夜の酒場に戻るようヒントを出したことを覚えている。プレイヤーが戻ってきたら「どうだ？面白いことになってるだろ？」とからかう。プレイヤーの誕生日パーティーを準備するためだけど、絶対にネタバレしない。",
@@ -103,6 +103,8 @@ if (!gameState.activeQuests) {
 if (!gameState.completedQuests) {
     gameState.completedQuests = [];  // 永続化された完了クエストリスト
 }
+
+
 
 // トリガー一致判定（プレイヤーメッセージとNPCメッセージを区別）
 function triggerMatches(trigger, playerMessage = "", npcMessage = "", isGift = false, giftedGold = 0, giftedItems = []) {
