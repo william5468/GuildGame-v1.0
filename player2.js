@@ -307,6 +307,11 @@ function startResponseListener() {
                                 giveQty = value;
                             }
 
+                            if (isNaN(giveQty) || giveQty <= 0) {
+                                console.warn(`Invalid quantity detected: ${value.qty} - forcing to 1`);
+                                giveQty = 1;
+                            }
+
                             const itemObj = entity.bag.items.find(i => i.name === targetName);
                             if (!itemObj || (itemObj.qty || 1) < giveQty) {
                                 console.warn(`Give failed: insufficient ${targetName}`);
