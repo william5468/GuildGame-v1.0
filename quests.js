@@ -76,17 +76,17 @@ const questDefinitions = [
                 nextStage: 1
             },
             {
-                npc: "任何",
+                npc: "農夫",
                 trigger: { 
                     type: "keyword_and_item", 
                     keywords: ["アミュレット", "古いアミュレット"],
                     requiredItem: { name: "古いアミュレット", qty: 1 }
                 },
-                guidance_beforestage: "プレイヤーがキーワードを言い且つアイテムを渡したら「これは…昔のギルドのものだ！本当にありがとう！」と喜ぶ。",
+                guidance_beforestage: "プレイヤーがキーワードを言い且つアイテムを渡したら「これは…いい思い出がたくさんあるのものだ！本当にありがとう！」と喜ぶ。",
                 guidance_afterstage: null,  // 最終なので不要
                 onComplete: {
                     rewards: [
-                        { type: "gold", amount: 300 },
+                        { type: "gold", amount: 1000 },
                         { type: "friendliness", targets: ["農夫"], delta: 15 }
                     ]
                 }

@@ -425,7 +425,7 @@ function preloadAssets() {
 function Render_Mainadventurer() {
     const names = mainCharacterNames[currentLang] || mainCharacterNames.ja;  // Fallback to ja
 
-    // カイト (STR/DEX 特化の二刀流騎士)
+    // カイト (STR/DEX 特化の二刀流騎士) - 初期アイテム追加
     const Kaito = {
         id: gameState.nextId++,
         name: names.Kaito,
@@ -449,11 +449,19 @@ function Render_Mainadventurer() {
         critChance: 10,
         primary: 0,
         Friendliness: 70,
+        bag: {  // 初期バッグ追加（村NPC風）
+            gold: 150,
+            items: [
+                { name: "鉄の短剣", qty: 2 },  // 二刀流らしい初期武器
+                { name: "HPポーション（小）", qty: 5, type: "potion", restore: "hp", amount: 50 },
+                { name: "冒険者の地図", qty: 1 }  // フレーバーアイテム
+            ]
+        }
     };
 
     gameState.adventurers.push(Kaito);
 
-    // ルナ (WIS 特化の魔法使い)
+    // ルナ (WIS 特化の魔法使い) - 初期アイテム追加 + 古いアミュレット
     const Luna = {
         id: gameState.nextId++,
         name: names.Luna,
@@ -477,6 +485,15 @@ function Render_Mainadventurer() {
         critChance: 10,
         primary: 1,
         Friendliness: 70,
+        bag: {  // 初期バッグ追加（村NPC風）
+            gold: 200,
+            items: [
+                { name: "古いアミュレット", qty: 1 },  // クエスト関連アイテム（lost_amuletクエストで使用可能）
+                { name: "魔力の結晶（小）", qty: 8 },
+                { name: "MPポーション（小）", qty: 6, type: "potion", restore: "mp", amount: 60 },
+                { name: "魔法の書", qty: 1 }  // フレーバーアイテム
+            ]
+        }
     };
 
     gameState.adventurers.push(Luna);
