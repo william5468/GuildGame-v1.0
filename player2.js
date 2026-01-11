@@ -768,7 +768,7 @@ function appendKeyword(keyword) {
     }
 }
 
-// === 関連キーワード取得関数（quests.js に追加推奨） ===
+
 function getRelevantKeywords(npcKey) {
     const keywords = new Set();
 
@@ -777,19 +777,18 @@ function getRelevantKeywords(npcKey) {
         const def = questDefinitions.find(q => q.id === questId);
         if (!def) return;
 
-        // このNPCが関わるクエストかチェック
+        // このNPCが関わるクエストのみ
         const involvesNpc = def.stages.some(s => s.npc === npcKey || s.npc === "任何");
         if (!involvesNpc) return;
 
-        // 発見済みキーワードを追加
+        // 発見済みキーワードを追加（過去のもの、会話の文脈として便利）
         qState.discoveredKeywords.forEach(kw => keywords.add(kw));
 
-        // 現在以降のステージでこのNPCに関わるkeywordToDiscoverを追加（ヒントとして）
-        for (let i = qState.currentStage; i < def.stages.length; i++) {
-            const stage = def.stages[i];
-            if ((stage.npc === npcKey || stage.npc === "任何") && stage.keywordToDiscover) {
-                keywords.add(stage.keywordToDiscover);
-            }
+        // 現在ステージのkeywordToDiscoverのみ追加（次に言うべきもの、ヒントとして）
+        // 未来のキーワードは絶対追加しない（漏れ防止）
+        const currentStage = def.stages[qState.currentStage];
+        if (currentStage && currentStage.keywordToDiscover && (currentStage.npc === npcKey || currentStage.npc === "任何")) {
+            keywords.add(currentStage.keywordToDiscover);
         }
     });
 
