@@ -273,7 +273,7 @@ function getQuestGuidance() {
         }
         // 潜在ステージ0
         else if (def.stages[0] && (def.stages[0].npc === currentNpcKey || def.stages[0].npc === "任何")) {
-            if (def.stages[0].trigger.type !== "payment" && def.stages[0].guidance_beforestage) {
+            if (def.stages[0].guidance_beforestage) {
                 guidance += `[潜在クエスト${def.name}: ${def.stages[0].guidance_beforestage.replace("{player}", gameState.playerName || "あなた")}] `;
             }
         }
