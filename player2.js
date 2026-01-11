@@ -808,24 +808,101 @@ function closeNpcChat() {
 function appendNpcMessage(text) {
     hideNpcTyping();
     const log = document.getElementById('lunaChatLog');
+    
     const div = document.createElement('div');
-    div.style.marginBottom = '15px';
-    div.style.color = '#000000ff';
-    div.style.fontSize = '1.1em';
-    div.innerHTML = `<strong>${currentNpcKey}:</strong> ${text.replace(/\n/g, '<br>')}`;
+    div.style.cssText = `
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        gap: 10px;
+    `;
+
+    // NPCアバター
+    const avatar = document.createElement('img');
+    avatar.src = `Images/${currentNpcKey}.png`;
+    avatar.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid #5a4fcf;
+    `;
+    avatar.onerror = function() {
+        this.src = 'Images/placeholder.png';  // フォールバック（placeholder.pngを用意推奨）
+    };
+
+    // メッセージ本体
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        background: rgba(80, 80, 120, 0.8);
+        color: #ffffff;
+        padding: 12px 16px;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    `;
+    messageDiv.innerHTML = `
+        <strong style="color:#ffd700;">${currentNpcKey}:</strong><br>
+        ${text.replace(/\n/g, '<br>')}
+    `;
+
+    div.appendChild(avatar);
+    div.appendChild(messageDiv);
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
+
+    // NPC応答後のクエストチェック
     checkQuestProgress("", text.toLowerCase(), false, 0, []);
 }
 
 function appendPlayerMessage(text) {
     const log = document.getElementById('lunaChatLog');
+    
     const div = document.createElement('div');
-    div.style.marginBottom = '15px';
-    div.style.color = '#000000ff';
-    div.style.textAlign = 'right';
-    div.style.fontSize = '1.1em';
-    div.innerHTML = `<strong>${gameState.playerName || 'あなた'}:</strong> ${text.replace(/\n/g, '<br>')}`;
+    div.style.cssText = `
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        margin-bottom: 15px;
+        gap: 10px;
+    `;
+
+    // メッセージ本体（右側）
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        background: rgba(100, 180, 100, 0.8);
+        color: #ffffff;
+        padding: 12px 16px;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
+        text-align: right;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    `;
+    messageDiv.innerHTML = `
+        <strong style="color:#ffffa0;">${gameState.playerName || 'あなた'}:</strong><br>
+        ${text.replace(/\n/g, '<br>')}
+    `;
+
+    // プレイヤーアバター（右側）
+    const avatar = document.createElement('img');
+    avatar.src = 'Images/main_char.png';  // プレイヤー画像（必要に応じてgameState.playerImageなど使用）
+    avatar.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid #64b464;
+    `;
+    avatar.onerror = function() {
+        this.src = 'Images/placeholder.png';
+    };
+
+    div.appendChild(messageDiv);
+    div.appendChild(avatar);
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
 }
