@@ -813,39 +813,44 @@ function appendNpcMessage(text) {
     div.style.cssText = `
         display: flex;
         align-items: flex-start;
-        margin-bottom: 15px;
-        gap: 10px;
+        margin-bottom: 20px;
+        gap: 12px;
+        max-width: 90%;
+        align-self: flex-start;
     `;
 
-    // NPCアバター
+    // NPCアバター（縦長画像をフル表示）
     const avatar = document.createElement('img');
     avatar.src = `Images/${currentNpcKey}.png`;
     avatar.style.cssText = `
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
+        width: 80px;
+        height: 120px;  /* 832:1248 ≈ 2:3 比率に合わせた縦長 */
+        border-radius: 8px;  /* 円形をさらに弱く（ほぼ四角） */
+        object-fit: contain;  /* 画像全体をトリミングせず表示（透明パディングOK） */
+        background: transparent;  /* 背景透明 */
         flex-shrink: 0;
-        border: 2px solid #5a4fcf;
+        border: 1px solid #cccccc;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     `;
     avatar.onerror = function() {
-        this.src = 'Images/placeholder.png';  // フォールバック（placeholder.pngを用意推奨）
+        this.src = 'Images/placeholder.png';
     };
 
-    // メッセージ本体
+    // メッセージバブル（白背景、黒文字）
     const messageDiv = document.createElement('div');
     messageDiv.style.cssText = `
-        background: rgba(80, 80, 120, 0.8);
-        color: #ffffff;
-        padding: 12px 16px;
+        background: #ffffff;
+        color: #000000;
+        padding: 14px 18px;
         border-radius: 18px;
-        max-width: 80%;
+        max-width: 100%;
         word-wrap: break-word;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        border: 1px solid #e0e0e0;
     `;
     messageDiv.innerHTML = `
-        <strong style="color:#ffd700;">${currentNpcKey}:</strong><br>
-        ${text.replace(/\n/g, '<br>')}
+        <strong style="color:#333333; font-size:1.05em;">${currentNpcKey}:</strong><br>
+        <span style="line-height:1.5;">${text.replace(/\n/g, '<br>')}</span>
     `;
 
     div.appendChild(avatar);
@@ -865,37 +870,42 @@ function appendPlayerMessage(text) {
         display: flex;
         align-items: flex-start;
         justify-content: flex-end;
-        margin-bottom: 15px;
-        gap: 10px;
+        margin-bottom: 20px;
+        gap: 12px;
+        max-width: 90%;
+        align-self: flex-end;
     `;
 
-    // メッセージ本体（右側）
+    // メッセージバブル（白背景、黒文字）
     const messageDiv = document.createElement('div');
     messageDiv.style.cssText = `
-        background: rgba(100, 180, 100, 0.8);
-        color: #ffffff;
-        padding: 12px 16px;
+        background: #ffffff;
+        color: #000000;
+        padding: 14px 18px;
         border-radius: 18px;
-        max-width: 80%;
+        max-width: 100%;
         word-wrap: break-word;
         text-align: right;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        border: 1px solid #e0e0e0;
     `;
     messageDiv.innerHTML = `
-        <strong style="color:#ffffa0;">${gameState.playerName || 'あなた'}:</strong><br>
-        ${text.replace(/\n/g, '<br>')}
+        <strong style="color:#333333; font-size:1.05em;">${gameState.playerName || 'あなた'}:</strong><br>
+        <span style="line-height:1.5;">${text.replace(/\n/g, '<br>')}</span>
     `;
 
-    // プレイヤーアバター（右側）
+    // プレイヤーアバター（縦長画像フル表示）
     const avatar = document.createElement('img');
-    avatar.src = 'Images/main_char.png';  // プレイヤー画像（必要に応じてgameState.playerImageなど使用）
+    avatar.src = 'Images/player.png';
     avatar.style.cssText = `
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
+        width: 80px;
+        height: 120px;
+        border-radius: 8px;
+        object-fit: contain;
+        background: transparent;
         flex-shrink: 0;
-        border: 2px solid #64b464;
+        border: 1px solid #cccccc;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     `;
     avatar.onerror = function() {
         this.src = 'Images/placeholder.png';
