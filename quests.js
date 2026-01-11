@@ -7,32 +7,37 @@ const questDefinitions = [
     {
         id: "birthday_surprise",
         name: "サプライズ誕生日パーティー",
+        completed_guidance: "このクエストは既に完了している。プレイヤーと一緒に誕生日パーティーを成功させたことを覚えていて、時折「あの時のパーティー、楽しかったね」「サプライズ大成功だったわ」など自然に感謝や思い出を話題にする。詳細なネタバレは避ける。",
         stages: [
             {
                 npc: "酒場主人",
                 trigger: { type: "payment", amount: 200 },
-                guidance: "game_state_infoにプレイヤーからゴールド200以上の贈り物が含まれていた場合のみ、必ず指定の誕生日サプライズヒントを出す：「ふふっ、特別に教えてあげる。最近ルナとカイトが夜遅くに私の酒場でこそこそ会議してたわ。{player}の誕生日パーティーを計画中みたいよ。キーワードは『誕生日パーティー』。絶対内緒にしてね♪」。贈り物がなければ「200ゴールドで特別な情報を教えてあげるわ」と誘うだけ。絶対に無料でヒントや内容を漏らさない。",
+                guidance_beforestage: "プレイヤーが秘密や情報を聞かれたら「200ゴールドで特別な情報を教えてあげるわ」と誘う。game_state_infoにプレイヤーからゴールド200以上の贈り物が含まれていた場合のみ、誕生日サプライズヒントを出す。絶対に無料で漏らさない。",
+                guidance_afterstage: "プレイヤーに誕生日パーティーのヒントを教えたことを覚えている。プレイヤーが戻ってきたら自然に会話を繋げる（例: 「ふふっ、どう？あの情報役に立った？」）。",
                 keywordToDiscover: "誕生日パーティー",
                 nextStage: 1
             },
             {
                 npc: "ルナ",
                 trigger: { type: "keyword", keywords: ["誕生日パーティー", "誕生日", "パーティー", "サプライズ"] },
-                guidance: "プレイヤーが『誕生日パーティー』をmentionしたら驚いた様子で「えっ！？ どうしてそれを…？ それは…カイトとの秘密なの。あまり聞いてこないで…ね？」と答え、自然に「カイトとの秘密」を落とす。絶対にネタバレしない。",
+                guidance_beforestage: "プレイヤーが誕生日関連の話題を出したら驚いた様子で「えっ！？ どうしてそれを…？ それは…カイトとの秘密なの。あまり聞いてこないで…ね？」と答え、自然に「カイトとの秘密」を落とす。絶対にネタバレしない。",
+                guidance_afterstage: "プレイヤーにカイトとの秘密を漏らしたことを覚えている。プレイヤーがさらに聞きたがったら少し焦った様子で誤魔化す。",
                 keywordToDiscover: "カイトとの秘密",
                 nextStage: 2
             },
             {
                 npc: "カイト",
                 trigger: { type: "keyword", keywords: ["カイトとの秘密", "秘密", "ルナと秘密"] },
-                guidance: "プレイヤーが秘密をmentionしたらニヤリと笑って「おっ、バレちまったか。酒場に戻ってみなよ。でも、いいワイン（酒場のワインか上等なエール）を持ってきてくれたら、もっと盛り上がるぜ！」と言う。自然にワインのヒントを出し、キーワード『パーティーのワイン』を落とす。ネタバレ絶対NG。",
+                guidance_beforestage: "プレイヤーが秘密をmentionしたらニヤリと笑って「おっ、バレちまったか。酒場に戻ってみなよ。でも、いいワインを持ってきてくれたら、もっと盛り上がるぜ！」と言う。自然にワインのヒントを出し、『パーティーのワイン』を落とす。",
+                guidance_afterstage: "プレイヤーに酒場に戻るようヒントを出したことを覚えている。プレイヤーが戻ってきたら「どうだ？面白いことになってるだろ？」とからかう。",
                 keywordToDiscover: "パーティーのワイン",
                 nextStage: 3
             },
             {
                 npc: "酒場主人",
                 trigger: { type: "keyword", keywords: ["戻る", "戻った", "面白いこと", "酒場", "パーティー"] },
-                guidance: "プレイヤーがカイトのヒントで戻ってきたら「ふふっ、ちょうどいいタイミングね。パーティーの準備は進んでるけど、みんなで飲むいいワインがあればもっと豪華になるわよ♪」と自然にワインの必要性を匂わせる。（プレイヤーがまだワインを持ってない場合のフォロー）",
+                guidance_beforestage: "プレイヤーがカイトのヒントで戻ってきたら「ふふっ、ちょうどいいタイミングね。パーティーの準備は進んでるけど、いいワインがあればもっと豪華になるわよ♪」とワインの必要性を自然に匂わせる。",
+                guidance_afterstage: "プレイヤーにワインの必要性を伝えたことを覚えている。プレイヤーがワインを持って戻ってきたら大喜びで受け取る準備をする。",
                 keywordToDiscover: null,
                 nextStage: 4
             },
@@ -43,7 +48,8 @@ const questDefinitions = [
                     keywords: ["パーティーのワイン", "ワイン", "持ってきた", "ワイン持ってきた", "これでパーティー"], 
                     requiredItem: { name: "酒場のワイン", qty: 1 }
                 },
-                guidance: "プレイヤーがキーワードを言い且つ『酒場のワイン』を渡したら「まぁ、完璧なワインね！これでパーティーが本格始動よ！」と大喜び。すぐにサプライズパーティーシーンを発動。ワインを受け取ったらバッグに追加可能（オプション）。",
+                guidance_beforestage: "プレイヤーがワイン関連のキーワードを言ったら「まぁ、完璧なワインね！これでパーティーが本格始動よ！」と大喜び。すぐにサプライズシーンを発動。",
+                guidance_afterstage: null,  // 最終ステージなので不要（完了後記憶はquestレベルで）
                 keywordToDiscover: null,
                 onComplete: {
                     rewards: [
@@ -59,11 +65,13 @@ const questDefinitions = [
     {
         id: "lost_amulet",
         name: "失われたアミュレット",
+        completed_guidance: "このクエストは既に完了している。アミュレットを返してもらったことを覚えていて、プレイヤーに感謝の気持ちを持ち、自然に話題に出す（例: 「あの時返してくれて本当に助かったよ」）。",
         stages: [
             {
                 npc: "農夫",
                 trigger: { type: "keyword", keywords: ["作物", "被害", "スライム"] },
-                guidance: "スライムの被害話が出たら「畑に古いアミュレットが落ちてるかも…」と自然にヒントを出す。",
+                guidance_beforestage: "スライムの被害話が出たら「畑に古いアミュレットが落ちてるかも…」と自然にヒントを出す。",
+                guidance_afterstage: "プレイヤーにアミュレットのヒントを出したことを覚えている。プレイヤーが戻ってきたら期待する様子を見せる。",
                 keywordToDiscover: "古いアミュレット",
                 nextStage: 1
             },
@@ -74,7 +82,8 @@ const questDefinitions = [
                     keywords: ["アミュレット", "古いアミュレット"],
                     requiredItem: { name: "古いアミュレット", qty: 1 }
                 },
-                guidance: "プレイヤーがキーワードを言い且つアイテムを渡したら「これは…昔のギルドのものだ！本当にありがとう！」と喜ぶ。",
+                guidance_beforestage: "プレイヤーがキーワードを言い且つアイテムを渡したら「これは…昔のギルドのものだ！本当にありがとう！」と喜ぶ。",
+                guidance_afterstage: null,  // 最終なので不要
                 onComplete: {
                     rewards: [
                         { type: "gold", amount: 300 },
@@ -224,25 +233,38 @@ function checkQuestProgress(playerMessage = "", npcMessage = "", isGift = false,
 function getQuestGuidance() {
     let guidance = "";
     questDefinitions.forEach(def => {
+        const questId = def.id;
+
         // 活性クエスト
-        if (gameState.activeQuests[def.id]) {
-            const qState = gameState.activeQuests[def.id];
-            const stage = def.stages[qState.currentStage];
-            if (stage && (stage.npc === currentNpcKey || stage.npc === "任何") && stage.guidance) {
-                guidance += `[${def.name}進行中: ${stage.guidance.replace("{player}", gameState.playerName || "あなた")}] `;
+        if (gameState.activeQuests[questId]) {
+            const qState = gameState.activeQuests[questId];
+            const currentIdx = qState.currentStage;
+
+            // 過去ステージのafterstage記憶（完了したステージの記憶）
+            for (let i = 0; i < currentIdx; i++) {
+                const pastStage = def.stages[i];
+                if (pastStage && pastStage.guidance_afterstage && (pastStage.npc === currentNpcKey || pastStage.npc === "任何")) {
+                    guidance += `[${def.name}過去記憶ステージ${i+1}: ${pastStage.guidance_afterstage.replace("{player}", gameState.playerName || "あなた")}] `;
+                }
+            }
+
+            // 現在ステージのbeforestage（トリガー待ち）
+            const currentStage = def.stages[currentIdx];
+            if (currentStage && currentStage.guidance_beforestage && (currentStage.npc === currentNpcKey || currentStage.npc === "任何")) {
+                guidance += `[${def.name}進行中ステージ${currentIdx+1}: ${currentStage.guidance_beforestage.replace("{player}", gameState.playerName || "あなた")}] `;
             }
         }
-        // 完了クエスト記憶（関わったNPCのみ）
-        else if (gameState.completedQuests.includes(def.id)) {
+        // 完了クエスト記憶
+        else if (gameState.completedQuests.includes(questId)) {
             const involved = def.stages.some(s => s.npc === currentNpcKey || s.npc === "任何");
-            if (involved) {
-                guidance += `[完了クエスト記憶${def.name}: このクエストは既に完了している。プレイヤーと一緒に${def.name}を達成したことを覚えていて、時折感謝や関連話題を自然に出す（例: 「あの時のパーティー、楽しかったね」など）。詳細は明かさない。] `;
+            if (involved && def.completed_guidance) {
+                guidance += `[完了クエスト${def.name}: ${def.completed_guidance.replace("{player}", gameState.playerName || "あなた")}] `;
             }
         }
         // 潜在ステージ0（paymentは誘いのみ）
         else if (def.stages[0] && (def.stages[0].npc === currentNpcKey || def.stages[0].npc === "任何")) {
-            if (def.stages[0].trigger.type !== "payment" && def.stages[0].guidance) {
-                guidance += `[潜在クエスト${def.name}: ${def.stages[0].guidance.replace("{player}", gameState.playerName || "あなた")}] `;
+            if (def.stages[0].trigger.type !== "payment" && def.stages[0].guidance_beforestage) {
+                guidance += `[潜在クエスト${def.name}: ${def.stages[0].guidance_beforestage.replace("{player}", gameState.playerName || "あなた")}] `;
             } else if (def.stages[0].trigger.type === "payment") {
                 guidance += `[潜在クエスト${def.name}: プレイヤーが秘密や情報を聞かれたら「200ゴールドで特別な情報を教えてあげるわ」と誘う。絶対に無料で内容を漏らさない。] `;
             }
