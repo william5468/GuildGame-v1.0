@@ -292,12 +292,13 @@
     </div>
 </div>
     <!-- Load translations first -->
-<script src="quests.js"></script>          <!-- 最初に（関数定義を先に） -->
-<script src="player2_config.js"></script>  <!-- npcConfigsを早く -->
-<script src="player2.js"></script>
-<script src="translations.js"></script>
-<script src="constants.js"></script>
-<script src="javascript.js"></script>      <!-- 最後にメインゲームロジック -->
+    <script src="player2.js"></script>
+    <script src="translations.js"></script>
+    <script src="constants.js"></script>
+    
+    <script src="javascript.js"></script>
+    <script src="player2_config.js"></script>
+    <script src="quests.js"></script>
 <!-- === 2. グローバルアニメーションスクリプト：この <script> ブロック全体を </body> の直前に直接貼り付けてください === -->
 <!-- （createElementを使わず、直接 <script> として記述。MutationObserverで動的追加にも完全対応） -->
 <!-- === 更新されたグローバルスクリプト： </body> 直前の <script> をこの新しいものに置き換え === -->
