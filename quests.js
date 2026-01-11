@@ -136,21 +136,12 @@ function triggerMatches(trigger, playerMessage = "", npcMessage = "", isGift = f
 function progressQuestStage(questId, stage, def) {
     const qState = gameState.activeQuests[questId];
 
-    // キーワード発見通知
     if (stage.keywordToDiscover) {
         qState.discoveredKeywords.push(stage.keywordToDiscover);
         better_alert(`キーワード発見: 「${stage.keywordToDiscover}」`, 'quest');
     }
 
-    // ステージ進行通知
-    if (stage.nextStage !== undefined) {
-        qState.currentStage = stage.nextStage;
-        const nextStageNum = stage.nextStage + 1;
-        better_alert(`クエスト「${def.name}」\nステージ${nextStageNum}へ進行！`, 'quest');
-        return;
-    }
-
-    // 完了処理
+    // onCompleteチェックをnextStage前に移動（最終ステージで進行停止バグ修正）
     if (stage.onComplete) {
         stage.onComplete.rewards?.forEach(reward => {
             if (reward.type === "friendliness") {
@@ -189,9 +180,16 @@ function progressQuestStage(questId, stage, def) {
 
         better_alert(`クエスト「${def.name}」完了！\nおめでとう！`, 'levelup');
 
-        // 完了リストに追加 + 活性削除
         gameState.completedQuests.push(def.id);
         delete gameState.activeQuests[questId];
+        return;  // 完了したら終了
+    }
+
+    // nextStageがある場合のみ進行
+    if (stage.nextStage !== undefined) {
+        qState.currentStage = stage.nextStage;
+        const nextStageNum = stage.nextStage + 1;
+        better_alert(`クエスト「${def.name}」\nステージ${nextStageNum}へ進行！`, 'quest');
     }
 }
 
@@ -200,7 +198,7 @@ function checkQuestProgress(playerMessage = "", npcMessage = "", isGift = false,
     const playerMsgLower = playerMessage.toLowerCase();
     const npcMsgLower = npcMessage.toLowerCase();
 
-    // 潜在クエスト自動活性化（完了済み除外）
+    // 潜在クエスト自動活性化
     questDefinitions.forEach(def => {
         if (gameState.activeQuests[def.id] || gameState.completedQuests.includes(def.id)) return;
 
@@ -219,6 +217,15 @@ function checkQuestProgress(playerMessage = "", npcMessage = "", isGift = false,
         const qState = gameState.activeQuests[questId];
         const def = questDefinitions.find(q => q.id === questId);
         if (!def) return;
+
+        // ステージ範囲チェック（バグ防止）
+        if (qState.currentStage >= def.stages.length) {
+            console.warn(`Invalid stage ${qState.currentStage} for quest ${questId} - completing forcibly`);
+            // 強制完了（安全策）
+            gameState.completedQuests.push(questId);
+            delete gameState.activeQuests[questId];
+            return;
+        }
 
         const stage = def.stages[qState.currentStage];
         if (!stage || (stage.npc !== currentNpcKey && stage.npc !== "任何")) return;
@@ -240,7 +247,10 @@ function getQuestGuidance() {
             const qState = gameState.activeQuests[questId];
             const currentIdx = qState.currentStage;
 
-            // 過去ステージのafterstage記憶（完了したステージの記憶）
+            // 範囲チェック
+            if (currentIdx >= def.stages.length) return;
+
+            // 過去ステージのafterstage記憶
             for (let i = 0; i < currentIdx; i++) {
                 const pastStage = def.stages[i];
                 if (pastStage && pastStage.guidance_afterstage && (pastStage.npc === currentNpcKey || pastStage.npc === "任何")) {
@@ -248,7 +258,7 @@ function getQuestGuidance() {
                 }
             }
 
-            // 現在ステージのbeforestage（トリガー待ち）
+            // 現在ステージのbeforestage
             const currentStage = def.stages[currentIdx];
             if (currentStage && currentStage.guidance_beforestage && (currentStage.npc === currentNpcKey || currentStage.npc === "任何")) {
                 guidance += `[${def.name}進行中ステージ${currentIdx+1}: ${currentStage.guidance_beforestage.replace("{player}", gameState.playerName || "あなた")}] `;
@@ -261,12 +271,10 @@ function getQuestGuidance() {
                 guidance += `[完了クエスト${def.name}: ${def.completed_guidance.replace("{player}", gameState.playerName || "あなた")}] `;
             }
         }
-        // 潜在ステージ0（paymentは誘いのみ）
+        // 潜在ステージ0
         else if (def.stages[0] && (def.stages[0].npc === currentNpcKey || def.stages[0].npc === "任何")) {
             if (def.stages[0].trigger.type !== "payment" && def.stages[0].guidance_beforestage) {
                 guidance += `[潜在クエスト${def.name}: ${def.stages[0].guidance_beforestage.replace("{player}", gameState.playerName || "あなた")}] `;
-            } else if (def.stages[0].trigger.type === "payment") {
-                guidance += `[潜在クエスト${def.name}: プレイヤーが秘密や情報を聞かれたら「200ゴールドで特別な情報を教えてあげるわ」と誘う。絶対に無料で内容を漏らさない。] `;
             }
         }
     });
