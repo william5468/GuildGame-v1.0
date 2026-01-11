@@ -21,10 +21,10 @@ function better_alert(message, type = "basic", extra = {}) {
     let textColor = '#ffffff';
 
     // Play levelup sound as early as possible (for both toast and fallback)
-    if (type === "levelup" && typeof levelupSound !== 'undefined') {
+    if ((type === "levelup" || type === "quest") && typeof levelupSound !== 'undefined') {
         levelupSound.currentTime = 0; // Rewind in case it was played before
         levelupSound.play().catch(err => {
-            console.warn('Level up sound could not play (autoplay policy or error):', err);
+            console.warn('Level up / Quest sound could not play (autoplay policy or error):', err);
         });
     }
 
@@ -62,6 +62,12 @@ function better_alert(message, type = "basic", extra = {}) {
             prefix = '❤️ '; // Neutral heart
             background = 'linear-gradient(to right, #d63384, #ff8e53)'; // Pink → orange
         }
+    } else if (type === "quest") {
+        // === NEW: Dedicated Quest Alert (Purple Mystical Theme) ===
+        prefix = '📜 '; // Scroll emoji – perfect for quests (mysterious/fantasy feel)
+        // Deep purple → vibrant violet gradient (fantasy, magical, premium look)
+        background = 'linear-gradient(to right, #8e44ad, #9b59b6, #bb8fce)';
+        textColor = '#ffffff'; // White text for strong contrast
     } else if (type === "basic") {
         prefix = ''; 
         background = 'linear-gradient(to right, #f12711, #f5af19)'; // Intense red → bright orange
@@ -126,6 +132,18 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.fontWeight = '700';
         toastConfig.style.padding = '20px 30px';
         toastConfig.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+        toastConfig.style.zIndex = '999999';
+    }
+
+    // === NEW: Quest-specific enhancements (mystical feel) ===
+    if (type === "quest") {
+        toastConfig.duration = 6500; // Slightly longer to read quest info
+        toastConfig.style.boxShadow = '0 12px 40px rgba(142, 68, 173, 0.6)'; // Purple glow shadow
+        toastConfig.style.border = '2px solid #bb8fce'; // Light purple border
+        toastConfig.style.fontSize = '18px';
+        toastConfig.style.fontWeight = '700';
+        toastConfig.style.padding = '20px 30px';
+        toastConfig.style.backdropFilter = 'blur(14px)';
         toastConfig.style.zIndex = '999999';
     }
 
@@ -528,6 +546,7 @@ const counterFSound = new Audio('Audio/CounterAttack_F.mp3');
 const counterTriggerSound = new Audio('Audio/CounterAttack_trigger.mp3');
 
 const levelupSound = new Audio('Audio/levelup.mp3');
+
 
 let currentCharIndex = 0;
 let selectedMix1 = null;
@@ -6715,6 +6734,7 @@ function crossfadeTo(newBgmId, duration = 2000) {
         document.getElementById('battleBgm'),
         document.getElementById('battleBgm2'),
         document.getElementById('dialogueBgm'),
+        document.getElementById('QuestEndDialogueBgm'),
         document.getElementById('GameoverBgm')
     ].filter(b => b !== newBgm && !b.paused);
 
@@ -7627,7 +7647,7 @@ function queueBirthdayParty() {
     ];
     completionQueue.push(sequence);
     if (!isPlayingDialogue) {
-        // crossfadeTo('PartyBgm', 2000);  // BGMがあれば
+        crossfadeTo('QuestEndDialogueBgm', 2000); 
         playNextDialogue();
     }
 }
