@@ -411,7 +411,6 @@ function startResponseListener() {
                 message = message.replace(/\{player\}/g, gameState.playerName || 'あなた');
 
                 appendNpcMessage(message);
-                checkQuestProgress(message);
             }
         } catch (err) {
             console.warn('Parse error:', e.data, err);
@@ -492,7 +491,7 @@ async function submitChatAndGifts() {
 
     // 入力取得
     const chatInput = document.getElementById('lunaInput');
-    const message = chatInput.value.trim();
+    let message = chatInput.value.trim();  // プレイヤーのメッセージ（小文字でクエストチェック用）
 
     const goldInput = document.getElementById('giftGoldInput');
     const goldAmount = parseInt(goldInput.value) || 0;
@@ -510,6 +509,13 @@ async function submitChatAndGifts() {
             }
             itemGift = { item, qty: itemQty };
         }
+    }
+
+    // 何も入力されていない場合（空メッセージ＋贈り物なし）は送信しない
+    const isGift = goldAmount > 0 || !!itemGift;
+    if (!message && !isGift) {
+        better_alert('メッセージまたは贈り物を入力してください', 'warning');
+        return;
     }
 
     // バリデーション
@@ -531,7 +537,7 @@ async function submitChatAndGifts() {
     if (goldAmount > 0) {
         gameState.gold -= goldAmount;
         entity.bag.gold += goldAmount;
-        recentGiftInfos.push(`Gold +${goldAmount}`);
+        recentGiftInfos.push(`ゴールド ${goldAmount}`);
         goldInput.value = '';
     }
 
@@ -546,11 +552,13 @@ async function submitChatAndGifts() {
         // NPCに追加
         const existing = entity.bag.items.find(i => i.name === item.name && JSON.stringify({ ...i, qty: undefined }) === JSON.stringify({ ...item, qty: undefined, id: undefined }));
         if (existing) {
-            existing.qty += qty;
+            existing.qty = (existing.qty || 1) + qty;
         } else {
             const newItem = { name: item.name, qty };
-            Object.assign(newItem, item);
+            Object.assign(newItem, { ...item });
             delete newItem.id;
+            delete newItem.qty;  // qtyは別途設定
+            newItem.qty = qty;
             entity.bag.items.push(newItem);
         }
         recentGiftInfos.push(`${item.name} x${qty}`);
@@ -566,11 +574,8 @@ async function submitChatAndGifts() {
         appendPlayerMessage(message);
     }
     if (recentGiftInfos.length > 0) {
-        appendPlayerMessage(`あなたは${currentNpcKey}に贈り物を渡した`);
-    } else if (!message) {
-        // 何も送らない場合（空送信防止）
-        better_alert('メッセージまたは贈り物を入力してください', 'warning');
-        return;
+        const giftLog = recentGiftInfos.join(' と ');
+        appendPlayerMessage(`あなたは${currentNpcKey}に ${giftLog} を贈り物として渡した`);
     }
 
     chatInput.value = '';
@@ -589,15 +594,16 @@ async function submitChatAndGifts() {
     if (recentGiftInfos.length > 0) {
         recentGiftInfo = recentGiftInfos.map(info => `プレイヤーから贈り物を受け取りました: ${info}.`).join(' ');
     }
-    // ... 贈り物処理後 ...
 
-    const giftedGold = goldAmount || 0;
+    // === 贈り物情報準備（クエストトリガー用）===
+    const giftedGold = goldAmount;
     const giftedItems = [];
-    if (goldAmount > 0) giftedItems.push({name: "ゴールド", qty: goldAmount});
-    if (itemGift) giftedItems.push({name: itemGift.item.name, qty: itemGift.qty});
+    if (goldAmount > 0) giftedItems.push({ name: "ゴールド", qty: goldAmount });
+    if (itemGift) giftedItems.push({ name: itemGift.item.name, qty: itemGift.qty });
 
-    // === クエスト進行チェック（贈り物トリガー）===
-    checkQuestProgress("", true, giftedGold, giftedItems);
+    // === クエスト進行チェック（プレイヤーのメッセージをキーワード判定に使用）===
+    // これで keyword / keyword_and_item が正しく動作（プレイヤーが入力したメッセージでキーワード判定）
+    checkQuestProgress(message.toLowerCase(), isGift, giftedGold, giftedItems);
 
     showNpcTyping();
 
@@ -610,7 +616,7 @@ async function submitChatAndGifts() {
         body: JSON.stringify({
             sender_name: gameState.playerName || 'Player',
             sender_message: message,
-            game_state_info: `好感度: ${friendliness}/100.${recentGiftInfo}. ${bagInfo} ${questGuidance}`
+            game_state_info: `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo}. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`
         })
     });
 
@@ -636,7 +642,6 @@ async function openNpcChat(npcKey) {
     document.getElementById('lunaInput').focus();
 
     await spawnNpc(npcKey);
-    checkQuestProgress("", false, 0, []);
 
     if (!currentNpcId) return;
 

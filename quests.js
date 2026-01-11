@@ -93,23 +93,34 @@ if (!gameState.activeQuests) {
     gameState.activeQuests = {};  // {questId: {currentStage: 0, discoveredKeywords: []}}
 }
 
-// トリガー一致判定
 function triggerMatches(trigger, message = "", isGift = false, giftedGold = 0, giftedItems = []) {
     if (!trigger) return false;
 
+    console.log(`[Quest Debug] Checking trigger: type=${trigger.type}, message="${message}", isGift=${isGift}, giftedGold=${giftedGold}`);
+
     switch (trigger.type) {
         case "keyword":
-            return trigger.keywords.some(kw => message.toLowerCase().includes(kw.toLowerCase()));
+            const hasKw = trigger.keywords.some(kw => message.includes(kw.toLowerCase()));
+            console.log(`[Quest Debug] keyword result: ${hasKw}`);
+            return hasKw;
+
         case "keyword_and_item":
-            const hasKeyword = trigger.keywords.some(kw => message.toLowerCase().includes(kw.toLowerCase()));
+            const hasKeyword = trigger.keywords.some(kw => message.includes(kw.toLowerCase()));
             const hasItem = isGift && giftedItems.some(it => 
                 it.name === trigger.requiredItem.name && it.qty >= (trigger.requiredItem.qty || 1)
             );
+            console.log(`[Quest Debug] keyword_and_item: hasKeyword=${hasKeyword}, hasItem=${hasItem}`);
             return hasKeyword && hasItem;
+
         case "payment":
-            return isGift && giftedGold >= trigger.amount;
+            const payOk = isGift && giftedGold >= trigger.amount;
+            console.log(`[Quest Debug] payment result: ${payOk}`);
+            return payOk;
+
         case "return":
+            console.log(`[Quest Debug] return trigger: true`);
             return true;
+
         default:
             return false;
     }
