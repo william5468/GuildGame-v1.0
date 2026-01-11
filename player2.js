@@ -614,15 +614,6 @@ async function submitChatAndGifts() {
         })
     });
 
-    if (response.ok) {
-        const data = await response.json();
-        if (data.message) {
-            appendNpcMessage(data.message);
-        }
-    } else {
-        hideNpcTyping();
-        better_alert('NPC応答エラー。再試行してください', 'error');
-    }
 
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
