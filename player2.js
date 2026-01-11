@@ -618,8 +618,14 @@ async function submitChatAndGifts() {
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
+// === openNpcChat 関数全体（キーワード提案セクション追加版） ===
 async function openNpcChat(npcKey) {
-    if (!npcConfigs[npcKey]) {
+    if (!p2Token) {
+        better_alert('Player2にログインしてください', 'warning');
+        return;
+    }
+
+    if (!npcConfigs[npcKey] && !npcConfigs[npcKey.replace(/ .*/, '')]) {
         better_alert('このキャラクターのAIチャットは未対応です', 'warning');
         return;
     }
@@ -633,9 +639,62 @@ async function openNpcChat(npcKey) {
     if (log) log.innerHTML = '';
 
     document.getElementById('lunaChatModal').style.display = 'flex';
-    document.getElementById('lunaInput').focus();
+
+    // === キーワード提案セクションの動的作成（存在しなければ） ===
+    let suggestionsDiv = document.getElementById('keywordSuggestions');
+    if (!suggestionsDiv) {
+        suggestionsDiv = document.createElement('div');
+        suggestionsDiv.id = 'keywordSuggestions';
+        suggestionsDiv.style.cssText = `
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            display: none;
+            flex-wrap: wrap;
+            gap: 6px;
+        `;
+
+        const inputContainer = document.getElementById('lunaInput').parentElement;  // 入力ボックスの親要素
+        inputContainer.parentElement.insertBefore(suggestionsDiv, inputContainer.nextSibling);  // 入力の下に挿入
+    }
+
+    // === 入力フォーカスでキーワード提案を表示 ===
+    const inputEl = document.getElementById('lunaInput');
+    inputEl.onfocus = () => {
+        const keywords = getRelevantKeywords(npcKey);
+        if (keywords.length > 0) {
+            suggestionsDiv.innerHTML = keywords.map(kw => 
+                `<button type="button" style="
+                    background: #5a4fcf;
+                    color: white;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-size: 0.9em;
+                    cursor: pointer;
+                " onclick="appendKeyword('${kw.replace(/'/g, "\\'")}')">${kw}</button>`
+            ).join('');
+            suggestionsDiv.style.display = 'flex';
+        } else {
+            suggestionsDiv.style.display = 'none';
+        }
+    };
+
+    // フォーカス外れたら非表示（送信時も自然に隠れる）
+    inputEl.onblur = () => {
+        setTimeout(() => {  // クリック遅延対応
+            suggestionsDiv.style.display = 'none';
+        }, 200);
+    };
+
+    inputEl.focus();
 
     await spawnNpc(npcKey);
+
+    // returnトリガー用チェック
     checkQuestProgress("", "", false, 0, []);
 
     if (!currentNpcId) return;
@@ -657,7 +716,6 @@ async function openNpcChat(npcKey) {
 
     const friendliness = entity.Friendliness ?? 70;
 
-    // 経過日数計算（安全初期化）
     if (!gameState.lastNpcChatDay) gameState.lastNpcChatDay = {};
     const lastDay = gameState.lastNpcChatDay[npcKey] || 0;
     const daysSinceLast = gameState.day - lastDay;
@@ -680,6 +738,8 @@ async function openNpcChat(npcKey) {
         const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
         const questGuidance = getQuestGuidance();
 
+        const game_state_info = `好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
+
         await fetch(`${API_BASE}/npcs/${currentNpcId}/chat`, {
             method: 'POST',
             headers: {
@@ -689,7 +749,7 @@ async function openNpcChat(npcKey) {
             body: JSON.stringify({
                 sender_name: gameState.playerName || 'Player',
                 sender_message: '',
-                game_state_info: `好感度: ${friendliness}/100. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}.${questGuidance}`
+                game_state_info: game_state_info
             })
         });
 
@@ -697,6 +757,43 @@ async function openNpcChat(npcKey) {
     } else {
         gameState.lastNpcChatDay[npcKey] = gameState.day;
     }
+}
+
+// === キーワード追加関数（グローバル） ===
+function appendKeyword(keyword) {
+    const input = document.getElementById('lunaInput');
+    if (input) {
+        input.value += (input.value.trim() ? ' ' : '') + keyword;
+        input.focus();
+    }
+}
+
+// === 関連キーワード取得関数（quests.js に追加推奨） ===
+function getRelevantKeywords(npcKey) {
+    const keywords = new Set();
+
+    Object.keys(gameState.activeQuests).forEach(questId => {
+        const qState = gameState.activeQuests[questId];
+        const def = questDefinitions.find(q => q.id === questId);
+        if (!def) return;
+
+        // このNPCが関わるクエストかチェック
+        const involvesNpc = def.stages.some(s => s.npc === npcKey || s.npc === "任何");
+        if (!involvesNpc) return;
+
+        // 発見済みキーワードを追加
+        qState.discoveredKeywords.forEach(kw => keywords.add(kw));
+
+        // 現在以降のステージでこのNPCに関わるkeywordToDiscoverを追加（ヒントとして）
+        for (let i = qState.currentStage; i < def.stages.length; i++) {
+            const stage = def.stages[i];
+            if ((stage.npc === npcKey || stage.npc === "任何") && stage.keywordToDiscover) {
+                keywords.add(stage.keywordToDiscover);
+            }
+        }
+    });
+
+    return Array.from(keywords);
 }
 
 function closeNpcChat() {
