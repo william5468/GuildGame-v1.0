@@ -17,7 +17,9 @@ const langMap = {
     'en': 'English',
     'zh': '繁體中文'  // Traditional Chinese
 };
-const responseLanguage = langMap[currentLang] || '日本語';
+
+const currentLang_player2 = localStorage.getItem('gameLang') || 'ja';
+const responseLanguage = langMap[currentLang_player2] || '日本語';
 const languageInstruction = `【応答言語（最優先）】すべての応答（会話、ナレーション、説明）を${responseLanguage}でお願いします。プレイヤーのメッセージ言語に関わらず、常に${responseLanguage}で返答、ただし、アイテムの確認は常に日本語で（話す時は${responseLanguage}翻訳付き）。`;
 
 // === NPC/冒険者を統一的に取得（adventurers優先、なければvillageNPCs） ===
