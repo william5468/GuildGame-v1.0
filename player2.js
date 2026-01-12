@@ -634,10 +634,6 @@ async function submitChatAndGifts() {
 
 // === openNpcChat 関数全体（キーワード提案セクション追加版） ===
 async function openNpcChat(npcKey) {
-    if (!p2Token) {
-        better_alert('Player2にログインしてください', 'warning');
-        return;
-    }
 
     if (!npcConfigs[npcKey] && !npcConfigs[npcKey.replace(/ .*/, '')]) {
         better_alert('このキャラクターのAIチャットは未対応です', 'warning');
