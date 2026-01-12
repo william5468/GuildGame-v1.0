@@ -2436,7 +2436,6 @@ function rejectQuest(qId) {
     if (q.assigned.length > 0 || q.inProgress || q.defense || q.training || q.playerPosted) return;
     const penalty = 0.1 * q.difficulty;
     gameState.reputation -= penalty;
-    gameState.eventHistory.unshift({day: gameState.day, message: `クエスト "${q.desc}" を拒否。評判 -${penalty.toFixed(1)}。`});
     const idx = gameState.quests.findIndex(qq => qq.id === qId);
     if (idx !== -1) {
         gameState.quests.splice(idx, 1);
