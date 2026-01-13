@@ -15,7 +15,7 @@ let proactiveTypingTimeout = null; // プロアクティブ用タイムアウト
 const langMap = {
     'ja': '日本語',
     'en': 'English',
-    'zh': '繁體中文'  // Traditional Chinese
+    'zh': '中文'  // Traditional Chinese
 };
 
 const currentLang_player2 = localStorage.getItem('gameLang') || 'ja';
@@ -632,15 +632,122 @@ async function submitChatAndGifts() {
     gameState.lastNpcChatDay[currentNpcKey] = gameState.day;
 }
 
+
+function changeAiProvider() {
+    const currentProvider = localStorage.getItem('aiProvider') || 'player2';
+    const hasOpenRouterKey = !!localStorage.getItem('openRouterApiKey');
+
+    let msg = `現在のAIプロバイダー: ${currentProvider === 'openrouter' ? 'OpenRouter' : 'Player2'}\n`;
+    if (currentProvider === 'openrouter') {
+        msg += `（OpenRouter APIキー: ${hasOpenRouterKey ? '登録済み' : '未登録'}）\n`;
+    }
+    msg += '\n何をしますか？\n\n';
+    msg += '1 = Player2 に切り替える（デフォルト）\n';
+    msg += '2 = OpenRouter に切り替える\n';
+    msg += '3 = OpenRouter APIキーのみ変更・入力する（プロバイダーは変更せず）\n';
+    msg += '4 = OpenRouter APIキーを削除する\n\n';
+    msg += '番号を入力してください';
+
+    const choice = prompt(msg, "1");
+
+    if (choice === "1") {
+        localStorage.setItem('aiProvider', 'player2');
+        better_alert("AIプロバイダーを Player2 に変更しました", 'success');
+    }
+    else if (choice === "2") {
+        // OpenRouterに切り替え
+        let key = localStorage.getItem('openRouterApiKey');
+
+        if (!key) {
+            key = prompt(
+                "OpenRouter APIキーを入力してください\n" +
+                "(https://openrouter.ai/keys から無料で取得できます)\n" +
+                "キャンセルするとPlayer2に戻ります",
+                ""
+            );
+            if (!key || key.trim() === '') {
+                better_alert("APIキーが入力されませんでした。Player2のままにします。", 'warning');
+                localStorage.setItem('aiProvider', 'player2');
+                return;
+            }
+            localStorage.setItem('openRouterApiKey', key.trim());
+            better_alert("OpenRouter APIキーを保存しました", 'success');
+        } else {
+            better_alert("既存のOpenRouter APIキーを使用します", 'basic');
+        }
+
+        localStorage.setItem('aiProvider', 'openrouter');
+        better_alert("AIプロバイダーを OpenRouter に変更しました", 'success');
+    }
+    else if (choice === "3") {
+        // キーだけ変更（現在のプロバイダーは維持）
+        const newKey = prompt(
+            "新しいOpenRouter APIキーを入力してください\n" +
+            "(https://openrouter.ai/keys から取得)\n" +
+            "空欄でキャンセル",
+            ""
+        );
+
+        if (newKey === null || newKey.trim() === '') {
+            better_alert("変更をキャンセルしました", 'basic');
+            return;
+        }
+
+        localStorage.setItem('openRouterApiKey', newKey.trim());
+        better_alert("OpenRouter APIキーを更新しました", 'success');
+
+        // 現在のプロバイダーがOpenRouterなら即時反映を通知
+        if (currentProvider === 'openrouter') {
+            better_alert("次回のNPC会話から新しいキーが使用されます", 'basic');
+        }
+    }
+    else if (choice === "4") {
+        // キー削除
+        if (hasOpenRouterKey) {
+            localStorage.removeItem('openRouterApiKey');
+            better_alert("OpenRouter APIキーを削除しました", 'success');
+
+            // 現在OpenRouter使用中ならPlayer2に強制切り替え
+            if (currentProvider === 'openrouter') {
+                localStorage.setItem('aiProvider', 'player2');
+                better_alert("APIキーがなくなったため、Player2に自動切り替えしました", 'warning');
+            }
+        } else {
+            better_alert("登録されているOpenRouter APIキーはありません", 'basic');
+        }
+    }
+    else {
+        better_alert("無効な選択です。キャンセルしました。", 'warning');
+    }
+
+    // オプション：設定変更後に即時反映したい場合
+    // location.reload();
+}
+
 // === openNpcChat 関数全体（キーワード提案セクション追加版） ===
 async function openNpcChat(npcKey) {
-
     if (!npcConfigs[npcKey] && !npcConfigs[npcKey.replace(/ .*/, '')]) {
         better_alert('このキャラクターのAIチャットは未対応です', 'warning');
         return;
     }
 
     currentNpcKey = npcKey;
+
+    // ── AIプロバイダーの選択を読み込む ────────────────────────────────
+    const savedProvider = localStorage.getItem('aiProvider') || 'player2';
+    const useOpenRouter = (savedProvider === 'openrouter' && localStorage.getItem('openRouterApiKey'));
+
+    if (useOpenRouter) {
+        // OpenRouterを選択している＆APIキーが存在する場合
+        if (typeof openOpenRouterChat === 'function') {
+            await openOpenRouterChat(npcKey);
+        } else {
+            better_alert("OpenRouterチャット機能が読み込まれていません。\nopenrouter.js が正しく読み込まれているか確認してください。", 'error');
+        }
+        return; // ここで終了（Player2の処理はスキップ）
+    }
+
+    // ── 以下は Player2 の処理（従来のコード） ──────────────────────────
 
     const titleEl = document.querySelector('#lunaChatModal h2');
     if (titleEl) titleEl.textContent = `${npcKey}と会話`;
@@ -667,8 +774,8 @@ async function openNpcChat(npcKey) {
             gap: 6px;
         `;
 
-        const inputContainer = document.getElementById('lunaInput').parentElement;  // 入力ボックスの親要素
-        inputContainer.parentElement.insertBefore(suggestionsDiv, inputContainer.nextSibling);  // 入力の下に挿入
+        const inputContainer = document.getElementById('lunaInput').parentElement;
+        inputContainer.parentElement.insertBefore(suggestionsDiv, inputContainer.nextSibling);
     }
 
     // === 入力フォーカスでキーワード提案を表示 ===
@@ -693,9 +800,8 @@ async function openNpcChat(npcKey) {
         }
     };
 
-    // フォーカス外れたら非表示（送信時も自然に隠れる）
     inputEl.onblur = () => {
-        setTimeout(() => {  // クリック遅延対応
+        setTimeout(() => {
             suggestionsDiv.style.display = 'none';
         }, 200);
     };
