@@ -20,57 +20,62 @@ function better_alert(message, type = "basic", extra = {}) {
     let background = '#1a1a1a';
     let textColor = '#ffffff';
 
-    // Play levelup sound as early as possible (for both toast and fallback)
-    if ((type === "levelup" || type === "quest") && typeof levelupSound !== 'undefined') {
-        levelupSound.currentTime = 0; // Rewind in case it was played before
+    // Play levelup sound for training and levelup (feels rewarding!)
+    if ((type === "levelup" || type === "quest" || type === "training") && typeof levelupSound !== 'undefined') {
+        levelupSound.currentTime = 0;
         levelupSound.play().catch(err => {
-            console.warn('Level up / Quest sound could not play (autoplay policy or error):', err);
+            console.warn('Level up / Quest / Training sound could not play:', err);
         });
     }
 
     // Type-specific designs with gradients, emojis, and better contrast
     if (type === "success") {
         prefix = '✅ ';
-        background = 'linear-gradient(to right, #11998e, #38ef7d)'; // Vibrant teal → light green
+        background = 'linear-gradient(to right, #11998e, #38ef7d)';
     } else if (type === "error" || type === "failure") {
         prefix = '❌ ';
-        background = 'linear-gradient(to right, #ff0844, #ffb199)'; // Deep red → soft coral
+        background = 'linear-gradient(to right, #ff0844, #ffb199)';
     } else if (type === "warning") {
         prefix = '⚠️ ';
-        background = 'linear-gradient(to right, #fc4a1a, #f7b733)'; // Orange → warm yellow
+        background = 'linear-gradient(to right, #fc4a1a, #f7b733)';
         textColor = '#000000';
     } else if (type === "levelup") {
         prefix = '🌟 ';
-        background = 'linear-gradient(to right, #ffe259, #ffa751)'; // Warm shiny golden-yellow gradient
+        background = 'linear-gradient(to right, #ffe259, #ffa751)';
         textColor = '#000000';
     } else if (type === "death") {
         prefix = '☠️ ';
-        background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)'; // Deep black → dark grey
+        background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)';
         textColor = '#ffffff';
     } else if (type === "friendliness") {
-        // New friendliness change toast
         const delta = extra.delta || 0;
         if (delta > 0) {
-            prefix = '💖 '; // Sparkling heart for increase
-            background = 'linear-gradient(to right, #ff9a9e, #fad0c4)'; // Soft pink → peach (warm, loving feel)
-            textColor = '#800080'; // Deep purple text for contrast
+            prefix = '💖 ';
+            background = 'linear-gradient(to right, #ff9a9e, #fad0c4)';
+            textColor = '#800080';
         } else if (delta < 0) {
-            prefix = '💔 '; // Broken heart for decrease
-            background = 'linear-gradient(to right, #8b0000, #4b0000)'; // Dark red → deeper red (somber, hurt feel)
+            prefix = '💔 ';
+            background = 'linear-gradient(to right, #8b0000, #4b0000)';
             textColor = '#ffffff';
         } else {
-            prefix = '❤️ '; // Neutral heart
-            background = 'linear-gradient(to right, #d63384, #ff8e53)'; // Pink → orange
+            prefix = '❤️ ';
+            background = 'linear-gradient(to right, #d63384, #ff8e53)';
         }
     } else if (type === "quest") {
-        // === NEW: Dedicated Quest Alert (Purple Mystical Theme) ===
-        prefix = '📜 '; // Scroll emoji – perfect for quests (mysterious/fantasy feel)
-        // Deep purple → vibrant violet gradient (fantasy, magical, premium look)
+        prefix = '📜 ';
         background = 'linear-gradient(to right, #8e44ad, #9b59b6, #bb8fce)';
-        textColor = '#ffffff'; // White text for strong contrast
-    } else if (type === "basic") {
-        prefix = ''; 
-        background = 'linear-gradient(to right, #f12711, #f5af19)'; // Intense red → bright orange
+        textColor = '#ffffff';
+    } 
+    // === NEW: Training Result Alert (Muscular/Strength Theme) ===
+    else if (type === "training") {
+        prefix = '💪 '; // Flexed bicep emoji – perfect for training gains
+        // Energetic orange → fiery red gradient (power, energy, growth feel)
+        background = 'linear-gradient(to right, #ff6b35, #f7931e, #ff9d00)';
+        textColor = '#ffffff';
+    } 
+    else if (type === "basic") {
+        prefix = '';
+        background = 'linear-gradient(to right, #f12711, #f5af19)';
     }
 
     const toastConfig = {
@@ -91,7 +96,7 @@ function better_alert(message, type = "basic", extra = {}) {
             maxWidth: '480px',
             border: 'none',
             backdropFilter: 'blur(10px)',
-            zIndex: '999999'  // Extremely high to ensure always on top
+            zIndex: '999999'
         },
         className: 'game-toast',
         close: true,
@@ -107,7 +112,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.fontSize = '18px';
         toastConfig.style.fontWeight = '700';
         toastConfig.style.padding = '20px 30px';
-        toastConfig.style.zIndex = '999999';
     }
 
     // Special enhancements for death
@@ -122,7 +126,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.padding = '28px 40px';
         toastConfig.style.minWidth = '380px';
         toastConfig.style.backdropFilter = 'blur(16px)';
-        toastConfig.style.zIndex = '999999';
     }
 
     // Friendliness-specific enhancements
@@ -132,19 +135,28 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.fontWeight = '700';
         toastConfig.style.padding = '20px 30px';
         toastConfig.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
-        toastConfig.style.zIndex = '999999';
     }
 
-    // === NEW: Quest-specific enhancements (mystical feel) ===
+    // Quest-specific enhancements
     if (type === "quest") {
-        toastConfig.duration = 6500; // Slightly longer to read quest info
-        toastConfig.style.boxShadow = '0 12px 40px rgba(142, 68, 173, 0.6)'; // Purple glow shadow
-        toastConfig.style.border = '2px solid #bb8fce'; // Light purple border
+        toastConfig.duration = 6500;
+        toastConfig.style.boxShadow = '0 12px 40px rgba(142, 68, 173, 0.6)';
+        toastConfig.style.border = '2px solid #bb8fce';
         toastConfig.style.fontSize = '18px';
         toastConfig.style.fontWeight = '700';
         toastConfig.style.padding = '20px 30px';
         toastConfig.style.backdropFilter = 'blur(14px)';
-        toastConfig.style.zIndex = '999999';
+    }
+
+    // === NEW: Training-specific enhancements (energetic, powerful feel) ===
+    if (type === "training") {
+        toastConfig.duration = 6000;
+        toastConfig.style.boxShadow = '0 10px 35px rgba(255, 107, 53, 0.6)'; // Orange glow
+        toastConfig.style.border = '2px solid #ff9d00';
+        toastConfig.style.fontSize = '18px';
+        toastConfig.style.fontWeight = '700';
+        toastConfig.style.padding = '20px 30px';
+        toastConfig.style.backdropFilter = 'blur(12px)';
     }
 
     // === TOAST WITH FALLBACK ===
@@ -2666,7 +2678,6 @@ function renderSellItems() {
         else if (group.type === 'consumable') basePrice = Math.floor((group.buff?.bonus || 100) * 5);
         else if (group.minPrice !== undefined && group.maxPrice !== undefined) {
             basePrice = Math.floor(group.minPrice + randMinMax * (group.maxPrice - group.minPrice + 1));
-            console.log(group.name+basePrice);
         } else {
             basePrice = 5;
             
@@ -3158,6 +3169,8 @@ if (q.buy) {
     let survivingAdvs = [];
     const expGain = q.difficulty * 20;
     q.assigned.forEach(id => {
+
+        
         const adv = findAdv(id);
         if (adv) {
             adv.exp += expGain;
@@ -3166,6 +3179,7 @@ if (q.buy) {
             survivingAdvs.push(adv);
         }
     });
+
 
     // 評判ボーナス
     const repGain = q.difficulty * 0.5;
@@ -3237,7 +3251,7 @@ if (q.buy) {
         let expGains = {};
         let lowLevelBonus = false;
         assignedAdvs.forEach(adv => {
-            let expGain = q.difficulty * 20;
+            let expGain = 0;
             if (assignedAdvs.length > 1 && adv.level < maxLv) {
                 expGain = maxLv * 20;
                 lowLevelBonus = true;
@@ -3247,27 +3261,9 @@ if (q.buy) {
             levelUp(adv);
             adv.busy = false;
         });
-        q.assigned = [];
 
-        let trainingMessage = `
-        <div class="quest-scroll quest-scroll-success">
-            <div class="scroll-content">
-                <div style="text-align: center; width: 100%; margin-bottom: 20px;">
-                    <h2 style="font-size: 36px; margin: 0;">トレーニング完了</h2>
-                </div>
-                <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 60px;">
-                    ${assignedAdvs.map(adv => `
-                    <div style="text-align: center;">
-                        <img class="adventurer-img" src="Images/${adv.image}" alt="${adv.name}">
-                        <div style="margin-top: 20px; font-size: 15px;">${adv.name}</div>
-                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${expGains[adv.id]} Exp</div>
-                    </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>`;
-
-        gameState.eventHistory.unshift({day: eventDay, message: trainingMessage});
+        let trainingMessage = `${assignedAdvs.map(adv => `${adv.name}(+${expGains[adv.id]}EXP) `).join('')}`;
+        better_alert(trainingMessage,"training");
         return;
     }
 
@@ -3298,7 +3294,8 @@ if (q.buy) {
         teamRolled.luck += rolls.luck;
 
         if (success) {
-            adventurer.exp += difficulty * 20;
+            adventurer.exp += (q.type === 7) ? q.floor * 500 : q.difficulty * 20;
+            console.log("q.type is "+q.type);
             levelUp(adventurer);
         }
 
@@ -3385,6 +3382,9 @@ if (q.buy) {
             extraMsg += `<br><strong>Reputation Bonus:</strong> ${orbQty} × EXPオーブ (小)${orbQty > 1 ? 's' : ''} を獲得!`;
         }
         if (q.type === 6) {
+
+
+
             gameState.mainProgress++;
             gameState.reputation += 30;
             extraMsg += `<br><strong>ストーリーが進行しました！</strong> 次のメインクエストがギルドクエストメニューで確認できるようになりました。`;
@@ -3452,7 +3452,7 @@ if (q.buy) {
             }
             additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">+${quantity} ${q.item.name}</div>`;
         }
-        if (q.type === 0 && Math.random() < 0.8) {
+        /*if (q.type === 0 && Math.random() < 0.8) {
             const numPerms = gameState.adventurers.filter(a => !a.temp).length;
             if (numPerms >= gameState.maxPermanentSlots) {
                 extraMsg += `<br>感銘を受けた冒険者が加わりたがったが、ギルドは満杯です。`;
@@ -3461,7 +3461,7 @@ if (q.buy) {
                 gameState.adventurers.push(newAdv);
                 extraMsg += `<br>感銘を受けた冒険者${newAdv.name}があなたのギルドに加わることを決めました！`;
             }
-        }
+        }*/
 
         // 完了ダイアログ処理（questStoryindex をすべてのクエストタイプで統一使用）
         // ※ fetchクエストも生成時にquestStoryindex（配列のインデックス）を設定している前提
@@ -3480,17 +3480,16 @@ if (q.buy) {
             if (!gameState.seenCompletionDialogues.has(key)) {
                 const dialogue = currentQuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
                 queueQuestCompletionDialogue(dialogue);
-                console.log("QuestCompletionDialogue played for: "+key);
+
                 gameState.seenCompletionDialogues.add(key);
 
                 // === 新方式：マップからNPCアンロックを参照（すべてのタイプでquestStoryindex使用） ===
                 const unlockKey = `${q.questType}-${q.rank}-${q.questStoryindex}`;
                 const npcToUnlock = questCompletionNPCUnlocks[unlockKey];
-                console.log("npcToUnlock: "+npcToUnlock);
+               
                 if (npcToUnlock) {
                     // 文字列の場合（単体）→配列に変換
                     const npcs = Array.isArray(npcToUnlock) ? npcToUnlock : [npcToUnlock];
-
                     for (const npcKey of npcs) {
                         unlockQuestNPC(npcKey);
                     }
@@ -3498,7 +3497,6 @@ if (q.buy) {
                 // === ここまで ===
             }
         }
-        console.log("Start building eventmodal");
         // Unified layout for success
         let leftHTML = `
             <div style="text-align: center;">
@@ -3517,7 +3515,7 @@ if (q.buy) {
                     <div style="text-align: center;">
                         <img class = "adventurer-img"; src="Images/${adv.image}" alt="${adv.name}">
                         <div style="margin-top: 10px; font-size: 15px;">${adv.name}</div>
-                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${difficulty * 20} Exp</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${(q.type === 7) ? q.floor * 500 : q.difficulty * 20} Exp</div>
                     </div>
                     `).join('')}
                 </div>
@@ -3741,8 +3739,7 @@ function playDay(){
                     q.inProgress = true;
                 }
                 q.tradeRemainingDays--; // 毎日減少
-                console.log("tradeRemainingDays redeuced to: "+q.tradeRemainingDays);
-                console.log("daysleft: "+ q.daysLeft);
+
 
                 if (q.tradeRemainingDays <= 0) {
                     // 完了時のみ processQuestOutcome を呼び出し（success=true）
@@ -7059,6 +7056,9 @@ window.addEventListener('load', function() {
     gameState.activeQuests = {};  
     
 }
+if (!gameState.completedQuestBranches) {
+    gameState.completedQuestBranches = {};  // {questId: {completedStages: [indices]}}
+}
 if (!gameState.completedQuests) gameState.completedQuests = [];
 
 // クエスト完了ダイアログ表示関数
@@ -7773,8 +7773,6 @@ async function unlockQuestNPC(npcKey) {
         gameState.villageNPCs[npcKey].bag.gold = setup.gold;
         gameState.villageNPCs[npcKey].bag.items.push(...setup.items);
     }
-
-    console.log(`${npcKey} がアンロックされました（bagとFriendliness初期化済み）`);
 
     if (document.getElementById('npcsContent')) {
         renderNPCList();
