@@ -314,16 +314,42 @@ async function openOpenRouterChat(npcKey) {
         const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
         let proactiveMessage = await sendToOpenRouter('', game_state_info);
-        proactiveMessage = processOpenRouterCommands(proactiveMessage);
+
+        // processOpenRouterCommands でコマンド処理（返り値はトーンタグ付きの話し言葉テキスト）
+        let rawNpcText = processOpenRouterCommands(proactiveMessage);
+
+        // === 新規: トーンタグ対応の音声生成 & 表示処理 ===
+        const voiceType = npcVoiceTypes[currentNpcKey_OR];
+        const voiceName = voiceType ? voiceType : null;  // プリビルドボイス名（Leda, Rasalgethi など）
+
+        let audioUrl = null;
+        let cleanDisplayText = rawNpcText;  // デフォルト（タグなしの場合）
+
+        if (voiceName && rawNpcText) {
+            const ttsResult = await generateNpcVoice(rawNpcText, voiceName);
+            if (ttsResult) {
+                audioUrl = ttsResult.audioURL;
+                cleanDisplayText = ttsResult.cleanText;  // タグ除去済みテキスト
+            }
+        }
+
         hideNpcTyping_OR();
-        appendNpcMessage_OR(proactiveMessage);
+
+        // 表示（タグ完全除去済みのクリーンなテキスト）
+        appendNpcMessage_OR(cleanDisplayText);
+
+        // 音声再生
+        if (audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(e => console.warn('Audio play failed:', e));
+            audio.onended = () => URL.revokeObjectURL(audioUrl); // メモリ解放
+        }
 
         gameState.lastNpcChatDay[npcKey] = gameState.day;
     } else {
         gameState.lastNpcChatDay[npcKey] = gameState.day;
     }
 }
-
 // === Close OpenRouter Chat ===
 function closeOpenRouterChat() {
     document.getElementById('OpenrouterChatModal').style.display = 'none';
@@ -382,6 +408,7 @@ async function sendToOpenRouter(message, game_state_info) {
 }
 
 // === Submit Chat and Gifts for OpenRouter ===
+// === 既存関数を完全に置き換え: submitChatAndGifts_OR（音声対応版）===
 async function submitChatAndGifts_OR() {
     const input = document.getElementById('openRouterInput');
     const message = input.value.trim();
@@ -441,15 +468,52 @@ async function submitChatAndGifts_OR() {
     const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo ? ' ' + recentGiftInfo : ''} ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
     let aiResponse = await sendToOpenRouter(message, game_state_info);
-    aiResponse = processOpenRouterCommands(aiResponse);
+
+    // processOpenRouterCommands でコマンド（adjust_friendliness など）を処理
+    // 返り値はトーンタグ付きの話し言葉テキストと仮定
+    let rawNpcText = processOpenRouterCommands(aiResponse);
 
     hideNpcTyping_OR();
-    appendNpcMessage_OR(aiResponse);
+
+    // === 同期でクリーンテキスト計算（タグ除去）===
+    const cleanDisplayText = rawNpcText.replace(/<tone=[^>]+>(.*?)<\/tone>/gi, '$1').trim();
+
+    // テキストを即座に表示（音声生成を待たずに）
+    appendNpcMessage_OR(cleanDisplayText);
+
+    // 入力欄をすぐにフォーカスして次の入力可能に
+    input.focus();
+
+    // === 非同期で音声生成・再生（テキスト表示後）===
+    const voiceConfig = npcVoiceTypes[currentNpcKey_OR];  // オブジェクト or 文字列対応
+
+    if (voiceConfig && rawNpcText && geminiApiKey) {
+        generateNpcVoice(rawNpcText, voiceConfig)
+            .then(ttsResult => {
+                if (ttsResult && ttsResult.audioURL) {
+                    const audio = new Audio(ttsResult.audioURL);
+                    audio.play().catch(e => {
+                        console.warn('Audio play failed:', e);
+                        better_alert('音声再生に失敗しました（ブラウザ制限の可能性）。テキストは表示済みです。', 'warning');
+                    });
+                    audio.onended = () => URL.revokeObjectURL(ttsResult.audioURL);
+                } else {
+                    better_alert('音声生成に失敗しました（サーバーエラーや制限）。テキストのみ表示します。', 'warning');
+                }
+            })
+            .catch(err => {
+                console.error('TTS generation error:', err);
+                better_alert('音声生成エラー: サーバー側問題の可能性があります。テキストのみ表示します。', 'warning');
+            });
+    } else if (voiceConfig && rawNpcText) {
+        // APIキーなしの場合
+        better_alert('Gemini APIキーが設定されていません。テキストのみ表示します。', 'warning');
+    }
+    // voiceConfigなし or rawNpcText空の場合は音声スキップ（サイレント）
 
     checkQuestProgress(message, aiResponse.toLowerCase(), !!recentGiftInfo, goldAmount, itemGift ? [itemGift] : []);
     gameState.lastNpcChatDay[currentNpcKey_OR] = gameState.day;
 }
-
 // === Append Keyword for OpenRouter ===
 function appendKeyword_OR(keyword) {
     const input = document.getElementById('openRouterInput');
@@ -489,9 +553,13 @@ function hideNpcTyping_OR() {
 }
 
 // === Append NPC Message for OpenRouter ===
-function appendNpcMessage_OR(text) {
+// 修正された appendNpcMessage_OR 関数（トーンタグを完全に除去して表示）
+function appendNpcMessage_OR(rawText) {  // rawText = LLMから来たトーンタグ付きテキスト
     const log = document.getElementById('openRouterChatLog');
     
+    // トーンタグを完全に除去したクリーンテキストを作成
+    const cleanText = rawText.replace(/<tone=[^>]+>(.*?)<\/tone>/gi, '$1').trim();
+
     const div = document.createElement('div');
     div.style.cssText = `
         display: flex;
@@ -529,7 +597,7 @@ function appendNpcMessage_OR(text) {
     `;
     messageDiv.innerHTML = `
         <strong style="color:#333333; font-size:1.05em;">${currentNpcKey_OR}:</strong><br>
-        <span style="line-height:1.5;">${text.replace(/\n/g, '<br>')}</span>
+        <span style="line-height:1.5;">${cleanText.replace(/\n/g, '<br>')}</span>
     `;
 
     div.appendChild(avatar);
@@ -659,3 +727,148 @@ function updateNpcBagDisplay_OR() {
 window.openOpenRouterChat = openOpenRouterChat;
 window.submitChatAndGifts_OR = submitChatAndGifts_OR;
 window.toggleGiftSection_OR = toggleGiftSection_OR;
+
+
+
+// === 新規追加: Gemini TTS設定（openrouter.jsのファイル先頭付近、既存のconst OPENROUTER_API_BASEなどの後に追加） ===
+let geminiApiKey = localStorage.getItem('geminiApiKey') || '';
+// テスト用に直接ここにAPIキーを貼り付け可能（例: geminiApiKey = 'your-gemini-api-key-here';）
+
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-tts'; // 高速・高品質（必要に応じてgemini-2.5-pro-preview-ttsに変更可能）
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// 声のペルソナ定義（子供・ティーン・大人 × 男女）
+const voicePersonas = {
+    child_girl: "a cute little girl around 8-10 years old with a very high-pitched, innocent, playful and super adorable voice",
+    teenage_girl: "a cheerful teenage girl around 15-17 years old with a lively, energetic, youthful and slightly cute voice",
+    adult_girl: "a mature woman around 28-35 years old with a warm, elegant, calm and soothing voice",
+
+    child_boy: "a cute little boy around 8-10 years old with a high-pitched, playful, innocent and energetic voice",
+    teenage_boy: "an energetic teenage boy around 15-17 years old with a bright, confident and youthful voice",
+    adult_boy: "a mature man around 30-40 years old with a deep, calm, reliable and authoritative voice"
+};
+
+
+
+// PCM → WAV変換関数（Gemini TTSは生PCMを返すため必須）
+function pcmToWav(pcmData) {
+    const sampleRate = 24000;
+    const numChannels = 1;
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+    const blockAlign = numChannels * bitsPerSample / 8;
+    const dataSize = pcmData.byteLength;
+
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+    const uint8 = new Uint8Array(buffer);
+
+    const writeString = (offset, str) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    uint8.set(new Uint8Array(pcmData), 44);
+    return new Blob([buffer], { type: 'audio/wav' });
+}
+
+// Gemini TTS音声生成関数（非同期）
+// 修正された generateNpcVoice 関数（トーンタグ対応 + 表示用クリーン処理）
+// 更新された generateNpcVoice（オブジェクト対応 + チャイルド風スタイルプロンプト統合）
+async function generateNpcVoice(rawText, voiceConfig) {
+    if (!geminiApiKey || !voiceConfig || !rawText.trim()) return null;
+
+    // 1. トーンタグを抽出・除去
+    const toneMatches = [...rawText.matchAll(/<tone=([^>]+)>(.*?)<\/tone>/gi)];
+    
+    // 表示用クリーンテキスト（タグ完全除去）
+    const cleanText = rawText.replace(/<tone=[^>]+>(.*?)<\/tone>/gi, '$1').trim();
+
+    // 2. ボイス設定を処理（文字列 = プリビルドのみ、オブジェクト = プリビルド + スタイルプロンプト）
+    let prebuiltVoice = null;
+    let stylePrompt = null;
+
+    if (typeof voiceConfig === 'string') {
+        prebuiltVoice = voiceConfig.charAt(0).toUpperCase() + voiceConfig.slice(1).toLowerCase();
+    } else if (typeof voiceConfig === 'object' && voiceConfig.prebuilt) {
+        prebuiltVoice = voiceConfig.prebuilt.charAt(0).toUpperCase() + voiceConfig.prebuilt.slice(1).toLowerCase();
+        stylePrompt = voiceConfig.stylePrompt;  // 例: 'in a cute, high-pitched... teenage girl'
+    }
+
+    // 3. TTS用プロンプト構築
+    let ttsPrompt = '';
+    if (toneMatches.length > 0) {
+        for (const match of toneMatches) {
+            let tone = match[1].trim();
+            const segment = match[2].trim();
+
+            // トーン + スタイルプロンプトを統合（スタイルがあれば追加）
+            let fullTone = tone;
+            if (stylePrompt) {
+                fullTone += ` and ${stylePrompt}`;
+            }
+            ttsPrompt += `Speak ${fullTone}: ${segment} `;
+        }
+    } else {
+        // タグなしの場合
+        ttsPrompt = stylePrompt ? `Speak ${stylePrompt}: ${cleanText}` : cleanText;
+    }
+
+    try {
+        const body = {
+            contents: [{ parts: [{ text: ttsPrompt }] }],
+            generationConfig: {
+                responseModalities: ["AUDIO"]
+            }
+        };
+
+        // プリビルドボイスがあれば追加
+        if (prebuiltVoice) {
+            body.generationConfig.speechConfig = {
+                voiceConfig: {
+                    prebuiltVoiceConfig: {
+                        voiceName: prebuiltVoice
+                    }
+                }
+            };
+        }
+
+        const response = await fetch(`${GEMINI_API_URL}?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.warn('Gemini TTS API error:', errorText);
+            return null;
+        }
+
+        const data = await response.json();
+        const audioBase64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!audioBase64) return null;
+
+        const pcmBytes = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+        const wavBlob = pcmToWav(pcmBytes.buffer);
+        return {
+            audioURL: URL.createObjectURL(wavBlob),
+            cleanText: cleanText
+        };
+    } catch (err) {
+        console.error('Gemini TTS error:', err);
+        return null;
+    }
+}

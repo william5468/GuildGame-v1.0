@@ -515,6 +515,9 @@ function Render_Mainadventurer() {
 function startGame() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
+    const stepName = document.getElementById('stepName');
+    if (stepName) stepName.style.display = 'block';
+
     Render_Mainadventurer();
     if (!gameState.dungeonCooldowns) {
     gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }

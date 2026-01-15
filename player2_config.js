@@ -6,6 +6,26 @@ const femaleNames = adventurerNames[currentLang_player2_config]?.F || adventurer
 const lunaName = currentLang_player2_config === 'ja' ? 'ルナ' : 'Luna';
 const kaitoName = currentLang_player2_config === 'ja' ? 'カイト' : 'Kaito';
 
+
+// NPCごとの声タイプ設定（ここを自由に編集）
+// 更新された npcVoiceTypes（プリビルドボイス + スタイルプロンプト対応）
+const npcVoiceTypes = {
+    [lunaName]: {
+        prebuilt: 'Leda',  // 最も若々しく高めの声（ティーン少女に最適）
+        stylePrompt: 'in a cute, high-pitched, energetic and adorable voice like a young teenage girl'
+    },
+    [kaitoName]: {
+        prebuilt: 'Fenrir',  // エネルギッシュで若々しい少年声に合う
+        stylePrompt: 'in an energetic, bright and youthful voice like a young man'
+    },
+    '農夫': 'Charon',            // 大人男性（深めで落ち着いた声例）
+    '酒場主人': 'Erinome',       // 大人女性（落ち着きある声）
+    '錬金術師': 'Enceladus',     // 大人男性（低めで知的な声例）
+    '料理人': 'Kore'             // 大人女性（温かく穏やかな声例）
+    // 他のNPCを追加したい場合はここに追記
+    // 例: '名前': { prebuilt: 'Zephyr', stylePrompt: 'in a soft and gentle voice' }
+};
+
 const initialVillageNpcBags = {
     '酒場主人': {
         gold: 500,
@@ -47,7 +67,25 @@ const initialVillageNpcBags = {
 
 const npcConfigs = {};
 
+// === トーン制御共通プロンプト（全NPCに適用） ===
+const commonTonePrompt = `
+【トーン制御（必須・厳守）】
+応答の話し言葉部分は、必ず各文（または意味単位）ごとにトーンを指定するタグで囲んでください。
+タグ形式: <tone=トーン名>文の内容</tone>
 
+使用可能なトーン名（英語・小文字推奨）:
+excited, happy, cheerful, gentle, shy, embarrassed, calm, serious, sad, angry, surprised, whisper, shout, playful, teasing, warm, cold, worried, relieved など（性格に合った自然なものを選ぶ）。
+
+例:
+<tone=excited>わーい！すごいね！</tone><tone=shy>…えへへ、ありがとう…</tone><tone=calm>次は何しようか。</tone>
+
+- タグは話し言葉の直前に必ず挿入。
+- 行動描写や(*)はタグの外に。
+- 複数文が同じトーンならまとめて1つのタグでOK。
+- タグは絶対にプレイヤーに見せないでください（ゲーム側で除去されます）。
+- 性格・好感度・状況に合ったトーンを選び、自然な感情表現を強化してください。
+
+`.trim();
 
 
 // === 共通プロンプト（最重要：バッグ・贈り物を最優先でトップに配置） ===
@@ -259,6 +297,7 @@ function createNpc(name, pattern) {
         character_description: pattern.desc,
         system_prompt: `
 ${commonBagPrompt}
+${commonTonePrompt}
 
 あなたは${name}です。
 
@@ -301,6 +340,7 @@ npcConfigs[lunaName] = {
     character_description: "プレイヤーの幼なじみで優しく支えてくれる少女。記憶を失ったプレイヤーを心配し、いつも励ましてくれる。少し照れ屋で、プレイヤーのことが大好き。",
     system_prompt: `
 ${commonBagPrompt}
+${commonTonePrompt}
 ${commonQuestPrompt}
 
 あなたはルナです。プレイヤーの幼なじみで、優しくて少し照れ屋な少女です。
@@ -360,6 +400,7 @@ npcConfigs[kaitoName] = {
     character_description: "プレイヤーの幼なじみで元気で頼りになる少年。幼い頃からプレイヤーやルナと一緒に遊んで育った仲で、信頼できる存在として振る舞っている。",
     system_prompt: `
 ${commonBagPrompt}
+${commonTonePrompt}
 ${commonQuestPrompt}
 
 あなたはカイトです。プレイヤーの幼なじみで、表面上は明るく頼りになる少年です。

@@ -636,26 +636,34 @@ async function submitChatAndGifts() {
 function changeAiProvider() {
     const currentProvider = localStorage.getItem('aiProvider') || 'player2';
     const hasOpenRouterKey = !!localStorage.getItem('openRouterApiKey');
+    const hasGeminiKey = !!localStorage.getItem('geminiApiKey');
 
-    let msg = `現在のAIプロバイダー: ${currentProvider === 'openrouter' ? 'OpenRouter' : 'Player2'}\n`;
+    let msg = `現在のテキスト生成AIプロバイダー: ${currentProvider === 'openrouter' ? 'OpenRouter' : 'Player2（デフォルト）'}\n`;
     if (currentProvider === 'openrouter') {
         msg += `（OpenRouter APIキー: ${hasOpenRouterKey ? '登録済み' : '未登録'}）\n`;
     }
-    msg += '\n何をしますか？\n\n';
+    msg += `\n音声生成（TTS）用Gemini APIキー: ${hasGeminiKey ? '登録済み' : '未登録'}\n`;
+    msg += `(Geminiは音声生成専用です。テキスト生成には使用されません)\n\n`;
+
+    msg += '何をしますか？\n\n';
     msg += '1 = Player2 に切り替える（デフォルト）\n';
     msg += '2 = OpenRouter に切り替える\n';
-    msg += '3 = OpenRouter APIキーのみ変更・入力する（プロバイダーは変更せず）\n';
+    msg += '3 = OpenRouter APIキーのみ変更・入力する\n';
     msg += '4 = OpenRouter APIキーを削除する\n\n';
+    msg += '5 = Gemini APIキー（音声用）を入力・変更する\n';
+    msg += '6 = Gemini APIキー（音声用）を削除する\n\n';
     msg += '番号を入力してください';
 
     const choice = prompt(msg, "1");
 
+    // === Player2 切り替え ===
     if (choice === "1") {
         localStorage.setItem('aiProvider', 'player2');
-        better_alert("AIプロバイダーを Player2 に変更しました", 'success');
+        better_alert("テキスト生成AIを Player2 に変更しました", 'success');
     }
+
+    // === OpenRouter 関連 ===
     else if (choice === "2") {
-        // OpenRouterに切り替え
         let key = localStorage.getItem('openRouterApiKey');
 
         if (!key) {
@@ -677,10 +685,9 @@ function changeAiProvider() {
         }
 
         localStorage.setItem('aiProvider', 'openrouter');
-        better_alert("AIプロバイダーを OpenRouter に変更しました", 'success');
+        better_alert("テキスト生成AIを OpenRouter に変更しました", 'success');
     }
     else if (choice === "3") {
-        // キーだけ変更（現在のプロバイダーは維持）
         const newKey = prompt(
             "新しいOpenRouter APIキーを入力してください\n" +
             "(https://openrouter.ai/keys から取得)\n" +
@@ -696,32 +703,56 @@ function changeAiProvider() {
         localStorage.setItem('openRouterApiKey', newKey.trim());
         better_alert("OpenRouter APIキーを更新しました", 'success');
 
-        // 現在のプロバイダーがOpenRouterなら即時反映を通知
         if (currentProvider === 'openrouter') {
             better_alert("次回のNPC会話から新しいキーが使用されます", 'basic');
         }
     }
     else if (choice === "4") {
-        // キー削除
         if (hasOpenRouterKey) {
             localStorage.removeItem('openRouterApiKey');
             better_alert("OpenRouter APIキーを削除しました", 'success');
 
-            // 現在OpenRouter使用中ならPlayer2に強制切り替え
             if (currentProvider === 'openrouter') {
                 localStorage.setItem('aiProvider', 'player2');
-                better_alert("APIキーがなくなったため、Player2に自動切り替えしました", 'warning');
+                better_alert("APIキーがなくなったため、テキスト生成AIをPlayer2に自動切り替えしました", 'warning');
             }
         } else {
             better_alert("登録されているOpenRouter APIキーはありません", 'basic');
         }
     }
+
+    // === Gemini APIキー（音声専用）関連 ===
+    else if (choice === "5") {
+        const newKey = prompt(
+            "Gemini APIキー（音声生成用）を入力してください\n" +
+            "(https://ai.google.dev/gemini-api から無料で取得できます)\n" +
+            "キャンセルで変更なし",
+            ""
+        );
+
+        if (newKey === null || newKey.trim() === '') {
+            better_alert("変更をキャンセルしました", 'basic');
+            return;
+        }
+
+        localStorage.setItem('geminiApiKey', newKey.trim());
+        better_alert("Gemini APIキー（音声用）を保存・更新しました", 'success');
+        better_alert("次回の音声生成から新しいキーが使用されます", 'basic');
+    }
+    else if (choice === "6") {
+        if (hasGeminiKey) {
+            localStorage.removeItem('geminiApiKey');
+            better_alert("Gemini APIキー（音声用）を削除しました", 'success');
+            better_alert("音声生成は停止します（テキスト表示は継続）", 'basic');
+        } else {
+            better_alert("登録されているGemini APIキーはありません", 'basic');
+        }
+    }
+
+    // === 無効な選択 ===
     else {
         better_alert("無効な選択です。キャンセルしました。", 'warning');
     }
-
-    // オプション：設定変更後に即時反映したい場合
-    // location.reload();
 }
 
 // === openNpcChat 関数全体（キーワード提案セクション追加版） ===
