@@ -33,7 +33,7 @@ const translations = {
     tax_today_prefix: "今日の税金:",
     tax_later_prefix: "{days}日後の税金:",
     game_over_text: "ゲームオーバー",    
-    tutorial_speaker: "ギルドマスター",
+    tutorial_speaker: "ナレーター",
     next_button: "次へ",
     start_game_button: "ゲーム開始",
     intro_title: "目覚め",
@@ -390,7 +390,7 @@ const translations = {
     tax_today_prefix: "Today's Tax:",
     tax_later_prefix: "Tax in {days} days:",
     game_over_text: "Game Over",
-    tutorial_speaker: "Guild Master",
+    tutorial_speaker: "narrator",
     next_button: "Next",
     start_game_button: "Start Game",    
     intro_title: "Awakening",
@@ -734,11 +734,11 @@ const translations = {
     tax_today_prefix: "今日稅金:",
     tax_later_prefix: "{days}天後稅金:",
     game_over_text: "遊戲結束",
-    tutorial_speaker: "公會大師",    
+    tutorial_speaker: "narrator",    
     next_button: "下一頁",
     start_game_button: "開始遊戲",
     intro_title: "甦醒",
-    intro_description: "你在失憶的狀態下醒來。<br>名為露娜與凱托的兩人，自稱是你的青梅竹馬，<br>並準備告訴你你的名字與過去。<br><br>請輸入遊戲中要使用的名字。",
+    intro_description: "你在失憶的狀態下醒來。<br>名為Luna與Kaito的兩人，自稱是你的青梅竹馬，<br>並準備告訴你你的名字與過去。<br><br>請輸入遊戲中要使用的名字。",
     intro_name_placeholder: "輸入名字...",
     intro_decide_button: "確定",
     loading_header: "公會大師 v1.0<br>載入中...",
@@ -2464,7 +2464,7 @@ const introDialogues = {
         text: "ああ、俺たちはずっとお前のそばにいる。<br>お前がギルドマスターになるなら、全力で力を貸すぜ。<br>昔みたいに、三人でやっていこう。"
     },
     {
-        speaker: "あなた",
+        speaker: "{player}",
         text: "……ありがとう。でも、正直……俺には何も思い出せない。<br>本当に、君たちが言うような俺なのか？"
     },
     {
@@ -2558,67 +2558,67 @@ const introDialogues = {
   ],
   zh: [  // Traditional Chinese
     {
-        speaker: "旁白",
+        speaker: "Narrator",
         text: "……在昏暗的房間裡，你緩緩睜開眼睛。<br>頭部沉重，隱隱作痛。你什麼也……什麼也想不起來。<br>連自己的名字都只模糊地浮現。"
     },
     {
-        speaker: "旁白",
+        speaker: "Narrator",
         text: "門被打開，兩個身影走了進來。<br>陌生的少女與少年——但他們看到你時，臉上露出安心表情。"
     },
     {
-        speaker: "露娜",
+        speaker: "Luna",
         image: "Images/ルナ.png",
         text: "{player}！太好了，你醒了……！<br>我們一直很擔心。真的……真的太好了……"
     },
     {
-        speaker: "凱托",
+        speaker: "Kaito",
         image: "Images/カイト.png",
         text: "喂，{player}。終於醒了啊。<br>醫生也說「不知道什麼時候會醒」呢。<br>……總之，沒事就好。"
     },
     {
-        speaker: "露娜",
+        speaker: "Luna",
         image: "Images/ルナ.png",
         text: "你是{player}，這間冒險者公會前任會長……你父親的兒子。<br>父親是人人敬重的偉大公會會長……<br>卻在幾年前的一個夜晚，被不知何人突然殺害了。"
     },
     {
-        speaker: "凱托",
+        speaker: "Kaito",
         image: "Images/カイト.png",
         text: "一點線索都沒有。只是像黑影一樣的傢伙一瞬間……<br>從那之後，冒險者們說「沒有值得信賴的領袖」，一個接一個離開公會。<br>現在只剩下我們三個人了。"
     },
     {
-        speaker: "露娜",
+        speaker: "Luna",
         image: "Images/ルナ.png",
-        text: "但你已經16歲了——可以繼承父親的年紀。<br>我們露娜和凱托是你的青梅竹馬，一直是最好的朋友。<br>一起重建公會吧。並且要查明父親之死的真相。"
+        text: "但你已經16歲了——可以繼承父親的年紀。<br>我們Luna和Kaito是你的青梅竹馬，一直是最好的朋友。<br>一起重建公會吧。並且要查明父親之死的真相。"
     },
     {
-        speaker: "凱托",
+        speaker: "Kaito",
         image: "Images/カイト.png",
         text: "對，我們會一直陪在你身邊。<br>如果你成為公會會長，我們會全力幫助你。<br>就像以前一樣，我們三個人一起努力吧。"
     },
     {
-        speaker: "你",
+        speaker: "{player}",
         text: "……謝謝。但老實說……我什麼都不記得了。<br>我真的是你們所說的那個人嗎？"
     },
     {
-        speaker: "露娜",
+        speaker: "Luna",
         image: "Images/ルナ.png",
         text: "沒事的，{player}。<br>醫生說記憶會一點一點回來。<br>現在有我們支持你……一起讓公會恢復昔日的榮光吧。"
     },
     {
-        speaker: "凱托",
+        speaker: "Kaito",
         image: "Images/カイト.png",
         text: "就這麼定了，{player}。<br>你是新的公會會長。<br>我們一起把這個公會重新振興起來吧。"
     },
     {
-        speaker: "旁白",
+        speaker: "Narrator",
         text: "你仍舊失憶，心中充滿困惑。<br>（我真的是他們所說的「{player}」嗎……？）<br>即便如此，現在只能向前邁進。你選擇繼承父親的遺志，復興公會。"
     },
     {
-        speaker: "旁白",
-        text: "就這樣，在露娜與凱托的幫助下，<br>你開始重建沒落的冒險者公會。<br><br>一邊追查父親之死的真相，一邊讓公會再次偉大——"
+        speaker: "Narrator",
+        text: "就這樣，在Luna與Kaito的幫助下，<br>你開始重建沒落的冒險者公會。<br><br>一邊追查父親之死的真相，一邊讓公會再次偉大——"
     },
     {
-        speaker: "旁白",
+        speaker: "Narrator",
         text: "你們的新冒險，現在開始……"
     }
   ]
