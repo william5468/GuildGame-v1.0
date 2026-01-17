@@ -199,6 +199,7 @@ const assetsToLoad = [
     "Images/slash_effects.png",
 
     // Audio folder (all audio)
+    "Audio/main_screen_bgm.mp3",
     "Audio/bgm.mp3",
     "Audio/yume.mp3",
     "Audio/battle.mp3",
@@ -225,6 +226,7 @@ const assetsToLoad = [
     "Audio/CounterAttack_F.mp3",
     "Audio/CounterAttack_M.mp3",
     "Audio/CounterAttack_trigger.mp3",
+    'Audio/Button_Click.mp3'
 ];
 const totalAssets = assetsToLoad.length;
 
@@ -2061,20 +2063,16 @@ const questTypeClasses = ['kill', 'discovery', 'escort', 'fetch', 'defense', 'tr
 
 const shopItems = [
 
-    {name:'HPポーション', cost:50, type:'potion', restore:'hp', amount:30},
-    {name:'MPポーション', cost:60, type:'potion', restore:'mp', amount:20},    
-    {name:'基本の剣', cost:50, stat:'strength', bonus:3},
-    {name:'鉄の剣', cost:100, stat:'strength', bonus:5},
-    {name:'鋼の剣', cost:200, stat:'strength', bonus:8},
-    {name:'見習いの書物', cost:40, stat:'wisdom', bonus:3},
-    {name:'賢者の巻物', cost:90, stat:'wisdom', bonus:5},
-    {name:'古代のグリモア', cost:180, stat:'wisdom', bonus:8},
-    {name:'革の手袋', cost:30, stat:'dexterity', bonus:2},
-    {name:'鎖のブラサー', cost:80, stat:'dexterity', bonus:4},
-    {name:'エルフのブーツ', cost:150, stat:'dexterity', bonus:7},
-    {name:'幸運のコイン', cost:60, stat:'luck', bonus:4},
-    {name:'兎の足', cost:120, stat:'luck', bonus:6},
-    {name:'四つ葉のクローバー', cost:240, stat:'luck', bonus:9},
+    {name:'HP potion', cost:100, type:'potion', restore:'hp', amount:30},
+    {name:'MP potion', cost:150, type:'potion', restore:'mp', amount:30},    
+    {name:'Small knife', cost:100, stat:'strength', bonus:3, enhancement: 5},
+    {name: 'Iron sword', cost:200, stat:'strength', bonus:6, enhancement: 10},
+    {name:'Beginner Scroll', cost:100, stat:'wisdom', bonus:3, enhancement: 5},
+    {name:'Magician Scroll', cost:200, stat:'wisdom', bonus:6, enhancement: 10},
+    {name:'Leather gloves', cost:100, stat:'dexterity', bonus:3, enhancement: 5},
+    {name:'Elf boots', cost:200, stat:'dexterity', bonus:6, enhancement: 10},
+    {name:'Lucky coin', cost:100, stat:'luck', bonus:3, enhancement: 5},
+    {name:'Four-leaf clover', cost:200, stat:'luck', bonus:3, enhancement: 10},
 
 ];
 
