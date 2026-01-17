@@ -1,4 +1,29 @@
 
+/* ゲーム全体にカスタムカーソルを適用（デフォルト矢印カーソルとして） */
+body {
+    cursor: url('Images/Cursor_Default.png'), auto !important;
+    /* fallback: 標準の矢印カーソル（画像が読み込めなかった場合） */
+}
+
+/* より確実に適用（ボタンやリンクなどでも上書きされないよう） */
+* {
+    cursor: inherit !important;
+}
+
+/* ローディング画面中も確実に適用 */
+#loadingOverlay {
+    cursor: url('Images/Cursor_Default.png'), auto !important;
+}
+
+/* オプション: ホットスポット調整（画像の先端がポインタになるよう調整） */
+/* Cursor_Default.png のポインタ先端が画像の左上から何ピクセルかにある場合に調整 */
+/* 例: 先端が画像の (8, 4) ピクセル位置にある場合 */
+body,
+#loadingOverlay {
+    cursor: url('Images/Cursor_Default.png') 8 4, auto !important;
+}
+
+
 h1 {color:#2c3e50; text-align:center;}
 h3 {color:#34495e;}
 div {margin-bottom:20px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
@@ -1222,86 +1247,105 @@ h1, h3, button, .adventurer-card, .quest-card {
     transform: translateY(-10px) scale(1.05);
     background: rgba(255, 255, 255, 0.25);
 }
-
-/* Loading Screen Styles */
 #loadingOverlay {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #000000;
-    z-index: 99999;
+    background: url('Images/loading_bg.jpg') no-repeat center center;
+    background-size: cover;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    padding: 60px 80px;
+    box-sizing: border-box;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.loading-title {
+    margin-top: 10vh;
+    font-size: 3.5rem;               /* 大きく派手にする */
+    color: #ffffe0;
+    text-align: center;
+    text-shadow: 
+        0 0 15px #ffcc00,
+        0 0 30px #ff9900,
+        0 0 50px #ff6600;
+    letter-spacing: 8px;
+    font-family: 'KaiTi', 'STKaiti', 'Noto Serif JP', serif; /* 可能なら中華風・和風のフォント */
+}
+
+.loading-bottom {
+    position: absolute;              /* absoluteでオーバーレイ全体に対して位置指定 */
+    bottom: 100px;                   /* ボタン類の下辺より少し上（ボタン登場時に重ならないよう調整） */
+    left: 50%;
+    transform: translateX(-50%);     /* 完全中央寄せ */
+    text-align: center;              /* 内部テキストも中央揃え */
+    pointer-events: none;            /* クリック干渉を防ぐ（ボタン登場時も問題なし） */
+    margin-bottom: 0;                /* 余分なマージン削除 */
+    
+    /* ボーダー・背景を完全に除去 */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.loading-text {
+    font-size: 2.8rem;
     color: #ffffff;
-    font-family: 'Hiragino Sans', 'Yu Gothic', Arial, sans-serif;
+    text-shadow: 0 0 12px #000000;
+    margin-bottom: 12px;
+    font-weight: bold;
+    
+    /* ボーダー・背景を完全に除去 */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-#loadingOverlay .loader h2 {
-    font-size: 2.8em;
-    margin-bottom: 40px;
-    text-shadow: 0 0 15px #898989;
+.load-percent {
+    font-size: 1.8rem;
+    color: #ffffff;
+    margin-top: 10px;
+    text-shadow: 0 0 8px #000000;
+    
+    /* ボーダー・背景を完全に除去 */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-#loadingOverlay .spinner {
-    border: 12px solid #222;
-    border-top: 12px solid #757575;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 1.5s linear infinite;
-    margin-bottom: 40px;
+.loading-buttons {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    background: transparent
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.loading-buttons button,
+.loading-buttons select {
+    margin: 8px;
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
 }
 
-#loadingOverlay #loadProgress {
-    font-size: 2.2em;
-    margin-bottom: 50px;
-    text-shadow: 0 0 10px #000;
+.loading-buttons button:hover {
+    background: rgba(0, 0, 0, 0.7);
 }
 
-#loadingOverlay #readyBtn {
-    padding: 18px 60px;
-    font-size: 2em;
-    background-color: #6b6b6b;
-    color: rgb(255, 255, 255);
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 25px #5e5e5e;
-    transition: all 0.3s ease;
-}
 
-#loadingOverlay #readyBtn:hover {
-    background-color: #7b7b7b;
-    box-shadow: 0 0 35px #737373;
-    transform: scale(1.05);
-}
-
-#loadingOverlay #skipIntroBtn {
-    padding: 18px 60px;
-    font-size: 2em;
-    background-color: #6b6b6b;
-    color: rgb(255, 255, 255);
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 25px #5e5e5e;
-    transition: all 0.3s ease;
-}
-
-#loadingOverlay #skipIntroBtn:hover {
-    background-color: #7b7b7b;
-    box-shadow: 0 0 35px #737373;
-    transform: scale(1.05);
-}
 
 
 /* Skill Grid - Horizontal Row of Square Icons */
@@ -2328,3 +2372,142 @@ h1, h3, button, .adventurer-card, .quest-card {
         transform: translateY(-12px);
     }
 }
+
+
+#loadingOverlay {
+    opacity: 1;
+    transition: opacity 1.2s ease-out;  /* スムーズなフェードアウト（1.2秒） */
+    pointer-events: auto;               /* フェード中もクリック可能（安全策） */
+}
+
+#loadingOverlay.fade-out {
+    opacity: 0;
+    pointer-events: none;               /* フェード完了後はクリック無効 */
+}
+
+
+
+/* 代わりに必要な要素だけ透明化（キャラクター画像の白背景除去など） */
+#introCharacterWrapper,
+#introCharacterImg {
+    background: transparent !important;
+    
+}
+
+#introCharacterImg {
+    opacity: 0;                    /* 初期状態は非表示（モーダル表示時にフェードイン） */
+    transition: opacity 0.5s ease-in-out !important;
+}
+
+
+
+/* ダイアログボックス内のテキスト専用強化（白テキスト + シャドウ） */
+#speakerName,
+#dialogueText {
+    background: transparent !important;
+    color: #ffffff !important;
+}
+
+/* 超広画面（1025px以上）でキャラクターが画面外（特に髪の部分が上にはみ出る）問題を解決 */
+/* キャラクター画像のみを底辺中央を基準に0.9倍に縮小（足元位置を固定しつつ上部を引き込む） */
+@media (min-width: 1025px) {
+    #introCharacterImg {
+        transform: scale(0.9) !important;
+        transform-origin: center bottom !important;
+    }
+}
+
+
+/* 小画面対応（固定サイズを維持しつつフィット） */
+@media (max-width: 1024px) {
+    #introModal > div {
+        width: 800px !important;
+    }
+    #introCharacterWrapper {
+        width: 500px !important;
+    }
+    #dialogueBox {
+        width: 750px !important;
+        padding: 30px !important;
+        bottom: 50px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #introModal > div {
+        width: 700px !important;
+    }
+    #introCharacterWrapper {
+        width: 450px !important;
+    }
+    #dialogueBox {
+        width: 650px !important;
+        padding: 25px !important;
+        bottom: 40px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #introModal > div {
+        width: 95vw !important;
+    }
+    #introCharacterWrapper {
+        width: 80% !important;
+    }
+    #dialogueBox {
+        width: 80vw !important;
+        padding: 20px !important;
+    }
+}
+#introModal::-webkit-scrollbar {
+  display: none; 
+}
+
+
+#introModal_inner::-webkit-scrollbar {
+  display: none; 
+}
+
+
+#stepName {
+    background: transparent !important;
+}
+
+
+#UI_buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.1); /* optional subtle background */
+}
+
+.ui-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 24px;
+    font-size: 18px;
+    font-family: sans-serif; /* or your game's font */
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+}
+
+.ui-button:hover {
+    background-color: #34495e;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ui-button i {
+    font-size: 1.6em;
+}
+
+

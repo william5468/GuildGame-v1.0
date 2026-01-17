@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <!-- === 更新された共通スタイル： <head> 内の重複した <style> を削除し、この1つの <style> に置き換えてください === -->
 <style>
 .sprite-wrapper {
@@ -51,30 +52,41 @@
     
 </head>
 <body>
+
         <!-- ローディング画面 -->
-    <div id="loadingOverlay">
-        <div class="loader">
-            <h2 data-i18n="loading_header">失われし冒険の旅 v1.0<br>読み込み中...</h2>
-            <div class="spinner"></div>
-            <p id="loadProgress">0%</p>
-        </div>
-        <button id="readyBtn" style="display:none;" onclick="startGame()" data-i18n="new_game_button">最初から始める</button>
+<div id="loadingOverlay">
+    <!-- ゲームタイトル（トップ中央） -->
+    <h1 class="loading-title" data-i18n="game_title">失われし冒険の旅 v1.0</h1>
+
+    <!-- 右下のローディング表示 -->
+    <div class="loading-bottom">
+        <div class="loading-text">NOW LOADING...</div>
+
+        <div class="load-percent" id="loadProgress">0%</div>
+    </div>
+
+    <!-- 読み込み完了後に表示されるボタン類（中央下寄せ） -->
+    <div class="loading-buttons" style="display:none">
+        <button id="readyBtn" onclick="startGame()" data-i18n="new_game_button">最初から始める</button>
         <br>
-        <button id="skipIntroBtn" style="display:none;" onclick="skipIntro()" data-i18n="continue_button">続きから始める</button>
+        <button id="skipIntroBtn"  onclick="skipIntro()" data-i18n="continue_button">続きから始める</button>
         <br>
-        <button id="changeAiProviderBtn" style="display:block;" onclick="changeAiProvider()">AI setting</button>
-        <br>  
-        <select id="langSelect" onchange="setLanguage(this.value)" style="padding:8px 12px; margin:5px; font-size:1em;">
-            <option value="en">Please Select Language</option>
+        <button id="changeAiProviderBtn "  onclick="changeAiProvider()">AI setting</button>
+        <br>
+        <select id="langSelect"  onchange="setLanguage(this.value)" style="padding:8px 12px; margin:10px; font-size:1em;">
+            <option value="">Please Select Language</option>
             <option value="zh">繁體中文</option>
             <option value="ja">日本語</option>
             <option value="en">English</option>
-        </select>      
-        <br>  
+        </select>
     </div>
+</div>
 
     <h2 data-i18n="game_title">失われし冒険の旅 v1.0</h2>
-
+    <audio id="main_screen_bgm" loop preload="auto">
+        <source src="Audio/main_screen_bgm.mp3" type="audio/mpeg">
+        ブラウザがオーディオをサポートしていません。
+    </audio>
     <!-- メインBGM -->
     <audio id="bgm" loop preload="auto">
         <source src="Audio/bgm.mp3" type="audio/mpeg">
@@ -104,60 +116,98 @@
     <audio id="battleBgm2" loop preload="auto">
         <source src="Audio/battle2.mp3" type="audio/mpeg">
     </audio>
-    <div id="introModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center;">
-        <div>
-            
-        <!-- ステップ1: 名前入力 (translatable version) -->
-        <div id="stepName" style="display:none; text-align:center;">
+<div id="introModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center; padding:10px; box-sizing:border-box; overflow-y:auto;">
+    <div id="introModal_inner" style="max-height:92vh; overflow-y:auto; width:100%; max-width:900px; margin:0 auto; background:#484848; border:4px solid #535353; border-radius:15px; padding:0px; color:white;  box-sizing:border-box; display:flex; flex-direction:column; justify-content:center;">
+        
+        <!-- ステップ1: 名前入力 -->
+        <div id="stepName" style="text-align:center;">
             <h1 data-i18n="intro_title" style="color:#ffffff; margin-bottom:30px; font-size:2.2em;">目覚め</h1>
-            <p data-i18n="intro_description" style="font-size:1.3em; line-height:1.8;">
-                あなたは記憶を失った状態で目を覚ました。<br>
-                ルナとカイトという二人が、あなたの幼なじみだと名乗り、<br>
-                あなたの名前や過去を教えてくれようとしています。<br><br>
+            <p data-i18n="intro_description" style="font-size:1.3em; line-height:1.8; margin-bottom:30px;">
                 ゲーム内で使用するあなたの名前を入力してください。
             </p>
             <input type="text" id="playerNameInput" data-i18n-placeholder="intro_name_placeholder" placeholder="名前を入力..." maxlength="12" 
-                style="padding:15px; font-size:1.2em; width:300px; margin:20px 0; border-radius:8px; border:none; text-align:center;">
+                style="padding:15px; font-size:1.2em; width:90%; max-width:300px; margin:20px 0; border-radius:8px; border:none; text-align:center; background:#333; color:white;">
             <br>
             <button onclick="startIntroDialogue()" data-i18n="intro_decide_button"
-                style="padding:12px 40px; font-size:1.2em; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer; margin-top:20px;">
+                style="padding:14px 50px; font-size:1.3em; background:#fcfcfc00; color:white; border:none; border-radius:12px; cursor:pointer; margin-top:20px; box-shadow:0 6px 20px rgba(252, 252, 252, 0.599);">
                 決定
             </button>
         </div>
+        
+        <!-- ステップ2: 対話シーン（クリックエリア拡大 + 継続インジケーター追加） -->
+        <div id="stepDialogue" style="display:none; position:relative; width:100%; height:100%; min-height:80vh; text-align:center; cursor:pointer;">
+            <!-- 背景（温かい部屋の画像） -->
+            <div id="introBG" style="position:absolute; top:0; left:0; width:100%; height:100%; background:url('Images/intro_bg.jpg') center/cover no-repeat; opacity:0.9; pointer-events:none;"></div>
             
-            <!-- ステップ2: 対話シーン -->
-            <div id="stepDialogue" style="display:none;">
-                <h1 data-i18n="intro_title" style="color:#ffffff; text-align:center; margin-bottom:30px; font-size:2.2em;">目覚め</h1>
+            <!-- キャラクター画像（中央配置、大きく） -->
+            <div id="introCharacterWrapper" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; max-width:550px; pointer-events:none; z-index:1; border:none">
+                <img id="introCharacterImg" src="" alt="キャラクター" style="width:100%; height:80%;  border:none">
+            </div>
+
+            <!-- 半透明ダイアログボックス（下部中央） -->
+            <div id="dialogueBox" style="position:absolute; bottom:40px; left:50%; transform:translateX(-50%); width:80%; max-width:900px; background:rgba(0,0,0,0.65);  border-radius:10px; padding:25px 35px; color:white; box-shadow:0 10px 40px rgba(0,0,0,0.8); z-index:2; pointer-events:none;">
+                <div id="speakerName" style="font-size:1.5em; font-weight:bold; margin-bottom:12px; color:#ffccaa; text-shadow:0 0 8px rgba(255,204,170,0.5);"></div>
+                <div id="dialogueText" style="font-size:1em; line-height:1.6; min-height:80px; "></div>
                 
-                <div id="dialogueBox" style="background:#747474; padding:20px; border-radius:12px; min-height:300px; font-size:1.2em; line-height:1.8;">
-                    <!-- ここにJSで対話が挿入されます -->
-                </div>
-                
-                <div style="text-align:center; margin-top:30px;">
-                    <button id="nextBtn" onclick="nextDialogue()" 
-                            style="padding:12px 40px; font-size:1.2em; background:#5f5f5f; color:white; border:none; border-radius:8px; cursor:pointer;">
-                        次へ
-                    </button>
-                </div>
+                <!-- 継続インジケーター（タイピング完了時に表示） -->
+                <div id="continueIndicator" style="position:absolute; bottom:15px; right:25px; font-size:1em; color:#ffffff; opacity:0; transition:opacity 0.5s ease; pointer-events:none; background: transparent">▶</div>
             </div>
         </div>
-    </div>    
-    <div id="day"></div>
-    <div class="buttons">
-        
-        <button onclick="playTutorialDialogue()" data-i18n="tutorial">説明</button>
-
-
-
-        <button onclick="openSlotMenu('save')" data-i18n="save">保存</button>
-        <button onclick="openSlotMenu('load')" data-i18n="load">読み込み</button>
-        <button onclick="toggleShop()" data-i18n="shop">店</button>
-        <button onclick="toggleCharacters()" data-i18n="characters">キャラクター</button>
-        <button onclick="toggleNPCs()" data-i18n="npcs">NPC</button>
-        <button onclick="toggleFacilities()" data-i18n="facilities">ギルド周辺</button>
-        <button onclick="toggleGuildQuests()" data-i18n="guild_quests">ギルドクエスト投稿</button>
-        <button onclick="playDay()" data-i18n="end_day">日終了 & 冒険者派遣</button>
     </div>
+</div>
+
+<!-- index.html に追加/置き換え（introModalの下に配置） -->
+
+    <div id="day"></div>
+<div class="buttons" id="UI_buttons">
+    <button class="ui-button" onclick="playTutorialDialogue()">
+        <i class="fas fa-circle-info"></i>
+        <span data-i18n="tutorial">説明</span>
+    </button>
+
+    <button class="ui-button" onclick="openSlotMenu('save')">
+        <i class="fas fa-save"></i>
+        <span data-i18n="save">保存</span>
+    </button>
+
+    <button class="ui-button" onclick="openSlotMenu('load')">
+        <i class="fas fa-folder-open"></i>
+        <span data-i18n="load">読み込み</span>
+    </button>
+
+    <button class="ui-button" onclick="toggleShop()">
+        <i class="fas fa-store"></i>
+        <span data-i18n="shop">店</span>
+    </button>
+<button class="ui-button" onclick="toggleInventory()">
+    <i class="fas fa-bag-shopping"></i>
+    <span data-i18n="inventory">インベントリ</span>
+</button>
+    <button class="ui-button" onclick="toggleCharacters()">
+        <i class="fas fa-users"></i>
+        <span data-i18n="characters">キャラクター</span>
+    </button>
+
+    <button class="ui-button" onclick="toggleNPCs()">
+        <i class="fas fa-comment-dots"></i>
+        <span data-i18n="npcs">NPC</span>
+    </button>
+
+    <button class="ui-button" onclick="toggleFacilities()">
+        <i class="fas fa-building"></i>
+        <span data-i18n="facilities">ギルド周辺</span>
+    </button>
+
+    <button class="ui-button" onclick="toggleGuildQuests()">
+        <i class="fas fa-scroll"></i>
+        <span data-i18n="guild_quests">ギルドクエスト投稿</span>
+    </button>
+
+    <button class="ui-button" onclick="playDay()">
+        <i class="fas fa-fast-forward"></i>
+        <span data-i18n="end_day">日終了 & 冒険者派遣</span>
+    </button>
+</div>
 
     <div class="main">
         <div class="left">
@@ -348,6 +398,17 @@
         </div>
     </div>
 </div>
+
+<!-- インベントリモーダル（中央ポップアップ版） -->
+<div id="inventoryModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
+    <div class="modal-content" style="max-width:900px; width:100%; max-height:90vh; background:#222; border-radius:15px; padding:20px; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+        <h2 style="text-align:center; color:#ffd700; margin-bottom:20px; text-shadow:0 0 10px rgba(0,0,0,0.8);" data-i18n="inventory_title">インベントリ</h2>
+        <div id="inventoryContent" style="padding:10px;"></div>
+        <div class="modal-buttons" style="text-align:center; margin-top:30px;">
+            <button onclick="closeInventory()" data-i18n="close" style="padding:12px 40px; font-size:1.2em; background:#c0392b; border:none; border-radius:8px; color:white; cursor:pointer;">閉じる</button>
+        </div>
+    </div>
+</div>
     <!-- Load translations first -->
     <script src="player2.js"></script>
     
@@ -448,6 +509,8 @@
   console.log('Breathing animation observer active – stable gray background applied');
 })();
 </script>
+
+
 </body>
 
 

@@ -386,26 +386,61 @@ function postTrade(cityId) {
     showMainSelection();
     updateDisplays();
 }
+// updateProgress() の完全版（テキスト充填に完全対応）
 function updateProgress() {
     const percent = Math.round((loadedCount / totalAssets) * 100);
-    const progressEl = document.getElementById('loadProgress');
-    if (progressEl) {
-        progressEl.textContent = percent + '%';
+
+    // パーセントテキスト更新
+    const progressTextEl = document.getElementById('loadProgress');
+    if (progressTextEl) {
+        progressTextEl.textContent = percent + '%';
     }
+
+    // 輝く文字の充填幅更新（左から右へスムーズに広がる）
+    const loadingFillContainer = document.getElementById('loadingFillContainer');
+    if (loadingFillContainer) {
+        loadingFillContainer.style.width = percent + '%';
+    }
+
+    // 100% 到達時の処理
     if (loadedCount >= totalAssets) {
-        document.querySelector('.loader').style.display = 'none';
+        // 「NOW LOADING...」とパーセント全体をフェードアウト
+        const loadingBottom = document.querySelector('.loading-bottom');
+        if (loadingBottom) {
+            loadingBottom.style.opacity = '0';
+            loadingBottom.style.transition = 'opacity 0.8s ease';
+            setTimeout(() => {
+                loadingBottom.style.display = 'none';
+            }, 800);
+        }
+
+        // ボタン類をフェードイン
+        const loadingButtons = document.querySelector('.loading-buttons');
+        if (loadingButtons) {
+            loadingButtons.style.opacity = '0';
+            loadingButtons.style.display = 'flex';
+            loadingButtons.style.flexDirection = 'column';
+            loadingButtons.style.alignItems = 'center';
+            setTimeout(() => {
+                loadingButtons.style.opacity = '1';
+                loadingButtons.style.transition = 'opacity 1s ease';
+            }, 200);
+        }
+
+        // 個別ボタン表示（互換性確保）
         const readyBtn = document.getElementById('readyBtn');
         if (readyBtn) readyBtn.style.display = 'block';
         const skipIntroBtn = document.getElementById('skipIntroBtn');
         if (skipIntroBtn) skipIntroBtn.style.display = 'block';
+
     }
 }
-
 function preloadAssets() {
     if (totalAssets === 0) {
         updateProgress();
         return;
     }
+
     assetsToLoad.forEach(url => {
         if (url.match(/\.(mp3|ogg|wav)$/i)) {
             const audio = new Audio();
@@ -415,6 +450,7 @@ function preloadAssets() {
                 updateProgress();
             });
             audio.addEventListener('error', () => {
+                // エラーでもカウントを進めてブロックしない
                 loadedCount++;
                 updateProgress();
             });
@@ -512,43 +548,79 @@ function Render_Mainadventurer() {
 }
 
 
+// javascript.js の startGame() と skipIntro() を以下に置き換え
+
 function startGame() {
     const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.style.display = 'none';
-    const stepName = document.getElementById('stepName');
-    if (stepName) stepName.style.display = 'block';
+    if (!overlay) return;
+    const introModal = document.getElementById('introModal');
+    if (introModal) {
+        introModal.style.display = 'flex';
+        introModal.classList.add('visible');  // フェードイン開始
+    }    
+    // ローディングオーバーレイをフェードアウト開始
+    overlay.classList.add('fade-out');
 
-    Render_Mainadventurer();
-    if (!gameState.dungeonCooldowns) {
-    gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
+    // フェードアウト完了後にイントロモーダルをフェードイン表示 + 初期化処理
+    overlay.addEventListener('transitionend', function handler() {
+        overlay.style.display = 'none';  // 完全に非表示
+        overlay.removeEventListener('transitionend', handler);
+
+
+
+        // ゲーム初期化処理（ここで実行して問題なし）
+        Render_Mainadventurer();
+        updateDisplays();
+
+        if (!gameState.dungeonCooldowns) {
+            gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
+        }
+        console.log("CurrentLang is:" + currentLang);
+        currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+        currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+        currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+        currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
+
+        gameState.tradeCityStates = tradeCities.map(city => ({
+            ...city,
+            event: getRandomEvent(),
+            variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {})
+        }));
+
+        gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+        gameState.materialPrices = {};
+    });
 }
-    console.log("CurrentLang is:"+currentLang);
-    currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
-    currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
-    currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
-    currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
-    // === javascript.js の gameState 初期化部分（startGame() 内や新ゲーム開始時に追加） ===
-gameState.tradeCityStates = tradeCities.map(city => ({
-    ...city,
-    event: getRandomEvent(),
-    variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
-}));
 
-gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
-gameState.materialPrices = {}; // ギルドショップ用（後述）
-
-    
-}
-
-function skipIntro(){
+function skipIntro() {
+            // セーブデータ読み込み + 表示更新
+        loadGame(1);
+        updateDisplays();
+        crossfadeTo('bgm', 5000);
     const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.style.display = 'none';
-    document.getElementById('introModal').style.display = 'none';
-    console.log("CurrentLang is:"+currentLang);
-    
-    loadGame(1);
-    updateDisplays();
+    if (!overlay) return;
 
+    // ローディングオーバーレイをフェードアウト開始
+    overlay.classList.add('fade-out');
+
+    // フェードアウト完了後にゲームシーンをフェードイン表示
+    overlay.addEventListener('transitionend', function handler() {
+        overlay.style.display = 'none';
+        overlay.removeEventListener('transitionend', handler);
+
+        // イントロモーダルを確実に非表示（スキップなので）
+        const introModal = document.getElementById('introModal');
+        if (introModal) {
+            introModal.style.display = 'none';
+        }
+
+        // ゲーム本体をフェードイン表示
+        document.body.classList.add('game-visible');
+
+        console.log("CurrentLang is:" + currentLang);
+
+
+    });
 }
 
 /* ページ読み込み後すぐにプリロード開始 */
@@ -578,7 +650,8 @@ const counterFSound = new Audio('Audio/CounterAttack_F.mp3');
 const counterTriggerSound = new Audio('Audio/CounterAttack_trigger.mp3');
 
 const levelupSound = new Audio('Audio/levelup.mp3');
-
+const buttonClickSound = new Audio('Audio/Button_Click.mp3');
+buttonClickSound.volume = 0.3; // 0.0 ~ 1.0（例: 50%）
 
 let currentCharIndex = 0;
 let selectedMix1 = null;
@@ -1535,12 +1608,14 @@ function addToInventory(template, qty = 1) {
 
     if (template.stat) {
         // Equipment: add individually (each gets a unique ID, no stacking)
+        // 修正点: 各装備品に qty: 1 を明示的に追加（インベントリ表示用）
+        // これにより renderInventory() の filter(item => item.qty > 0) が装備品も通過する
         for (let i = 0; i < qty; i++) {
-            const newItem = { ...template, id: gameState.nextId++ };
+            const newItem = { ...template, id: gameState.nextId++, qty: 1 };
             gameState.inventory.push(newItem);
         }
     } else {
-        // Stackables (potions, materials, consumables): stack by name
+        // Stackables (potions, materials, consumables): stack by name（変更なし）
         let stack = gameState.inventory.find(i => i.name === name);
         if (stack) {
             // Existing stack – just increase the quantity
@@ -2060,6 +2135,10 @@ function generateTempAdventurer(){
         primary: primary,
         critChance: 10,
         Friendliness: 50,
+        bag:
+            {gold: 300,
+            items: [] // Empty items array – matches village NPC structure
+        },
     };
     
     // Target level = floor(reputation / 20), minimum 1 → matches (reputation / 10)/2
@@ -3331,6 +3410,9 @@ if (q.buy) {
 
         survivingAdvs.push(adventurer);
         if (!adventurer.temp) {
+            gold_to_adventurer = 0.2 * q.reward;
+            adventurer.bag.gold += gold_to_adventurer;
+            console.log(gold_to_adventurer+" is given to "+adventurer.name);
             permanentCount++;
         }
 
@@ -6745,6 +6827,7 @@ document.addEventListener('dragstart', e => {
 function crossfadeTo(newBgmId, duration = 2000) {
     const newBgm = document.getElementById(newBgmId);
     const currentBgms = [
+        document.getElementById('main_screen_bgm'),
         document.getElementById('bgm'),
         document.getElementById('introBgm'),
         document.getElementById('battleBgm'),
@@ -6796,19 +6879,35 @@ document.addEventListener('dragend', e => {
 });
 
 startDay();
-
+document.getElementById('main_screen_bgm').volume = 0.2;
 document.getElementById('bgm').volume = 0.2;
-document.getElementById('introBgm').volume = 0.3;  // ← 新規追加
+document.getElementById('introBgm').volume = 0.5;  // ← 新規追加
 document.getElementById('battleBgm').volume = 0.3;
 document.getElementById('battleBgm2').volume = 0.3;
 document.getElementById('dialogueBgm').volume = 0.1;
 let audioPlayed = false;
-document.addEventListener('click', function() {
+
+
+
+// ページ全体のクリックを監視
+document.addEventListener('click', function(event) {
+    // skipIntroBtn（またはその子要素）がクリックされたかをチェック
+    const isSkipBtn = event.target.id === 'skipIntroBtn' || 
+                      event.target.closest('#skipIntroBtn');
+
+    // 「続きから始める」ボタンがクリックされた場合 → BGMを再生しない
+    if (isSkipBtn) {
+        // 何もしない（BGM再生をスキップ）
+        return;
+    }
+
+    // それ以外の場所がクリックされた場合 → まだBGM再生されていないなら再生
     if (!audioPlayed) {
-        document.getElementById('bgm').play().catch(e => console.log('BGM再生エラー:', e));
+        const bgm = document.getElementById('main_screen_bgm');
+        bgm.play().catch(e => console.log('BGM再生エラー:', e));
         audioPlayed = true;
     }
-}, { once: true });
+});
 
 // 横スクロール制御（利用可能冒険者） – 端近くで左クリック（ホールド）して3カードずつページングスクロール版
 const scrollContainer = document.getElementById('availableAdvs');
@@ -6935,130 +7034,185 @@ let dialogueIndex = 0;
 
 
 // startIntroDialogue 関数を以下のように修正
+// startIntroDialogue() を更新（魅力的な新しいダイアログを言語対応で定義）
 function startIntroDialogue() {
-    playerName = document.getElementById('playerNameInput').value.trim();
+    let playerName = document.getElementById('playerNameInput').value.trim();
     if (playerName === "") {
         better_alert("名前を入力してください！","warning");
         return;
     }
     gameState.playerName = playerName;
-    // Use language-specific intro
+
+    // 言語対応のイントロダイアログを取得
     const currentIntro = introDialogues[currentLang] || introDialogues.ja;
-    dialogues = currentIntro;  // Temporarily assign to global dialogues variable used by render/next
-    document.getElementById('stepName').style.display = 'none';
-    document.getElementById('stepDialogue').style.display = 'block';
-    
-    dialogueIndex = 0;
-    renderCurrentDialogue();
 
-    // ← ここから追加：イントロBGM再生
-    const mainBgm = document.getElementById('bgm');
-    const introBgm = document.getElementById('introBgm');
+    // クエスト/ゲームオーバー/誕生日と同じ形式に統一処理（{PLAYER}置換 + image対応）
+    const processedSequence = currentIntro.map(line => ({
+        speaker: line.speaker.replace('{PLAYER}', playerName),
+        text: line.text.replace(/{PLAYER}/g, playerName),
+        image: line.image || null
+    }));
 
-    // もしメインBGMが再生中だったら止める（ほぼありえないが念のため）
-    if (!mainBgm.paused) {
-        mainBgm.pause();
+    // キューに追加（他のダイアログと同じqueueシステムを使用）
+    completionQueue.push(processedSequence);
+
+    // 再生中でなければ即開始（イントロ専用BGMにクロスフェード）
+    if (!isPlayingDialogue) {
+        crossfadeTo('introBgm', 2000);
+        playNextQuestDialogue();
     }
-
-    // イントロBGMを最初から再生
-    introBgm.currentTime = 0;
-    introBgm.play().catch(e => console.log('イントロBGM再生エラー:', e));
-    // ← ここまで追加
 }
 
-// renderCurrentDialogue 関数内の「ゲーム開始」ボタンの処理を以下のように修正
+let currentTypedText = '';
+
+// renderCurrentDialogue() 更新（継続インジケーターにパルスアニメーション追加 + ログ追加でデバッグしやすく）
 function renderCurrentDialogue() {
-    const box = document.getElementById('dialogueBox');
-    let current = dialogues[dialogueIndex];
-    
-    let text = current.text.replace(/{player}/g, playerName);
-    
-    let html = `<p><strong>${current.speaker}:</strong><br>${text}</p>`;
-    
-    if (current.image) {
-        html = `<img src="${current.image}" style="width:120px; height:auto; float:left; margin-right:20px; border-radius:10px;">` + html;
-    }
-    
-    box.innerHTML = html;
+    console.log('renderCurrentDialogue called - index:', dialogueIndex);
 
-    // 次へ／ゲーム開始ボタンの処理（常にnextDialogueを紐づけ、テキストのみ変更）
-    const nextBtn = document.getElementById('nextBtn');
-if (nextBtn) {
-        if (dialogueIndex === dialogues.length - 1) {
-            nextBtn.textContent = t('start_game_button', {});  // We'll add this key below
-        } else {
-            nextBtn.textContent = t('next_button', {});
-        }
-        nextBtn.onclick = nextDialogue;
-    
-
-    }
-}
-
-function nextDialogue() {
-    // 既にダイアログが終了している場合は何もしない（複数回実行防止）
-    if (dialogueIndex >= dialogues.length) {
+    const current = dialogues[dialogueIndex];
+    if (!current) {
+        console.error('No dialogue at index', dialogueIndex);
         return;
     }
 
+    const fullText = current.text.replace(/{player}/g, playerName);
+
+    // 話者名
+    document.getElementById('speakerName').textContent = current.speaker + ":";
+
+    // キャラクター画像
+    const charImg = document.getElementById('introCharacterImg');
+    if (current.image) {
+        charImg.src = current.image;
+        charImg.style.display = 'block';
+    } else {
+        charImg.style.display = 'none';
+    }
+
+    // 継続インジケーター非表示（タイピング開始時）
+    const continueIndicator = document.getElementById('continueIndicator');
+    continueIndicator.style.opacity = '0';
+    continueIndicator.style.animation = 'none';  // リセット
+
+    // タイピングアニメーション
+    const dialogueTextEl = document.getElementById('dialogueText');
+    dialogueTextEl.innerHTML = '';
+    currentTypedText = '';
+    
+    clearInterval(typingInterval);
+    let charIndex = 0;
+    typingInterval = setInterval(() => {
+        if (charIndex < fullText.length) {
+            if (fullText.substr(charIndex, 4) === '<br>') {
+                currentTypedText += '<br>';
+                charIndex += 4;
+            } else {
+                currentTypedText += fullText[charIndex];
+                charIndex++;
+            }
+            dialogueTextEl.innerHTML = currentTypedText;
+        } else {
+            clearInterval(typingInterval);
+            typingInterval = null;  // 明確にnullに
+            // タイピング完了 → 継続インジケーター表示 + パルスアニメーション
+            continueIndicator.style.opacity = '1';
+            continueIndicator.style.animation = 'pulse 1.5s infinite ease-in-out';
+            console.log('Typing finished for index', dialogueIndex);
+        }
+    }, 35);
+
+    // クリックハンドラー（#stepDialogue 全体）
+    const stepDialogue = document.getElementById('stepDialogue');
+    stepDialogue.onclick = (e) => {
+        console.log('Click detected on stepDialogue');
+
+        if (typingInterval) {
+            console.log('Typing in progress - skipping to full text');
+            clearInterval(typingInterval);
+            typingInterval = null;
+            dialogueTextEl.innerHTML = fullText;
+            continueIndicator.style.opacity = '1';
+            continueIndicator.style.animation = 'pulse 1.5s infinite ease-in-out';
+        } else {
+            console.log('Typing finished - advancing to next dialogue');
+            nextDialogue();
+        }
+    };
+}
+
+// nextDialogue() 更新（インクリメントを先に + 詳細ログ追加 + 安全性の向上）
+function nextDialogue() {
+    console.log('nextDialogue called - current index before increment:', dialogueIndex, 'total dialogues:', dialogues.length);
+
     dialogueIndex++;
 
-    if (dialogueIndex < dialogues.length) {
-        renderCurrentDialogue();
-    } else {
-        // 最終ダイアログから進んだ場合 → ゲーム開始処理
+    console.log('Index incremented to:', dialogueIndex);
+
+    if (dialogueIndex >= dialogues.length) {
+        console.log('End of dialogues reached - starting game');
         document.getElementById('introModal').style.display = 'none';
 
-        // === クロスフェード処理（急なBGM切り替えを防止）===
+        // BGMクロスフェード（変更なし）
         const introBgm = document.getElementById('introBgm');
         const mainBgm = document.getElementById('bgm');
-
-        // メインBGMを巻き戻してボリューム0で再生開始
         mainBgm.currentTime = 0;
         mainBgm.volume = 0;
         mainBgm.play().catch(e => console.log('メインBGM再生エラー:', e));
 
-        const fadeDuration = 2500;  // 2.5秒でクロスフェード（調整可能）
-        const introInitialVol = introBgm.volume;  // 通常0.3
+        const fadeDuration = 2500;
+        const introInitialVol = introBgm.volume;
         const targetVol = 0.3;
         const startTime = Date.now();
 
         const crossfadeInterval = setInterval(() => {
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / fadeDuration, 1);
-
-            // イントロをフェードアウト
             introBgm.volume = introInitialVol * (1 - progress);
-
-            // メインをフェードイン
             mainBgm.volume = targetVol * progress;
-
             if (progress >= 1) {
                 clearInterval(crossfadeInterval);
-                // フェード完了後、イントロを停止・リセット
                 introBgm.pause();
                 introBgm.currentTime = 0;
-                // メインはフルボリュームでループ継続
                 mainBgm.volume = targetVol;
             }
-        }, 50);  // 50msごとに更新（滑らかで負荷も軽い）
+        }, 50);
 
         audioPlayed = true;
-
-        // ゲーム本編開始
         startDay();
+    } else {
+        console.log('Rendering next dialogue at index:', dialogueIndex);
+        renderCurrentDialogue();
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // イベント委任で全クリックを捕捉
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+
+        // 条件: クリックされた要素（またはその親）が .loading-buttons の中にある場合のみ
+        if (target.closest('.loading-buttons')) {
+            // 音声を最初から再生（連打対応）
+            buttonClickSound.currentTime = 0;
+            buttonClickSound.play().catch(err => {
+                console.warn('Button click sound play failed (possibly autoplay policy):', err);
+            });
+        }
+    });
+});
+
+
 // ゲームロード時に自動表示（例: ページ読み込み後やstartDay()の前に）
 window.addEventListener('load', function() {
-    if (gameState.day === 1) { // 初回起動判定
-        document.getElementById('introModal').style.display = 'flex';
-    }})
-    if (!gameState.activeQuests) {
+
+if (!gameState.activeQuests) {
     gameState.activeQuests = {};  
     
 }
+}
+
+)
+    
 if (!gameState.completedQuestBranches) {
     gameState.completedQuestBranches = {};  // {questId: {completedStages: [indices]}}
 }
@@ -7077,10 +7231,14 @@ let isTyping = false;       // タイピング中フラグ
 let completionQueue = [];     // 完了ダイアログのキュー（複数同時完了対応）
 let isPlayingDialogue = false; // 現在ダイアログ再生中フラグ
 
+
+
+let questTypingInterval = null;
+
+
 function queueQuestCompletionDialogue(rawSequence) {
     if (!rawSequence || rawSequence.length === 0) return;
 
-    // プレースホルダー置換処理（constant.js が純粋定数のまま）
     const defaultName = {
         ja: '冒険者',
         en: 'Adventurer',
@@ -7091,172 +7249,119 @@ function queueQuestCompletionDialogue(rawSequence) {
 
     const processedSequence = rawSequence.map(line => ({
         speaker: line.speaker.replace('{PLAYER}', playerName),
-        text: line.text.replace(/{PLAYER}/g, playerName)
+        text: line.text.replace(/{PLAYER}/g, playerName),
+        image: line.image || null  // 必要に応じてimageフィールド追加可能
     }));
 
     completionQueue.push(processedSequence);
 
-    // 再生中でなければ即開始（ここで新しいダイアログセッション開始時にdialogueBgmへクロスフェード）
     if (!isPlayingDialogue) {
-        crossfadeTo('dialogueBgm', 2000);  // 開始時は2000msでフェード（必要に応じて調整可能）
-        playNextDialogue();
+        crossfadeTo('dialogueBgm', 2000); // クエスト完了もdialogueBgm使用（専用BGMがあれば変更）
+        setDialogueBackground('Images/quest_completion_bg.jpg')
+        playNextQuestDialogue();
     }
 }
 
-function playNextDialogue() {
+function setDialogueBackground(bg_url = 'Images/intro_bg.jpg') {
+    const bgEl = document.getElementById('introBG'); // Match your HTML ID
+    if (bgEl) {
+        bgEl.style.backgroundImage = `url('${bg_url}')`;
+        // Optional: ensure full styling (center, cover, no-repeat)
+        bgEl.style.backgroundPosition = 'center';
+        bgEl.style.backgroundSize = 'cover';
+        bgEl.style.backgroundRepeat = 'no-repeat';
+    }
+}
+
+function playNextQuestDialogue() {
     if (completionQueue.length === 0) {
         isPlayingDialogue = false;
-        // すべてのダイアログが完全に終了した時点でメインBGMに戻す
         crossfadeTo('bgm', 2000);
+        const modal = document.getElementById('introModal');
+        modal.style.display = 'none';
+
+        // モーダルを非表示にする際に内容をクリア（次回表示時の残骸防止）
+        const dialogueTextEl = document.getElementById('dialogueText');
+        if (dialogueTextEl) dialogueTextEl.innerHTML = '';
+        const speakerNameEl = document.getElementById('speakerName');
+        if (speakerNameEl) speakerNameEl.textContent = '';
+        const continueIndicator = document.getElementById('continueIndicator');
+        if (continueIndicator) continueIndicator.style.opacity = '0';
+
+        // 画像をクリアして次回のダイアログが確実にフェードインから開始
+        const charImg = document.getElementById('introCharacterImg');
+        if (charImg) {
+            charImg.src = '';
+            charImg.style.opacity = '0';
+        }
+
         return;
     }
 
     isPlayingDialogue = true;
     const sequence = completionQueue.shift();
 
-    // 単一ダイアログ再生（すべてローカル変数化で競合防止）
-    (function displaySingleDialogue(seq) {
-        // 既存モーダル削除（安全策）
-        const existing = document.getElementById('questCompletionModal');
-        if (existing) existing.remove();
+    // introModalを再利用
+    const modal = document.getElementById('introModal');
+    const stepDialogue = document.getElementById('stepDialogue');
+    modal.style.display = 'flex';
 
-        const modal = document.createElement('div');
-        modal.id = 'questCompletionModal';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        modal.style.display = 'flex';
-        modal.style.justifyContent = 'center';
-        modal.style.alignItems = 'center';
-        modal.style.zIndex = '1000';
+    // 表示直後に確実にクリア
+    const dialogueTextEl = document.getElementById('dialogueText');
+    dialogueTextEl.innerHTML = '';
+    document.getElementById('speakerName').textContent = '';
 
-        const content = document.createElement('div');
-        content.style.backgroundColor = '#747474df';
-        content.style.padding = '30px';
-        content.style.borderRadius = '15px';
-        content.style.maxWidth = '900px';
-        content.style.width = '90%';
-        content.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-        content.style.display = 'flex';
-        content.style.alignItems = 'flex-start';
-        content.style.gap = '40px';
-        content.style.fontFamily = '"Segoe UI", Arial, sans-serif';
+    document.getElementById('stepName').style.display = 'none';
+    stepDialogue.style.display = 'block';
 
-        // === キャラ画像（話者に応じて切り替え、デフォルトはペア画像）===
-        const charImage = document.createElement('img');
-        charImage.style.width = '200px';
-        charImage.style.height = 'auto';
-        charImage.style.maxHeight = '440px';
-        charImage.style.objectFit = 'contain';
-        charImage.style.borderRadius = '12px';
-        charImage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-        charImage.style.alignSelf = 'flex-start';
-        charImage.onerror = function() { this.style.display = 'none'; };
+    const charImg = document.getElementById('introCharacterImg');
 
-        // === テキスト＋ボタンのコンテナ（右側）===
-        const textContainer = document.createElement('div');
-        textContainer.style.flex = '1';
-        textContainer.style.display = 'flex';
-        textContainer.style.flexDirection = 'column';
-        textContainer.style.justifyContent = 'space-between';
-        textContainer.style.minHeight = '200px';
+    // このシーケンス内で話者ごとの画像をキャッシュ（一貫性確保、特にランダム画像の場合）
+    const speakerImageCache = {};
 
-        const dialogueBox = document.createElement('div');
-        dialogueBox.id = 'questDialogueBox';
-        dialogueBox.style.minHeight = '150px';
-        dialogueBox.style.marginBottom = '30px';
-        dialogueBox.style.fontSize = '1.2em';
-        dialogueBox.style.lineHeight = '1.6';
+    // プレイヤー名（デフォルト付き）を取得（プレースホルダー置換用）
+    const playerName = gameState.playerName || defaultName;
 
-        const nextBtn = document.createElement('button');
-        nextBtn.disabled = true;
-        nextBtn.style.opacity = '0.6';
-        nextBtn.style.padding = '12px 30px';
-        nextBtn.style.fontSize = '1.2em';
-        nextBtn.style.backgroundColor = '#e94560';
-        nextBtn.style.color = 'white';
-        nextBtn.style.border = 'none';
-        nextBtn.style.borderRadius = '8px';
-        nextBtn.style.cursor = 'pointer';
-        nextBtn.style.alignSelf = 'center';
+    let localIndex = 0;
 
-        textContainer.appendChild(dialogueBox);
-        textContainer.appendChild(nextBtn);
+    function renderQuestDialogue() {
+        const current = sequence[localIndex];
 
-        content.appendChild(charImage);
-        content.appendChild(textContainer);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
+        // {player}（大文字小文字問わず）をプレイヤー名に置換（既に置換済みでも安全）
+        const processedSpeaker = current.speaker.replace(/\{player\}/gi, playerName);
+        const fullText = current.text.replace(/\{player\}/gi, playerName);
 
-        // すべてローカル変数
-        let localIndex = 0;
-        let localTyping = false;
-        let localInterval = null;
+        // 話者名を即座に更新
+        document.getElementById('speakerName').textContent = processedSpeaker + ":";
 
-        // プレイヤー名（表示用に再取得）
-        const playerName = gameState.playerName || {
-            ja: '冒険者',
-            en: 'Adventurer',
-            zh: '冒險者'
-        }[currentLang] || 'Adventurer';
+        // 継続インジケーター非表示
+        document.getElementById('continueIndicator').style.opacity = '0';
 
-        function typeText(targetText, speaker) {
-            localTyping = true;
-            nextBtn.disabled = true;
-            nextBtn.style.opacity = '0.6';
+        // テキストエリアを再度クリア
+        dialogueTextEl.innerHTML = '';
 
-            dialogueBox.innerHTML = `<p><strong>${speaker}:</strong><br><span id="typingText"></span></p>`;
-            const typingText = document.getElementById('typingText');
+        // キャラクター画像パス計算（キャッシュ付き）
+        let imageSrc = 'Images/main_char.png';
+        const speakerKey = current.speaker; // 元のspeakerKey（置換前）でキャッシュ（一貫性確保）
 
-            let i = 0;
-
-            // 言語に応じたタイピング速度
-            let delay = 30; // デフォルト
-            if (currentLang === 'en') {
-                delay = 15;
-            } else if (currentLang === 'zh') {
-                delay = 35;
-            }
-
-            localInterval = setInterval(() => {
-                if (i < targetText.length) {
-                    typingText.innerHTML += targetText.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(localInterval);
-                    localTyping = false;
-                    nextBtn.disabled = false;
-                    nextBtn.style.opacity = '1';
-
-                    // ボタンテキストを翻訳対応
-                    if (localIndex === seq.length - 1) {
-                        nextBtn.textContent = t('dialogue_close');
-                    } else {
-                        nextBtn.textContent = t('dialogue_next');
-                    }
-                }
-            }, delay);
-        }
-
-        function renderCurrent() {
-            const current = seq[localIndex];
-            let imageSrc = 'Images/main_char.png'; // デフォルト（ペア画像やギルドシーンを想定）
-
-            // プレイヤー（ギルドマスター）の場合：専用画像 or ランダム冒険者画像（カスタム名でも統一感を保つ）
-
-            // Kaito
+        if (current.image) {
+            // カスタム画像（表情差分など）はキャッシュせず優先
+            imageSrc = current.image;
+        } else if (speakerImageCache[speakerKey]) {
+            // キャッシュ済みなら再利用（同一話者で一貫した画像）
+            imageSrc = speakerImageCache[speakerKey];
+        } else {
+            // 初回計算
             if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
                 imageSrc = 'Images/カイト.png';
-            } 
-            // Luna
-            else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
+            } else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
                 imageSrc = 'Images/ルナ.png';
-            }else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
+            }else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
+                imageSrc = 'Images/narrator.png';
+            } 
+            else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
                 const playerImages = [
-                    'Images/STR_RankF_F.png',  // 必要に応じてギルドマスター専用画像に変更可能
+                    'Images/STR_RankF_F.png',
                     'Images/STR_RankF_M.png',
                     'Images/DEX_RankF_F.png',
                     'Images/DEX_RankF_M.png',
@@ -7267,55 +7372,119 @@ function playNextDialogue() {
                 ];
                 const randomIndex = Math.floor(Math.random() * playerImages.length);
                 imageSrc = playerImages[randomIndex];
-            }else if (current.speaker != playerName){
-                imageSrc = 'Images/'+current.speaker+'.png';
+            } else if (processedSpeaker !== playerName) {
+                imageSrc = 'Images/' + current.speaker + '.png';
             }
-            // その他（依頼主など）はデフォルトペア画像
-
-            charImage.src = imageSrc;
-            charImage.style.display = 'block';
-
-            typeText(current.text, current.speaker);
+            console.log(processedSpeaker);
+            console.log(playerName);            
+            // キャッシュに保存
+            speakerImageCache[speakerKey] = imageSrc;
         }
 
-        nextBtn.onclick = function() {
-            if (localTyping) {
-                clearInterval(localInterval);
-                const current = seq[localIndex];
-                dialogueBox.innerHTML = `<p><strong>${current.speaker}:</strong><br>${current.text}</p>`;
-                localTyping = false;
-                nextBtn.disabled = false;
-                nextBtn.style.opacity = '1';
+        // 画像ファイル名で同一判定（日本語ファイル名対応強化：URLデコード適用）
+        function getImageKey(src) {
+            if (!src) return null;
+            let filename = src.split('/').pop().split('?')[0].split('#')[0];
+            return decodeURIComponent(filename);
+        }
 
-                if (localIndex === seq.length - 1) {
-                    nextBtn.textContent = t('dialogue_close');
+        const currentKey = getImageKey(charImg.src);
+        const newKey = getImageKey(imageSrc);
+
+        // タイピング開始関数
+        function startTyping() {
+            clearInterval(typingInterval);
+            let charIndex = 0;
+            typingInterval = setInterval(() => {
+                if (charIndex < fullText.length) {
+                    if (fullText.substr(charIndex, 4) === '<br>') {
+                        dialogueTextEl.innerHTML += '<br>';
+                        charIndex += 4;
+                    } else {
+                        dialogueTextEl.innerHTML += fullText[charIndex];
+                        charIndex++;
+                    }
                 } else {
-                    nextBtn.textContent = t('dialogue_next');
+                    clearInterval(typingInterval);
+                    typingInterval = null;
+                    document.getElementById('continueIndicator').style.opacity = '1';
                 }
+            }, 35);
+        }
+
+        if (currentKey === newKey && currentKey !== null) {
+            // 完全に同一画像 → フェードなし、即タイピング開始
+            startTyping();
+        } else {
+            // 画像変更または初回 → フェードアウト → プリロード → フェードイン → タイピング
+            charImg.style.opacity = '0';
+
+            const onFadeOutComplete = () => {
+                const preloadImg = new Image();
+                preloadImg.onload = preloadImg.onerror = () => {
+                    charImg.src = imageSrc;
+                    charImg.style.opacity = '1';
+
+                    let typingStarted = false;
+                    const onFadeInComplete = (e) => {
+                        if (e.propertyName === 'opacity' && !typingStarted) {
+                            typingStarted = true;
+                            charImg.removeEventListener('transitionend', onFadeInComplete);
+                            startTyping();
+                        }
+                    };
+                    charImg.addEventListener('transitionend', onFadeInComplete);
+
+                    setTimeout(() => {
+                        if (!typingStarted) {
+                            typingStarted = true;
+                            charImg.removeEventListener('transitionend', onFadeInComplete);
+                            startTyping();
+                        }
+                    }, 600);
+                };
+                preloadImg.src = imageSrc;
+            };
+
+            let fadeOutHandled = false;
+            const onFadeOut = (e) => {
+                if (e.propertyName === 'opacity' && !fadeOutHandled) {
+                    fadeOutHandled = true;
+                    charImg.removeEventListener('transitionend', onFadeOut);
+                    onFadeOutComplete();
+                }
+            };
+            charImg.addEventListener('transitionend', onFadeOut);
+
+            setTimeout(() => {
+                if (!fadeOutHandled) {
+                    fadeOutHandled = true;
+                    charImg.removeEventListener('transitionend', onFadeOut);
+                    onFadeOutComplete();
+                }
+            }, 600);
+        }
+
+        // クリックで次へ（スキップ時は置換済みのfullTextを使用）
+        stepDialogue.onclick = (e) => {
+            if (typingInterval) {
+                clearInterval(typingInterval);
+                typingInterval = null;
+                dialogueTextEl.innerHTML = fullText;
+                document.getElementById('continueIndicator').style.opacity = '1';
             } else {
                 localIndex++;
-                if (localIndex < seq.length) {
-                    renderCurrent();
+                if (localIndex < sequence.length) {
+                    renderQuestDialogue();
                 } else {
-                    modal.remove();
-                    playNextDialogue();
+                    playNextQuestDialogue();
                 }
             }
         };
+    }
 
-        modal.onclick = function(e) {
-            if (e.target === modal) {
-                if (localInterval) clearInterval(localInterval);
-                modal.remove();
-                playNextDialogue();
-            }
-        };
-
-        renderCurrent();
-    })(sequence);
+    renderQuestDialogue();
 }
-
-
 // 新規追加: ゲームオーバーダイアログシーケンス取得関数
 function getGameOverSequence(reason) {
     const lang = currentLang;
@@ -7387,10 +7556,10 @@ function getGameOverSequence(reason) {
         {speaker: playerSpeaker, text: '不要…求你們…兩個都…'},
         {speaker: 'Luna', text: `再見…${playerSpeaker}…`},
         {speaker: 'Kaito', text: `再見了…${playerSpeaker}…`},
-        {speaker: '敘述者', text: 'Luna與Kaito的身體失去力量，兩人同時安靜地離去了。'},
+        {speaker: 'Narrator', text: 'Luna與Kaito的身體失去力量，兩人同時安靜地離去了。'},
         {speaker: playerSpeaker, text: 'Luna啊啊…Kaito啊啊！！！'},
         {speaker: playerSpeaker, text: '都是我的錯…沒能保護他們兩個…全都是我的錯…'},
-        {speaker: '敘述者', text: `同時失去兩位最親密的夥伴，${playerSpeaker}的心完全碎裂。再也無法握劍，永遠放棄了冒險之路。故事在深刻的悲傷與絕望中結束…`}
+        {speaker: 'Narrator', text: `同時失去兩位最親密的夥伴，${playerSpeaker}的心完全碎裂。再也無法握劍，永遠放棄了冒險之路。故事在深刻的悲傷與絕望中結束…`}
     ]
 },
         gold: {
@@ -7445,8 +7614,8 @@ function getGameOverSequence(reason) {
                 {speaker: '商人', text: '真感人的羈絆。可惜—債務必須償還。你要一輩子當奴隸！'},
                 {speaker: playerSpeaker, text: '……好吧。如果只是我一個…我去。'},
                 {speaker: 'Kaito', text: '開什麼玩笑！絕對不交出去！'},
-                {speaker: '敘述者', text: '然而雇來的打手人數壓倒性，隊伍很快被制伏。'},
-                {speaker: '敘述者', text: `${playerSpeaker}被賣給富豪當奴隸，Kaito和Luna被釋放。輝煌的冒險日子永遠結束了…`}
+                {speaker: 'Narrator', text: '然而雇來的打手人數壓倒性，隊伍很快被制伏。'},
+                {speaker: 'Narrator', text: `${playerSpeaker}被賣給富豪當奴隸，Kaito和Luna被釋放。輝煌的冒險日子永遠結束了…`}
             ]
         },
         rep: {
@@ -7487,14 +7656,14 @@ function getGameOverSequence(reason) {
                 {speaker: 'Narrator', text: 'Amid jeers and shouts of anger, the three were chained and dragged to the kingdom prison. All traces of former glory vanished, and the story ended in disgrace...'}
             ],
             zh: [
-                {speaker: '商人A', text: '這個公會評價墊底！絕不再交易！'},
-                {speaker: '商人B', text: '我也是！報酬總是拖延，任務還可疑！'},
+                {speaker: '商人', text: '這個公會評價墊底！絕不再交易！'},
+                {speaker: '商人', text: '我也是！報酬總是拖延，任務還可疑！'},
                 {speaker: '憤怒的冒險者', text: '對！這種垃圾公會只會玷污冒險者名聲！'},
                 {speaker: '另一冒險者', text: '解散！別給王國丟臉！'},
                 {speaker: playerSpeaker, text: '請等一下！我們一直拼命努力啊！'},
                 {speaker: 'Kaito', text: '沒錯！我們也成功完成了很多任務！'},
                 {speaker: 'Luna', text: `請相信…相信${playerSpeaker}…`},
-                {speaker: '商人A', text: '相信？評價已經爛透了！'},
+                {speaker: '商人', text: '相信？評價已經爛透了！'},
                 {speaker: '群眾', text: '解散！解散！逮捕他們！'},
                 {speaker: '群眾', text: '關閉公會！'},
                 {speaker: '王國衛兵', text: '奉王命，即刻解散此公會！'},
@@ -7502,7 +7671,7 @@ function getGameOverSequence(reason) {
                 {speaker: playerSpeaker, text: '不…怎麼會這樣結束…'},
                 {speaker: 'Kaito', text: '可惡…怎麼會變成這樣…'},
                 {speaker: 'Luna', text: `${playerSpeaker}…我好怕…`},
-                {speaker: '敘述者', text: '在嘲笑與怒吼中，三人被鎖鏈捆綁，押往王國監獄。昔日的榮光蕩然無存，故事在恥辱中落幕…'}
+                {speaker: 'Narrator', text: '在嘲笑與怒吼中，三人被鎖鏈捆綁，押往王國監獄。昔日的榮光蕩然無存，故事在恥辱中落幕…'}
             ]
         },
         lunaDeath: {
@@ -7557,11 +7726,11 @@ function getGameOverSequence(reason) {
                 {speaker: 'Luna', text: `${playerSpeaker}…我好喜歡…你…`},
                 {speaker: playerSpeaker, text: 'Luna…別這樣…求你…'},
                 {speaker: 'Luna', text: `再見…${playerSpeaker}…`},
-                {speaker: '敘述者', text: 'Luna身體失去力量，安靜地離去了。'},
+                {speaker: 'Narrator', text: 'Luna身體失去力量，安靜地離去了。'},
                 {speaker: playerSpeaker, text: 'Luna啊啊啊啊！！！'},
                 {speaker: 'Kaito', text: '不會吧…Luna…'},
                 {speaker: playerSpeaker, text: '我…沒能保護她…都是我的錯…'},
-                {speaker: '敘述者', text: `陷入深深絕望的${playerSpeaker}，再也沒有握劍的意志，放棄了冒險之路。故事在悲傷中結束…`}
+                {speaker: 'Narrator', text: `陷入深深絕望的${playerSpeaker}，再也沒有握劍的意志，放棄了冒險之路。故事在悲傷中結束…`}
             ]
         },
         kaitoDeath: {
@@ -7619,11 +7788,11 @@ function getGameOverSequence(reason) {
                 {speaker: 'Kaito', text: '答應我…一定要…變強…'},
                 {speaker: playerSpeaker, text: 'Kaito…求你…'},
                 {speaker: 'Kaito', text: '再見…夥伴…'},
-                {speaker: '敘述者', text: 'Kaito靜靜閉上眼睛，再也沒睜開。'},
+                {speaker: 'Narrator', text: 'Kaito靜靜閉上眼睛，再也沒睜開。'},
                 {speaker: playerSpeaker, text: 'Kaito啊啊啊！！！'},
                 {speaker: 'Luna', text: '不…Kaito…'},
                 {speaker: playerSpeaker, text: '因為我太弱…失去了最好的朋友…'},
-                {speaker: '敘述者', text: `無法承受失去摯友的痛苦，${playerSpeaker}放棄了冒險之路。故事以悲劇結束…`}
+                {speaker: 'Narrator', text: `無法承受失去摯友的痛苦，${playerSpeaker}放棄了冒險之路。故事以悲劇結束…`}
             ]
         },
         
@@ -7634,8 +7803,8 @@ function getGameOverSequence(reason) {
 }
 
 // 新規追加: ゲームオーバー専用ダイアログキュー関数（既存のcompletionQueueを再利用）
-function queueGameOverDialogue(sequence) {
-    if (!sequence || sequence.length === 0) return;
+function queueGameOverDialogue(rawSequence) {
+    if (!rawSequence || rawSequence.length === 0) return;
 
     // 即座に1日終了ボタンを無効化
     const endBtn = document.querySelector('button[onclick="playDay()"]');
@@ -7644,31 +7813,53 @@ function queueGameOverDialogue(sequence) {
     // ゲームオーバーpendingフラグを設定（複数トリガー防止）
     gameState.pendingGameOver = true;
 
-    // 既存のcompletionQueueにpush（クエスト完了と混在OK、gameOver優先で後続処理なし）
-    completionQueue.push(sequence);
+    const playerName = gameState.playerName || ({
+        ja: '冒険者',
+        en: 'Adventurer',
+        zh: '冒險者'
+    }[currentLang] || 'Adventurer');
 
-    // 再生中でなければ即開始（dialogueBgmへクロスフェード）
+    const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker.replace('{PLAYER}', playerName),
+        text: line.text.replace(/{PLAYER}/g, playerName),
+        image: line.image || null  // 必要に応じてimageフィールド対応
+    }));
+
+    completionQueue.push(processedSequence);
+
+    // 再生中でなければ即開始（専用BGMへクロスフェード）
     if (!isPlayingDialogue) {
         crossfadeTo('GameoverBgm', 2000);
-        playNextDialogue();
+        setDialogueBackground('Images/Street.jpg')
+        playNextQuestDialogue();
     }
 }
 
-
 function queueBirthdayParty() {
-    const playerSpeaker = gameState.playerName || 'あなた';
-    const sequence = [
+    const playerName = gameState.playerName || 'あなた';
+
+    const rawSequence = [
         {speaker: 'ナレーター', text: '酒場に戻ると、突然灯りが消えて…暗闇の中から声が響く！'},
-        {speaker: 'ルナ', text: 'サプライズ！！ お誕生日おめでとう、' + playerSpeaker + '！'},
+        {speaker: 'ルナ', text: 'サプライズ！！ お誕生日おめでとう、' + playerName + '！'},
         {speaker: 'カイト', text: 'へへ、ようやく気づいたか！ パーティーだぜ！'},
         {speaker: '酒場主人', text: 'ふふっ、みんなで何日も前から準備してたのよ。ケーキも特製よ♪'},
-        {speaker: playerSpeaker, text: 'みんな…ありがとう！ 本当に嬉しいよ…！'},
+        {speaker: playerName, text: 'みんな…ありがとう！ 本当に嬉しいよ…！'},
         {speaker: 'ナレーター', text: '笑顔と祝福に包まれた温かい夜…。絆がさらに深まった。'}
     ];
-    completionQueue.push(sequence);
+
+    // 既存のquest完了ダイアログと同じ形式に統一（imageはnullでOK）
+    const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker,
+        text: line.text,
+        image: line.image || null
+    }));
+
+    completionQueue.push(processedSequence);
+
+    // 再生中でなければ即開始（専用BGMへクロスフェード）
     if (!isPlayingDialogue) {
         crossfadeTo('QuestEndDialogueBgm', 2000); 
-        playNextDialogue();
+        playNextQuestDialogue();
     }
 }
 
@@ -7780,4 +7971,168 @@ async function unlockQuestNPC(npcKey) {
     if (document.getElementById('npcsContent')) {
         renderNPCList();
     }
+}
+
+
+// === アイコンシート関数（1-based index）===
+// === 修正されたアイコンシート関数（位置とスケーリングを正しく処理）===
+// === さらに改善されたアイコンシート関数（はみ出し完全解消版）===
+function getIconHtml(row, col, size = 64) {
+    const iconSize = 24;                  // オリジナルアイコンのサイズ（24×24px）
+    const sheetCols = 16;                 // 列数（固定）
+    const sheetRows = 33;                 // 行数（固定）
+    const sheetWidthOriginal = sheetCols * iconSize;   // 384px（ぴったり）
+    const sheetHeightOriginal = sheetRows * iconSize;  // 792px（有効領域のみ。796pxの余白4pxを除外）
+
+    row -= 1;  // 1-based → 0-based
+    col -= 1;
+
+    const scale = size / iconSize;         // 例: 64 → ≈2.6667
+
+    // オフセットを拡大サイズで計算（これで位置は正確）
+    const bgX = -col * size;
+    const bgY = -row * size *0.996;
+
+    // シート全体を拡大（有効領域792pxのみ使用 → 下部の余白を排除）
+    const scaledSheetWidth = sheetWidthOriginal * scale;
+    const scaledSheetHeight = sheetHeightOriginal * scale;
+
+    return `<div style="
+        width: ${size}px;
+        height: ${size}px;
+        background: url('Images/rpg_icon.png') ${bgX}px ${bgY}px / ${scaledSheetWidth}px ${scaledSheetHeight}px no-repeat;
+        image-rendering: pixelated;
+        margin: 0 auto;
+        flex-shrink: 0;
+        overflow: hidden;
+        /* 追加: レンダリング誤差による1pxはみ出しを強制的にクリップ */
+        clip-path: inset(0px round 0px);
+        box-sizing: border-box;
+    "></div>`;
+}
+
+// === アイテム名 → アイコン位置マップ（ここを埋めてください）===
+const itemIconPositions = {
+    // 例（ユーザーが挙げた potion の例）
+
+    'Gold Coin': { row: 23, col: 10 },  // ゴールド用（適宜変更）
+    'HP potion': { row: 13, col: 1 },
+    'MP potion':{ row: 13, col: 2 },
+    'Small knife':{ row: 25, col: 1 },
+    'Iron sword':{ row: 25, col: 3 },      
+    'Beginner Scroll':{ row: 15, col: 9 },     
+    'Magician Scroll':{ row: 15, col: 15 },   
+    'Leather gloves':{ row: 31, col: 2 },   
+    'Elf boots':{ row: 30, col: 9 },  
+    'Lucky coin':{ row: 23, col: 10},  
+    'Four-leaf clover':{ row: 13, col: 11 },  
+    '鉄鉱石':{ row: 22, col: 15 },  
+    '薬草':{ row: 20, col: 6 },  
+    'スパイス':{ row: 23, col: 14 },  
+    '宝石':{ row: 23, col: 7 }, 
+    // デフォルト（マップにない場合は左上のアイコンを使用）
+    'default': { row: 1, col: 1 }
+};
+
+function getItemIconHtml(itemName, size = 64) {
+    const pos = itemIconPositions[itemName] || itemIconPositions['default'];
+    return getIconHtml(pos.row, pos.col, size);
+}
+
+// === インベントリ表示関数 ===
+function renderInventory() {
+    let html = '';
+
+    const items = gameState.inventory.filter(item => (item.qty || 1) > 0);
+    // 最大スロット数（例: 64 = 8列×8行、MapleStoryのETCタブ風）
+    const maxSlots = 24;
+    const gridColumns = 4;
+
+    // 名前順ソート
+    items.sort((a, b) => a.name.localeCompare(b.name));
+
+    html += `<div style="
+        display: grid;
+        grid-template-columns: repeat(${gridColumns}, 1fr);
+        gap: 8px;
+        justify-items: center;
+    ">`;
+
+    let slotIndex = 0;
+    for (let i = 0; i < maxSlots; i++) {
+        const item = items.find(itm => {
+            // 装備品は個別（qty:1固定）、スタック品はqty分スロット消費
+            if (itm.type || itm.stat) {  // 装備品判定（statがあるかtype='equipment'など）
+                return false; // 後で個別処理（シンプルにするため今回はスタック品のみスロット消費）
+            }
+            const itemStart = items.slice(0, items.indexOf(itm) + 1).reduce((sum, prev) => sum + (prev.qty || 1), 0);
+            return slotIndex >= itemStart - (itm.qty || 1) && slotIndex < itemStart;
+        }) || items[slotIndex]; // 簡易マッピング
+
+        if (item && (item.qty || 1) > 0) {
+            const icon = getItemIconHtml(item.name, 48);
+            const displayQty = item.qty || 1;
+            const qtyText = displayQty > 1 ? displayQty : '';
+
+            html += `
+                <div style="
+                    width: 64px;
+                    height: 64px;
+                    background: rgba(40,40,40,0.8);
+                    border: 2px solid #555;
+                    border-radius: 6px;
+                    position: relative;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+                    transition: all 0.2s;
+                " onmouseover="this.style.borderColor='#ffd700'; this.style.transform='scale(1.1)'"
+                  onmouseout="this.style.borderColor='#555'; this.style.transform='scale(1)'">
+                    ${icon}
+                    ${qtyText ? `<span style="
+                        position: absolute;
+                        bottom: 2px;
+                        right: 4px;
+                        color: white;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                        text-shadow: 1px 1px 2px black;
+                    ">${qtyText}</span>` : ''}
+                </div>`;
+        } else {
+            // 空スロット
+            html += `
+                <div style="
+                    width: 64px;
+                    height: 64px;
+                    background: rgba(20,20,20,0.6);
+                    border: 2px dashed #333;
+                    border-radius: 6px;
+                "></div>`;
+        }
+        slotIndex += (item && !item.stat) ? (item.qty || 1) : 1; // スタック品はqty分消費、装備は1スロット
+    }
+
+    html += `</div>`;
+
+    document.getElementById('inventoryContent').innerHTML = html;
+}
+
+// === モーダル開閉関数 ===
+function toggleInventory() {
+    const modal = document.getElementById('inventoryModal');
+    if (modal.style.display === 'flex' || modal.style.display === '') {
+        modal.style.display = 'none';
+    } else {
+        renderInventory();
+        modal.style.display = 'flex';  // flexで中央配置を有効化
+        // スクロール位置をトップに（モーダル内コンテンツ用）
+        const content = document.getElementById('inventoryContent');
+        if (content) content.scrollTop = 0;
+    }
+}
+
+function closeInventory() {
+    document.getElementById('inventoryModal').style.display = 'none';
 }
