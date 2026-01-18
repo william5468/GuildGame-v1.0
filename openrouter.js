@@ -116,44 +116,47 @@ function processOpenRouterCommands(fullResponse) {
                     }
 
                     // Items: positive qty = NPC gives to player, negative = player gives to NPC
-                    if (Array.isArray(cmdData.params.items)) {
-                        cmdData.params.items.forEach(gift => {
-                            const qty = gift.qty || 1;
-                            if (qty > 0) {
-                                // NPC → Player
-                                const npcItem = entity.bag.items.find(i => i.name === gift.name);
-                                if (npcItem && npcItem.qty >= qty) {
-                                    let playerItem = gameState.inventory.find(i => i.name === gift.name);
-                                    if (!playerItem) {
-                                        playerItem = { name: gift.name, qty: 0, ...npcItem };
-                                        gameState.inventory.push(playerItem);
-                                    }
-                                    playerItem.qty += qty;
-                                    npcItem.qty -= qty;
-                                    if (npcItem.qty <= 0) {
-                                        entity.bag.items = entity.bag.items.filter(i => i !== npcItem);
-                                    }
-                                    better_alert(`${gift.name} x${qty} をもらった！`, 'success');
+                if (Array.isArray(cmdData.params.items)) {
+                    cmdData.params.items.forEach(gift => {
+                        const qty = gift.qty || 1;
+                        if (qty > 0) {
+                            // NPC → Player
+                            const npcItem = entity.bag.items.find(i => i.name === gift.name);
+                            if (npcItem && npcItem.qty >= qty) {
+                                let playerItem = gameState.inventory.find(i => i.name === gift.name);
+                                if (!playerItem) {
+                                    // 修正点: ...npcItem を先に展開し、最後に qty: 0 を上書き
+                                    // これで npcItem の qty がコピーされず、0 からスタート
+                                    playerItem = { ...npcItem, qty: 0 };
+                                    gameState.inventory.push(playerItem);
                                 }
-                            } else if (qty < 0) {
-                                // Player → NPC
-                                const playerItem = gameState.inventory.find(i => i.name === gift.name);
-                                if (playerItem && playerItem.qty >= -qty) {
-                                    let npcItem = entity.bag.items.find(i => i.name === gift.name);
-                                    if (!npcItem) {
-                                        npcItem = { name: gift.name, qty: 0, ...playerItem };
-                                        entity.bag.items.push(npcItem);
-                                    }
-                                    npcItem.qty += -qty;
-                                    playerItem.qty += qty; // qty is negative
-                                    if (playerItem.qty <= 0) {
-                                        gameState.inventory = gameState.inventory.filter(i => i !== playerItem);
-                                    }
-                                    better_alert(`${gift.name} x${-qty} を渡した`, 'basic');
+                                playerItem.qty += qty;
+                                npcItem.qty -= qty;
+                                if (npcItem.qty <= 0) {
+                                    entity.bag.items = entity.bag.items.filter(i => i !== npcItem);
                                 }
+                                better_alert(`${gift.name} x${qty} をもらった！`, 'success');
                             }
-                        });
-                    }
+                        } else if (qty < 0) {
+                            // Player → NPC
+                            const playerItem = gameState.inventory.find(i => i.name === gift.name);
+                            if (playerItem && playerItem.qty >= -qty) {
+                                let npcItem = entity.bag.items.find(i => i.name === gift.name);
+                                if (!npcItem) {
+                                    // 同様に修正: playerItem の qty がコピーされないよう qty: 0 を上書き
+                                    npcItem = { ...playerItem, qty: 0 };
+                                    entity.bag.items.push(npcItem);
+                                }
+                                npcItem.qty += -qty;   // 正の量を追加
+                                playerItem.qty += qty;  // qty は負なので減算
+                                if (playerItem.qty <= 0) {
+                                    gameState.inventory = gameState.inventory.filter(i => i !== playerItem);
+                                }
+                                better_alert(`${gift.name} x${-qty} を渡した`, 'basic');
+                            }
+                        }
+                    });
+                }
                     updateNpcBagDisplay_OR();
                     populateGiftItems_OR(); // Refresh gift dropdown
                 }
@@ -313,30 +316,24 @@ async function openOpenRouterChat(npcKey) {
 
         const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
-        let proactiveMessage = await sendToOpenRouter('', game_state_info);
+        //let proactiveMessage = await sendToOpenRouter('', game_state_info);
 
         // processOpenRouterCommands でコマンド処理（返り値はトーンタグ付きの話し言葉テキスト）
-        let rawNpcText = processOpenRouterCommands(proactiveMessage);
+        //let rawNpcText = processOpenRouterCommands(proactiveMessage);
 
         // === 新規: トーンタグ対応の音声生成 & 表示処理 ===
         const voiceType = npcVoiceTypes[currentNpcKey_OR];
         const voiceName = voiceType ? voiceType : null;  // プリビルドボイス名（Leda, Rasalgethi など）
 
         let audioUrl = null;
-        let cleanDisplayText = rawNpcText;  // デフォルト（タグなしの場合）
+        //let cleanDisplayText = "{player}、おはよう！";  // デフォルト（タグなしの場合）
 
-        if (voiceName && rawNpcText) {
-            const ttsResult = await generateNpcVoice(rawNpcText, voiceName);
-            if (ttsResult) {
-                audioUrl = ttsResult.audioURL;
-                cleanDisplayText = ttsResult.cleanText;  // タグ除去済みテキスト
-            }
-        }
+
 
         hideNpcTyping_OR();
 
         // 表示（タグ完全除去済みのクリーンなテキスト）
-        appendNpcMessage_OR(cleanDisplayText);
+        //appendNpcMessage_OR(cleanDisplayText);
 
         // 音声再生
         if (audioUrl) {

@@ -1,5 +1,63 @@
 
 
+
+const itemIconPositions = {
+    // 例（ユーザーが挙げた potion の例）
+
+    'Gold Coin': { row: 23, col: 10 },  // ゴールド用（適宜変更）
+    'HP Potion': { row: 13, col: 1 },
+    'MP Potion':{ row: 13, col: 2 },
+    'Small Knife':{ row: 25, col: 1 },
+    'Iron Sword':{ row: 25, col: 3 },      
+    'Beginner Scroll':{ row: 15, col: 9 },     
+    'Magician Scroll':{ row: 15, col: 15 },   
+    'Leather Gloves':{ row: 31, col: 2 },   
+    'Elf Boots':{ row: 30, col: 9 },  
+    'Lucky Coin':{ row: 23, col: 10},  
+    'Four-leaf Clover':{ row: 13, col: 11 },  
+    '鉄鉱石':{ row: 22, col: 15 },  
+    '薬草':{ row: 20, col: 6 },  
+    '藥草':{ row: 20, col: 6 }, 
+    'スパイス':{ row: 23, col: 14 },  
+    '宝石':{ row: 23, col: 7 }, 
+    'Herb':{ row: 20, col: 6 },  
+    
+    'キノコ':{ row: 19, col: 6 },  
+    'Mushroom':{ row: 19, col: 6 },  
+    '蘑菇':{ row: 19, col: 6 },
+    '花':{ row: 13, col: 14 },  
+    'Flower':{ row: 13, col: 14 },  
+    '花朵':{ row: 13, col: 14 },  
+    '鉄の欠片':{ row: 17, col: 2 },  
+    'Iron Scrap':{ row: 17, col: 2 },  
+    '鐵碎片':{ row: 17, col: 2 }, 
+    '川魚':{ row: 19, col: 5 },  
+    'River Fish':{ row: 19, col: 5  },  
+    '白い花':{ row: 20, col: 10  },  
+    'White flower':{ row: 20, col: 10   },  
+    '白色的花':{ row: 20, col: 10  },  
+    '酒場のワイン':{row: 20, col: 5   },  
+    '上等なエール':{row: 20, col: 5   },  
+    'にんじん':{row: 19, col: 1  },  
+    'じゃがいも':{row: 19, col: 3  },  
+    'トマト':{row: 20, col: 14  },  
+    'ぶどう':{row: 19, col: 9 },  
+    'りんご':{row: 19, col: 10 },  
+    'スライムの塊':{row: 22, col: 5  },  
+    '魔力の結晶（小）':{row: 22, col: 8},  
+    '焼きキノコ':{row: 19, col: 6},  
+    'キノコの乾燥粉末':{ row: 23, col: 14 },  
+    '強化クリスタル':{ row: 22, col: 10}, 
+    '呪われた魔力の石片':{ row: 17, col: 1 },
+    '魔力の石片':{ row: 17, col: 1},
+    '古代の巻物':{ row: 15, col: 15},
+
+    // デフォルト（マップにない場合は左上のアイコンを使用）
+    'default': { row: 1, col: 1 }
+};
+
+
+
 // === constants.js に追加（既存のmaterialShopの下あたりに） ===
 const resources = [
     t('resource_iron_ore'),
@@ -1219,8 +1277,8 @@ const QuestCompletionDialogue = {
         {speaker: 'カイト', text: '料理人依頼の新鮮キノコ、大量に集めてきたぜ！今夜はキノコ祭りだろ！？'},
         {speaker: '{PLAYER}', text: '大量すぎるだろ、カイト。よくそんなに採れたな。お疲れ。'},
         {speaker: 'ルナ', text: 'このキノコ、香りが最高です！普通のスープがごちそうになりますよ～。'},
-        {speaker: 'カイト', text: '俺はキノコステーキがいいぜ！冒険者のスタミナが3倍になるやつ！'},
-        {speaker: 'ルナ', text: 'スタミナアップ料理？いいですね！この年の豊作でキノコがいっぱいだから、保存食にも最適です。'},
+        {speaker: 'カイト', text: '俺は焼きキノコがいいぜ！冒険者のHPを250も回復できるやつ！'},
+        {speaker: 'ルナ', text: '焼きキノコ？いいですね！この年の豊作でキノコがいっぱいだから、保存食にも最適です。'},
         {speaker: '{PLAYER}', text: '豊作の年か。最近村が賑わってるのはそれか…祭りの準備も進んでるみたいだな。'},
         {speaker: 'カイト', text: '祭り！？キノコ料理コンテストとかやったら俺が優勝だぜ！新レシピ考えとくか！'},
         {speaker: '料理人', text: '素晴らしいキノコだ！今夜の宴会メニューが決まったよ。この豊作でみんな腹いっぱい食える！'},
@@ -2063,16 +2121,17 @@ const questTypeClasses = ['kill', 'discovery', 'escort', 'fetch', 'defense', 'tr
 
 const shopItems = [
 
-    {name:'HP potion', cost:100, type:'potion', restore:'hp', amount:30},
-    {name:'MP potion', cost:150, type:'potion', restore:'mp', amount:30},    
-    {name:'Small knife', cost:100, stat:'strength', bonus:3, enhancement: 5},
-    {name: 'Iron sword', cost:200, stat:'strength', bonus:6, enhancement: 10},
-    {name:'Beginner Scroll', cost:100, stat:'wisdom', bonus:3, enhancement: 5},
-    {name:'Magician Scroll', cost:200, stat:'wisdom', bonus:6, enhancement: 10},
-    {name:'Leather gloves', cost:100, stat:'dexterity', bonus:3, enhancement: 5},
-    {name:'Elf boots', cost:200, stat:'dexterity', bonus:6, enhancement: 10},
-    {name:'Lucky coin', cost:100, stat:'luck', bonus:3, enhancement: 5},
-    {name:'Four-leaf clover', cost:200, stat:'luck', bonus:3, enhancement: 10},
+    {name: 'HP Potion', cost: 100, type: 'potion', restore: 'hp', amount: 30, description: 'A small red vial that instantly heals wounds.'},
+    {name: 'MP Potion', cost: 150, type: 'potion', restore: 'mp', amount: 30, description: 'A glowing blue vial that replenishes magical energy.'},
+    {name: 'Small Knife', cost: 100, stat: 'strength', bonus: 3, enhancement: 5, description: 'A basic dagger suitable for beginners.'},
+    {name: 'Iron Sword', cost: 200, stat: 'strength', bonus: 6, enhancement: 10, description: 'A sturdy iron blade favored by seasoned fighters.'},
+    {name: 'Beginner Scroll', cost: 100, stat: 'wisdom', bonus: 3, enhancement: 5, description: 'A simple scroll containing introductory magical knowledge.'},
+    {name: 'Magician Scroll', cost: 200, stat: 'wisdom', bonus: 6, enhancement: 10, description: 'An advanced scroll filled with powerful arcane secrets.'},
+    {name: 'Leather Gloves', cost: 100, stat: 'dexterity', bonus: 3, enhancement: 5, description: 'Light, flexible gloves that improve precision.'},
+    {name: 'Elf Boots', cost: 200, stat: 'dexterity', bonus: 6, enhancement: 10, description: 'Elegant elven footwear that enhances agility.'},
+    {name: 'Lucky Coin', cost: 100, stat: 'luck', bonus: 3, enhancement: 5, description: 'An old coin said to bring good fortune.'},
+    {name: 'Four-Leaf Clover', cost: 200, stat: 'luck', bonus: 3, enhancement: 10, description: 'A rare clover that significantly boosts luck.'},
+
 
 ];
 

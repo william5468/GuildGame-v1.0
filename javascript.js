@@ -7,6 +7,7 @@ let currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecip
 let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
 let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 let playerName = "";
+let audioPlayed = false;
 
 /**
  * better_alert(message, type = "basic")
@@ -596,7 +597,8 @@ function skipIntro() {
             // セーブデータ読み込み + 表示更新
         loadGame(1);
         updateDisplays();
-        crossfadeTo('bgm', 5000);
+        audioPlayed = true;
+        crossfadeTo('bgm', 7000);
     const overlay = document.getElementById('loadingOverlay');
     if (!overlay) return;
 
@@ -1900,7 +1902,6 @@ function updateModal() {
         closeModal();
         return;
     }
-    modalTitle.innerHTML = `日 ${currentDayEvents[0].day} のイベント`;
     modalContent.innerHTML = `<p><strong>${currentDayEvents[currentPage].message}</strong></p>`;
     pageInfo.innerHTML = `ページ ${currentPage + 1} / ${currentDayEvents.length}`;
     prevBtn.style.display = currentPage > 0 ? 'inline-block' : 'none';
@@ -3341,7 +3342,7 @@ if (q.buy) {
             expGains[adv.id] = expGain;
             adv.exp += expGain;
             levelUp(adv);
-            adv.busy = false;
+            adv.busy = true;
         });
 
         let trainingMessage = `${assignedAdvs.map(adv => `${adv.name}(+${expGains[adv.id]}EXP) `).join('')}`;
@@ -3484,7 +3485,7 @@ if (q.buy) {
         let crystalQty = 2 + Math.floor(q.floor / 2);
         let crystalName = t('enhancement_crystal');
         addToInventory(
-            {name: crystalName, id: gameState.nextId++, consumable: true}, // consumable: true を追加（鍛冶屋で消費するため）
+            {name: crystalName, id: gameState.nextId++, consumable: true},
             crystalQty
         );
         let crystalMsg = crystalQty > 1 
@@ -3503,6 +3504,18 @@ if (q.buy) {
         extraMsg += `<br>${t('item_found', {name: rareItemName})}${t('rare_indicator')}`;
     }
 
+    // 追加: レベル1ダンジョン（floor === 1）の場合のみ、独立した60%の確率で呪われた魔力の石片をドロップ
+    if (q.floor === 1) {
+        let cursedRoll = Math.random();
+        if (cursedRoll < 0.6) { // 60% chance
+            const cursedItemName = "呪われた魔力の石片";
+            addToInventory(
+                {name: cursedItemName, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: cursedItemName})} (コレクションアイテム)`;
+        }
+    }
         }else // === 貿易クエスト完了処理（日終了時のクエスト完了ループ内に追加） ===
  if (q.type === 2) {
             const repChance = Math.min(0.8, 0.15 + q.difficulty * 0.0065);
@@ -5525,14 +5538,14 @@ function renderFacilities() {
             <div id="renderedfacilitiesContent" style="text-align:center; padding:60px;">
                 <h2>${t('facilities_street_title')}</h2>
                 <h2 style="font-size:1.6em; margin:40px 0;">${t('facilities_select_prompt')}</h2>
-                <div class="buttons" style="gap:30px; flex-wrap:wrap;">
-                    <button onclick="selectFacility('blacksmith')" style="padding:40px 40px; font-size:1.4em; background:rgba(231,76,60,0.9);">
+                <div class="buttons" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                    <button onclick="selectFacility('blacksmith')" style="padding: 40px 40px; font-size: 1.4em; background: rgba(231,76,60,0.9);">
                         ${t('facilities_blacksmith')}
                     </button>
-                    <button onclick="selectFacility('tavern')" style="padding:40px 40px; font-size:1.4em; background:rgba(52,152,219,0.9);">
+                    <button onclick="selectFacility('tavern')" style="padding: 40px 40px; font-size: 1.4em; background: rgba(52,152,219,0.9);">
                         ${t('facilities_tavern')}
                     </button>
-                    <button onclick="selectFacility('alchemy')" style="padding:40px 40px; font-size:1.4em; background:rgba(46,204,113,0.9);">
+                    <button onclick="selectFacility('alchemy')" style="padding: 40px 40px; font-size: 1.4em; background: rgba(46,204,113,0.9);">
                         ${t('facilities_alchemy')}
                     </button>
                 </div>
@@ -6298,13 +6311,38 @@ function renderCurrentCharacter() {
         html += `<li>${t('none_equipment')}</li>`;
     } else {
         adv.equipment.forEach((eq, i) => {
+            const equipment_icon = getItemIconHtml(eq.name, 48); // サイズ48px推奨（必要なら64pxに変更）
             const statFull = t(`stat_${eq.stat}`) || t(`stat_${eq.stat}`);
             const baseBonus = `+${eq.bonus}% ${statFull}`;
             const enhBonus = (eq.enhancement > 0) 
-                ? ` + ${eq.enhancement}${t('absolute_symbol')}` 
+                ? ` +${eq.enhancement}${t('absolute_symbol')}` 
                 : '';
-            html += `<li>${eq.name} (${baseBonus}${enhBonus})
-                    <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">${t('unequip_button')}</button></li>`;
+
+            html += `<li style="
+                display: flex;
+                align-items: center;
+                gap: 12px;                  /* アイコンとテキストの間隔 */
+                padding: 8px 12px;
+                background: rgba(40,40,40,0.8);
+                border-radius: 6px;
+                margin-bottom: 8px;
+                list-style: none;           /* <ul>のマーカー削除用（必要に応じて） */
+            ">
+                ${equipment_icon}
+
+                <div style="
+                    flex: 1;                    /* 残りスペースをすべて占有（ボタンを右端に押しやる） */
+                    color: white;
+                    font-weight: bold;
+                    text-shadow: 1px 1px 2px black;
+                ">
+                    ${eq.name} (${baseBonus}${enhBonus})
+                </div>
+
+                <button class="cancel-btn" onclick="removeFromChar(${currentCharIndex}, ${i})">
+                    ${t('unequip_button')}
+                </button>
+            </li>`;
         });
     }
     html += `</ul>`;
@@ -6313,12 +6351,38 @@ function renderCurrentCharacter() {
     if (equippable.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>${t('equippable_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         equippable.forEach(it => {
-            const baseBonus = `+${it.bonus}% ${t(`stat_${it.stat}`)}`;
+            const equipment_icon = getItemIconHtml(it.name, 48); // サイズ48px推奨（必要なら64pxに変更）
+            const statFull = t(`stat_${it.stat}`);
+            const baseBonus = `+${it.bonus}% ${statFull}`;
             const enhBonus = (it.enhancement > 0) 
-                ? ` + ${it.enhancement}${t('absolute_symbol')}` 
+                ? ` +${it.enhancement}${t('absolute_symbol')}` 
                 : '';
-            html += `<li>${it.name} x${it.qty || 1} (${baseBonus}${enhBonus}) 
-                    <button onclick="equipToChar(${currentCharIndex}, ${it.id})">${t('equip_button')}</button></li>`;
+
+            // 数量表示: 2以上なら xN を表示、1なら何も表示しない（装備品は通常1個なのでスッキリ）
+            const qtyText = (it.qty || 1) > 1 ? ` x${it.qty || 1}` : '';
+
+            html += `<li style="
+                display: flex;
+                align-items: center;
+                gap: 12px;                  /* アイコンとテキストの間隔 */
+                padding: 8px 12px;
+                border-radius: 6px;
+                margin-bottom: 8px;
+                list-style: none;           /* <ul>のマーカー削除用（必要に応じて） */
+            ">
+                ${equipment_icon}
+
+                <div style="
+                    flex: 1;                    /* 残りスペースを占有（ボタンを右端に） */
+                    text-shadow: 1px 1px 2px black;
+                ">
+                    ${it.name}${qtyText} (${baseBonus}${enhBonus})
+                </div>
+
+                <button onclick="equipToChar(${currentCharIndex}, ${it.id})">
+                    ${t('equip_button')}
+                </button>
+            </li>`;
         });
         html += `</ul>`;
     }
@@ -6618,51 +6682,56 @@ function nextQuest() {
 
 // Keyboard navigation: A/a = previous, D/d = next
 document.addEventListener('keydown', (event) => {
-    // Ignore if focus is on an input, textarea, or contenteditable element (e.g., when typing)
+    // Ignore if focus is on an input, textarea, or contenteditable element
     const activeTag = document.activeElement.tagName;
     const isEditable = document.activeElement.isContentEditable;
     if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || isEditable) {
         return;
     }
 
+    // Helper to check if a modal is visible
+    const isModalVisible = (id) => {
+        const el = document.getElementById(id);
+        return el && window.getComputedStyle(el).display !== 'none';
+    };
+
+    // Modal visibility checks (cached for readability and minor perf gain)
+    const isEventOpen          = isModalVisible('eventModal');
+    const isShopOpen           = isModalVisible('shopModal');
+    const isCharactersOpen     = isModalVisible('charactersModal');
+    const isQuestCompletionOpen = isModalVisible('questCompletionModal');
+    const isBattleOpen         = isModalVisible('battleModal');
+    const isFacilitiesOpen     = isModalVisible('facilitiesModal');
+    const isGuildQuestsOpen    = isModalVisible('guildQuestsModal');
+    const isInventoryOpen      = isModalVisible('inventoryModal');
+    const isNPCsOpen           = isModalVisible('npcsModal');
+
     const key = event.key.toLowerCase();
-    const eventmodal = document.getElementById('eventModal');
-    const event_modal_displaying = eventmodal && window.getComputedStyle(eventmodal).display !== 'none';
-    const shopmodal = document.getElementById('shopModal');
-    const shop_modal_displaying = shopmodal && window.getComputedStyle(shopmodal).display !== 'none';
-    const charactersmodal = document.getElementById('charactersModal');
-    const characters_modal_displaying = charactersmodal && window.getComputedStyle(charactersmodal).display !== 'none';
-    const questCompletion_modal = document.getElementById('questCompletionModal');
-    const questCompletion_modal_displaying = questCompletion_modal && window.getComputedStyle(questCompletion_modal).display !== 'none';   
-    const battleModal_modal = document.getElementById('battleModal');
-    const battleModal_modal_displaying = battleModal_modal && window.getComputedStyle(battleModal_modal).display !== 'none';     
-    const facilitiesModal_modal = document.getElementById('facilitiesModal');
-    const facilitiesModal_modal_displaying = battleModal_modal && window.getComputedStyle(facilitiesModal_modal).display !== 'none';    
-    const guildQuestsModal_modal = document.getElementById('guildQuestsModal');
-    const guildQuestsModal_modal_displaying = battleModal_modal && window.getComputedStyle(guildQuestsModal_modal).display !== 'none';                   
-    console.log(event_modal_displaying);
+
+    // Left / Right navigation (A/D or arrow keys)
     if (key === 'a' || event.key === 'ArrowLeft') {
-        if (event_modal_displaying) {
+        if (isEventOpen) {
             prevPage();
-        }else if (characters_modal_displaying) {
+        } else if (isCharactersOpen) {
             prevChar();
-        }else if (shop_modal_displaying) {
+        } else if (isShopOpen) {
             prevShopPage();
-        }else{
+        } else {
             prevQuest();
         }
     } else if (key === 'd' || event.key === 'ArrowRight') {
-        if (event_modal_displaying) {
+        if (isEventOpen) {
             nextPage();
-        }else if (characters_modal_displaying) {
+        } else if (isCharactersOpen) {
             nextChar();
-        }else if (shop_modal_displaying) {
+        } else if (isShopOpen) {
             nextShopPage();
-        }else{
+        } else {
             nextQuest();
         }
-    } else if (key === 'c') {
-        // 'c' で現在のクエストから割り当て済み冒険者を1人解除（いる場合のみ）
+    }
+    // Unassign last adventurer from current quest with 'C'
+    else if (key === 'c') {
         const questCard = document.querySelector('.quest-card');
         if (!questCard) return;
 
@@ -6673,28 +6742,34 @@ document.addEventListener('keydown', (event) => {
         if (!q || q.inProgress || q.assigned.length === 0) return;
 
         const advId = q.assigned[q.assigned.length - 1];
-
         unassign(questId, advId);
-    } else if (event.key === 'Enter' && !event_modal_displaying && !shop_modal_displaying && !characters_modal_displaying && !battleModal_modal_displaying) {
-        playDay();
-    } else if (event.key === ' ') {
-    event.preventDefault(); // 常にページスクロールを防止（ゲーム中は不要）
-    
-    if (event_modal_displaying) {
-        if(!questCompletion_modal_displaying){
-            closeModal();
-        }
-    }else if (shop_modal_displaying) {
-        closeShop();
-    }else if (characters_modal_displaying) {
-        closeCharacters();
-    }else if (facilitiesModal_modal_displaying) {
-        closeFacilities();
-    }else if (guildQuestsModal_modal_displaying) {
-        closeGuildQuests();
     }
+    // Advance day with Enter (only when specific modals are closed)
+    else if (event.key === 'Enter' && !isEventOpen && !isShopOpen && !isCharactersOpen && !isBattleOpen) {
+        playDay();
+    }
+    // Close modals with Space (prevent page scroll)
+    else if (event.key === ' ') {
+        event.preventDefault();
 
-}
+        if (isEventOpen) {
+            if (!isQuestCompletionOpen) {
+                closeModal();
+            }
+        } else if (isShopOpen) {
+            closeShop();
+        } else if (isCharactersOpen) {
+            closeCharacters();
+        } else if (isFacilitiesOpen) {
+            closeFacilities();
+        } else if (isGuildQuestsOpen) {
+            closeGuildQuests();
+        } else if (isInventoryOpen) {
+            closeInventory();
+        } else if (isNPCsOpen) {
+            closeNPCs();
+        }
+    }
 });
 
 
@@ -6885,7 +6960,6 @@ document.getElementById('introBgm').volume = 0.5;  // ← 新規追加
 document.getElementById('battleBgm').volume = 0.3;
 document.getElementById('battleBgm2').volume = 0.3;
 document.getElementById('dialogueBgm').volume = 0.1;
-let audioPlayed = false;
 
 
 
@@ -8012,27 +8086,7 @@ function getIconHtml(row, col, size = 64) {
 }
 
 // === アイテム名 → アイコン位置マップ（ここを埋めてください）===
-const itemIconPositions = {
-    // 例（ユーザーが挙げた potion の例）
 
-    'Gold Coin': { row: 23, col: 10 },  // ゴールド用（適宜変更）
-    'HP potion': { row: 13, col: 1 },
-    'MP potion':{ row: 13, col: 2 },
-    'Small knife':{ row: 25, col: 1 },
-    'Iron sword':{ row: 25, col: 3 },      
-    'Beginner Scroll':{ row: 15, col: 9 },     
-    'Magician Scroll':{ row: 15, col: 15 },   
-    'Leather gloves':{ row: 31, col: 2 },   
-    'Elf boots':{ row: 30, col: 9 },  
-    'Lucky coin':{ row: 23, col: 10},  
-    'Four-leaf clover':{ row: 13, col: 11 },  
-    '鉄鉱石':{ row: 22, col: 15 },  
-    '薬草':{ row: 20, col: 6 },  
-    'スパイス':{ row: 23, col: 14 },  
-    '宝石':{ row: 23, col: 7 }, 
-    // デフォルト（マップにない場合は左上のアイコンを使用）
-    'default': { row: 1, col: 1 }
-};
 
 function getItemIconHtml(itemName, size = 64) {
     const pos = itemIconPositions[itemName] || itemIconPositions['default'];
@@ -8043,10 +8097,9 @@ function getItemIconHtml(itemName, size = 64) {
 function renderInventory() {
     let html = '';
 
-    const items = gameState.inventory.filter(item => (item.qty || 1) > 0);
-    // 最大スロット数（例: 64 = 8列×8行、MapleStoryのETCタブ風）
-    const maxSlots = 24;
-    const gridColumns = 4;
+    const items = gameState.inventory.filter(item => (item.qty ?? 1) > 0);
+    const maxSlots = 64;
+    const gridColumns = 8;
 
     // 名前順ソート
     items.sort((a, b) => a.name.localeCompare(b.name));
@@ -8056,23 +8109,47 @@ function renderInventory() {
         grid-template-columns: repeat(${gridColumns}, 1fr);
         gap: 8px;
         justify-items: center;
+        background: transparent;
     ">`;
 
-    let slotIndex = 0;
+    // Simplified stacking logic: one slot per unique item
+    // Consumables (potions) can stack → show quantity on the icon
+    // Equipment items each take one slot (no stacking) → no quantity text
     for (let i = 0; i < maxSlots; i++) {
-        const item = items.find(itm => {
-            // 装備品は個別（qty:1固定）、スタック品はqty分スロット消費
-            if (itm.type || itm.stat) {  // 装備品判定（statがあるかtype='equipment'など）
-                return false; // 後で個別処理（シンプルにするため今回はスタック品のみスロット消費）
-            }
-            const itemStart = items.slice(0, items.indexOf(itm) + 1).reduce((sum, prev) => sum + (prev.qty || 1), 0);
-            return slotIndex >= itemStart - (itm.qty || 1) && slotIndex < itemStart;
-        }) || items[slotIndex]; // 簡易マッピング
+        const item = items[i] || null;
 
-        if (item && (item.qty || 1) > 0) {
+        if (item) {
             const icon = getItemIconHtml(item.name, 48);
-            const displayQty = item.qty || 1;
-            const qtyText = displayQty > 1 ? displayQty : '';
+            const displayQty = item.qty ?? 1;
+            const qtyText = item.qty > 1 ? `${item.qty}` : '';
+
+            // Build multi-line tooltip
+            const tooltipLines = [item.name];
+
+            if (item.qty > 1) {
+                tooltipLines.push(`(x${item.qty})`);
+            }
+
+            if (item.description) {
+                tooltipLines.push('');
+                tooltipLines.push(item.description);
+            }
+
+            tooltipLines.push(''); // separator
+
+            if (item.type === 'potion') {
+                // Consumable-specific info
+                tooltipLines.push('Type: Potion');
+                tooltipLines.push(`Restores: ${item.amount} ${item.restore.toUpperCase()}`);
+            } else if (item.stat) {
+                // Equipment-specific info
+                const statName = item.stat.charAt(0).toUpperCase() + item.stat.slice(1);
+                tooltipLines.push(`${statName} Bonus: +${item.bonus}%`);
+                tooltipLines.push(`${statName} Enhancement: +${item.enhancement}`);
+            }
+
+            const tooltipText = tooltipLines.join('\n');
+            const escapedTooltip = tooltipText.replace(/"/g, '&quot;');
 
             html += `
                 <div style="
@@ -8087,8 +8164,10 @@ function renderInventory() {
                     align-items: center;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.6);
                     transition: all 0.2s;
-                " onmouseover="this.style.borderColor='#ffd700'; this.style.transform='scale(1.1)'"
-                  onmouseout="this.style.borderColor='#555'; this.style.transform='scale(1)'">
+                "
+                title="${escapedTooltip}"
+                onmouseover="this.style.borderColor='#ffd700'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.borderColor='#555'; this.style.transform='scale(1)'">
                     ${icon}
                     ${qtyText ? `<span style="
                         position: absolute;
@@ -8101,7 +8180,7 @@ function renderInventory() {
                     ">${qtyText}</span>` : ''}
                 </div>`;
         } else {
-            // 空スロット
+            // Empty slot
             html += `
                 <div style="
                     width: 64px;
@@ -8111,7 +8190,6 @@ function renderInventory() {
                     border-radius: 6px;
                 "></div>`;
         }
-        slotIndex += (item && !item.stat) ? (item.qty || 1) : 1; // スタック品はqty分消費、装備は1スロット
     }
 
     html += `</div>`;

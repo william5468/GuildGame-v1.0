@@ -1499,7 +1499,7 @@ const alchemyRecipes = {
     {level: 1, inputs: ["魔法結晶", "香料"], output: {name: "上級MP藥劑", type: "potion", restore: "mp", amount: 45, minPrice: 95, maxPrice: 145}},
 
     {level: 1, inputs: ["蘑菇", "藥草"], output: {name: "蘑菇回復藥", type: "potion", restore: "hp", amount: 100, minPrice: 35, maxPrice: 55}},
-    {level: 1, inputs: ["花朵", "普通藥草"], output: {name: "花之靈藥", type: "potion", restore: "mp", amount: 20, minPrice: 25, maxPrice: 45}},
+    {level: 1, inputs: ["花朵", "白色的花"], output: {name: "花之靈藥", type: "potion", restore: "mp", amount: 20, minPrice: 25, maxPrice: 45}},
     {level: 1, inputs: ["河魚", "蘑菇"], output: {name: "海鮮滋養湯", type: "potion", restore: "hp", amount: 150, minPrice: 50, maxPrice: 80}},
     {level: 1, inputs: ["鐵碎片", "藥草"], output: {name: "鐵草合金粉", type: "material", minPrice: 40, maxPrice: 70}},
     {level: 1, inputs: ["花朵", "蘑菇"], output: {name: "森林精華", type: "material", minPrice: 25, maxPrice: 45}},
@@ -2175,20 +2175,7 @@ const escortDescsByRank = {
   }
 };
 
-const questCompletionNPCUnlocks = {
-    // === Fランク killクエスト（ストーリー付き固定クエスト、questStoryindex 0〜2） ===
-    '0-F-0': '農夫',          // スライム5匹討伐（農夫登場）
-    '0-F-1': '酒場主人',      // 巨大ネズミ退治（酒場主人登場）
-    '0-F-2': '農夫',          // 野犬3匹討伐（農夫再登場、無害）
 
-    // === Fランク fetchクエスト（questStoryindex 0〜2 を使用） ===
-    // 配列の順番に基づく（ja/en/zh共通で同じ順序）
-    // 0: 薬草集め → 薬師アンロック
-    // 1: キノコ集め → 料理人アンロック
-    // 2: 花集め → 花屋アンロック
-    '3-F-0': '錬金術師',
-    '3-F-1': '料理人',
-};
 const fetchQuestsByRank = {
   ja: {
     'F': [
@@ -2199,7 +2186,7 @@ const fetchQuestsByRank = {
     'F+': [
         {desc: '鍛冶屋のために鉄の欠片を{qty}個集めてきて。', itemName: '鉄の欠片', minPrice: 20, maxPrice: 40},
         {desc: '漁師に川魚を{qty}匹釣ってきてほしい。', itemName: '川魚', minPrice: 20, maxPrice: 35},
-        {desc: '薬師のために普通の薬草を{qty}個持ってきて。', itemName: '普通の薬草', minPrice: 15, maxPrice: 30}
+        {desc: '薬師のために白い花を{qty}個持ってきて。', itemName: '白い花', minPrice: 15, maxPrice: 30}
     ],
     'D': [
         {desc: '鉱夫のために良質の鉄鉱石を{qty}個採掘してきて。', itemName: '鉄鉱石', minPrice: 30, maxPrice: 60},
@@ -2256,7 +2243,7 @@ const fetchQuestsByRank = {
     'F+': [
         {desc: 'Collect {qty} iron scraps for the blacksmith.', itemName: 'Iron Scrap', minPrice: 20, maxPrice: 40},
         {desc: 'Catch {qty} river fish for the fisherman.', itemName: 'River Fish', minPrice: 20, maxPrice: 35},
-        {desc: 'Bring {qty} common herbs to the apothecary.', itemName: 'Common Herb', minPrice: 15, maxPrice: 30}
+        {desc: 'Bring {qty} white flower to the apothecary.', itemName: 'White flower', minPrice: 15, maxPrice: 30}
     ],
     'D': [
         {desc: 'Mine {qty} quality iron ore for the miner.', itemName: 'Iron Ore', minPrice: 30, maxPrice: 60},
@@ -2313,7 +2300,7 @@ const fetchQuestsByRank = {
     'F+': [
         {desc: '為鐵匠收集{qty}個鐵碎片。', itemName: '鐵碎片', minPrice: 20, maxPrice: 40},
         {desc: '為漁夫釣{qty}條河魚。', itemName: '河魚', minPrice: 20, maxPrice: 35},
-        {desc: '為藥師帶來{qty}個普通藥草。', itemName: '普通藥草', minPrice: 15, maxPrice: 30}
+        {desc: '為藥師帶來{qty}個白色的花。', itemName: '白色的花', minPrice: 15, maxPrice: 30}
     ],
     'D': [
         {desc: '為礦工採掘{qty}個優質鐵礦石。', itemName: '鐵礦石', minPrice: 30, maxPrice: 60},
