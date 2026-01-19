@@ -3794,6 +3794,220 @@ function generateDungeonEnemies(q) {
     }
 }
 
+// === ストーリークエスト専用ボス定義（進行度ごとに固定、独自のprimary type） ===
+const storyBosses = [
+    // progress 0: 盗賊団団長 - DEX特化（素早さ・回避・クリティカル重視）
+    { name: "盗賊団団長", image: "Images/Assassin(M)_enemy.png", primary: "STR" },
+    // progress 1: 森の守護者トレント - WIS特化（魔法・回復・範囲攻撃）
+    { name: "遺跡の守護者トレント", image: "Images/遺跡の守護者トレント.jpg", primary: "WIS" },
+    // progress 2: 闇の魔導士 - WIS特化（強力魔法・デバフ）
+    { name: "闇の魔導士", image: "Images/dark_mage.png", primary: "WIS" },
+    // progress 3: 古代ドラゴン - STR特化（物理火力・ブレス）
+    { name: "古代ドラゴン", image: "Images/ancient_dragon.png", primary: "STR" },
+    // progress 4: 魔王の分身 - LUC特化（運頼みの高ダメージ・状態異常）
+    { name: "魔王の分身", image: "Images/demon_lord_avatar.png", primary: "LUC" }
+];
+
+// === ボス対応レベル（5つのストーリークエスト = level 20,40,60,80,100） ===
+const bossLevels = [20, 40, 60, 80, 100];
+
+// === ストーリークエスト用雑魚テーマ（進行度ごとに固定のモンスター種、ダンジョンと共有） ===
+const storyMinionThemes = [
+    // progress 0: 盗賊団テーマ
+    ["Hunter(M)_enemy.png", "Hunter(F)_enemy.png"],
+    // progress 1: 森テーマ
+    ["plant.png", "wolf.png", "spider.png"],
+    // progress 2: 闇テーマ
+    ["skeleton swordfighter.png", "skeleton rogue.png", "skeleton mage.png", "shadow.png"],
+    // progress 3: ドラゴン配下
+    ["troll.png", "golem.png", "dragon.png"],
+    // progress 4: 魔王軍
+    ["red imp.png", "black imp.png", "armor.png", "skeleton archer.png"]
+];
+
+// === 新関数: ストーリークエスト用敵生成（レベルベースステータス、ボスは1.5倍強化） ===
+function generateStoryEnemies(q) {
+    q.enemies = [];
+
+    const MONSTER_FOLDER = "Images/Dungeon_Monster/";
+
+    // ダンジョンモンスターリスト（generateDungeonEnemies と完全共有）
+    const dungeonMonsters = [
+        { file: "Hunter(M)_enemy.png",                 name: "ハンター（M)",             level: 1,  type: "STR" },
+        { file: "Hunter(F)_enemy.png",                 name: "ハンター（F)",             level: 1,  type: "STR" },
+        { file: "slime.png",                 name: "スライム",             level: 1,  type: "STR" },
+        { file: "snake.png",                 name: "毒蛇",                 level: 1,  type: "DEX" },
+        { file: "goblin.png",                name: "ゴブリン",             level: 2,  type: "STR" },
+        { file: "plant.png",                 name: "キラープラント",       level: 2,  type: "WIS" },
+        { file: "bat.png",                   name: "ヴァンパイアバット",   level: 3,  type: "DEX" },
+        { file: "spider.png",                name: "ジャイアントスパイダー", level: 3, type: "STR" },
+        { file: "wolf.png",                  name: "ダイアウルフ",         level: 4,  type: "STR" },
+        { file: "raven.png",                 name: "ヘルレイヴン",         level: 4,  type: "DEX" },
+        { file: "troll.png",                 name: "トロール",             level: 5,  type: "STR" },
+        { file: "treant.png",                name: "トレント",             level: 5,  type: "WIS" },
+        { file: "skeleton swordfighter.png", name: "スケルトン剣士",       level: 6,  type: "STR" },
+        { file: "skeleton rogue.png",        name: "スケルトンローグ",     level: 6,  type: "DEX" },
+        { file: "skeleton mage.png",         name: "スケルトンメイジ",     level: 7,  type: "WIS" },
+        { file: "skeleton archer.png",       name: "スケルトンアーチャー", level: 7,  type: "DEX" },
+        { file: "skeleton mage.png",         name: "上級スケルトンメイジ", level: 8,  type: "WIS" },
+        { file: "skeleton archer.png",       name: "上級スケルトンアーチャー", level: 8, type: "DEX" },
+        { file: "armor.png",                 name: "リビングアーマー",     level: 9,  type: "STR" },
+        { file: "golem.png",                 name: "ストーンゴーレム",     level: 9,  type: "STR" },
+        { file: "dragon.png",                name: "ヤングドラゴン",       level: 10, type: "STR" },
+        { file: "red imp.png",               name: "レッダインプ",         level: 10, type: "DEX" },
+        { file: "black imp.png",             name: "ブラックインプ",       level: 10, type: "WIS" },
+        { file: "shadow.png",                name: "シャドウ",             level: 10, type: "LUC" }
+    ];
+
+    const progress = gameState.mainProgress;
+
+    // --- ボス生成（固定レベル・primary、ステータス1.5倍強化） ---
+    const boss_level = bossLevels[progress] || 100;
+    const bossData = storyBosses[progress] || { name: "強大な敵", image: "Images/default_boss.png", primary: "STR" };
+
+    const total_status_point = 40 + boss_level * 5;
+
+    let strength = 0;
+    let wisdom   = 0;
+    let dexterity = 0;
+    let luck     = 0;
+
+    // primary type 特化（ボスはprimaryに60%、次に高いステに20%、残り10%×2）
+    switch (bossData.primary) {
+        case "STR":
+            strength  = Math.floor(total_status_point * 0.6);
+            dexterity = Math.floor(total_status_point * 0.2);
+            wisdom    = Math.floor(total_status_point * 0.1);
+            luck      = Math.floor(total_status_point * 0.1);
+            break;
+        case "DEX":
+            dexterity = Math.floor(total_status_point * 0.6);
+            strength  = Math.floor(total_status_point * 0.2);
+            wisdom    = Math.floor(total_status_point * 0.1);
+            luck      = Math.floor(total_status_point * 0.1);
+            break;
+        case "WIS":
+            wisdom    = Math.floor(total_status_point * 0.6);
+            luck      = Math.floor(total_status_point * 0.2); // WISボスはLUCをサブに（魔法+運要素）
+            strength  = Math.floor(total_status_point * 0.1);
+            dexterity = Math.floor(total_status_point * 0.1);
+            break;
+        case "LUC":
+            luck      = Math.floor(total_status_point * 0.6);
+            wisdom    = Math.floor(total_status_point * 0.2); // LUCボスはWISをサブに（運+状態異常）
+            strength  = Math.floor(total_status_point * 0.1);
+            dexterity = Math.floor(total_status_point * 0.1);
+            break;
+    }
+
+    // ボス基本ステータス（レベルベース、冒険者と同等成長）
+    let bossHp       = Math.floor(boss_level * 100);
+    let bossMp       = Math.floor(boss_level * 40);
+    let bossDefense  = Math.floor(boss_level * 2);
+
+    const boss = {
+        id: 'story_boss_' + gameState.nextId++,
+        name: bossData.name,
+        image: bossData.image,
+        sex: 'N',
+        hp: bossHp,
+        maxHp: 0,
+        mp: bossMp,
+        maxMp: 0,
+        strength: strength,
+        wisdom:   wisdom,
+        dexterity: dexterity,
+        luck:     luck,
+        defense: bossDefense,
+        defending: false,
+        action: null,
+        target: null,
+        primary: bossData.primary,
+        isBoss: true,
+        level: boss_level
+    };
+    boss.maxHp = boss.hp;
+    boss.maxMp = boss.mp;
+    q.enemies.push(boss);
+
+    // --- 雑魚生成（ボスと同じレベルベースステータス計算、テーマ固定） ---
+    const minionCount = 3; // 進行度で1〜3体
+    const minion_level = Math.floor(boss_level / 2); // ボスの半分レベル
+
+    const total_minion_status_point = 40 + minion_level * 5;
+
+    const themeFiles = storyMinionThemes[progress] || ["slime.png", "goblin.png"];
+    const themeMonsters = themeFiles.map(file => dungeonMonsters.find(m => m.file === file)).filter(Boolean);
+    if (themeMonsters.length === 0) themeMonsters.push(dungeonMonsters[0]);
+
+    for (let i = 0; i < minionCount; i++) {
+        const monsterData = themeMonsters[Math.floor(Math.random() * themeMonsters.length)];
+
+        let minion_strength = 0;
+        let minion_wisdom   = 0;
+        let minion_dexterity = 0;
+        let minion_luck     = 0;
+
+        // 雑魚もprimary typeで特化（ダンジョンと同等）
+        switch (monsterData.type) {
+            case "STR":
+                minion_strength  = Math.floor(total_minion_status_point * 0.6);
+                minion_dexterity = Math.floor(total_minion_status_point * 0.2);
+                minion_wisdom    = Math.floor(total_minion_status_point * 0.1);
+                minion_luck      = Math.floor(total_minion_status_point * 0.1);
+                break;
+            case "DEX":
+                minion_dexterity = Math.floor(total_minion_status_point * 0.6);
+                minion_strength  = Math.floor(total_minion_status_point * 0.2);
+                minion_wisdom    = Math.floor(total_minion_status_point * 0.1);
+                minion_luck      = Math.floor(total_minion_status_point * 0.1);
+                break;
+            case "WIS":
+                minion_wisdom    = Math.floor(total_minion_status_point * 0.6);
+                minion_luck      = Math.floor(total_minion_status_point * 0.2);
+                minion_strength  = Math.floor(total_minion_status_point * 0.1);
+                minion_dexterity = Math.floor(total_minion_status_point * 0.1);
+                break;
+            case "LUC":
+                minion_luck      = Math.floor(total_minion_status_point * 0.6);
+                minion_wisdom    = Math.floor(total_minion_status_point * 0.2);
+                minion_strength  = Math.floor(total_minion_status_point * 0.1);
+                minion_dexterity = Math.floor(total_minion_status_point * 0.1);
+                break;
+        }
+
+        // 雑魚基本ステータス（レベルベース）
+        let minionHp      = Math.floor(minion_level * 100);
+        let minionMp      = Math.floor(minion_level * 40);
+        let minionDefense = Math.floor(minion_level * 2);
+
+        const e = {
+            id: `story_minion_${q.id}_${i}`,
+            name: monsterData.name + (minionCount > 1 ? ` ${i + 1}` : ""),
+            image: `${MONSTER_FOLDER}${monsterData.file}`,
+            sex: 'N',
+            hp: minionHp,
+            maxHp: 0,
+            mp: minionMp,
+            maxMp: 0,
+            strength: minion_strength,
+            wisdom:   minion_wisdom,
+            dexterity: minion_dexterity,
+            luck:     minion_luck,
+            defense: minionDefense,
+            defending: false,
+            action: null,
+            target: null,
+            primary: monsterData.type,
+            isBoss: false,
+            level: minion_level
+        };
+        e.maxHp = e.hp;
+        e.maxMp = e.mp;
+        q.enemies.push(e);
+    }
+}
+// === playDay() の更新版（ストーリークエストを戦闘レンダリングに統合） ===
 function playDay(){
     if (gameState.gameOver) return;
 
@@ -3813,7 +4027,6 @@ function playDay(){
             return;
         }
     }
-    // ===== 追加終わり =====
 
     const evDay = gameState.day; 
     gameState.day++;
@@ -3825,34 +4038,27 @@ function playDay(){
         checkGameOver();
     }
 
-    // playDay() の通常クエスト処理ループを以下に更新（貿易を特殊扱い）
+    // 通常クエスト処理（貿易・訓練はそのまま）
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense || q.type === 7) continue;  // 戦闘クエストは後で特殊処理（貿易はここで処理）
+        if (q.defense || q.type === 7 || q.type === 6) continue;  // 戦闘系（防衛・ダンジョン・ストーリー）は後で特殊処理
 
+        // 貿易処理（変更なし）
         if (q.type === 8 || q.type === 'trade') {
-            // === 貿易クエスト専用進行 ===
             if (q.assigned.length > 0) {
-                if (!q.inProgress) {
-                    q.inProgress = true;
-                }
-                q.tradeRemainingDays--; // 毎日減少
-
-
+                if (!q.inProgress) q.inProgress = true;
+                q.tradeRemainingDays--;
                 if (q.tradeRemainingDays <= 0) {
-                    // 完了時のみ processQuestOutcome を呼び出し（success=true）
                     processQuestOutcome(q, evDay, true, false);
                     gameState.quests.splice(i, 1);
                 }
-                // 未完了の場合は進行中（busy は維持、EXP/ダメージなし）
             } else {
-                // 割り当て0人の場合は進行停止（残り日数減少なし）
-                q.inProgress = false; // 表示用にリセット（任意）
+                q.inProgress = false;
             }
-            continue; // 通常処理スキップ
+            continue;
         }
 
-        // === 通常クエスト処理（変更なし） ===
+        // 通常クエスト処理（変更なし）
         if (q.assigned.length > 0) {
             const teamStr = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'strength'), 0);
             const teamWis = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'wisdom'), 0);
@@ -3868,31 +4074,24 @@ function playDay(){
             const excess = (teamFocus / q.minFocus) - 1;
             const prob = Math.min(0.5, 0.1 + Math.max(0, excess) * 0.2);
             let successToday = Math.random() < prob;
-            if (q.training && q.assigned.length > 0) {
-                successToday = true;
-            }
+            if (q.training && q.assigned.length > 0) successToday = true;
             if (successToday) {
                 processQuestOutcome(q, evDay, true, false);
-                if (!q.training) {
-                    gameState.quests.splice(i, 1);
-                }
+                if (!q.training) gameState.quests.splice(i, 1);
             } else {
-                if (!q.training) {
-                    q.inProgress = true;
-                }
+                if (!q.training) q.inProgress = true;
             }
         }
     }
 
-        // === 日終了処理（playDay() 内の日終了時に呼び出し） ===
-    updateDailyPrices(); // 既存の日終了処理の最初か最後に追加
-    // 期限切れ処理（戦闘クエスト除外）
+    updateDailyPrices();
+    // 期限切れ処理（戦闘系除外）
     gameState.quests.forEach(q => {
-        if (!q.training && !q.playerPosted && q.type !== 8 && !q.defense && q.type !== 7) q.daysLeft--;
+        if (!q.training && !q.playerPosted && q.type !== 8 && !q.defense && q.type !== 7 && q.type !== 6) q.daysLeft--;
     });
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense || q.training || q.playerPosted || q.type === 8 || q.type === 7) continue;
+        if (q.defense || q.training || q.playerPosted || q.type === 8 || q.type === 7 || q.type === 6) continue;
         if (q.daysLeft <= 0) {
             if (q.assigned.length > 0) {
                 processQuestOutcome(q, evDay, false, false);
@@ -3905,8 +4104,8 @@ function playDay(){
         }
     }
 
-    // ===== 戦闘クエスト特殊処理 =====
-    // まず割り当てなしの戦闘クエストを処理（防衛のみゲームオーバー）
+    // ===== 戦闘クエスト特殊処理（ストーリー追加） =====
+    // 未割り当て防衛 → 即ゲームオーバー
     const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
     if (unassignedDefense) {
         better_alert(`防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`,"error");
@@ -3916,32 +4115,48 @@ function playDay(){
         return;
     }
 
-    const unassignedDungeon = gameState.quests.filter(q => q.type === 7 && q.assigned.length === 0);
-    unassignedDungeon.forEach(q => {
+    // 未割り当てダンジョン・ストーリー → 通常失敗処理
+    const unassignedNonDefenseBattle = gameState.quests.filter(q => (q.type === 7 || q.type === 6) && q.assigned.length === 0);
+    unassignedNonDefenseBattle.forEach(q => {
         processQuestOutcome(q, evDay, false, false);
         gameState.quests = gameState.quests.filter(quest => quest !== q);
     });
 
-    // 次に割り当てありの戦闘クエストを処理
-    let assignedBattleQuests = gameState.quests.filter(q => (q.defense || q.type === 7) && q.assigned.length > 0);
+    // 割り当てありの戦闘クエスト
+    let assignedBattleQuests = gameState.quests.filter(q => (q.defense || q.type === 7 || q.type === 6) && q.assigned.length > 0);
 
     if (assignedBattleQuests.length > 0) {
-        // クエストリストから戦闘クエストを一時削除
-        gameState.quests = gameState.quests.filter(q => !(q.defense || q.type === 7));
+        // メインクエストリストから戦闘系を一時除去
+        gameState.quests = gameState.quests.filter(q => !(q.defense || q.type === 7 || q.type === 6));
 
-        // 防衛を最優先にソート
-        assignedBattleQuests.sort((a, b) => (b.defense ? 1 : 0) - (a.defense ? 1 : 0));
+        // 優先順位: 防衛 > ストーリー > ダンジョン
+        assignedBattleQuests.sort((a, b) => {
+            if (a.defense && !b.defense) return -1;
+            if (!a.defense && b.defense) return 1;
+            if (a.type === 6 && b.type !== 6) return -1;
+            if (b.type === 6 && a.type !== 6) return 1;
+            return 0;
+        });
 
-        // 残りをpendingキューに保存
+        // 複数ある場合はペンディングキューに保存
         gameState.pendingBattles = assignedBattleQuests.slice(1);
-
         const currentQ = assignedBattleQuests[0];
 
-        // 戦闘開始
+        // 敵生成 + タイプ設定
+        let titleText;
         if (currentQ.defense) {
             generateEnemies(currentQ);
-        } else {
+            CurrentQuestType = 'defense';
+            titleText = `防衛戦: ${currentQ.desc}`;
+        } else if (currentQ.type === 7) {
             generateDungeonEnemies(currentQ);
+            CurrentQuestType = 'dungeon';
+            titleText = `ダンジョン${currentQ.floor}階探索`;
+        } else if (currentQ.type === 6) {
+            generateStoryEnemies(currentQ);
+            CurrentQuestType = 'story';
+            const boss = currentQ.enemies[0];
+            titleText = `${boss.name} との決戦`;
         }
 
         const team = currentQ.assigned.map(id => {
@@ -3961,22 +4176,22 @@ function playDay(){
             combatants: []
         };
 
-        const titleText = currentQ.defense ? `防衛戦: ${currentQ.desc}` : `ダンジョン${currentQ.floor}階探索`;
-        CurrentQuestType = currentQ.defense ? 'defense' : 'dungeon';
-        console.log(CurrentQuestType);
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
-        if (CurrentQuestType="dungeon"){
-            renderBattlebgm(CurrentQuestType,currentQ.floor);
-        }
-        else{
-           renderBattlebgm(CurrentQuestType); 
+
+        // BGM再生（ストーリー用に拡張）
+        if (CurrentQuestType === 'dungeon') {
+            renderBattlebgm(CurrentQuestType, currentQ.floor);
+        } else if (CurrentQuestType === 'story') {
+            renderBattlebgm('boss'); // ボス戦専用BGM（存在すれば）
+        } else {
+            renderBattlebgm(CurrentQuestType);
         }
         return; // 戦闘中は日処理中断
     }
 
-    // 戦闘クエストがなければ通常終了
+    // 戦闘なしの場合の通常終了
     checkGameOver();
     showModal(evDay);
 }
@@ -3995,21 +4210,20 @@ function renderBattlebgm(QuestType,floor=0){
 }
 
 
+// === renderBattle() の更新版（ストーリー対応） ===
 function renderBattle() {
     if (!currentBattle) return;
 
-    // 戦闘タイプに応じてモーダルの背景画像を動的に変更
+    // 戦闘タイプに応じた背景画像（ストーリー対応）
     const modalContent = document.querySelector('#battleModal');
     if (modalContent) {
         const backgrounds = {
-            defense: 'Images/Street.jpg',                    // デフォルト（通常戦闘）
-            dungeon: 'Images/DungeonQuest_Background.jpg',    // ダンジョン戦闘用（パスは適宜調整）
-            // 必要に応じて追加してください
+            defense: 'Images/Street.jpg',
+            dungeon: 'Images/DungeonQuest_Background.jpg',
+            story: 'Images/Street.jpg'  // ストーリーボス戦専用背景（実際のファイル名に合わせて調整）
         };
-        console.log(CurrentQuestType);
-        const bgUrl = backgrounds[CurrentQuestType] || backgrounds.normal;
+        const bgUrl = backgrounds[CurrentQuestType] || backgrounds.defense;
         modalContent.style.backgroundImage = `url('${bgUrl}')`;
-        // CSSで既に設定されている場合も上書きされるようinline styleで指定
         modalContent.style.backgroundSize = 'cover';
         modalContent.style.backgroundPosition = 'center';
         modalContent.style.backgroundRepeat = 'no-repeat';
@@ -4034,15 +4248,25 @@ function renderBattle() {
     topHtml += '</div>';
 
     let enemiesHtml = '<div class="battle-section"><div class="battle-enemies">';
-    currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
+    const liveEnemies = currentBattle.enemies.filter(e => e.hp > 0);
+
+    // ストーリーかつ敵がボスのみ（単体ボス）の場合のみ大きく中央配置
+    const isSingleStoryBoss = CurrentQuestType === 'story' && liveEnemies.length === 1 && liveEnemies[0].isBoss;
+
+    liveEnemies.forEach(e => {
         const hpPct = (e.hp / e.maxHp) * 100;
         const apPct = ((e.currentAp || 0) / 5) * 100;
         const selectableClass = currentBattle.selecting && currentBattle.selecting.mode === 'enemy' ? 'selectable-target' : '';
         const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === e.id;
         const highlightClass = isCurrent ? 'current-enemy' : '';
+
+        let extraStyle = '';
+        let imgStyle = '';
+
+
         enemiesHtml += `
-            <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''}>
-                <img src="${e.image}" class="enemy-img" alt="${e.name}">
+            <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''} ${extraStyle}>
+                <img src="${e.image}" class="enemy-img" alt="${e.name}" ${imgStyle}>
                 ${e.name}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
                 HP ${Math.floor(e.hp)}/${e.maxHp}
@@ -4075,9 +4299,9 @@ function renderBattle() {
                 <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
                 AP ${adv.currentAp || 0}/5
                 <div class="battle-stats">
-                        Crit: ${adv.critChance}%<br>
-                        Evade: ${evasion}%
-                    </div>
+                    Crit: ${adv.critChance}%<br>
+                    Evade: ${evasion}%
+                </div>
                 ${actionHtml ? `<div class="ally-actions">${actionHtml}</div>` : ''}
             </div>
         `;
@@ -4086,6 +4310,8 @@ function renderBattle() {
 
     document.getElementById('battleContent').innerHTML = topHtml + enemiesHtml + teamHtml;
 }
+
+
 function getCharType(adv) {
     // Specific character name overrides (priority: name > image prefix > stats)
     if (adv.name) {
@@ -5993,6 +6219,7 @@ function postGuildQuest() {
             id: gameState.nextId++,
             desc: mq.desc,
             difficulty: mq.difficulty,
+            rank : mq.rank,
             minStrength: mq.minStrength,
             minWisdom: mq.minWisdom,
             minDexterity: mq.minDexterity,
