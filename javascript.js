@@ -1713,6 +1713,10 @@ function checkGameOver() {
         const seq = getGameOverSequence(reason);
         queueGameOverDialogue(seq);
         gameState.gameOver = true;
+
+        // === NEW: ゲームオーバー専用の終了フラグを設定（ダイアログ終了時に使用） ===
+        gameState.isFinalGameOver = true;
+
         updateDay();
         return true;
     }
@@ -4011,6 +4015,15 @@ function generateStoryEnemies(q) {
 function playDay(){
     if (gameState.gameOver) return;
 
+// ===== 新規追加: 日進捗中フラグ + ボタン無効化（多重クリック防止） =====
+    if (gameState.isAdvancingDay) {
+        better_alert("日を進めています… しばらくお待ちください。", "warning");
+        return;
+    }
+    gameState.isAdvancingDay = true;
+
+
+
     // ===== 防衛クエスト未割り当て警告（防衛のみ） =====
     const defenseQuest = gameState.quests.find(q => q.defense);
     if (defenseQuest && defenseQuest.assigned.length === 0) {
@@ -4024,6 +4037,7 @@ function playDay(){
 本当に日を進めますか？（キャンセルで日進めを中止できます）`;
 
         if (!confirm(confirmMessage)) {
+            gameState.isAdvancingDay = false;
             return;
         }
     }
@@ -4179,7 +4193,7 @@ function playDay(){
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
-
+        startRound();
         // BGM再生（ストーリー用に拡張）
         if (CurrentQuestType === 'dungeon') {
             renderBattlebgm(CurrentQuestType, currentQ.floor);
@@ -4192,8 +4206,48 @@ function playDay(){
     }
 
     // 戦闘なしの場合の通常終了
-    checkGameOver();
-    showModal(evDay);
+    const overlay = document.getElementById('dayTransitionOverlay');
+    const info = document.getElementById('transitionDayInfo');
+
+
+
+    // 新しいDayのみ表示（大きく中央に）
+    info.style.fontSize = '5.5em';
+    info.style.fontWeight = 'bold';
+    info.style.letterSpacing = '0.2em';
+    info.style.textShadow = '0 0 20px rgba(255, 255, 255, 1)';
+    info.style.transition = 'opacity 0.5s ease-in-out'; // Dayフェードをゆったり
+    info.innerText = `Day ${gameState.day}`;
+    info.style.opacity = '0'; // 初期非表示
+
+    // オーバーレイ表示＆フェードイン（暗転）
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '0';
+    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+
+    // 暗転ホールド後 → 新Dayフェードイン（フェードイン時間を長めに）
+    setTimeout(() => {
+        info.style.opacity = '1';
+
+        // 新Day表示後ホールド → オーバーレイフェードアウト（フェードアウトをゆったり）
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+        }, 600);
+
+        // オーバーレイフェードアウト完了後、非表示＆後続処理
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            checkGameOver();
+            showModal(evDay);
+
+            gameState.isAdvancingDay = false;
+            if (endDayBtn) {
+                endDayBtn.disabled = false;
+                endDayBtn.querySelector('span').innerText = endDayBtn.dataset.originalText || '日終了 & 冒険者派遣';
+                delete endDayBtn.dataset.originalText;
+            }
+        }, 1100); // 600msホールド + 500msフェード
+    }, 500); // 暗転ホールド（フェードイン0.5s後500ms待機）
 }
 
 function renderBattlebgm(QuestType,floor=0){
@@ -4214,44 +4268,52 @@ function renderBattlebgm(QuestType,floor=0){
 function renderBattle() {
     if (!currentBattle) return;
 
-    // 戦闘タイプに応じた背景画像（ストーリー対応）
-    const modalContent = document.querySelector('#battleModal');
-    if (modalContent) {
+    // ===== 背景画像を #battleModal 自体に適用（外側オーバーレイに設定）=====
+    const battleModal = document.getElementById('battleModal');
+    if (battleModal) {
         const backgrounds = {
             defense: 'Images/Street.jpg',
             dungeon: 'Images/DungeonQuest_Background.jpg',
             story: 'Images/Street.jpg'  // ストーリーボス戦専用背景（実際のファイル名に合わせて調整）
         };
         const bgUrl = backgrounds[CurrentQuestType] || backgrounds.defense;
-        modalContent.style.backgroundImage = `url('${bgUrl}')`;
-        modalContent.style.backgroundSize = 'cover';
-        modalContent.style.backgroundPosition = 'center';
-        modalContent.style.backgroundRepeat = 'no-repeat';
+
+        // 背景画像を設定（ダークオーバーレイは保持しつつ画像を重ねる）
+        battleModal.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bgUrl}')`;
+        battleModal.style.backgroundSize = 'cover';
+        battleModal.style.backgroundPosition = 'center';
+        battleModal.style.backgroundRepeat = 'no-repeat';
+
+        // position fixed を保証（モーダル全体が画面いっぱいになるため背景が確実に表示）
+        battleModal.style.position = 'fixed';
+        battleModal.style.inset = '0';
+    }
+
+    // 内側要素を完全に透明化（背景を隠さない）
+    const modalContent = document.querySelector('#battleModal .modal-content');
+    if (modalContent) {
+        modalContent.style.background = 'transparent';
+        modalContent.style.border = 'none';
+        modalContent.style.boxShadow = 'none';
     }
 
     // Initialize defaults if missing
     if (!currentBattle.log) currentBattle.log = [];
     if (!currentBattle.round) currentBattle.round = 1;
-    if (!currentBattle.phase) currentBattle.phase = 'setup';
+    // ===== 変更: setup フェーズを完全に廃止 → デフォルトで executing に =====
+    if (!currentBattle.phase) currentBattle.phase = 'executing';
 
     let topHtml = '<div class="battle-top"><div id="battleLog">';
     currentBattle.log.forEach(log => topHtml += '<p>' + log + '</p>');
     topHtml += '</div>';
 
-    // Add Round Start button during setup, or Next/Skip during execution
-    if (currentBattle.phase === 'setup') {
-        topHtml += '<button onclick="startRound()">ラウンド開始</button>';
-    } else if (currentBattle.currentActor) {
-        const buttonText = currentBattle.currentActor.isEnemy ? '次へ' : '行動をスキップ';
-        topHtml += `<button onclick="skipTurn()">${buttonText}</button>`;
-    }
+    // ===== 変更: 「ラウンド開始」ボタンを完全に削除 =====
+    // 戦闘開始時に自動でラウンドが開始されるため、ボタンは不要
+
     topHtml += '</div>';
 
     let enemiesHtml = '<div class="battle-section"><div class="battle-enemies">';
     const liveEnemies = currentBattle.enemies.filter(e => e.hp > 0);
-
-    // ストーリーかつ敵がボスのみ（単体ボス）の場合のみ大きく中央配置
-    const isSingleStoryBoss = CurrentQuestType === 'story' && liveEnemies.length === 1 && liveEnemies[0].isBoss;
 
     liveEnemies.forEach(e => {
         const hpPct = (e.hp / e.maxHp) * 100;
@@ -4262,7 +4324,6 @@ function renderBattle() {
 
         let extraStyle = '';
         let imgStyle = '';
-
 
         enemiesHtml += `
             <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''} ${extraStyle}>
@@ -4308,7 +4369,24 @@ function renderBattle() {
     });
     teamHtml += '</div></div>';
 
-    document.getElementById('battleContent').innerHTML = topHtml + enemiesHtml + teamHtml;
+    const battleContent = document.getElementById('battleContent');
+    battleContent.innerHTML = topHtml + enemiesHtml + teamHtml;
+
+    // battleContent を完全に透明化（背景を隠さない）
+    battleContent.style.background = 'transparent';
+    battleContent.style.pointerEvents = 'auto';
+
+    // 敵ターンのみ、battleContent全体をクリックでターン進行
+    if (currentBattle.phase === 'executing' && currentBattle.currentActor && currentBattle.currentActor.isEnemy) {
+        battleContent.style.cursor = 'pointer';
+        battleContent.onclick = function(e) {
+            e.stopPropagation();
+            skipTurn();
+        };
+    } else {
+        battleContent.style.cursor = '';
+        battleContent.onclick = null;
+    }
 }
 
 
@@ -4875,6 +4953,7 @@ function roundStartPopup() {
     popup.style.pointerEvents = 'none';
     popup.style.opacity = '0';
     popup.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+    popup.style.background =  'transparent';
     
     document.body.appendChild(popup);
     
@@ -5013,10 +5092,12 @@ function checkBattleEnd() {
 
     if (aliveTeam === 0) {
         endBattle(false);
+        gameState.isAdvancingDay = false;
         return true;
     }
     if (aliveEnemies === 0) {
         endBattle(true);
+        gameState.isAdvancingDay = false;
         return true;
     }
     return false;
@@ -5095,10 +5176,8 @@ function endBattle(win) {
         // Defeat processing
         if (q.defense) {
             // Only defense defeat causes game over
-            gameState.eventHistory.unshift({ 
-                day: day, 
-                message: '防衛戦失敗！ギルドは崩壊しました。ゲームオーバー！' 
-            });
+            better_alert('防衛戦失敗！ギルドは崩壊しました。ゲームオーバー！','failure');
+
             gameState.gameOver = true;
         } else {
             // Dungeon defeat: normal failure (reputation loss, etc.)
@@ -5143,6 +5222,7 @@ function endBattle(win) {
         document.getElementById('battleTitle').innerHTML = titleText;
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
+        startRound();
         CurrentQuestType = currentQ.defense ? 'defense' : 'dungeon';
         if (CurrentQuestType="dungeon"){
             renderBattlebgm(CurrentQuestType,currentQ.floor);
@@ -7574,9 +7654,44 @@ function setDialogueBackground(bg_url = 'Images/intro_bg.jpg') {
     }
 }
 
+
+
 function playNextQuestDialogue() {
     if (completionQueue.length === 0) {
         isPlayingDialogue = false;
+
+// ===== GAME OVER 専用処理（最後のダイアログ終了時のみ）=====
+        if (gameState.isFinalGameOver) {
+            // BGM 全停止（GameoverBgm も含めて静かにする）
+
+
+            // dayTransitionOverlay を再利用して GAME OVER 表示
+            const overlay = document.getElementById('dayTransitionOverlay');
+            const message = document.getElementById('transitionMessage');
+            const info = document.getElementById('transitionDayInfo');
+
+            // 多言語対応 GAME OVER テキスト
+            const gameOverText = currentLang === 'ja' ? 'ゲームオーバー' :
+                                 currentLang === 'zh' ? 'GAME OVER' :
+                                 'GAME OVER';
+
+            message.style.fontSize = '4.5em';
+            message.style.color = '#ff3366';
+            message.style.textShadow = '0 0 30px #000, 0 0 50px #ff0000';
+            message.innerText = gameOverText;
+            info.innerText = '';
+
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '0';
+            requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+
+
+
+
+            // ここで関数終了（通常のモーダル非表示などはスキップ）
+            return;
+        }
+
         crossfadeTo('bgm', 2000);
         const modal = document.getElementById('introModal');
         modal.style.display = 'none';
@@ -8259,7 +8374,8 @@ async function unlockQuestNPC(npcKey) {
     gameState.villageNPCs[npcKey] = {
         name: npcKey,
         Friendliness: 50, // 初期好感度（酒場主人など恩がある場合は80など調整）
-        bag: { gold: 300, items: [] } // 初期ゴールド（酒販売用に少し持たせる）
+        bag: { gold: 300, items: [] }, // 初期ゴールド（酒販売用に少し持たせる）
+        image: `${npcKey}.png`,
     };
 
 // 個別初期設定があれば適用（なければデフォルトのまま）

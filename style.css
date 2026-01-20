@@ -2510,4 +2510,18 @@ h1, h3, button, .adventurer-card, .quest-card {
     font-size: 1.6em;
 }
 
+#dayTransitionOverlay {
+    transition: opacity 0.5s ease-in-out; /* フェードイン・アウト時間を同じ0.5sに統一（ゆったりで対称） */
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.96);
+}
+
+#transitionDayInfo {
+    font-size: 5.5em;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+    opacity: 0;
+}
+
 

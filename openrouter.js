@@ -567,8 +567,14 @@ function appendNpcMessage_OR(rawText) {  // rawText = LLMから来たトーン�
         align-self: flex-start;
     `;
 
+    // currentNpcKey_OR をキーとしてエンティティを取得（冒険者 or villageNPC）
+    let entity = getEntityByName(currentNpcKey_OR);
+
+    // エンティティの image プロパティを使用（存在しなければプレースホルダー）
+    let imageFile = (entity && entity.image) ? entity.image : 'placeholder.png';
+
     const avatar = document.createElement('img');
-    avatar.src = `Images/${currentNpcKey_OR}.png`;
+    avatar.src = `Images/${imageFile}`;
     avatar.style.cssText = `
         width: 80px;
         height: 120px;
@@ -579,8 +585,10 @@ function appendNpcMessage_OR(rawText) {  // rawText = LLMから来たトーン�
         border: 1px solid #cccccc;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     `;
-    avatar.onerror = function() { this.src = 'Images/placeholder.png'; };
-
+    // 画像読み込み失敗時のフォールバック（プレースホルダー）
+    avatar.onerror = function() { 
+        this.src = 'Images/placeholder.png'; 
+    };
     const messageDiv = document.createElement('div');
     messageDiv.style.cssText = `
         background: #ffffff;
