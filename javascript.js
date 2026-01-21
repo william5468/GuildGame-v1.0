@@ -4274,22 +4274,19 @@ function renderBattle() {
         const backgrounds = {
             defense: 'Images/Street.jpg',
             dungeon: 'Images/DungeonQuest_Background.jpg',
-            story: 'Images/Street.jpg'  // ストーリーボス戦専用背景（実際のファイル名に合わせて調整）
+            story: 'Images/Street.jpg'
         };
         const bgUrl = backgrounds[CurrentQuestType] || backgrounds.defense;
 
-        // 背景画像を設定（ダークオーバーレイは保持しつつ画像を重ねる）
         battleModal.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bgUrl}')`;
         battleModal.style.backgroundSize = 'cover';
         battleModal.style.backgroundPosition = 'center';
         battleModal.style.backgroundRepeat = 'no-repeat';
 
-        // position fixed を保証（モーダル全体が画面いっぱいになるため背景が確実に表示）
         battleModal.style.position = 'fixed';
         battleModal.style.inset = '0';
     }
 
-    // 内側要素を完全に透明化（背景を隠さない）
     const modalContent = document.querySelector('#battleModal .modal-content');
     if (modalContent) {
         modalContent.style.background = 'transparent';
@@ -4297,72 +4294,78 @@ function renderBattle() {
         modalContent.style.boxShadow = 'none';
     }
 
-    // Initialize defaults if missing
     if (!currentBattle.log) currentBattle.log = [];
     if (!currentBattle.round) currentBattle.round = 1;
-    // ===== 変更: setup フェーズを完全に廃止 → デフォルトで executing に =====
     if (!currentBattle.phase) currentBattle.phase = 'executing';
 
     let topHtml = '<div class="battle-top"><div id="battleLog">';
     currentBattle.log.forEach(log => topHtml += '<p>' + log + '</p>');
-    topHtml += '</div>';
-
-    // ===== 変更: 「ラウンド開始」ボタンを完全に削除 =====
-    // 戦闘開始時に自動でラウンドが開始されるため、ボタンは不要
-
-    topHtml += '</div>';
+    topHtml += '</div></div>';
 
     let enemiesHtml = '<div class="battle-section"><div class="battle-enemies">';
-    const liveEnemies = currentBattle.enemies.filter(e => e.hp > 0);
 
-    liveEnemies.forEach(e => {
-        const hpPct = (e.hp / e.maxHp) * 100;
-        const apPct = ((e.currentAp || 0) / 5) * 100;
-        const selectableClass = currentBattle.selecting && currentBattle.selecting.mode === 'enemy' ? 'selectable-target' : '';
+    currentBattle.enemies.forEach(e => {
+        const isDead = e.hp <= 0;
+        const hpPct = isDead ? 0 : (e.hp / e.maxHp) * 100;
+        const apPct = isDead ? 0 : ((e.currentAp || 0) / 5) * 100;
+
+        const selectableClass = !isDead && currentBattle.selecting && currentBattle.selecting.mode === 'enemy' ? 'selectable-target' : '';
         const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === e.id;
         const highlightClass = isCurrent ? 'current-enemy' : '';
 
-        let extraStyle = '';
-        let imgStyle = '';
+        const imgFilter = isDead ? 'grayscale(100%) opacity(0.6)' : 'none';
+        const deadOverlay = isDead ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:3em; pointer-events:none; text-shadow:0 0 10px black;">☠️</div>' : '';
 
         enemiesHtml += `
-            <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''} ${extraStyle}>
-                <img src="${e.image}" class="enemy-img" alt="${e.name}" ${imgStyle}>
+            <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" 
+                 ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''} 
+                 style="position:relative; ${isDead ? 'opacity:0.7;' : ''}">
+                <img src="${e.image}" class="enemy-img" alt="${e.name}" style="filter:${imgFilter};">
+                ${deadOverlay}
                 ${e.name}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
                 HP ${Math.floor(e.hp)}/${e.maxHp}
+                ${!isDead ? `
                 <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
                 AP ${e.currentAp || 0}/5
+                ` : ''}
             </div>
         `;
     });
     enemiesHtml += '</div></div>';
 
     let teamHtml = '<div class="battle-section"><div class="battle-team">';
-    currentBattle.team.filter(adv => adv.hp > 0).forEach(adv => {
-        const hpPct = (adv.hp / adv.maxHp) * 100;
-        const apPct = ((adv.currentAp || 0) / 5) * 100;
-        const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === adv.id;
+
+    currentBattle.team.forEach(adv => {
+        const isDead = adv.hp <= 0;
+        const hpPct = isDead ? 0 : (adv.hp / adv.maxHp) * 100;
+        const apPct = isDead ? 0 : ((adv.currentAp || 0) / 5) * 100;
+
+        const selectableClass = !isDead && currentBattle.selecting && currentBattle.selecting.mode === 'ally' ? 'selectable-target' : '';
+        const isCurrent = currentBattle.currentActor && currentBattle.currentActor.id === adv.id && !isDead;
         const highlightClass = isCurrent ? 'current-actor' : '';
-        const selectableClass = currentBattle.selecting && currentBattle.selecting.mode === 'ally' ? 'selectable-target' : '';
+
+        const imgFilter = isDead ? 'grayscale(100%) opacity(0.6)' : 'none';
+        const deadOverlay = isDead ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:3em; pointer-events:none; text-shadow:0 0 10px black;">☠️</div>' : '';
+
         let actionHtml = '';
         if (isCurrent && !adv.isEnemy && currentBattle.phase === 'executing') {
             actionHtml = getActionButtonsHtml(adv);
         }
-        const baseEv = Math.floor(getEffectiveStat(adv, 'luck') / 10);
-        const evasion = Math.min(80, baseEv + (adv.activeEvadeBonus ? 15 : 0));
+
         teamHtml += `
-            <div class="battle-ally ${selectableClass} ${highlightClass}" id="div_${adv.id}" data-id="${adv.id}" ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''}>
-                <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">
+            <div class="battle-ally ${selectableClass} ${highlightClass}" id="div_${adv.id}" data-id="${adv.id}" 
+                 ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''} 
+                 style="position:relative; ${isDead ? 'opacity:0.7;' : ''}">
+                <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}" style="filter:${imgFilter};">
+                ${deadOverlay}
                 ${getNameHtml(adv)}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
                 HP ${Math.floor(adv.hp)}/${adv.maxHp}
+                ${!isDead ? `
                 <div class="progress-bar"><div class="progress-fill ap-fill" style="width:${apPct}%"></div></div>
                 AP ${adv.currentAp || 0}/5
-                <div class="battle-stats">
-                    Crit: ${adv.critChance}%<br>
-                    Evade: ${evasion}%
-                </div>
+                ` : '<div style="color:#ff4444; font-weight:bold; margin-top:8px;">Dead</div>'}
                 ${actionHtml ? `<div class="ally-actions">${actionHtml}</div>` : ''}
             </div>
         `;
@@ -4370,13 +4373,11 @@ function renderBattle() {
     teamHtml += '</div></div>';
 
     const battleContent = document.getElementById('battleContent');
-    battleContent.innerHTML = topHtml + enemiesHtml + teamHtml;
+    battleContent.innerHTML = enemiesHtml + teamHtml;
 
-    // battleContent を完全に透明化（背景を隠さない）
     battleContent.style.background = 'transparent';
     battleContent.style.pointerEvents = 'auto';
 
-    // 敵ターンのみ、battleContent全体をクリックでターン進行
     if (currentBattle.phase === 'executing' && currentBattle.currentActor && currentBattle.currentActor.isEnemy) {
         battleContent.style.cursor = 'pointer';
         battleContent.onclick = function(e) {
@@ -4386,6 +4387,237 @@ function renderBattle() {
     } else {
         battleContent.style.cursor = '';
         battleContent.onclick = null;
+    }
+
+    // ===== Status Tooltip: 1s hover delay (mouse) + Long Press (touch) =====
+    let tooltip = document.getElementById('statusTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'statusTooltip';
+        tooltip.style.position = 'absolute';
+        tooltip.style.background = 'rgba(20, 20, 40, 0.92)';
+        tooltip.style.color = '#ffffff';
+        tooltip.style.padding = '10px 14px';
+        tooltip.style.borderRadius = '10px';
+        tooltip.style.border = '2px solid #ffd700';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.zIndex = '10000';
+        tooltip.style.display = 'none';
+        tooltip.style.fontSize = '13px';
+        tooltip.style.fontWeight = '600';
+        tooltip.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.8)';
+        tooltip.style.maxWidth = '280px';
+        tooltip.style.textAlign = 'left';
+        tooltip.style.backdropFilter = 'blur(4px)';
+        tooltip.style.lineHeight = '1.4';
+        document.body.appendChild(tooltip);
+    }
+
+    // Add listeners only once
+    if (!battleContent.dataset.tooltipListenersAdded) {
+        battleContent.dataset.tooltipListenersAdded = 'true';
+
+        let hoverTimer = null;
+        let holdTimer = null;
+        let currentHoverTarget = null;
+        let currentHoldTarget = null;
+        let holdStartX = 0;
+        let holdStartY = 0;
+
+        const showTooltip = (e, target) => {
+            if (!target || !target.dataset.id) return;
+            const id = target.dataset.id;
+            const actor = [...currentBattle.team, ...currentBattle.enemies].find(a => a.id.toString() === id);
+            if (!actor) return;
+
+            const getStat = (stat) => {
+                if (!actor.isEnemy && typeof getEffectiveStat === 'function') {
+                    return getEffectiveStat(actor, stat);
+                }
+                return actor[stat] || 0;
+            };
+
+            const str = getStat('strength');
+            const wis = getStat('wisdom');
+            const dex = getStat('dexterity');
+            const luc = getStat('luck');
+            const def = actor.defense || 0;
+            const crit = actor.critChance || 0;
+
+            const evasion = !actor.isEnemy 
+                ? Math.min(80, Math.floor(luc / 10) + (actor.activeEvadeBonus ? 15 : 0))
+                : 'N/A';
+
+            // ===== Collect Active Effects =====
+            let activeEffects = actor.activeEffects ? [...actor.activeEffects] : [];
+
+            // Backward compatibility: legacy buffs
+            if (actor.buffs && Array.isArray(actor.buffs)) {
+                actor.buffs.forEach(buff => {
+                    const name = buff.name || 'Unknown Buff';
+                    const type = buff.type || 'neutral';
+                    if (!activeEffects.some(e => e.name === name)) {
+                        activeEffects.push({ name, type });
+                    }
+                });
+            }
+
+            // Global effects (for allies only)
+            if (!actor.isEnemy && currentBattle.activeEffects && Array.isArray(currentBattle.activeEffects)) {
+                currentBattle.activeEffects.forEach(globalEffect => {
+                    if (globalEffect.global && !activeEffects.some(e => e.name === globalEffect.name)) {
+                        activeEffects.push(globalEffect);
+                    }
+                });
+            }
+
+            let html = `
+                <div style="text-align:center; margin-bottom:6px; font-size:14px; color:#ffd700;">${actor.name}</div>
+                STR: ${str}<br>
+                WIS: ${wis}<br>
+                DEX: ${dex}<br>
+                LUC: ${luc}<br>
+                Defense: ${def}<br>
+                Crit %: ${crit}%<br>
+                Evade %: ${evasion}
+            `;
+
+            if (activeEffects.length > 0 || actor.stunnedRounds > 0 || currentBattle.protectRounds > 0) {
+                html += `<div style="margin-top:8px; font-weight:bold; color:#ffd700;">Active Effects:</div>`;
+
+                activeEffects.forEach(effect => {
+                    let displayName = effect.name;
+                    let suffix = '';
+
+                    // No remaining count for Defense/Counter/Evade Bonus
+                    const noCountNames = [
+                        'Defense Up (25% damage reduction)',
+                        'Counter Ready',
+                        'Evade Bonus (+15%)'
+                    ];
+                    if (noCountNames.includes(effect.name)) {
+                        // No suffix
+                    } 
+                    // Global effect: use round left (from currentBattle.protectRounds)
+                    else if (effect.name.includes('Team Protected')) {
+                        if (currentBattle.protectRounds > 0) {
+                            suffix = ` (${currentBattle.protectRounds} round${currentBattle.protectRounds > 1 ? 's' : ''} left)`;
+                        }
+                    }
+                    // Other individual timed effects: assume duration if present, else no count
+                    else if (effect.duration > 0) {
+                        suffix = ` (${effect.duration} turn${effect.duration > 1 ? 's' : ''} left)`;
+                    }
+
+                    displayName += suffix;
+
+                    const color = effect.type === 'positive' ? '#8fff8f' :
+                                  effect.type === 'negative' ? '#ff8888' : '#cccccc';
+                    html += `<div style="color:${color}; margin-left:8px;">• ${displayName}</div>`;
+                });
+
+                // Stunned: always show turn left if active (separate from activeEffects)
+                if (actor.stunnedRounds > 0) {
+                    const color = '#ff8888';
+                    html += `<div style="color:${color}; margin-left:8px;">• Stunned (${actor.stunnedRounds} turn${actor.stunnedRounds > 1 ? 's' : ''} left)</div>`;
+                }
+            }
+
+            tooltip.innerHTML = html;
+
+            let x, y;
+            if (e && e.pageX !== undefined) {
+                x = e.pageX + 15;
+                y = e.pageY + 15;
+            } else {
+                x = holdStartX + 15;
+                y = holdStartY + 15;
+            }
+
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+            tooltip.style.display = 'block';
+        };
+
+        const hideTooltip = () => {
+            if (hoverTimer) {
+                clearTimeout(hoverTimer);
+                hoverTimer = null;
+            }
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            tooltip.style.display = 'none';
+            currentHoverTarget = null;
+            currentHoldTarget = null;
+        };
+
+        // Hover with 1s delay (mouse)
+        battleContent.addEventListener('mouseover', (e) => {
+            if (e.pointerType === 'mouse' || !e.pointerType) {
+                const target = e.target.closest('.battle-ally, .battle-enemy');
+                if (target && target !== currentHoverTarget) {
+                    currentHoverTarget = target;
+                    if (hoverTimer) clearTimeout(hoverTimer);
+                    hoverTimer = setTimeout(() => {
+                        if (currentHoverTarget === target) {
+                            showTooltip(e, target);
+                        }
+                    }, 1000);
+                }
+            }
+        });
+
+        battleContent.addEventListener('mousemove', (e) => {
+            if ((e.pointerType === 'mouse' || !e.pointerType) && tooltip.style.display === 'block') {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 15) + 'px';
+            }
+        });
+
+        battleContent.addEventListener('mouseout', (e) => {
+            if (e.pointerType === 'mouse' || !e.pointerType) {
+                const related = e.relatedTarget;
+                if (!related || !related.closest('.battle-ally, .battle-enemy')) {
+                    hideTooltip();
+                }
+            }
+        });
+
+        // Long press (touch)
+        battleContent.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch') {
+                const target = e.target.closest('.battle-ally, .battle-enemy');
+                if (!target) return;
+
+                currentHoldTarget = target;
+                holdStartX = e.pageX;
+                holdStartY = e.pageY;
+
+                holdTimer = setTimeout(() => {
+                    if (currentHoldTarget === target) {
+                        showTooltip(null, target);
+                    }
+                }, 500);
+            }
+        });
+
+        battleContent.addEventListener('pointermove', (e) => {
+            if (holdTimer && e.pointerType === 'touch') {
+                const dx = e.pageX - holdStartX;
+                const dy = e.pageY - holdStartY;
+                if (Math.sqrt(dx * dx + dy * dy) > 30) {
+                    clearTimeout(holdTimer);
+                    holdTimer = null;
+                    currentHoldTarget = null;
+                }
+            }
+        });
+
+        battleContent.addEventListener('pointerup', hideTooltip);
+        battleContent.addEventListener('pointercancel', hideTooltip);
+        battleContent.addEventListener('pointerleave', hideTooltip);
     }
 }
 
@@ -4589,34 +4821,34 @@ function executeActorAction(actor, action) {
     // Collect all popup infos from this action
     const popupInfos = [];
 
+    // Initialize activeEffects arrays if missing
+    if (!actor.activeEffects) actor.activeEffects = [];
+    if (!currentBattle.activeEffects) currentBattle.activeEffects = [];
+
+    // Helper to add/replace an effect on a target (actor or enemy)
+    const addEffect = (target, name, effectType, duration = null) => {
+        if (!target.activeEffects) target.activeEffects = [];
+        // Remove any existing effect with the same name
+        target.activeEffects = target.activeEffects.filter(e => e.name !== name);
+        target.activeEffects.push({ name, type: effectType, duration });
+    };
+
+    // Helper for global (battle-wide) effects
+    const addGlobalEffect = (name, effectType, duration = null) => {
+        currentBattle.activeEffects = currentBattle.activeEffects.filter(e => e.name !== name);
+        currentBattle.activeEffects.push({ name, type: effectType, duration, global: true });
+    };
+
     // Determine character type and gender for sound selection
     const charType = getCharType(actor);
     const sex = actor.sex || (function() {
-        if (actor.name === 'カイト') {
-                return 'M';
-            }
-            if (actor.name === 'ルナ') {
-                return 'F';
-            }        
-        // 名前リストで判定（男名優先 → 女名 → フォールバック）
-        if (actor.gender === 'male') {
-                return 'M';
-            }
-            if (actor.gender === 'female') {
-                return 'F';
-            }
-            // Rare fallback for very old saves without gender fiel
-   
-        // 画像ファイル名で明示的に性別がわかる場合（両方の表記形式に対応）
+        if (actor.name === 'カイト') return 'M';
+        if (actor.name === 'ルナ') return 'F';
+        if (actor.gender === 'male') return 'M';
+        if (actor.gender === 'female') return 'F';
         const imgLower = (actor.image || '').toLowerCase();
-        if (imgLower.includes('(f)') || imgLower.includes('_f')) {
-            return 'F';
-        }
-        if (imgLower.includes('(m)') || imgLower.includes('_m')) {
-            return 'M';
-        }
-
-        // デフォルト（モンスターなど性別不明の場合）
+        if (imgLower.includes('(f)') || imgLower.includes('_f')) return 'F';
+        if (imgLower.includes('(m)') || imgLower.includes('_m')) return 'M';
         return 'N';
     })();
 
@@ -4625,37 +4857,38 @@ function executeActorAction(actor, action) {
 
     switch (action.type) {
         case 'defense':
+            addEffect(actor, 'Defense Up (25% damage reduction)', 'positive', 1);
             actor.activeDefense = true;
             log += '! (25% damage reduction until next turn)';
-            // モンスター（sex === 'N'）は防御ボイスを再生しない
-            if (sex === 'F') {
-                soundToPlay = defenseFSound;
-            } else if (sex === 'M') {
-                soundToPlay = defenseMSound;
-            }
+            if (sex === 'F') soundToPlay = defenseFSound;
+            else if (sex === 'M') soundToPlay = defenseMSound;
             break;
+
         case 'counter':
+            addEffect(actor, 'Counter Ready', 'positive', 1);
             actor.activeCounter = true;
             log += '! (ready to counter)';
-            // モンスター（sex === 'N'）はカウンターボイスを再生しない
-            if (sex === 'F') {
-                soundToPlay = counterFSound;
-            } else if (sex === 'M') {
-                soundToPlay = counterMSound;
-            }
+            if (sex === 'F') soundToPlay = counterFSound;
+            else if (sex === 'M') soundToPlay = counterMSound;
             break;
+
         case 'evade':
+            addEffect(actor, 'Evade Bonus (+15%)', 'positive', 1);
             actor.activeEvadeBonus = true;
             log += '! (+15% evasion until next turn)';
             soundToPlay = lucEvadeSound;
             break;
+
         case 'protect':
+            addGlobalEffect('Team Protected (50% damage reduction)', 'positive', 2);
             currentBattle.protectRounds = 2;
             log += '! (team 50% damage reduction for 2 rounds)';
             soundToPlay = strProtectSound;
             break;
+
         case 'blessing':
             if (action.target) {
+                addEffect(action.target, 'Blessing (Crit +40%)', 'positive'); // No duration (lasts until battle end or cleared elsewhere)
                 action.target.critChance = Math.min(50, (action.target.critChance || 0) + 40);
                 log += ` on ${action.target.name}! (crit +40%, total ${action.target.critChance}%)`;
             } else {
@@ -4663,6 +4896,7 @@ function executeActorAction(actor, action) {
             }
             soundToPlay = lucBlessingSound;
             break;
+
         case 'explosion':
             log += '!';
             soundToPlay = wisExplosionSound;
@@ -4671,6 +4905,7 @@ function executeActorAction(actor, action) {
                 popupInfos.push(...infos);
             });
             break;
+
         default:
             if (!action.target) {
                 log += ' but has no target!';
@@ -4697,6 +4932,7 @@ function executeActorAction(actor, action) {
             popupInfos.push(...infos);
 
             if (action.type === 'stunning' && action.target.hp > 0) {
+                addEffect(action.target, 'Stunned', 'negative', 1);
                 action.target.stunnedRounds = 1;
                 addBattleLog(`${action.target.name} is stunned for 1 turn!`);
             }
@@ -4734,7 +4970,7 @@ function executeActorAction(actor, action) {
 
     addBattleLog(log);
 
-    // Add all collected damage popups (use setTimeout 0 to queue after current renders)
+    // Add all collected damage popups
     setTimeout(() => {
         popupInfos.forEach(info => {
             const div = document.getElementById(`div_${info.targetId}`);
@@ -4744,8 +4980,6 @@ function executeActorAction(actor, action) {
         });
     }, 0);
 
-    // Delay turn advance only if there were popups (to let animation finish)
-    // 900ms = 800ms popup duration + small buffer
     const delay = popupInfos.length > 0 ? 1000 : 0;
 
     setTimeout(() => {
@@ -4982,7 +5216,16 @@ function nextTurn() {
     currentBattle.currentActorIndex++;
 
     if (currentBattle.currentActorIndex >= currentBattle.combatants.length) {
+        // ===== Round-end / New round start processing =====
         currentBattle.protectRounds = Math.max(0, currentBattle.protectRounds - 1);
+
+        // Remove Team Protected display if expired
+        if (currentBattle.protectRounds <= 0 && currentBattle.activeEffects) {
+            currentBattle.activeEffects = currentBattle.activeEffects.filter(e => 
+                e.name !== 'Team Protected (50% damage reduction)'
+            );
+        }
+
         updateAliveCombatants();
 
         if (checkBattleEnd()) return;
@@ -4990,7 +5233,8 @@ function nextTurn() {
         currentBattle.round++;
         currentBattle.log = [];
         addBattleLog(`--- Round ${currentBattle.round} starts ---`);
-        roundStartPopup();  // <-- Add this line here
+        roundStartPopup();
+
         // Grant 1 AP to all alive combatants
         currentBattle.team.filter(c => c.hp > 0).forEach(c => {
             c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
@@ -5010,6 +5254,13 @@ function nextTurn() {
         if (actor.stunnedRounds > 0) {
             addBattleLog(`${actor.name} is stunned and skips the turn!`);
             actor.stunnedRounds--;
+
+            // Remove Stunned display if expired
+            if (actor.stunnedRounds <= 0 && actor.activeEffects) {
+                actor.activeEffects = actor.activeEffects.filter(e => 
+                    e.name !== 'Stunned'
+                );
+            }
         } // dead are skipped silently
 
         currentBattle.currentActorIndex++;
@@ -5017,6 +5268,13 @@ function nextTurn() {
         if (currentBattle.currentActorIndex >= currentBattle.combatants.length) {
             // All remaining actors this round were invalid → advance round early
             currentBattle.protectRounds = Math.max(0, currentBattle.protectRounds - 1);
+
+            if (currentBattle.protectRounds <= 0 && currentBattle.activeEffects) {
+                currentBattle.activeEffects = currentBattle.activeEffects.filter(e => 
+                    e.name !== 'Team Protected (50% damage reduction)'
+                );
+            }
+
             updateAliveCombatants();
 
             if (checkBattleEnd()) return;
@@ -5024,6 +5282,7 @@ function nextTurn() {
             currentBattle.round++;
             currentBattle.log = [];
             addBattleLog(`--- Round ${currentBattle.round} starts ---`);
+            roundStartPopup();
 
             currentBattle.team.filter(c => c.hp > 0).forEach(c => {
                 c.currentAp = Math.min(5, (c.currentAp || 0) + 1);
@@ -5046,7 +5305,15 @@ function nextTurn() {
         return;
     }
 
-    // Clear temporary buffs/debuffs
+    // Clear per-turn personal effect displays (Defense, Counter, Evade Bonus)
+    // These effects expire exactly at the start of the character's next turn
+    if (actor.activeEffects) {
+        actor.activeEffects = actor.activeEffects.filter(e => 
+            !['Defense Up (25% damage reduction)', 'Counter Ready', 'Evade Bonus (+15%)'].includes(e.name)
+        );
+    }
+
+    // Clear temporary per-turn mechanic flags (for actual game logic)
     actor.activeDefense = false;
     actor.activeCounter = false;
     actor.activeEvadeBonus = false;
@@ -5054,10 +5321,10 @@ function nextTurn() {
     currentBattle.currentActor = actor;
 
     if (actor.isEnemy) {
-        renderBattle(); // Shows "次へ" button
+        renderBattle(); // Shows enemy turn (click to proceed)
     } else {
         currentBattle.selecting = null;
-        renderBattle(); // Shows action buttons
+        renderBattle(); // Shows action buttons for player
     }
 
     checkBattleEnd();

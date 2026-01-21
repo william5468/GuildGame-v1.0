@@ -480,6 +480,7 @@ body {
 /* background: rgba(255, 255, 255, 0.15) url('Images/Card.png') center / contain no-repeat; */
 
 .quest-card {
+    
     position: relative;
     width: 100%;                     /* Take full available width of container */
     max-width: 700px;                /* Cap at preferred wide size, but never exceed container */
@@ -505,6 +506,34 @@ body {
     align-items: center;
 }
 
+/* Phone portrait – even tighter fit + smaller text */
+@media (orientation: portrait) {
+    .quest-card {
+        padding: clamp(30px, 6vw, 50px) clamp(30px, 8vw, 60px) clamp(50px, 8vw, 70px);
+        min-height: clamp(450px, 75vh, 700px);  /* Taller card to match vertical scroll if using rotation */
+    }
+    
+    .quest-card h2,
+    .quest-card h3 {
+        font-size: clamp(1.2rem, 6vw, 1.8rem);
+    }
+    
+    .quest-card p,
+    .quest-card div {
+        font-size: clamp(0.95rem, 4vw, 1.4rem);
+    }
+}
+
+.quest-card span {
+    font-size: clamp(0.5rem, 2vw, 1rem);   /* Much smaller base → fits more text without overflow */
+    line-height: 1.6;                        /* Handwritten feel – generous spacing */
+    margin: 10px 0;
+    text-align: justify;                     /* Justified = more "written on parchment" look */
+    hyphens: auto;                           /* Optional: better line breaks on narrow screens */
+    color: #f8f8f0;                          /* Slightly off-white "aged ink" tone (change to #3c2f2f for dark brown ink if preferred) */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
 /* Quest.png as pseudo-element – larger and always visible */
 .quest-card::before {
     content: '';
@@ -518,12 +547,45 @@ body {
     pointer-events: none;
     transition: transform 0.4s ease, opacity 0.3s ease;
     z-index: -1;
+    transform-origin: center center; /* Ensures clean rotation around center */
 }
 
-/* Hover effect for quests */
-.quest-card:hover::before {
-    transform: scale(1.06);
-    opacity: 1;
+/* Portrait mode (phone held vertically/longitudinally) – switch to vertical/tall parchment */
+@media (orientation: portrait) {
+    .quest-card {
+        max-width: 95vw;              /* Narrower to feel more "scroll-like" */
+        min-height: clamp(500px, 80vh, 800px); /* Much taller – uses most of the vertical screen */
+        padding: 100px 40px 120px;    /* More top/bottom padding for tall scroll aesthetic */
+        margin: 20px auto;
+    }
+
+    .quest-card::before {
+        transform: rotate(90deg) scale(1.15);     /* Change to rotate(-90deg) if the scroll "top" ends up at bottom */
+        width: 160%;                  /* Larger % to cover the now-swapped dimensions after rotation */
+        height: 160%;
+        top: -30%;                    /* Re-center the rotated image – tweak these % if off-center */
+        left: -30%;
+    }
+
+    /* Optional hover effect adjustment for portrait (subtler since screens are smaller) */
+    .quest-card:hover::before {
+        transform: rotate(90deg) scale(1.2); /* Or rotate(-90deg) scale(1.05) */
+    }
+}
+
+/* Extra tweak for very small/narrow phones (width ≤480px) */
+@media (orientation: portrait) and (max-width: 480px) {
+    .quest-card {
+        min-height: clamp(450px, 85vh, 700px);
+        padding: 80px 30px 100px;
+    }
+
+    .quest-card::before {
+        width: 180%;
+        height: 180%;
+        top: -40%;
+        left: -40%;
+    }
 }
 
 .quest-card:hover,
@@ -1265,18 +1327,19 @@ h1, h3, button, .adventurer-card, .quest-card {
 }
 
 .loading-title {
-    margin-top: 10vh;
-    font-size: 3.5rem;               /* 大きく派手にする */
+    margin-top: clamp(5vh, 10vh, 15vh);      /* 小画面では上余白を抑え、大画面では余裕を持たせる */
+    font-size: clamp(3rem, 8vw, 3.5rem);     /* 最小2rem（読みやすい下限）、最大3.5rem（PCの大画面用）、8vwで自然にスケール */
     color: #ffffe0;
     text-align: center;
     text-shadow: 
         0 0 15px #ffcc00,
         0 0 30px #ff9900,
         0 0 50px #ff6600;
-    letter-spacing: 8px;
-    font-family: 'KaiTi', 'STKaiti', 'Noto Serif JP', serif; /* 可能なら中華風・和風のフォント */
+    letter-spacing: clamp(2px, 1.5vw, 8px); /* 文字間隔も画面サイズに合わせて縮小 */
+    font-family: 'KaiTi', 'STKaiti', 'Noto Serif JP', serif;
+    line-height: 1.2;                       /* 複数行になった場合の行間を詰めて縦スペース節約 */
+    white-space: normal;                    /* 必要に応じて折り返しを許可（長いタイトルでも対応） */
 }
-
 .loading-bottom {
     position: absolute;              /* absoluteでオーバーレイ全体に対して位置指定 */
     bottom: 100px;                   /* ボタン類の下辺より少し上（ボタン登場時に重ならないよう調整） */

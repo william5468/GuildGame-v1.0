@@ -2,8 +2,9 @@
 
 const translations = {
   ja: {
+    AI_setting_button: "AI設定",
     page_title: "失われし冒険の旅",
-    game_title: "失われし冒険の旅 v1.0",
+    game_title: "失われし<br>冒険の旅",
     tutorial: "説明",
     save: "保存",
     load: "読み込み",
@@ -360,8 +361,9 @@ const translations = {
 
   },
   en: {
-    page_title: "Journey of the Lost Adventure",
-    game_title: "Journey of the Lost Adventure v1.0",
+    AI_setting_button: "AI Setting",
+    page_title: "Journey of Lost Adventure",
+    game_title: "Journey of<br> Lost Adventure",
     tutorial: "Tutorial",
     save: "Save",
     load: "Load",
@@ -703,8 +705,9 @@ const translations = {
     city_gemheart: "Gem Capital Gemheart",
   },
   zh: {  // Traditional Chinese (繁體中文 - Taiwan/HK style)
+    AI_setting_button: "AI設定",
     page_title: "失落的冒險之旅",
-    game_title: "失落的冒險之旅 v1.0",
+    game_title: "失落的<br>冒險之旅",
     tutorial: "教學",
     save: "儲存",
     load: "讀取",

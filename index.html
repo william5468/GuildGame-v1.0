@@ -59,7 +59,7 @@
         <!-- ローディング画面 -->
 <div id="loadingOverlay">
     <!-- ゲームタイトル（トップ中央） -->
-    <h1 class="loading-title" data-i18n="game_title">失われし冒険の旅 v1.0</h1>
+    <h1 class="loading-title" data-i18n="game_title">失われし冒険の旅</h1>
 
     <!-- 右下のローディング表示 -->
     <div class="loading-bottom">
@@ -74,7 +74,7 @@
         <br>
         <button id="skipIntroBtn"  onclick="skipIntro()" data-i18n="continue_button">続きから始める</button>
         <br>
-        <button id="changeAiProviderBtn "  onclick="changeAiProvider()">AI setting</button>
+        <button id="changeAiProviderBtn "  onclick="changeAiProvider()" data-i18n="AI_setting_button">AI設定</button>
         <br>
         <select id="langSelect"  onchange="setLanguage(this.value)" style="padding:8px 12px; margin:10px; font-size:1em;">
             <option value="">Please Select Language</option>
