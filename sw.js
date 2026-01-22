@@ -1,7 +1,7 @@
-// sw.js - Robust offline PWA support (error-tolerant precaching)
-const CACHE_NAME = 'guildgame-offline-v4';  // Bump version when updating files
+// sw.js - Ultra-robust offline PWA support (enhanced error handling + opaque response skip)
+const CACHE_NAME = 'guildgame-offline-v5';  // Bumped version to force refresh
 
-// Only critical local files — add/remove exact filenames that exist in your repo root
+// Critical local files only (all must exist — no icons until added)
 const PRECACHE_URLS = [
   'index.html',
   'style.css',
@@ -11,32 +11,27 @@ const PRECACHE_URLS = [
   'translations.js',
   'player2.js',
   'quests.js',
-  'openrouter.js',          // If this file exists
-  'manifest.json',
-
-  // Add key images if you want them guaranteed (optional, e.g. common ones)
-  'Images/main_char.png',
-  'Images/ルナ.png',
-  'Images/カイト.png',
-  'Images/Quest.png',
-   'Images/Card.png',
+  'openrouter.js',          // Keep only if file exists
+  'manifest.json'
+  // Add confirmed-existing images/sounds here if desired, e.g.:
+  // 'Images/main_char.png',
+  // 'Images/ルナ.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        // Cache one-by-one with error skipping
-        return Promise.all(
-          PRECACHE_URLS.map(url => {
-            return cache.add(url).catch(err => {
-              console.warn(`Failed to precache: ${url}`, err);
-              // Continue even if one fails
-            });
-          })
+        return Promise.allSettled(  // Use allSettled to never fail entire install
+          PRECACHE_URLS.map(url => cache.add(url).catch(err => {
+            console.warn(`Precaching skipped (failed): ${url}`, err);
+          }))
         );
       })
       .then(() => self.skipWaiting())
+      .catch(err => {
+        console.error('Install phase error (non-fatal):', err);
+      })
   );
 });
 
@@ -54,41 +49,59 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = event.request.url;
 
-  // Skip external APIs (AI features) — network only
+  // Network-only for external APIs (AI features)
   if (url.includes('api.player2.game') ||
       url.includes('openrouter.ai') ||
-      url.includes('generativelanguage.googleapis.com')) {
-    event.respondWith(fetch(event.request).catch(() => new Response('Offline - AI features unavailable')));
+      url.includes('generativelanguage.googleapis.com') ||
+      url.includes('cdn.jsdelivr.net') ||     // Optional: skip caching CDN (they reload fine)
+      url.includes('cdnjs.cloudflare.com')) {
+    event.respondWith(fetch(event.request).catch(() => new Response('Offline - Feature unavailable')));
     return;
   }
 
-  // Cache-first for everything else (includes Images/, Audio/, and CDN on first use)
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) {
-        // Serve cache + update in background
-        fetch(event.request).then(net => {
-          if (net && net.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, net.clone()));
-          }
-        }).catch(() => {});
-        return cached;
-      }
+    caches.match(event.request)
+      .then(cached => {
+        // Cache hit: serve immediately
+        if (cached) {
+          // Background update (fire-and-forget with full error handling)
+          fetch(event.request)
+            .then(networkResponse => {
+              if (networkResponse && networkResponse.status === 200 && 
+                  (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+                caches.open(CACHE_NAME)
+                  .then(cache => cache.put(event.request, networkResponse.clone()))
+                  .catch(err => console.warn('Background cache put failed:', err));
+              }
+            })
+            .catch(() => {});  // Offline/network fail = ignore
+          return cached;
+        }
 
-      // Network first, then cache
-      return fetch(event.request).then(net => {
-        if (net && net.status === 200) {
-          const clone = net.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return net;
-      }).catch(() => {
-        // Fallback for HTML requests
-        if (event.request.destination === 'document') {
-          return caches.match('index.html');
-        }
-        return new Response('Offline - Resource unavailable', { status: 504 });
-      });
-    })
+        // Cache miss: network first
+        return fetch(event.request)
+          .then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200 && 
+                (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, clone))
+                .catch(err => console.warn('Cache put failed:', err));
+            }
+            return networkResponse;
+          })
+          .catch(err => {
+            console.warn('Network fetch failed:', err);
+            // Fallback to index.html for navigation requests
+            if (event.request.mode === 'navigate') {
+              return caches.match('index.html');
+            }
+            return new Response('Offline - Resource unavailable', { status: 503 });
+          });
+      })
+      .catch(err => {
+        console.error('Cache match error:', err);
+        return new Response('Service Worker error', { status: 500 });
+      })
   );
 });
