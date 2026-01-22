@@ -13,10 +13,7 @@ const PRECACHE_URLS = [
   'quests.js',
   'openrouter.js',          // If this file exists
   'manifest.json',
-  'favicon.png',
-  'apple-touch-icon.png',   // If you added it
-  'icon-192.png',           // If you added icons
-  'icon-512.png',
+
   // Add key images if you want them guaranteed (optional, e.g. common ones)
   'Images/main_char.png',
   'Images/ルナ.png',
