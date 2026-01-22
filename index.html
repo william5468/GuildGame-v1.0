@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+
+    <!-- PWA Manifest -->
+<link rel="manifest" href="/GuildGame-v1.0/manifest.json">
+
+<!-- iOS Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="冒険の旅">
+<link rel="apple-touch-icon" href="/GuildGame-v1.0/apple-touch-icon.png">
+
+<!-- Theme/Color Fixes (Optional but recommended) -->
+<meta name="theme-color" content="#ffd700">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>失われし冒険の旅</title>
@@ -511,7 +523,15 @@
   console.log('Breathing animation observer active – stable gray background applied');
 })();
 </script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/GuildGame-v1.0/sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW error', err));
+    });
+  }
+</script>
 
 </body>
 
