@@ -2201,19 +2201,18 @@ h1, h3, button, .adventurer-card, .quest-card {
     color:#ffffff;
 }
 /* Force backgrounds transparent for everything EXCEPT ally/enemy cards, progress bar elements, and buttons */
+/* Existing battle modal styles (unchanged) */
 #battleModal *:not(.battle-ally):not(.battle-enemy):not(.progress-bar):not(.progress-fill):not(.hp-fill):not(.ap-fill):not(button) {
     background-color: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
 }
 
-/* Remove any modal borders/shadows */
 #battleModal .modal-content {
     border: none !important;
     box-shadow: none !important;
 }
 
-/* Restore background only for ally and enemy units (cards) */
 #battleModal .battle-ally,
 #battleModal .battle-enemy {
     background-color: rgba(30, 30, 50, 0.85) !important;
@@ -2223,7 +2222,6 @@ h1, h3, button, .adventurer-card, .quest-card {
     padding: 12px !important;
 }
 
-/* Overall readability on transparent background */
 #battleModal {
     color: #ffffff !important;
     text-shadow: 
@@ -2232,9 +2230,8 @@ h1, h3, button, .adventurer-card, .quest-card {
     font-weight: bold;
 }
 
-/* Specific styling for the "Start Round" button inside .battle-top */
 #battleModal .battle-top button {
-    background-color: rgba(0, 140, 255, 0.85) !important; /* Vibrant blue background */
+    background-color: rgba(0, 140, 255, 0.85) !important;
     color: #ffffff !important;
     border: 2px solid rgba(100, 200, 255, 0.9) !important;
     border-radius: 10px !important;
@@ -2248,14 +2245,12 @@ h1, h3, button, .adventurer-card, .quest-card {
     text-align: center !important;
 }
 
-/* Hover effect for the Start Round button */
 #battleModal .battle-top button:hover {
     background-color: rgba(0, 170, 255, 0.95) !important;
     transform: translateY(-3px) !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7) !important;
 }
 
-/* Simple styling for the Close button (so it remains visible but less prominent) */
 #battleModal .modal-buttons button {
     background-color: rgba(0, 0, 0, 0.7) !important;
     color: #ffffff !important;
@@ -2268,17 +2263,16 @@ h1, h3, button, .adventurer-card, .quest-card {
 }
 
 #battleModal .modal-buttons button:hover {
-    background-color: rgba(100, 0, 0, 0.8) !important; /* Subtle red tint on hover for "close" feel */
+    background-color: rgba(100, 0, 0, 0.8) !important;
 }
 
-/* Optional battle log panel for readability */
 #battleModal .battle-top {
     background-color: rgba(0, 0, 0, 0.6) !important;
     border-radius: 10px !important;
     padding: 15px !important;
     margin: 10px !important;
     border: 1px solid rgba(100, 150, 255, 0.3) !important;
-    text-align: center !important; /* Centers the button horizontally */
+    text-align: center !important;
 }
 
 #battleModal #battleLog {
@@ -2291,9 +2285,66 @@ h1, h3, button, .adventurer-card, .quest-card {
 }
 
 #battleModal .modal-content::-webkit-scrollbar {
-    display: none;                /* Safari and Chrome */
+    display: none;
 }
 
+/* === NEW: Mobile (vertical phone) adjustments === */
+/* Targets typical phone portrait widths (≈360–480px). 
+   Cards are proportionally shrunk using transform: scale() 
+   so the entire card (image, text, progress bars, padding) 
+   remains perfectly proportional while fitting 2–3 per row 
+   instead of only 1. */
+@media (max-width: 600px) {
+    /* Assume .battle-team and .battle-enemies are the flex/grid containers for allies/enemies */
+    #battleModal .battle-team,
+    #battleModal .battle-enemies {
+        gap: 8px !important;              /* Tighter gap to help more cards fit horizontally */
+        padding: 8px !important;
+        justify-content: center !important;
+    }
+
+    /* Proportional shrink of each individual card (ally & enemy) */
+    #battleModal .battle-ally,
+    #battleModal .battle-enemy {
+        transform: scale(0.75) !important;     /* 75% size → ~33% more horizontal space */
+        transform-origin: top center !important;
+        padding: 10px !important;              /* Slightly reduced padding to help fit */
+    }
+
+    /* If breathing sprites are used inside battle cards, also shrink the sprite scale */
+    #battleModal .sprite-breathing {
+        --scale: 0.75 !important;
+    }
+
+    /* Slightly smaller overall modal padding for extra space */
+    #battleModal .modal-content {
+        padding: 8px !important;
+    }
+
+    /* Make the Start Round button a bit smaller but still touch-friendly */
+    #battleModal .battle-top button {
+        padding: 12px 24px !important;
+        font-size: 18px !important;
+        min-width: 150px !important;
+    }
+}
+
+/* Extra-small phones (e.g., <400px width) – more aggressive shrink */
+@media (max-width: 400px) {
+    #battleModal .battle-ally,
+    #battleModal .battle-enemy {
+        transform: scale(0.65) !important;     /* 65% size for very narrow screens */
+    }
+
+    #battleModal .sprite-breathing {
+        --scale: 0.65 !important;
+    }
+
+    #battleModal .battle-team,
+    #battleModal .battle-enemies {
+        gap: 6px !important;
+    }
+}
 /* === イントロモーダルのレスポンシブ対応（PC大画面～スマホ小画面まで対応） === */
 /* 既存の <style> タグ内（sprite関連の後）または style.css に追加してください */
 
