@@ -524,14 +524,25 @@
 })();
 </script>
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/GuildGame-v1.0/sw.js')
-        .then(reg => console.log('SW registered'))
-        .catch(err => console.log('SW error', err));
-    });
-  }
-</script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/GuildGame-v1.0/sw.js')
+            .then(reg => {
+              console.log('Service Worker registered successfully:', reg.scope);
+            })
+            .catch(err => {
+              console.error('Service Worker registration failed:', err);
+            });
+        });
+
+        // Optional: Show a toast when offline (after first load)
+        window.addEventListener('offline', () => {
+          if (typeof better_alert === 'function') {
+            better_alert('オフラインモードです。コアゲームは動作しますが、AIチャットなどのオンライン機能は利用できません。', 'warning');
+          }
+        });
+      }
+    </script>
 
 </body>
 
