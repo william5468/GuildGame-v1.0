@@ -1328,7 +1328,7 @@ h1, h3, button, .adventurer-card, .quest-card {
 
 .loading-title {
     margin-top: clamp(5vh, 10vh, 15vh);      /* 小画面では上余白を抑え、大画面では余裕を持たせる */
-    font-size: clamp(3rem, 8vw, 3.5rem);     /* 最小2rem（読みやすい下限）、最大3.5rem（PCの大画面用）、8vwで自然にスケール */
+    font-size: clamp(2.5rem, 8vw, 3.5rem);     /* 最小2rem（読みやすい下限）、最大3.5rem（PCの大画面用）、8vwで自然にスケール */
     color: #ffffe0;
     text-align: center;
     text-shadow: 
