@@ -3520,6 +3520,28 @@ if (q.buy) {
             extraMsg += `<br>${t('item_found', {name: cursedItemName})} (コレクションアイテム)`;
         }
     }
+    if (q.floor === 2) {
+        let Roll = Math.random();
+        if (Roll < 0.4) { // 60% chance
+            const floor2Item1 = "呪われたゴブリンの守り";
+            addToInventory(
+                {name: floor2Item1, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: floor2Item1})} (コレクションアイテム)`;
+        }
+
+        Roll = Math.random();
+        if (Roll < 0.4) { // 60% chance
+            const floor2Item2 = "食肉花の歯";
+            addToInventory(
+                {name: floor2Item2, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: floor2Item2})} (コレクションアイテム)`;
+        }
+    }
+
         }else // === 貿易クエスト完了処理（日終了時のクエスト完了ループ内に追加） ===
  if (q.type === 2) {
             const repChance = Math.min(0.8, 0.15 + q.difficulty * 0.0065);
@@ -4251,13 +4273,17 @@ function playDay(){
 }
 
 function renderBattlebgm(QuestType,floor=0){
-        if (QuestType="dungeon"){
+        if (QuestType=="dungeon"){
             if(floor>=3){
         crossfadeTo('battleBgm2', 1500);
             }else{
                 crossfadeTo('battleBgm', 1500);
             }
-        }else{
+        }
+        else if(QuestType=='boss'){
+        crossfadeTo('storyBgm', 1500);
+        }
+        else{
         crossfadeTo('battleBgm', 1500);
         }
 
@@ -4266,7 +4292,12 @@ function renderBattlebgm(QuestType,floor=0){
 
 // === renderBattle() の更新版（ストーリー対応） ===
 function renderBattle() {
-    if (!currentBattle) return;
+    if (!currentBattle) {
+        // ===== 追加: 戦闘終了時（currentBattle === null）のクリーンアップ =====
+        const tooltip = document.getElementById('statusTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+        return;
+    }
 
     // ===== 背景画像を #battleModal 自体に適用（外側オーバーレイに設定）=====
     const battleModal = document.getElementById('battleModal');
@@ -4285,6 +4316,14 @@ function renderBattle() {
 
         battleModal.style.position = 'fixed';
         battleModal.style.inset = '0';
+
+        // ===== 追加: モバイルでのテキスト選択・コンテキストメニュー完全無効化 =====
+        battleModal.style.userSelect = 'none';
+        battleModal.style.webkitUserSelect = 'none';
+        battleModal.style.msUserSelect = 'none';
+        battleModal.style.MozUserSelect = 'none';
+        battleModal.style.webkitTouchCallout = 'none';
+        battleModal.oncontextmenu = () => false;
     }
 
     const modalContent = document.querySelector('#battleModal .modal-content');
@@ -4320,7 +4359,7 @@ function renderBattle() {
             <div class="battle-enemy ${selectableClass} ${highlightClass}" id="div_${e.id}" data-id="${e.id}" 
                  ${selectableClass ? `onclick="selectTarget('${e.id}')"` : ''} 
                  style="position:relative; ${isDead ? 'opacity:0.7;' : ''}">
-                <img src="${e.image}" class="enemy-img" alt="${e.name}" style="filter:${imgFilter};">
+                <img src="${e.image}" class="enemy-img" alt="${e.name}" style="filter:${imgFilter};" draggable="false">
                 ${deadOverlay}
                 ${e.name}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
@@ -4357,7 +4396,7 @@ function renderBattle() {
             <div class="battle-ally ${selectableClass} ${highlightClass}" id="div_${adv.id}" data-id="${adv.id}" 
                  ${selectableClass ? `onclick="selectTarget('${adv.id}')"` : ''} 
                  style="position:relative; ${isDead ? 'opacity:0.7;' : ''}">
-                <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}" style="filter:${imgFilter};">
+                <img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}" style="filter:${imgFilter};" draggable="false">
                 ${deadOverlay}
                 ${getNameHtml(adv)}
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
@@ -4378,10 +4417,14 @@ function renderBattle() {
     battleContent.style.background = 'transparent';
     battleContent.style.pointerEvents = 'auto';
 
+    // ===== 敵ターン時のクリックハンドラー（連打防止はそのまま）=====
     if (currentBattle.phase === 'executing' && currentBattle.currentActor && currentBattle.currentActor.isEnemy) {
         battleContent.style.cursor = 'pointer';
+        battleContent.onclick = null;
         battleContent.onclick = function(e) {
             e.stopPropagation();
+            battleContent.onclick = null;
+            battleContent.style.cursor = '';
             skipTurn();
         };
     } else {
@@ -4389,7 +4432,7 @@ function renderBattle() {
         battleContent.onclick = null;
     }
 
-    // ===== Status Tooltip: 1s hover delay (mouse) + Long Press (touch) =====
+    // ===== Status Tooltip: 高速化 & カーソル直近表示 =====
     let tooltip = document.getElementById('statusTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -4410,7 +4453,11 @@ function renderBattle() {
         tooltip.style.textAlign = 'left';
         tooltip.style.backdropFilter = 'blur(4px)';
         tooltip.style.lineHeight = '1.4';
-        document.body.appendChild(tooltip);
+        battleModal.appendChild(tooltip);
+    } else {
+        if (tooltip.parentNode !== battleModal) {
+            battleModal.appendChild(tooltip);
+        }
     }
 
     // Add listeners only once
@@ -4448,10 +4495,8 @@ function renderBattle() {
                 ? Math.min(80, Math.floor(luc / 10) + (actor.activeEvadeBonus ? 15 : 0))
                 : 'N/A';
 
-            // ===== Collect Active Effects =====
             let activeEffects = actor.activeEffects ? [...actor.activeEffects] : [];
 
-            // Backward compatibility: legacy buffs
             if (actor.buffs && Array.isArray(actor.buffs)) {
                 actor.buffs.forEach(buff => {
                     const name = buff.name || 'Unknown Buff';
@@ -4462,7 +4507,6 @@ function renderBattle() {
                 });
             }
 
-            // Global effects (for allies only)
             if (!actor.isEnemy && currentBattle.activeEffects && Array.isArray(currentBattle.activeEffects)) {
                 currentBattle.activeEffects.forEach(globalEffect => {
                     if (globalEffect.global && !activeEffects.some(e => e.name === globalEffect.name)) {
@@ -4489,7 +4533,6 @@ function renderBattle() {
                     let displayName = effect.name;
                     let suffix = '';
 
-                    // No remaining count for Defense/Counter/Evade Bonus
                     const noCountNames = [
                         'Defense Up (25% damage reduction)',
                         'Counter Ready',
@@ -4498,13 +4541,11 @@ function renderBattle() {
                     if (noCountNames.includes(effect.name)) {
                         // No suffix
                     } 
-                    // Global effect: use round left (from currentBattle.protectRounds)
                     else if (effect.name.includes('Team Protected')) {
                         if (currentBattle.protectRounds > 0) {
                             suffix = ` (${currentBattle.protectRounds} round${currentBattle.protectRounds > 1 ? 's' : ''} left)`;
                         }
                     }
-                    // Other individual timed effects: assume duration if present, else no count
                     else if (effect.duration > 0) {
                         suffix = ` (${effect.duration} turn${effect.duration > 1 ? 's' : ''} left)`;
                     }
@@ -4516,7 +4557,6 @@ function renderBattle() {
                     html += `<div style="color:${color}; margin-left:8px;">• ${displayName}</div>`;
                 });
 
-                // Stunned: always show turn left if active (separate from activeEffects)
                 if (actor.stunnedRounds > 0) {
                     const color = '#ff8888';
                     html += `<div style="color:${color}; margin-left:8px;">• Stunned (${actor.stunnedRounds} turn${actor.stunnedRounds > 1 ? 's' : ''} left)</div>`;
@@ -4525,17 +4565,18 @@ function renderBattle() {
 
             tooltip.innerHTML = html;
 
-            let x, y;
+            // ===== 変更: カーソル直近に配置（右20px、上10pxオフセット）=====
+            let baseX, baseY;
             if (e && e.pageX !== undefined) {
-                x = e.pageX + 15;
-                y = e.pageY + 15;
+                baseX = e.pageX;
+                baseY = e.pageY;
             } else {
-                x = holdStartX + 15;
-                y = holdStartY + 15;
+                baseX = holdStartX;
+                baseY = holdStartY;
             }
 
-            tooltip.style.left = x + 'px';
-            tooltip.style.top = y + 'px';
+            tooltip.style.left = (baseX + 20) + 'px';
+            tooltip.style.top = (baseY -300) + 'px';
             tooltip.style.display = 'block';
         };
 
@@ -4553,7 +4594,7 @@ function renderBattle() {
             currentHoldTarget = null;
         };
 
-        // Hover with 1s delay (mouse)
+        // Hover (PC) - 遅延を500msに短縮
         battleContent.addEventListener('mouseover', (e) => {
             if (e.pointerType === 'mouse' || !e.pointerType) {
                 const target = e.target.closest('.battle-ally, .battle-enemy');
@@ -4564,15 +4605,16 @@ function renderBattle() {
                         if (currentHoverTarget === target) {
                             showTooltip(e, target);
                         }
-                    }, 1000);
+                    }, 500);  // ← 1000ms → 500ms
                 }
             }
         });
 
+        // マウス移動時にツールチップ追従（同じオフセット）
         battleContent.addEventListener('mousemove', (e) => {
             if ((e.pointerType === 'mouse' || !e.pointerType) && tooltip.style.display === 'block') {
-                tooltip.style.left = (e.pageX + 15) + 'px';
-                tooltip.style.top = (e.pageY + 15) + 'px';
+                tooltip.style.left = (e.pageX + 20) + 'px';
+                tooltip.style.top = (e.pageY - 300) + 'px';
             }
         });
 
@@ -4585,9 +4627,11 @@ function renderBattle() {
             }
         });
 
-        // Long press (touch)
+        // Long press (touch) - 遅延を400msに短縮 + preventDefault継続
         battleContent.addEventListener('pointerdown', (e) => {
             if (e.pointerType === 'touch') {
+                e.preventDefault();
+
                 const target = e.target.closest('.battle-ally, .battle-enemy');
                 if (!target) return;
 
@@ -4599,7 +4643,7 @@ function renderBattle() {
                     if (currentHoldTarget === target) {
                         showTooltip(null, target);
                     }
-                }, 500);
+                }, 400);  // ← 500ms → 400ms
             }
         });
 
@@ -4900,9 +4944,19 @@ function executeActorAction(actor, action) {
         case 'explosion':
             log += '!';
             soundToPlay = wisExplosionSound;
+
+            // AoEダメージ適用 + 各ターゲットに爆発エフェクト
             currentBattle.enemies.filter(e => e.hp > 0).forEach(e => {
                 const infos = calculateAndApplyDamage(actor, e, { basePercent: 150, isWis: true, isAoE: true });
                 popupInfos.push(...infos);
+
+                // ダメージが入ったターゲットに即エフェクト（ポップアップと同期）
+                setTimeout(() => {
+                    const div = document.getElementById(`div_${e.id}`);
+                    if (div && infos.some(i => !i.miss && typeof i.dmg === 'number' && i.dmg > 0)) {
+                        playExplosionEffect(div);
+                    }
+                }, 0);
             });
             break;
 
@@ -4970,16 +5024,17 @@ function executeActorAction(actor, action) {
 
     addBattleLog(log);
 
-    // Add all collected damage popups
-    setTimeout(() => {
+setTimeout(() => {
         popupInfos.forEach(info => {
             const div = document.getElementById(`div_${info.targetId}`);
             if (div) {
+                if (action.type !== 'explosion' && !info.miss && typeof info.dmg === 'number' && info.dmg > 0) {
+                                    playSlashEffect(div, actor);
+                                }
                 showDamagePopup(div, info.dmg, info.miss, info.crit);
             }
         });
     }, 0);
-
     const delay = popupInfos.length > 0 ? 1000 : 0;
 
     setTimeout(() => {
@@ -4987,6 +5042,234 @@ function executeActorAction(actor, action) {
     }, delay);
 }
 
+/* ==================================================
+   修正版: playSlashEffect（z-index競合解消 + 表示確認強化）
+   ================================================== */
+/* ==================================================
+   デバッグ強化版: playSlashEffect（問題特定用）
+   - console.log を追加して実行フローを追跡
+   - 一時的に赤半透明背景 + ボーダー追加（overlayが作成・表示されているか視覚確認）
+   - 初回フレームで静止表示テスト（アニメーション前に1フレーム目が確実に見える）
+   - 画像読み込みエラーを検知（background-image適用後にcomputedStyleで確認）
+   - アニメーション終了時にログ出力
+   ================================================== */
+/* ==================================================
+   さらなるデバッグ強化版: playSlashEffect（画像読み込み問題特定 + 代替画像テスト）
+   - 既知の正常画像（例: ルナの画像）でテスト可能に切り替えスイッチ追加
+   - Imageオブジェクトでプリロード + onload/onerrorログ
+   - computedStyleチェックを複数回（タイミングずれ対策）
+   - 赤デバッグ背景を維持（overlay存在確認）
+   ================================================== */
+/* ==================================================
+   最終修正版: playSlashEffect（!important で強制適用 + デバッグログ簡略化）
+   - background-image/background-size/background-position を !important で設定
+     → ゲームのCSSがbackgroundを上書きしている可能性を完全排除
+   - 画像プリロード維持（ロード成功確認）
+   - デバッグ赤背景削除（本番用クリーン）
+   - computedStyleチェック維持（適用確認）
+   ================================================== */
+/* ==================================================
+   最終版: playSlashEffect（ピクセル位置指定 + 中央配置 + スケールアップ）
+   - background-size をピクセル指定（正確なフレーム切り抜き）
+   - background-position を calc(50% - halfFrame - offset) で中央配置
+   - スラッシュを大きく見せるため 200% スケール（調整可能）
+   - !important 維持（上書き対策）
+   - 画像ロード成功後のみアニメ開始
+   ================================================== */
+function playSlashEffect(parentElement, attacker) {
+    if (!parentElement || !attacker) return;
+
+    // 既存オーバーレイ完全削除
+    parentElement.querySelectorAll('.slash-overlay').forEach(el => el.remove());
+
+    const img = parentElement.querySelector('img.enemy-img, img.adventurer-img');
+    if (!img) return;
+
+    // 画像の相対位置・サイズ取得（親relative前提）
+    const rect = img.getBoundingClientRect();
+    const parentRect = parentElement.getBoundingClientRect();
+    const relativeTop = rect.top - parentRect.top;
+    const relativeLeft = rect.left - parentRect.left;
+    const imgWidth = rect.width;
+    const imgHeight = rect.height;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'slash-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = `${relativeTop}px`;
+    overlay.style.left = `${relativeLeft}px`;
+    overlay.style.width = `${imgWidth}px`;
+    overlay.style.height = `${imgHeight}px`;
+    overlay.style.backgroundRepeat = 'no-repeat';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '1002';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.15s ease';
+
+    parentElement.appendChild(overlay);
+
+    // 攻撃者タイプ固定色
+    const charType = getCharType(attacker) || 'STR';
+    const rowMap = {
+        'STR': 7,  // 赤系
+        'WIS': 1,  // 青/紫系
+        'DEX': 3,  // 緑系
+        'LUC': 0   // 黄/オレンジ系
+    };
+    const selectedRow = rowMap[charType] ?? 0;
+
+    const frameW = 64;
+    const frameH = 64;
+    const sweepFactor = 1.8;  // スウィープ幅（1.8で画像幅の1.8倍、派手）
+    const scale = imgWidth / frameW * sweepFactor;
+    const sheetW = 896 * scale;
+    const sheetH = 576 * scale;
+
+    const imageUrl = 'Images/slash_effects.png';
+
+    const preloadImg = new Image();
+    preloadImg.onload = () => {
+        overlay.style.setProperty('background-image', `url('${imageUrl}')`, 'important');
+        overlay.style.setProperty('background-size', `${sheetW}px ${sheetH}px`, 'important');
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+            startAnimation(selectedRow, scale);
+        });
+    };
+    preloadImg.onerror = () => console.error('[Slash] Load failed');
+    preloadImg.src = imageUrl;
+
+    function startAnimation(row, scale) {
+        const totalFrames = 14;
+        const frameTime = 38;  // 高速キレ良く
+        let currentFrame = 0;
+        const offsetY = row * frameH * scale;
+
+        // 中央基準オフセット
+        const centerX = imgWidth / 2;
+        const centerY = imgHeight / 2;
+        const halfSlashW = frameW * scale / 2;
+        const halfSlashH = frameH * scale / 2;
+
+        const animate = () => {
+            const offsetX = currentFrame * frameW * scale;
+            const posX = centerX - halfSlashW - offsetX;  // 左から右へスウィープ
+            const posY = centerY - halfSlashH - offsetY;
+
+            overlay.style.setProperty('background-position', `${posX}px ${posY}px`, 'important');
+
+            currentFrame++;
+            if (currentFrame < totalFrames) {
+                setTimeout(animate, frameTime);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }
+        };
+
+        animate();
+    }
+}
+
+/* ==================================================
+   playExplosionEffect（slash構造完全模倣 + 爆発専用中央固定アニメ）
+   - slashと同じ計算式/ループ使用（動作安定）
+   - offsetX削除 → 中央固定でフレーム拡散（静止/フラッシュ解消）
+   - scale上げで派手爆発
+   ================================================== */
+/* ==================================================
+   playExplosionEffect（slash構造模倣 + 中央拡散アニメーション修正）
+   - slashと同じoffsetXシフト追加（フレーム変化でアニメ）
+   - posX = centerX - halfFrameW - offsetX で中央固定拡散
+   - scale上げで派手爆発
+   - 静止問題完全解消（フレームシフトでアニメーション発生）
+   ================================================== */
+function playExplosionEffect(parentElement) {
+    if (!parentElement) return;
+
+    // 既存オーバーレイ完全削除
+    parentElement.querySelectorAll('.explosion-overlay').forEach(el => el.remove());
+
+    const img = parentElement.querySelector('img.enemy-img, img.adventurer-img');
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    const parentRect = parentElement.getBoundingClientRect();
+    const relativeTop = rect.top - parentRect.top;
+    const relativeLeft = rect.left - parentRect.left;
+    const imgWidth = rect.width;
+    const imgHeight = rect.height;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'explosion-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = `${relativeTop}px`;
+    overlay.style.left = `${relativeLeft}px`;
+    overlay.style.width = `${imgWidth}px`;
+    overlay.style.height = `${imgHeight}px`;
+    overlay.style.backgroundRepeat = 'no-repeat';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '1002';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.15s ease';
+
+    parentElement.appendChild(overlay);
+
+    const row = 0;  // 固定最初の行
+    const frameW = 64;
+    const frameH = 64;
+    const sweepFactor = 1.5;  // 爆発専用: 超派手サイズ
+    const scale = imgWidth / frameW * sweepFactor;
+    const sheetW = 704 * scale;
+    const sheetH = 576 * scale;
+
+    const imageUrl = 'Images/explosion_effects.png';
+
+    const preloadImg = new Image();
+    preloadImg.onload = () => {
+        overlay.style.setProperty('background-image', `url('${imageUrl}')`, 'important');
+        overlay.style.setProperty('background-size', `${sheetW}px ${sheetH}px`, 'important');
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+            startAnimation(row, scale);
+        });
+    };
+    preloadImg.onerror = () => console.error('[Explosion] Load failed');
+    preloadImg.src = imageUrl;
+
+    function startAnimation(row, scale) {
+        const totalFrames = 11;
+        const frameTime = 50;  // ゆったり拡散
+        let currentFrame = 0;
+        const offsetY = row * frameH * scale;
+
+        const centerX = imgWidth / 2;
+        const centerY = imgHeight / 2;
+        const halfFrameW = frameW * scale / 2;
+        const halfFrameH = frameH * scale / 2;
+
+        const animate = () => {
+            const offsetX = currentFrame * frameW * scale;
+            // slash模倣 + 中央固定拡散: offsetXフルシフトでフレーム変化（アニメ発生）
+            const posX = centerX - halfFrameW - offsetX;
+            const posY = centerY - halfFrameH - offsetY;
+
+            overlay.style.setProperty('background-position', `${posX}px ${posY}px`, 'important');
+
+            currentFrame++;
+            if (currentFrame < totalFrames) {
+                setTimeout(animate, frameTime);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }
+        };
+
+        animate();
+    }
+}
 // New helper function: calculates damage, applies it, and returns popup info
 function calculateAndApplyDamage(attacker, target, opts) {
     if (target.hp <= 0) return [];
@@ -6534,7 +6817,227 @@ function upgradeFacility(fac) {
 
 
 
+let storyPostQueue = [];          // 専用キュー（completionQueueと分離して同時再生防止）
+let isPlayingStoryPost = false;   // 再生中フラグ
 
+function queueStoryPostDialogue(rawSequence, onComplete) {
+    if (!rawSequence || rawSequence.length === 0) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    const defaultName = {
+        ja: '冒険者',
+        en: 'Adventurer',
+        zh: '冒險者'
+    }[currentLang] || 'Adventurer';
+
+    const playerName = gameState.playerName || defaultName;
+
+    const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker.replace(/\{player\}/gi, playerName),
+        text: line.text.replace(/\{player\}/gi, playerName),
+        image: line.image || null
+    }));
+
+    storyPostQueue.push({ sequence: processedSequence, callback: onComplete });
+
+    if (!isPlayingStoryPost) {
+        crossfadeTo('storyBgm', 2000);                            // 専用BGMに切り替え
+        setDialogueBackground('Images/quest_completion_bg.jpg');  // クエスト完了と同じ背景で統一感
+        playNextStoryPostDialogue();
+    }
+}
+
+function playNextStoryPostDialogue() {
+    if (storyPostQueue.length === 0) {
+        isPlayingStoryPost = false;
+        crossfadeTo('bgm', 2000);
+        const modal = document.getElementById('introModal');
+        modal.style.display = 'none';
+
+        // クリーンアップ（原版と同一）
+        const dialogueTextEl = document.getElementById('dialogueText');
+        if (dialogueTextEl) dialogueTextEl.innerHTML = '';
+        const speakerNameEl = document.getElementById('speakerName');
+        if (speakerNameEl) speakerNameEl.textContent = '';
+        const continueIndicator = document.getElementById('continueIndicator');
+        if (continueIndicator) continueIndicator.style.opacity = '0';
+        const charImg = document.getElementById('introCharacterImg');
+        if (charImg) {
+            charImg.src = '';
+            charImg.style.opacity = '0';
+        }
+        return;
+    }
+
+    isPlayingStoryPost = true;
+    const { sequence, callback } = storyPostQueue.shift();
+
+    const modal = document.getElementById('introModal');
+    const stepDialogue = document.getElementById('stepDialogue');
+    modal.style.display = 'flex';
+
+    const dialogueTextEl = document.getElementById('dialogueText');
+    dialogueTextEl.innerHTML = '';
+    document.getElementById('speakerName').textContent = '';
+    document.getElementById('stepName').style.display = 'none';
+    stepDialogue.style.display = 'block';
+
+    const charImg = document.getElementById('introCharacterImg');
+
+    const speakerImageCache = {};
+    const playerName = gameState.playerName || 'マスター';
+
+    let localIndex = 0;
+    let typingInterval = null;  // 原版と同一のタイピングインターバル管理
+
+    function renderLine() {
+        const current = sequence[localIndex];
+
+        // 話者名
+        document.getElementById('speakerName').textContent = current.speaker + ":";
+
+        // 継続インジケーター非表示
+        document.getElementById('continueIndicator').style.opacity = '0';
+
+        // テキストクリア
+        dialogueTextEl.innerHTML = '';
+
+        // 画像処理（原版と完全に同一ロジック）
+        let imageSrc = 'Images/main_char.png';
+        const speakerKey = current.speaker;
+
+        if (current.image) {
+            imageSrc = current.image;
+        } else if (speakerImageCache[speakerKey]) {
+            imageSrc = speakerImageCache[speakerKey];
+        } else {
+            if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
+                imageSrc = 'Images/カイト.png';
+            } else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
+                imageSrc = 'Images/ルナ.png';
+            } else if (current.speaker.includes('Narrator') || current.speaker.includes('ナレーター')) {
+                imageSrc = 'Images/Narrator.png';
+            } else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
+                const playerImages = [
+                    'Images/STR_RankF_F.png', 'Images/STR_RankF_M.png',
+                    'Images/DEX_RankF_F.png', 'Images/DEX_RankF_M.png',
+                    'Images/WIS_RankF_F.png', 'Images/WIS_RankF_M.png',
+                    'Images/LUC_RankF_F.png', 'Images/LUC_RankF_M.png'
+                ];
+                imageSrc = playerImages[Math.floor(Math.random() * playerImages.length)];
+            } else if (current.speaker !== playerName) {
+                imageSrc = 'Images/' + current.speaker + '.png';
+            }
+            speakerImageCache[speakerKey] = imageSrc;
+        }
+
+        // 画像キー比較関数（原版と同一）
+        function getImageKey(src) {
+            if (!src) return null;
+            let filename = src.split('/').pop().split('?')[0].split('#')[0];
+            return decodeURIComponent(filename);
+        }
+
+        const currentKey = getImageKey(charImg.src);
+        const newKey = getImageKey(imageSrc);
+
+        // タイピング開始関数（原版と同一）
+        function startTyping() {
+            clearInterval(typingInterval);
+            let charIndex = 0;
+            typingInterval = setInterval(() => {
+                if (charIndex < current.text.length) {
+                    if (current.text.substr(charIndex, 4) === '<br>') {
+                        dialogueTextEl.innerHTML += '<br>';
+                        charIndex += 4;
+                    } else {
+                        dialogueTextEl.innerHTML += current.text[charIndex];
+                        charIndex++;
+                    }
+                } else {
+                    clearInterval(typingInterval);
+                    typingInterval = null;
+                    document.getElementById('continueIndicator').style.opacity = '1';
+                }
+            }, 35);
+        }
+
+        // 同一画像の場合 → 即タイピング（原版と同一）
+        if (currentKey === newKey && currentKey !== null) {
+            startTyping();
+        } else {
+            // 画像変更 → フェードアウト → プリロード → フェードイン → タイピング（原版と完全に同一）
+            charImg.style.opacity = '0';
+
+            const onFadeOutComplete = () => {
+                const preloadImg = new Image();
+                preloadImg.onload = preloadImg.onerror = () => {
+                    charImg.src = imageSrc;
+                    charImg.style.opacity = '1';
+
+                    let typingStarted = false;
+                    const onFadeInComplete = (e) => {
+                        if (e.propertyName === 'opacity' && !typingStarted) {
+                            typingStarted = true;
+                            charImg.removeEventListener('transitionend', onFadeInComplete);
+                            startTyping();
+                        }
+                    };
+                    charImg.addEventListener('transitionend', onFadeInComplete);
+
+                    setTimeout(() => {
+                        if (!typingStarted) {
+                            typingStarted = true;
+                            charImg.removeEventListener('transitionend', onFadeInComplete);
+                            startTyping();
+                        }
+                    }, 600);
+                };
+                preloadImg.src = imageSrc;
+            };
+
+            let fadeOutHandled = false;
+            const onFadeOut = (e) => {
+                if (e.propertyName === 'opacity' && !fadeOutHandled) {
+                    fadeOutHandled = true;
+                    charImg.removeEventListener('transitionend', onFadeOut);
+                    onFadeOutComplete();
+                }
+            };
+            charImg.addEventListener('transitionend', onFadeOut);
+
+            setTimeout(() => {
+                if (!fadeOutHandled) {
+                    fadeOutHandled = true;
+                    charImg.removeEventListener('transitionend', onFadeOut);
+                    onFadeOutComplete();
+                }
+            }, 600);
+        }
+
+        // クリックハンドラー（原版と同一）
+        stepDialogue.onclick = () => {
+            if (typingInterval) {
+                clearInterval(typingInterval);
+                typingInterval = null;
+                dialogueTextEl.innerHTML = current.text;
+                document.getElementById('continueIndicator').style.opacity = '1';
+            } else {
+                localIndex++;
+                if (localIndex < sequence.length) {
+                    renderLine();
+                } else {
+                    if (callback) callback();
+                    playNextStoryPostDialogue();
+                }
+            }
+        };
+    }
+
+    renderLine();
+}
 
 
 function postGuildQuest() {
@@ -6562,26 +7065,35 @@ function postGuildQuest() {
             return;
         }
 
-        q = {
-            id: gameState.nextId++,
-            desc: mq.desc,
-            difficulty: mq.difficulty,
-            rank : mq.rank,
-            minStrength: mq.minStrength,
-            minWisdom: mq.minWisdom,
-            minDexterity: mq.minDexterity,
-            minLuck: mq.minLuck,
-            focusStat: mq.focusStat,
-            minFocus: mq.minFocus,
-            type: 6,
-            reward: mq.reward,
-            playerPosted: true,
-            daysLeft: 999,
-            assigned: [],
-            inProgress: false
-        };
+        // 専用対話再生 → 終了後にクエスト投稿
+                queueStoryPostDialogue(storyQuestDialogues[gameState.mainProgress], function() {
+                    const q = {
+                        id: gameState.nextId++,
+                        desc: mq.desc,
+                        difficulty: mq.difficulty,
+                        rank: mq.rank,
+                        minStrength: mq.minStrength,
+                        minWisdom: mq.minWisdom,
+                        minDexterity: mq.minDexterity,
+                        minLuck: mq.minLuck,
+                        focusStat: mq.focusStat,
+                        minFocus: mq.minFocus,
+                        type: 6,
+                        reward: mq.reward,
+                        playerPosted: true,
+                        daysLeft: 999,
+                        assigned: [],
+                        inProgress: false
+                    };
 
-        alertMessage = 'メインクエストを投稿しました！クエストボードに表示されます。';
+                    gameState.quests.push(q);
+                    updateDisplays();
+                    better_alert('メインクエストを投稿しました！クエストボードに表示されます。',"success");
+                    closeGuildQuests();
+                });
+
+                return; // 対話中はここで終了
+            
     } else if (type === 'dungeon') {
         let floorEl = document.getElementById('dungeonFloor');
         if (!floorEl) {
@@ -7483,6 +7995,7 @@ function crossfadeTo(newBgmId, duration = 2000) {
         document.getElementById('battleBgm2'),
         document.getElementById('dialogueBgm'),
         document.getElementById('QuestEndDialogueBgm'),
+        document.getElementById('storyBgm'),
         document.getElementById('GameoverBgm')
     ].filter(b => b !== newBgm && !b.paused);
 
@@ -8041,7 +8554,9 @@ function playNextQuestDialogue() {
                 imageSrc = 'Images/ルナ.png';
             }else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
                 imageSrc = 'Images/narrator.png';
-            } 
+            } else if (current.speaker.includes('おばあさん')) {  // ← 新規追加: おばあさん専用マッピング
+                imageSrc = 'Images/おばあさん.png';
+            }
             else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
                 const playerImages = [
                     'Images/STR_RankF_F.png',
@@ -8823,4 +9338,90 @@ function toggleInventory() {
 
 function closeInventory() {
     document.getElementById('inventoryModal').style.display = 'none';
+}
+
+/* javascript.js に追加（メイン機能） */
+function openQuestLog() {
+    console.log("openQuestLog called");
+    const modal = document.getElementById('questLogModal');
+    if (!modal) return;
+    console.log("openQuestLog after return");
+    const content = document.getElementById('questLogContent');
+    content.innerHTML = '';
+
+    // questDefinitionsをIDでマップ（検索高速化）
+    const questMap = {};
+    questDefinitions.forEach(def => {
+        questMap[def.id] = def;
+    });
+
+    // 全てのクエストを処理（完了 → 進行中 → 未発見の順）
+    const completed = [];
+    const active = [];
+    const undiscovered = [];
+
+    questDefinitions.forEach(def => {
+        const id = def.id;
+        const name = def.name || '不明なクエスト';
+
+        if (gameState.completedQuests.includes(id)) {
+            completed.push({ id, name, def });
+        } else if (gameState.activeQuests[id]) {
+            active.push({ id, name, def });
+        } else {
+            undiscovered.push({ id, name, def });
+        }
+    });
+
+    const addEntry = (quest, status) => {
+        const div = document.createElement('div');
+        div.className = 'quest-entry';
+
+        const nameSpan = document.createElement('div');
+        nameSpan.className = 'quest-name';
+
+        // quest.name を直接使用（安全 + フォールバック）
+        const questName = quest.name || '不明なクエスト';
+
+        if (status === 'completed') {
+            nameSpan.classList.add('quest-completed');
+            nameSpan.textContent = `${questName} ${t('quest_completed')}`;
+        } else if (status === 'active') {
+            nameSpan.classList.add('quest-active');
+            nameSpan.textContent = `${questName} ${t('quest_in_progress')}`;
+        } else {
+            nameSpan.classList.add('quest-undiscovered');
+            nameSpan.textContent = '???';
+
+            // ヒント: 最初のステージのNPC
+            if (quest.def.stages && quest.def.stages[0] && quest.def.stages[0].npc) {
+                const firstNpc = quest.def.stages[0].npc;
+                const hint = document.createElement('div');
+                hint.className = 'quest-hint';
+                hint.textContent = t('talk_to_hint', { npc: firstNpc });
+                div.appendChild(hint);
+            }
+        }
+
+        div.appendChild(nameSpan);
+        content.appendChild(div);
+    };
+
+    // 順番: 完了 → 進行中 → 未発見
+    completed.forEach(q => addEntry(q, 'completed'));
+    active.forEach(q => addEntry(q, 'active'));
+    undiscovered.forEach(q => addEntry(q, 'undiscovered'));
+
+    modal.style.display = 'flex';
+}
+
+function closeQuestLog() {
+    const modal = document.getElementById('questLogModal');
+    if (modal) {
+        modal.style.opacity = '0'; /* 閉じる時フェードアウト */
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.style.opacity = '1'; /* 次回用リセット */
+        }, 300);
+    }
 }

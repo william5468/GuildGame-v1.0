@@ -2,6 +2,11 @@
 
 const translations = {
   ja: {
+    quest_log_title: "クエストログ",
+    quest_log_button: "クエストログ",
+    talk_to_hint: "{npc}に話しかける",
+    quest_completed: "（完了）",
+    quest_in_progress: "（進行中）",
     AI_setting_button: "AI設定",
     page_title: "失われし冒険の旅",
     game_title: "失われし<br>冒険の旅",

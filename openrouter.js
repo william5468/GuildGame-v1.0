@@ -6,7 +6,7 @@
 
 // === OpenRouter API Constants ===
 const OPENROUTER_API_BASE = 'https://openrouter.ai/api/v1';
-const OPENROUTER_MODEL = 'xiaomi/mimo-v2-flash:free'; // Free roleplay-suitable model
+const OPENROUTER_MODEL = 'arcee-ai/trinity-large-preview:free'; // Free roleplay-suitable model
 
 let openRouterApiKey = localStorage.getItem('openRouterApiKey') || null;
 let currentNpcKey_OR = null;
@@ -572,7 +572,7 @@ function appendNpcMessage_OR(rawText) {  // rawText = LLMから来たトーン�
 
     // エンティティの image プロパティを使用（存在しなければプレースホルダー）
     let imageFile = (entity && entity.image) ? entity.image : 'placeholder.png';
-
+    console.log(entity.image);
     const avatar = document.createElement('img');
     avatar.src = `Images/${imageFile}`;
     avatar.style.cssText = `

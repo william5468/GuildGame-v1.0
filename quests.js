@@ -5,8 +5,44 @@
 // クエスト定義データ（新しいクエストはここにオブジェクト追加するだけ！）
 const questDefinitions = [
     {
+    id: "world_intro",
+    name: "世界を知る",
+    completed_guidance: "このクエストは既に完了している。ルナとカイトは、プレイヤーに大陸の状況を教えてくれたことを覚えていて、時折「大陸は今も戦争で大変だけど、私たちはここで頑張ろうね」「あの話、ちゃんと覚えてるか？」などと声をかけてくる。",
+    stages: [
+        // Stage 0: ルナに世界について聞く（開始）
+        {
+            npc: lunaName,
+            trigger: { 
+                type: "keyword", 
+                keywords: ["世界", "大陸", "戦争", "王国", "三つの王国", "アウレリア", "ヴァルソール", "シルヴァラ", "状況"] 
+            },
+            guidance_beforestage: "プレイヤーが世界や戦争、王国について尋ねたら、少し悲しげに「エルリア大陸は今、三つの王国——アウレリア、ヴァルソール、シルヴァラ——の間で長い戦争が続いているの。私たちの村はアウレリアの辺境にあるけど、王の軍は前線に取られてしまって、村はほとんど守られていないわ…。税金は上がる一方で、匪賊や難民も増えてる。でも、私たちはここで生きていくしかないのよ」と説明する。そして「少しでも役に立てばと思って…」とgive_to_playerでMPポーション（小）3個を渡す。",
+            guidance_afterstage: "プレイヤーに大陸の状況を説明し、MPポーションを渡したことを覚えている。プレイヤーがカイトの話を振ったら「カイトも詳しいから、聞いてみたら？」と勧める。",
+            keywordToDiscover: "カイトに世界の話を聞く",
+            nextStage: 1,
+
+        },
+
+        // Stage 1: カイトに話す（完了）
+        {
+            npc: kaitoName,
+            trigger: { 
+                type: "keyword", 
+                keywords: ["世界", "大陸", "戦争", "王国", "カイトに世界の話を聞く", "ルナから聞いた"] 
+            },
+            guidance_beforestage: "プレイヤーが世界や戦争について尋ねたら、軽い調子で「ルナから聞いたんだろ？確かに大陸はめちゃくちゃだよ。三つの王国が争ってるせいで、村は税金取られまくり、衛兵もいない。だから俺たちギルドが村の守りなんだ。冒険者になって稼がないと、食っていけない奴も増えてるよ。でもよ、俺たちはここで生き抜くぜ！がんばろうな」と励ます。そして「これ、持ってけ。少しは役立つだろ」とgive_to_playerでHPポーション（小）3個を渡す。",
+            guidance_afterstage: null,  // 最終ステージ
+            onComplete: {
+                rewards: [
+                    { type: "friendliness", targets: [lunaName, kaitoName], delta: 5 }  // 軽い好感度UP（任意）
+                ]
+            }
+        }
+    ]
+},
+    {
         id: "birthday_surprise",
-        name: "Our secret",
+        name: "私たちの秘密",
         completed_guidance: "このクエストは既に完了している。酒場主人、ルナ、カイト３人は、プレイヤーの誕生日パーティーを成功させたことを覚えていて、時折「あの時のパーティー、楽しかったね」「サプライズ大成功だったわ」など思い出を話題にする。",
         stages: [
             {
@@ -64,7 +100,7 @@ const questDefinitions = [
     },
 {
     id: "slime_jelly",
-    name: "Slime jelly",
+    name: "スライムの食べ方",
     completed_guidance: "このクエストは既に完了している。スライムが本当は食べられると知って、しかもかなり美味しいから、今度はスライム出ることを期待していると話す。",
     stages: [
         // Stage 0: 農夫からスライムの塊をもらう（スタート）
@@ -267,7 +303,45 @@ const questDefinitions = [
             markAsCompleted: true
         }
     ]
+},
+{
+    id: "alchemist_experiment",
+    name: "錬金術師の実験材料",
+    completed_guidance: "このクエストは既に完了している。錬金術師はプレイヤーが『呪われたゴブリンの守り』を届けてくれたことを覚えていて、時折「君のおかげで実験が進んだよ。ありがとう」と感謝の言葉をかけてくる。",
+    stages: [
+        // Stage 0: 錬金術師 - 依頼開始
+        {
+            npc: "錬金術師",
+            trigger: { 
+                type: "keyword", 
+                keywords: ["実験", "錬金", "材料", "手伝って", "秘密"] 
+            },
+            guidance_beforestage: "プレイヤーが実験や材料について尋ねたら、少し声を潜めて「実は変わった実験をしていてね。ダンジョン2階で手に入る『呪われたゴブリンの守り』が1つ必要なんだ。持ってきてくれたら報酬を出すよ…これは内緒にしておいてくれ」と依頼する。",
+            guidance_afterstage: "プレイヤーに『呪われたゴブリンの守り』を依頼したことを覚えている。プレイヤーが戻ってきたら期待した様子で待つ。",
+            keywordToDiscover: "呪われたゴブリンの守り",
+            nextStage: 1
+        },
+
+        // Stage 1: 錬金術師に材料を渡す（完了）
+        {
+            npc: "錬金術師",
+            trigger: {
+                type: "keyword_and_item",
+                keywords: ["材料", "持ってきた", "呪われたゴブリンの守り", "渡す"],
+                requiredItem: { name: "呪われたゴブリンの守り", qty: 1 }
+            },
+            guidance_beforestage: "プレイヤーが『呪われたゴブリンの守り』を渡してきたら、目を輝かせて「これだ！完璧だよ。ありがとう、本当に助かった。約束の報酬だ」と喜び、give_to_playerで薬草20個を渡す。秘密を守ってくれたことに感謝する。",
+            guidance_afterstage: null,
+            // nextStage プロパティを完全に削除（最終ステージのため）
+            onComplete: {
+                rewards: [
+                    { type: "friendliness", targets: ["錬金術師"], delta: 15 }
+                ]
+            }
+        }
+    ]
 }
+
     // 新しいクエストを自由に追加...
 ];
 

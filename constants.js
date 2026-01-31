@@ -1959,7 +1959,43 @@ const cities = [
 
 
 
-
+const storyQuestDialogues = [
+    // 0: 盗賊団クエスト
+    [
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター！最近、地域で盗賊団が活発に動いているみたいです。しかも、動きがとても組織的だという噂が…。" },
+        { speaker: "カイト", image: "Images/カイト.png", text: "ああ、ギルドの名を上げる絶好のチャンスだぜ！あいつらを壊滅させて、みんなに俺たちの実力を見せつけてやろう！" },
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "私たちも全力でサポートします！さあ、マスター、メインクエストを掲示しましょう！" },
+        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたはギルドの名声を高める最初の試練として、盗賊団壊滅のメインクエストを投稿した。" }
+    ],
+    // 1: 古代遺跡の守護者
+    [
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "大変です、マスター！古代遺跡を守っていた守護者が暴走して、街に近づいてきているそうです…！" },
+        { speaker: "カイト", image: "Images/カイト.png", text: "守護者って何を守ってるんだろうな？倒して真相を確かめようぜ。面白そうだ！" },
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "危険ですが…ギルドの力を見せる時です！メインクエストを掲示しましょう！" },
+        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは暴走した古代守護者を討伐し、その秘密を解明するメインクエストを投稿した。" }
+    ],
+    // 2: 闇の魔導士
+    [
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター…恐ろしい噂を聞きました。闇の魔導士が魂を集めているそうです。もう死者が出る前に止めないと…！" },
+        { speaker: "カイト", image: "Images/カイト.png", text: "魂を集めるなんて許せねえ。魔導士を止めて、街を守ろう。俺たちの本気を見せてやる！" },
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "はい…！私たちも全力で支えます。メインクエストを掲示してください！" },
+        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは闇の魔導士を阻止する重要なメインクエストを投稿した。" }
+    ],
+    // 3: 伝説のドラゴン
+    [
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "大変です！伝説のドラゴンが覚醒して、周辺を焼き払っているそうです…！" },
+        { speaker: "カイト", image: "Images/カイト.png", text: "ドラゴン退治か！これは伝説になるぜ、マスター！俺たちで倒して街の平和を取り戻そう！" },
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "本当に危険ですが…ギルドの名にかけて！メインクエストを掲示しましょう！" },
+        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは覚醒した伝説のドラゴンを討伐する偉大なメインクエストを投稿した。" }
+    ],
+    // 4: 闇のカルト集団
+    [
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター、各地で闇のカルト集団が儀式を行っているそうです。深淵の王ヴォルガスの復活を目論んでいるらしいです…！" },
+        { speaker: "カイト", image: "Images/カイト.png", text: "カルトの指導者を捕まえて、計画を完全に潰そう。こんな邪悪なことは許さない！" },
+        { speaker: "ルナ", image: "Images/ルナ.png", text: "私たちも全力でサポートします！メインクエストを掲示してください！" },
+        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは深淵の王復活を阻止する最終的なメインクエストを投稿した。" }
+    ]
+];
 
 const mainQuests = [
     {
@@ -2012,51 +2048,6 @@ const mainQuests = [
         repRequired: 500,
         rank: "Recommended >100",
     },
-    {
-        desc: "失われた『光の神器』が深淵の迷宮に眠っている。神器を回収し、星の観測者アストリッドに届けて解析させよ。（成功時：星の観測者 アストリッドを発見しやすくなる）",
-        difficulty: 250,
-        reward: 40000,
-        minStrength: 160, minWisdom: 160, minDexterity: 150, minLuck: 120,
-        focusStat: "dexterity",
-        minFocus: 180,
-        repRequired: 150
-    },
-    {
-        desc: "深淵の軍勢が王都へ進軍を開始した。王都防衛戦を指揮し、敵の先鋒を壊滅させよ。施設で準備を整える時だ。",
-        difficulty: 300,
-        reward: 55000,
-        minStrength: 190, minWisdom: 180, minDexterity: 170, minLuck: 140,
-        focusStat: "strength",
-        minFocus: 210,
-        repRequired: 200
-    },
-    {
-        desc: "古代の賢者たちが残した封印陣を修復せよ。地図の賢者エルドリンと歴史の語り部タリアの助言が必要だ。（成功時：上記2人の発見確率大幅アップ）",
-        difficulty: 350,
-        reward: 70000,
-        minStrength: 210, minWisdom: 220, minDexterity: 190, minLuck: 160,
-        focusStat: "wisdom",
-        minFocus: 240,
-        repRequired: 250
-    },
-    {
-        desc: "深淵の要塞が顕現した。要塞内部に侵入し、ヴォルガスの四天王をすべて倒せ。すべての施設と装備を最大限に活用せよ。",
-        difficulty: 420,
-        reward: 90000,
-        minStrength: 240, minWisdom: 240, minDexterity: 220, minLuck: 190,
-        focusStat: "all",
-        minFocus: 280,
-        repRequired: 300
-    },
-    {
-        desc: "深淵の王ヴォルガスが完全に復活した。すべての冒険者と発見したNPCの力を結集し、最終決戦に挑め。世界の命運がギルドにかかっている。",
-        difficulty: 500,
-        reward: 150000,
-        minStrength: 280, minWisdom: 280, minDexterity: 260, minLuck: 240,
-        focusStat: "all",
-        minFocus: 350,
-        repRequired: 350
-    }
 ];
 
 const statIcons = {
