@@ -9,6 +9,8 @@ let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || Que
 let playerName = "";
 let audioPlayed = false;
 
+
+
 /**
  * better_alert(message, type = "basic")
  * 
@@ -559,6 +561,15 @@ function startGame() {
         introModal.style.display = 'flex';
         introModal.classList.add('visible');  // フェードイン開始
     }    
+    // Default fees (player can change them later)
+    if (!gameState.facilityFees) {
+        gameState.facilityFees = {
+            tavern: 10,
+            alchemy: 20,
+            blacksmith: 15
+        };
+    }
+
     // ローディングオーバーレイをフェードアウト開始
     overlay.classList.add('fade-out');
 
@@ -700,6 +711,11 @@ let gameState = {
     dailyMaterials: [],
     // 新規追加：クエスト完了ダイアログの既視フラグ（同じ内容は1回だけ再生）
     seenCompletionDialogues: new Set(),
+    facilityFees: {
+        tavern: 10,
+        alchemy: 20,
+        blacksmith: 15
+    },
 };
 
 // gameState の定義直後（let gameState = { ... }; の次）に以下のコードを挿入
@@ -1433,6 +1449,15 @@ function loadGame(slot) {
     if (!gameState.dungeonCooldowns) {
         gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
     }
+    // Default fees (player can change them later)
+    if (!gameState.facilityFees) {
+        gameState.facilityFees = {
+            tavern: 10,
+            alchemy: 20,
+            blacksmith: 15
+        };
+    }
+
 
     // 現在の言語に応じたレシピをグローバルに設定
     currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
@@ -1748,64 +1773,79 @@ function generateQuest(){
     // 新しい難易度計算：評判に基づく範囲（平均 ≈ reputation / 10）
     const baseDiff = Math.max(0, Math.floor(gameState.reputation / 10));
     const minDiff = Math.max(1, baseDiff - 5);
-    const maxDiff = Math.min(150, baseDiff + 5);  // 上限キャップは一旦外す（必要なら後で追加可能）
+    const maxDiff = Math.min(150, baseDiff + 5);
     const difficulty = minDiff + Math.floor(Math.random() * (maxDiff - minDiff + 1));
     const rank = getQuestRank(difficulty);
     let storyindex = 0;
 
     const primary = Math.floor(Math.random()*4);
-    let minStrength=0,minWisdom=0,minDexterity=0,minLuck=0;
-    if(primary===0){minStrength = Math.floor(Math.random()*10 + difficulty*5); minWisdom = Math.floor(Math.random()*5 + difficulty*2); minDexterity = Math.floor(Math.random()*5 + difficulty*2); minLuck = Math.floor(Math.random()*3 + difficulty);}
-    else if(primary===1){minWisdom = Math.floor(Math.random()*10 + difficulty*5); minStrength = Math.floor(Math.random()*5 + difficulty*2); minDexterity = Math.floor(Math.random()*5 + difficulty*2); minLuck = Math.floor(Math.random()*3 + difficulty);}
-    else if(primary===2){minDexterity = Math.floor(Math.random()*10 + difficulty*5); minStrength = Math.floor(Math.random()*5 + difficulty*2); minWisdom = Math.floor(Math.random()*5 + difficulty*2); minLuck = Math.floor(Math.random()*3 + difficulty);}
-    else{minLuck = Math.floor(Math.random()*10 + difficulty*5); minStrength = Math.floor(Math.random()*3 + difficulty); minWisdom = Math.floor(Math.random()*3 + difficulty); minDexterity = Math.floor(Math.random()*5 + difficulty*2);}
+    let minStrength=0, minWisdom=0, minDexterity=0, minLuck=0;
+    if(primary===0){ // STR - kill
+        minStrength = Math.floor(Math.random()*10 + difficulty*5);
+        minWisdom   = Math.floor(Math.random()*5  + difficulty*2);
+        minDexterity= Math.floor(Math.random()*5  + difficulty*2);
+        minLuck     = Math.floor(Math.random()*3  + difficulty);
+    }
+    else if(primary===1){ // WIS - discovery
+        minWisdom    = Math.floor(Math.random()*10 + difficulty*5);
+        minStrength  = Math.floor(Math.random()*5  + difficulty*2);
+        minDexterity = Math.floor(Math.random()*5  + difficulty*2);
+        minLuck      = Math.floor(Math.random()*3  + difficulty);
+    }
+    else if(primary===2){ // DEX - escort
+        minDexterity = Math.floor(Math.random()*10 + difficulty*5);
+        minStrength  = Math.floor(Math.random()*5  + difficulty*2);
+        minWisdom    = Math.floor(Math.random()*5  + difficulty*2);
+        minLuck      = Math.floor(Math.random()*3  + difficulty);
+    }
+    else { // LUC - fetch
+        minLuck      = Math.floor(Math.random()*10 + difficulty*5);
+        minStrength  = Math.floor(Math.random()*3  + difficulty);
+        minWisdom    = Math.floor(Math.random()*3  + difficulty);
+        minDexterity = Math.floor(Math.random()*5  + difficulty*2);
+    }
 
     let desc, item = null, npcIdx = null;
-    let qType = 5
+    let qType = 5; // default fallback
 
     if (primary === 0) { // kill (STR)
         const descs = killDescsByRank[currentLang] || killDescsByRank.ja;
-        const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
+        const pool = descs[rank] || descs['F'];
         qType = 0;
         storyindex = Math.floor(Math.random() * pool.length); 
         desc = pool[storyindex];
-    } else if (primary === 1) { // discovery (WIS)
-    const descs = discoveryDescsByRank[currentLang] || discoveryDescsByRank.ja;
-    const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
-    
-    let useEpic = false;
+    } 
+    else if (primary === 1) { // discovery (WIS)
+        const descs = discoveryDescsByRank[currentLang] || discoveryDescsByRank.ja;
+        const pool = descs[rank] || descs['F'];
+        
+        let useEpic = ['B','B+','A','A+','S'].includes(rank);
 
-    // Bランク以上はepic discoveryDescsを使用（NPC発見可能）
-    if (['B','B+','A','A+','S'].includes(rank)) {
-        useEpic = true;
-    }
+        qType = 1;
+        const selectedIndex = Math.floor(Math.random() * pool.length);
+        const selectedDesc = pool[selectedIndex];
+        desc = selectedDesc;
 
-    qType = 1;
-    const selectedIndex = Math.floor(Math.random() * pool.length);
-    const selectedDesc = pool[selectedIndex];
-    desc = selectedDesc;
-    if (useEpic) {
-        // epicプールの場合、discoveryDescs全体でのインデックスを取得してNPC発見に使用
-        const originalIndex = discoveryDescs.indexOf(selectedDesc);
-        if (originalIndex !== -1) {
-            npcIdx = originalIndex;
+        if (useEpic) {
+            const originalIndex = discoveryDescs.indexOf(selectedDesc);
+            if (originalIndex !== -1) {
+                npcIdx = originalIndex;
+            }
+            storyindex = 0;
+        } else {
+            storyindex = selectedIndex;
         }
-        // epicは通常のストーリー対話なし（NPC発見専用）なのでstoryindexは0のまま（必要なら後で別処理）
-        storyindex = 0;
-    } else {
-        // 通常discoveryはstoryindexを使用
-        storyindex = selectedIndex;
-    }
-
-    } else if (primary === 2) { // escort (DEX)
+    } 
+    else if (primary === 2) { // escort (DEX)
         const descs = escortDescsByRank[currentLang] || escortDescsByRank.ja;
-        const pool = descs[rank] || descs['F']; // fallback to F rank if invalid
+        const pool = descs[rank] || descs['F'];
         qType = 2;
         storyindex = Math.floor(Math.random() * pool.length); 
         desc = pool[storyindex];
-    } else { // fetch (LUC)
+    } 
+    else { // fetch (LUC)
         const quests = fetchQuestsByRank[currentLang] || fetchQuestsByRank.ja;
-        const pool = quests[rank] || quests['F']; // fallback to F rank if invalid
+        const pool = quests[rank] || quests['F'];
         qType = 3;
         storyindex = Math.floor(Math.random() * pool.length); 
         const entry = pool[storyindex];
@@ -1816,6 +1856,20 @@ function generateQuest(){
 
     const focusStat = ['strength', 'wisdom', 'dexterity', 'luck'][primary];
     const minFocus = primary === 0 ? minStrength : primary === 1 ? minWisdom : primary === 2 ? minDexterity : minLuck;
+
+    // Base gold reward (same as before)
+    let baseReward = difficulty * 50;
+
+    // Apply quest-type gold multiplier
+    let goldMultiplier = 1.0;
+    if (qType === 2) {          // escort
+        goldMultiplier = 1.2;
+    } else if (qType === 3) {   // fetch
+        goldMultiplier = 0.5;
+    } 
+    // kill (0) and discovery (1) keep 1.0×
+
+    const finalReward = Math.round(baseReward * goldMultiplier);
 
     return {
         id: gameState.nextId++,
@@ -1828,8 +1882,8 @@ function generateQuest(){
         item: item,
         npcIdx: npcIdx,
         daysLeft: 7 + Math.floor(Math.random() * 8),
-        reward: difficulty*100,
-        assigned:[],
+        reward: finalReward,           // ← modified here
+        assigned: [],
         inProgress: false,
         questType: qType,
         questStoryindex: storyindex,
@@ -3084,33 +3138,10 @@ function startDay(){
         return;
     }
     cleanupAdventurers();
+
+    // バフの持続日数を減少（毎日実行）
     gameState.adventurers.forEach(a => {
-        // 基本回復量（10%）
-        let hpRegenPercent = 10; // 基本10% + バフによる追加パーセントポイント
-        let mpRegenPercent = 10; // MPも同様に基本10% + バフ追加
-
         if (a.buffs && a.buffs.length > 0) {
-            a.buffs.forEach(b => {
-                if (b.type === 'hpRegen' && b.bonus) {
-                    hpRegenPercent += b.bonus;  // bonus:5 → +5%追加
-                } else if (b.type === 'mpRegen' && b.bonus) {
-                    mpRegenPercent += b.bonus;  // bonus:5 → MP回復に+5%追加
-                }
-            });
-        }
-
-        // 合計回復量（パーセント計算後、切り捨て）
-        const totalHpRegen = Math.floor(a.maxHp * hpRegenPercent / 100);
-        const totalMpRegen = Math.floor(a.maxMp * mpRegenPercent / 100);
-        // 恒久冒険者かつクエスト中でない場合のみ日次回復適用
-        if (!a.temp && !a.busy) {
-            a.hp = Math.min(a.maxHp, (a.hp || 0) + totalHpRegen);
-            a.mp = Math.min(a.maxMp, (a.mp || 0) + totalMpRegen);
-        }
-
-        // バフ効果適用後に持続日数を減少させ、終了したバフを削除
-        // （バフ適用日を含めて正確に指定日数持続）
-        if (a.buffs) {
             a.buffs.forEach(b => {
                 if (b.daysLeft > 0) {
                     b.daysLeft--;
@@ -3119,6 +3150,7 @@ function startDay(){
             a.buffs = a.buffs.filter(b => b.daysLeft > 0);
         }
     });
+
     gameState.dailyMaterials = [];
     const numMaterialsToday = Math.floor(Math.random() * 3);
     const shuffled = [...materialShop].sort(() => 0.5 - Math.random());
@@ -3138,12 +3170,9 @@ function startDay(){
     // Quest limit: max 4 non-training quests
     let nonTrainingCount = gameState.quests.filter(q => !q.training).length;
     let availableSlots = 4 - nonTrainingCount;
-    if (availableSlots > 0) {
-        let nq = Math.min(Math.floor(Math.random() * 3) + 1, availableSlots);
-        for(let i=0; i<nq; i++){
+    if ((availableSlots > 0) && (Math.random() < 0.8)) {
             let q=generateQuest(); 
             gameState.quests.push(q);
-        }
     }
 
     if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
@@ -4033,38 +4062,421 @@ function generateStoryEnemies(q) {
         q.enemies.push(e);
     }
 }
+
+
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者が現在どのクエストにも割り当てられていないかを判定するヘルパー関数
+function isAdventurerOnQuest(adv) {
+    if (!adv || !adv.id) return false;
+    
+    // gameState.quests の .assigned にこの冒険者のIDが含まれているか確認
+    // これが最も確実（assignedQuestフラグが残っていたり消え忘れても対応可能）
+    return gameState.quests.some(quest => 
+        quest.assigned && Array.isArray(quest.assigned) && quest.assigned.includes(adv.id)
+    );
+}
+
+// 施設が利用可能（レベル1以上）かどうかを判定
+function isFacilityUsable(facilityName) {
+    return gameState.facilities?.[facilityName] >= 1;
+}
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者が現在どのクエストにも割り当てられていないかを判定
+function isAdventurerOnQuest(adv) {
+    if (!adv || !adv.id) return false;
+    return gameState.quests.some(quest => 
+        quest.assigned && Array.isArray(quest.assigned) && quest.assigned.includes(adv.id)
+    );
+}
+
+// 施設が利用可能（レベル1以上）かどうかを判定
+function isFacilityUsable(facilityName) {
+    return gameState.facilities?.[facilityName] >= 1;
+}
+
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+function processAdventurerDailyActions() {
+    gameState.adventurers.forEach(adv => {
+        if (isAdventurerOnQuest(adv) || adv.temp) return;
+
+        if (!adv.bag) {
+            adv.bag = { gold: Math.floor(Math.random() * 100 + 50), items: [] };
+        }
+
+        if (!adv.actionHistory) adv.actionHistory = [];
+
+        const maxHp = adv.maxHp || 100;
+        const maxMp = adv.maxMp || 100;
+
+        const hpRatio = adv.hp / maxHp;
+        const mpRatio = adv.mp / maxMp;
+
+// ── 回復アイテムの自動使用（1日1個まで・HP優先） ──
+let recoveryItemUsed = null;
+let recoveryDescription = '';
+
+// HP < 50% → HP回復アイテムを探す
+if (hpRatio < 0.5) {
+    const hpRecoveryItems = adv.bag.items.filter(item => 
+        (item.qty || 1) >= 1 &&
+        (item.restore === 'hp' ||  // 正確なフィールドを優先
+         (!item.restore && /hp|heal|health|life|活力|回復|治癒|ヒール|ライフ|ヘルス/i.test(item.name)))  // ポーションを除去して厳密に
+    );
+
+    if (hpRecoveryItems.length > 0) {
+        hpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+        const item = hpRecoveryItems[0];
+        const usedAmount = item.amount || 50;
+        adv.hp = Math.min(maxHp, adv.hp + usedAmount);
+        removeItemFromBag(adv.bag, item.name, 1);
+        recoveryItemUsed = 'hp';
+        recoveryDescription = `${item.name} を使用 → HP +${usedAmount}`;
+    }
+}
+
+// HP回復を使わなかった場合、MP < 50% ならMP回復アイテムを試す
+if (!recoveryItemUsed && mpRatio < 0.5) {
+    const mpRecoveryItems = adv.bag.items.filter(item => 
+        (item.qty || 1) >= 1 &&
+        (item.restore === 'mp' || 
+         (!item.restore && /mp|mana|magic|魔力|マナ/i.test(item.name)))
+    );
+
+    if (mpRecoveryItems.length > 0) {
+        mpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+        const item = mpRecoveryItems[0];
+        const usedAmount = item.amount || 50;
+        adv.mp = Math.min(maxMp, adv.mp + usedAmount);
+        removeItemFromBag(adv.bag, item.name, 1);
+        recoveryItemUsed = 'mp';
+        recoveryDescription = `${item.name} を使用 → MP +${usedAmount}`;
+    }
+}
+
+        // ── 行動選択 ──
+        let action;
+        let possibleActions = ['gather', 'none'];
+
+        if (isFacilityUsable('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
+            possibleActions.push('blacksmith');
+        }
+
+        if (isFacilityUsable('alchemy')) {
+            const alchemyRecipes = [
+                { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
+                { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
+            ];
+            const canAlchemy = alchemyRecipes.some(r => 
+                r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
+            );
+            if (canAlchemy) possibleActions.push('alchemy');
+        }
+
+        if (isFacilityUsable('tavern')) {
+            possibleActions.push('tavern');
+        }
+
+        // hunting は HP & MP が両方60%以上の場合のみ候補に追加
+        if (hpRatio > 0.6 && mpRatio > 0.6) {
+            possibleActions.push('hunting');
+        }
+
+        action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+
+        // ── 料金確率ロジック ──
+        const facilityFee = gameState.facilityFees?.[action] || 0;
+        let adventurerChange = 0;  // 冒険者の純金変動（+ = 収入, - = 支出）
+        let guildGain = 0;         // ギルドの収入
+
+        if (facilityFee > 0 && adv.bag.gold > 0) {
+            const feePercent = (facilityFee / adv.bag.gold) * 100;
+            if (feePercent >= 10) {
+                adv.actionHistory.push({
+                    day: gameState.day - 1,
+                    action: action,
+                    description: `使用料が高すぎるため（所持金の${Math.round(feePercent)}%）、${getActionName(action)}を断念した` +
+                                 (recoveryDescription ? `（${recoveryDescription}は使用済み）` : ''),
+                    adventurerChange: 0,
+                    guildGain: 0,
+                    success: false,
+                    recoveryItemUsed: recoveryItemUsed
+                });
+                if (adv.actionHistory.length > 30) adv.actionHistory.shift();
+                return;
+            }
+
+            const successChance = Math.max(0, 1 - (feePercent / 10));
+            if (Math.random() > successChance) {
+                adv.actionHistory.push({
+                    day: gameState.day - 1,
+                    action: action,
+                    description: `使用料を払う気になれず、${getActionName(action)}を断念した` +
+                                 (recoveryDescription ? `（${recoveryDescription}は使用済み）` : ''),
+                    adventurerChange: 0,
+                    guildGain: 0,
+                    success: false,
+                    recoveryItemUsed: recoveryItemUsed
+                });
+                if (adv.actionHistory.length > 30) adv.actionHistory.shift();
+                return;
+            }
+
+            adv.bag.gold -= facilityFee;
+            gameState.gold += facilityFee;
+            adventurerChange -= facilityFee;
+            guildGain += facilityFee;
+        }
+
+        // ── メイン行動の実行 ──
+        let description = '';
+        let success = true;
+
+        switch (action) {
+            case 'gather': {
+                const items = ['キノコ', '薬草', '花', '普通の薬草'];
+                const item = items[Math.floor(Math.random() * items.length)];
+                const qty = Math.floor(Math.random() * 3) + 1;
+                addItemToBag(adv.bag, item, qty);
+                description = `${item} を ${qty}個 採取した`;
+                break;
+            }
+
+            case 'alchemy': {
+                const recipes = [
+                    { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
+                    { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
+                ];
+                const available = recipes.filter(r => 
+                    r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
+                );
+                if (available.length === 0) {
+                    success = false;
+                    description = '材料不足で錬成に失敗した';
+                    break;
+                }
+                const recipe = available[Math.floor(Math.random() * available.length)];
+                recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
+                addItemToBag(adv.bag, recipe.name, 1);
+                description = `${recipe.name} を錬成した`;
+                break;
+            }
+
+            case 'blacksmith': {
+                if (!adv.equipment || Object.keys(adv.equipment).length === 0) {
+                    success = false;
+                    description = '装備品がないため強化を断念した';
+                    break;
+                }
+                if (Math.random() < 0.5) {
+                    const eqKeys = Object.keys(adv.equipment);
+                    const eq = adv.equipment[eqKeys[Math.floor(Math.random() * eqKeys.length)]];
+                    const oldEnh = eq.enhancement || 0;
+                    eq.enhancement = oldEnh + 1;
+                    description = `${eq.name} の強化に成功！ 絶対値 +1 (${oldEnh} → ${eq.enhancement})`;
+                } else {
+                    success = false;
+                    description = '強化に失敗した';
+                }
+                break;
+            }
+
+            case 'tavern': {
+                const recoveryBonus = 1.5;
+                adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.2 * recoveryBonus));
+                adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.2 * recoveryBonus));
+                description = '酒場で休息した';
+
+                // ── 酒場サブアクション（食事40%、ギャンブル10%、休息のみ50%） ──
+                const tavernSubRandom = Math.random();
+                if (tavernSubRandom < 0.4) { // 40% 食事注文
+                    const tavernLevel = gameState.facilities.tavern || 0;
+                    const availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
+
+                    if (availableFoods.length > 0) {
+                        const food = availableFoods[Math.floor(Math.random() * availableFoods.length)];
+                        const foodCost = food.cost || 250;
+
+                        if (adv.bag.gold >= foodCost) {
+                            adv.bag.gold -= foodCost;
+                            adventurerChange -= foodCost;
+
+                            // 食事代は10%のみギルド収入
+                            const playerGainFromFood = Math.floor(foodCost * 0.1);
+                            gameState.gold += playerGainFromFood;
+                            guildGain += playerGainFromFood;
+
+                            // バフ適用
+                            if (!adv.buffs) adv.buffs = [];
+                            const buffCopy = JSON.parse(JSON.stringify(food.buff));
+                            buffCopy.daysLeft = buffCopy.days;
+                            adv.buffs.push(buffCopy);
+
+                            description += `、ついでに「${food.name}」を注文した (${foodCost}G)`;
+                        } else {
+                            description += `（食事は頼みたかったが金が足りず断念）`;
+                        }
+                    }
+                } else if (tavernSubRandom < 0.5) { // 10% ギャンブル
+                    if (adv.bag.gold > 0) {
+                        const betPercent = 0.25 + Math.random() * 0.5; // 25%〜75%
+                        const bet = Math.floor(adv.bag.gold * betPercent);
+
+                        if (bet > 0) {
+                            adventurerChange -= bet; // 賭け金支出
+
+                            if (Math.random() < 0.4) { // 40% 勝ち → 純利益 +bet
+                                adv.bag.gold += bet;
+                                adventurerChange += bet;
+                                description += `、ギャンブルで勝ち！ ${bet}Gの利益`;
+                            } else { // 60% 負け → 純 -bet
+                                description += `、ギャンブルで負け！ ${bet}Gを失った`;
+                            }
+                        }
+                    }
+                }
+                // 50% は休息のみ
+
+                break;
+            }
+
+            case 'hunting': {
+                // ダメージ（HP & MP 10~50%減少）
+                const damagePercent = 0.1 + Math.random() * 0.4;
+                const hpLoss = Math.floor(maxHp * damagePercent);
+                const mpLoss = Math.floor(maxMp * damagePercent);
+                adv.hp = Math.max(1, adv.hp - hpLoss);
+                adv.mp = Math.max(0, adv.mp - mpLoss);
+
+                // EXP獲得（次レベルまでの10%）
+                const expNeeded = adv.level * 100;
+                const expGain = Math.floor(expNeeded * 0.1);
+                adv.exp += expGain;
+
+                // 金獲得（level * 20, min 20, max 5000）
+                let goldGain = adv.level * 20;
+                goldGain = Math.max(20, Math.min(5000, goldGain));
+
+                // ギルド手数料10%
+                const guildFee = Math.floor(goldGain * 0.1);
+                const adventurerGain = goldGain - guildFee;
+
+                adv.bag.gold += adventurerGain;
+                gameState.gold += guildFee;
+                adventurerChange += adventurerGain;
+                guildGain += guildFee;
+
+                description = `単独でモンスター狩りに行った（HP-${hpLoss}, MP-${mpLoss}, EXP+${expGain}, 金+${adventurerGain}G, ギルド手数料${guildFee}G）`;
+
+                // レベルアップチェック
+                if (adv.exp >= expNeeded) {
+                    adv.level += 1;
+                    adv.exp -= expNeeded;
+                    description += ` → レベルアップ！ Lv${adv.level}`;
+                }
+
+                break;
+            }
+
+            case 'none': {
+                description = '一日を特に何もせずに過ごした';
+
+                // ── 寄付のチャンス（20%） ──
+                if (adv.friendliness >= 60 && Math.random() < 0.2) {
+                    const donated = Math.floor(adv.bag.gold * 0.01 * adv.friendliness);
+                    if (donated > 0) {
+                        adv.bag.gold -= donated;
+                        gameState.gold += donated;
+                        adventurerChange -= donated;
+                        guildGain += donated;
+                        description = `一日を特に何もせずに過ごしたが、ギルドに${donated}G寄付した`;
+                    }
+                }
+
+                break;
+            }
+        }
+
+        // 履歴記録
+        const fullDescription = recoveryDescription 
+            ? `${recoveryDescription} → その後${description}`
+            : description;
+
+        adv.actionHistory.push({
+            day: gameState.day - 1,
+            action: action,
+            description: fullDescription,
+            adventurerChange: adventurerChange,
+            guildGain: guildGain,
+            success: success,
+            recoveryItemUsed: recoveryItemUsed
+        });
+
+        if (adv.actionHistory.length > 30) {
+            adv.actionHistory.shift();
+        }
+    });
+}
+
+// 補助関数：行動名を日本語で返す
+function getActionName(action) {
+    const names = {
+        gather: '採取',
+        alchemy: '錬成',
+        blacksmith: '鍛冶強化',
+        tavern: '酒場休息',
+        none: 'なし'
+    };
+    return names[action] || action;
+}
+
+// 補助関数：行動名を日本語で返す（履歴表示などで便利）
+function getActionName(action) {
+    const names = {
+        gather: '採取',
+        alchemy: '錬成',
+        blacksmith: '鍛冶強化',
+        tavern: '酒場休息',
+        none: 'なし'
+    };
+    return names[action] || action;
+}
+
+// 補助関数（履歴表示などで使うと便利）
+function getActionName(action) {
+    const names = {
+        gather: '採取',
+        alchemy: '錬成',
+        blacksmith: '鍛冶強化',
+        tavern: '酒場休息',
+        none: 'なし'
+    };
+    return names[action] || action;
+}
+
 // === playDay() の更新版（ストーリークエストを戦闘レンダリングに統合） ===
 function playDay(){
+    const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
+    if (unassignedDefense) {
+        better_alert(`ギルトを防衛する冒険者は一人もいない！`,"warning");
+        return;
+    }
+
     if (gameState.gameOver) return;
 
-// ===== 新規追加: 日進捗中フラグ + ボタン無効化（多重クリック防止） =====
     if (gameState.isAdvancingDay) {
         better_alert("日を進めています… しばらくお待ちください。", "warning");
         return;
     }
     gameState.isAdvancingDay = true;
 
-
-
-    // ===== 防衛クエスト未割り当て警告（防衛のみ） =====
-    const defenseQuest = gameState.quests.find(q => q.defense);
-    if (defenseQuest && defenseQuest.assigned.length === 0) {
-        const confirmMessage = 
-`${defenseQuest.desc}
-
-警告：防衛クエストに誰も割り当てられていません！
-
-このまま日を進めるとギルドが襲撃され、誰も防衛しないため即座にゲームオーバーになります。
-
-本当に日を進めますか？（キャンセルで日進めを中止できます）`;
-
-        if (!confirm(confirmMessage)) {
-            gameState.isAdvancingDay = false;
-            return;
-        }
-    }
-
-    const evDay = gameState.day; 
+    const evDay = gameState.day;
     gameState.day++;
 
     if (evDay % 7 === 0) {
@@ -4074,12 +4486,10 @@ function playDay(){
         checkGameOver();
     }
 
-    // 通常クエスト処理（貿易・訓練はそのまま）
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
-        if (q.defense || q.type === 7 || q.type === 6) continue;  // 戦闘系（防衛・ダンジョン・ストーリー）は後で特殊処理
+        if (q.defense || q.type === 7 || q.type === 6) continue;
 
-        // 貿易処理（変更なし）
         if (q.type === 8 || q.type === 'trade') {
             if (q.assigned.length > 0) {
                 if (!q.inProgress) q.inProgress = true;
@@ -4094,7 +4504,6 @@ function playDay(){
             continue;
         }
 
-        // 通常クエスト処理（変更なし）
         if (q.assigned.length > 0) {
             const teamStr = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'strength'), 0);
             const teamWis = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), 'wisdom'), 0);
@@ -4108,7 +4517,7 @@ function playDay(){
             }
             let teamFocus = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), q.focusStat), 0);
             const excess = (teamFocus / q.minFocus) - 1;
-            const prob = Math.min(0.5, 0.1 + Math.max(0, excess) * 0.2);
+            const prob = Math.min(0.8, 0.1 + Math.max(0, excess) * 0.2);
             let successToday = Math.random() < prob;
             if (q.training && q.assigned.length > 0) successToday = true;
             if (successToday) {
@@ -4121,7 +4530,6 @@ function playDay(){
     }
 
     updateDailyPrices();
-    // 期限切れ処理（戦闘系除外）
     gameState.quests.forEach(q => {
         if (!q.training && !q.playerPosted && q.type !== 8 && !q.defense && q.type !== 7 && q.type !== 6) q.daysLeft--;
     });
@@ -4140,32 +4548,18 @@ function playDay(){
         }
     }
 
-    // ===== 戦闘クエスト特殊処理（ストーリー追加） =====
-    // 未割り当て防衛 → 即ゲームオーバー
-    const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
-    if (unassignedDefense) {
-        better_alert(`防衛クエスト失敗！誰も割り当てられず、ギルドは崩壊。ゲームオーバー！`,"error");
-        gameState.gameOver = true;
-        showModal(evDay);
-        updateDisplays();
-        return;
-    }
 
-    // 未割り当てダンジョン・ストーリー → 通常失敗処理
     const unassignedNonDefenseBattle = gameState.quests.filter(q => (q.type === 7 || q.type === 6) && q.assigned.length === 0);
     unassignedNonDefenseBattle.forEach(q => {
         processQuestOutcome(q, evDay, false, false);
         gameState.quests = gameState.quests.filter(quest => quest !== q);
     });
 
-    // 割り当てありの戦闘クエスト
     let assignedBattleQuests = gameState.quests.filter(q => (q.defense || q.type === 7 || q.type === 6) && q.assigned.length > 0);
 
     if (assignedBattleQuests.length > 0) {
-        // メインクエストリストから戦闘系を一時除去
         gameState.quests = gameState.quests.filter(q => !(q.defense || q.type === 7 || q.type === 6));
 
-        // 優先順位: 防衛 > ストーリー > ダンジョン
         assignedBattleQuests.sort((a, b) => {
             if (a.defense && !b.defense) return -1;
             if (!a.defense && b.defense) return 1;
@@ -4174,11 +4568,9 @@ function playDay(){
             return 0;
         });
 
-        // 複数ある場合はペンディングキューに保存
         gameState.pendingBattles = assignedBattleQuests.slice(1);
         const currentQ = assignedBattleQuests[0];
 
-        // 敵生成 + タイプ設定
         let titleText;
         if (currentQ.defense) {
             generateEnemies(currentQ);
@@ -4216,47 +4608,42 @@ function playDay(){
         document.getElementById('battleModal').style.display = 'flex';
         renderBattle();
         startRound();
-        // BGM再生（ストーリー用に拡張）
         if (CurrentQuestType === 'dungeon') {
             renderBattlebgm(CurrentQuestType, currentQ.floor);
         } else if (CurrentQuestType === 'story') {
-            renderBattlebgm('boss'); // ボス戦専用BGM（存在すれば）
+            renderBattlebgm('boss');
         } else {
             renderBattlebgm(CurrentQuestType);
         }
-        return; // 戦闘中は日処理中断
+        return;
     }
 
-    // 戦闘なしの場合の通常終了
+    if (!assignedBattleQuests.length) {
+            processAdventurerDailyActions();
+        }
+
     const overlay = document.getElementById('dayTransitionOverlay');
     const info = document.getElementById('transitionDayInfo');
 
-
-
-    // 新しいDayのみ表示（大きく中央に）
     info.style.fontSize = '5.5em';
     info.style.fontWeight = 'bold';
     info.style.letterSpacing = '0.2em';
     info.style.textShadow = '0 0 20px rgba(255, 255, 255, 1)';
-    info.style.transition = 'opacity 0.5s ease-in-out'; // Dayフェードをゆったり
+    info.style.transition = 'opacity 0.5s ease-in-out';
     info.innerText = `Day ${gameState.day}`;
-    info.style.opacity = '0'; // 初期非表示
+    info.style.opacity = '0';
 
-    // オーバーレイ表示＆フェードイン（暗転）
     overlay.style.display = 'flex';
     overlay.style.opacity = '0';
     requestAnimationFrame(() => { overlay.style.opacity = '1'; });
 
-    // 暗転ホールド後 → 新Dayフェードイン（フェードイン時間を長めに）
     setTimeout(() => {
         info.style.opacity = '1';
 
-        // 新Day表示後ホールド → オーバーレイフェードアウト（フェードアウトをゆったり）
         setTimeout(() => {
             overlay.style.opacity = '0';
         }, 600);
 
-        // オーバーレイフェードアウト完了後、非表示＆後続処理
         setTimeout(() => {
             overlay.style.display = 'none';
             checkGameOver();
@@ -4268,9 +4655,31 @@ function playDay(){
                 endDayBtn.querySelector('span').innerText = endDayBtn.dataset.originalText || '日終了 & 冒険者派遣';
                 delete endDayBtn.dataset.originalText;
             }
-        }, 1100); // 600msホールド + 500msフェード
-    }, 500); // 暗転ホールド（フェードイン0.5s後500ms待機）
+        }, 1100);
+    }, 500);
 }
+
+// ヘルパー関数（バッグ操作）
+function addItemToBag(bag, name, qty) {
+    const item = bag.items.find(i => i.name === name);
+    if (item) item.qty += qty;
+    else bag.items.push({name, qty});
+}
+
+function removeItemFromBag(bag, name, qty) {
+    const item = bag.items.find(i => i.name === name);
+    if (item) {
+        item.qty -= qty;
+        if (item.qty <= 0) bag.items = bag.items.filter(i => i.name !== name);
+    }
+}
+
+function hasItemInBag(bag, name, qty) {
+    const item = bag.items.find(i => i.name === name);
+    return item && item.qty >= qty;
+}
+
+
 
 function renderBattlebgm(QuestType,floor=0){
         if (QuestType=="dungeon"){
@@ -5803,62 +6212,9 @@ function addBattleLog(text) {
 }
 
 
-function getFacilitiesContent() {
-    let html = '';
-    const names = {blacksmith: '鍛冶屋', tavern: '酒場', alchemy: '錬金工房'};
-    for (let f in gameState.facilities) {
-        let level = gameState.facilities[f];
-        html += `<h3>${names[f]} レベル ${level}</h3>`;
-        if (level < 4) {
-            const nextCost = {blacksmith: [1500,4000,8000,15000], tavern: [1200,3500,7000,13000], alchemy: [2000,5000,10000,18000]};
-            const cost = nextCost[f][level];
-            if (cost > 0) html += `<button onclick="upgradeFacility('${f}')">アップグレード (${cost}g)</button><br><br>`;
-        }
-        if (level > 0) {
-            if (f === 'alchemy') {
-                html += `
-                        <div class="facility-section">
-                            <h3>錬金術 Lv${gameState.facilities.alchemy}</h3>
-                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                <select id="alchemyIng1" onchange="updateAlchemyPreview()" style="flex: 1; min-width: 140px; padding: 5px;"></select>
-                                <select id="alchemyIng2" onchange="updateAlchemyPreview()" style="flex: 1; min-width: 140px; padding: 5px;"></select>
-                                <input type="number" id="alchemyQty" value="1" min="1" max="999" onchange="updateAlchemyPreview()" style="width: 80px; padding: 5px;">
-                                <button onclick="performAlchemy()" style="padding: 8px 16px; background: #27ae60;">作成</button>
-                            </div>
-                            <div id="alchemyPreview" style="margin-top: 10px; padding: 12px; background: #e8f5e8; border-radius: 4px; border-left: 4px solid #27ae60; min-height: 60px;"></div>
-                        </div>
-                    `;
-            } else {
-                const recipes = f === 'blacksmith' ? currentBlacksmithRecipes : currentTavernRecipes;
-                html += `<h4>${names[f]} 生産</h4><ul>`;
-                recipes.forEach((r, j) => {
-                    if (r.level > level) return;
-                    let canMake = gameState.gold >= r.cost;
-                    let matStr = '';
-                    if (r.materials && r.materials.length > 0) {
-                        r.materials.forEach(m => {
-                            let have = gameState.inventory.filter(it => it.name === m.name).length;
-                            matStr += `${m.name} x${m.qty} (保有${have}) `;
-                            if (have < m.qty) canMake = false;
-                        });
-                    }
-                    html += `<li>${r.name} - ${r.cost}g ${matStr}
-                             <button onclick="produce('${f}', ${j})" ${canMake ? '' : 'disabled'}>生産</button></li>`;
-                });
-                html += `</ul>`;
-            }
-        }
-    }
-    document.getElementById('facilitiesContent').innerHTML = html;
-    // Add this block at the very end of toggleFacilities(), after the innerHTML is set
-    if (document.getElementById('alchemyIng1')) {
-        const optionsHtml = getAlchemyMaterialOptions();
-        document.getElementById('alchemyIng1').innerHTML = optionsHtml;
-        document.getElementById('alchemyIng2').innerHTML = optionsHtml;
-        updateAlchemyPreview();  // Show preview immediately (will be empty until selections made)
-}
 
-}
+
+
 
 function selectMix(slot, idx) {
     if (slot === 1) selectedMix1 = idx;
@@ -6394,6 +6750,8 @@ function renderFacilities() {
             <div id="renderedfacilitiesContent" style="text-align:center; padding:60px;">
                 <h2>${t('facilities_street_title')}</h2>
                 <h2 style="font-size:1.6em; margin:40px 0;">${t('facilities_select_prompt')}</h2>
+                
+
                 <div class="buttons" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
                     <button onclick="selectFacility('blacksmith')" style="padding: 40px 40px; font-size: 1.4em; background: rgba(231,76,60,0.9);">
                         ${t('facilities_blacksmith')}
@@ -6430,15 +6788,35 @@ function renderFacilities() {
 
         const level = gameState.facilities[currentFacility];
         const title = t(titleKey);
+
+        // Current fee for this facility
+        const currentFee = (gameState.facilityFees && gameState.facilityFees[currentFacility]) || 0;
+
         let html = `<div class="facility-panel">
             <h2>${t('facilities_level_title', {title, level})}</h2>
+            
+            <!-- Current Usage Fee Display -->
+            <div style="text-align:center; margin:20px 0; padding:12px; background:rgba(0,0,0,0.4); border-radius:10px;">
+                <p style="font-size:1.4em; margin:0; color:#ffd700;">
+                    現在の使用料: <strong>${currentFee} G / 回</strong>
+                </p>
+            </div>
+
+            <!-- Fee Setting Button (also available inside each facility) -->
+            <div style="text-align:center; margin:30px 0;">
+                <button onclick="openFacilityFeeModal('${currentFacility}')" 
+                        style="padding:12px 32px; font-size:1.2em; background:#9b59b6; color:white; border:none; border-radius:8px; cursor:pointer;">
+                    使用料を変更する
+                </button>
+            </div>
+
             <div style="text-align:center; margin:30px 0;">
                 <button onclick="currentFacility=null; renderFacilities()" style="padding:14px 36px; background:#87878777; font-size:1em;">
                     ${t('facilities_back_to_street')}
                 </button>
             </div>`;
 
-        // アップグレード
+        // Upgrade Section
         const maxLevel = facilityMaxLevels[currentFacility] || 4;
         if (level < maxLevel) {
             const nextCost = facilityUpgradeCosts[currentFacility][level];
@@ -6462,7 +6840,7 @@ function renderFacilities() {
                 </div>`;
         }
 
-        // === 鍛冶屋専用の装備強化セクションをここに移動（アップグレード直後・合成リストの上）===
+        // Blacksmith Enhancement Section
         if (currentFacility === 'blacksmith') {
             const crystalName = t('enhancement_crystal');
             const crystalCount = countItem(crystalName);
@@ -6519,6 +6897,7 @@ function renderFacilities() {
             }
         }
 
+        // Crafting / Production Section
         if (level > 0 && recipes.length > 0) {
             html += `<h3 style="text-align:center; margin-top:60px;">${t('facilities_craftable_items')}</h3>
                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:30px; margin-top:30px;">`;
@@ -6757,14 +7136,14 @@ const facilityMaxLevels = {
 
 const facilityUpgradeCosts = {
     alchemy: [
-        1000,    // Lv0 → Lv1 (序盤容易)
+        600,    // Lv0 → Lv1 (序盤容易)
         2500,    // Lv1 → Lv2
         6000,
         10000     // Lv2 → Lv3 (Lv4はmax)
     ],
     blacksmith: [
-        1500,    // Lv0 → Lv1
-        2700,    // Lv1 → Lv2
+        700,    // Lv0 → Lv1
+        2000,    // Lv1 → Lv2
         4900,    // Lv2 → Lv3
         8800,    // Lv3 → Lv4
         15800,   // Lv4 → Lv5
@@ -6777,10 +7156,10 @@ const facilityUpgradeCosts = {
         970000   // Lv11 → Lv12
     ],
     tavern: [
-        1200,    // Lv0 → Lv1 (酒場少し安め)
-        2200,    // Lv1 → Lv2
-        4000,    // Lv2 → Lv3
-        7200,    // Lv3 → Lv4
+        500,    // Lv0 → Lv1 (酒場少し安め)
+        1500,    // Lv1 → Lv2
+        2500,    // Lv2 → Lv3
+        5000,    // Lv3 → Lv4
         13000,   // Lv4 → Lv5
         23000,   // Lv5 → Lv6
         41000,   // Lv6 → Lv7
@@ -6792,12 +7171,15 @@ const facilityUpgradeCosts = {
     ]
 };
 
+// 必要なら currentLang 対応のショートカット変数
+let currentUpgradeDialogues = facilityUpgradeDialogues[currentLang] || facilityUpgradeDialogues.ja;
+
 function upgradeFacility(fac) {
     const currentLevel = gameState.facilities[fac];
     const maxLevel = facilityMaxLevels[fac];
 
     if (currentLevel >= maxLevel) {
-        better_alert('この施設はすでに最大レベルです',"warning");
+        better_alert('この施設はすでに最大レベルです', "warning");
         return;
     }
 
@@ -6806,12 +7188,29 @@ function upgradeFacility(fac) {
     if (gameState.gold >= cost) {
         gameState.gold -= cost;
         gameState.facilities[fac]++;
+
+        // ── ここからダイアログ追加 ──
+        let dialogueKey = fac;                     // tavern, blacksmith, alchemy など
+        let sequence = currentUpgradeDialogues[dialogueKey];
+
+        // 定義がない場合は default を使う
+        if (!sequence) {
+            sequence = currentUpgradeDialogues.default || currentUpgradeDialogues.tavern; // fallback
+        }
+
+        // 必要ならレベルに応じてバリエーションを追加したい場合はここで分岐
+        // 例: if (gameState.facilities[fac] >= 3) → もう少し感動的なセリフに…
+
+        queueQuestCompletionDialogue(sequence);
+
+        // ── 通常の処理 ──
         renderFacilities();
         if (typeof updateGold === 'function') updateGold();
-        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`,"success");
+        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`, "success");
     } else {
-        better_alert('ゴールドが不足しています',"error");
+        better_alert('ゴールドが不足しています', "error");
     }
+
     updateDisplays();
 }
 
@@ -7331,6 +7730,104 @@ function generateBreathingAnimation(
 
   return divHtml;
 }
+
+// 冒険者の行動履歴を表示するモーダル
+function showActionHistory(charIndex) {
+    const adv = gameState.adventurers[charIndex];
+    if (!adv || !adv.actionHistory || adv.actionHistory.length === 0) {
+        better_alert("このキャラクターの行動履歴はありません。", "basic");
+        return;
+    }
+
+    let html = `
+        <div id="historyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999;
+                                      display:flex; justify-content:center; align-items:center;">
+            <div style="max-height:80vh; width:95%; max-width:1000px; overflow-y:auto; padding:25px; 
+                        background:rgba(30,30,40,0.95); border-radius:16px; color:#ecf0f1; box-shadow:0 10px 40px rgba(0,0,0,0.7);">
+                <h2 style="text-align:center; margin-bottom:25px; color:#ffd700;">${adv.name} の行動履歴</h2>
+                <table style="width:100%; border-collapse:collapse; font-size:1.05em;">
+                    <thead style="background:#2c3e50; position:sticky; top:0; z-index:1;">
+                        <tr>
+                            <th style="padding:12px; border:1px solid #555; text-align:center;">日</th>
+                            <th style="padding:12px; border:1px solid #555;">行動</th>
+                            <th style="padding:12px; border:1px solid #555;">詳細</th>
+                            <th style="padding:12px; border:1px solid #555; text-align:right;">冒険者</th>
+                            <th style="padding:12px; border:1px solid #555; text-align:right;">ギルド</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    // 新しい順（最新が上）
+    [...adv.actionHistory].reverse().forEach(entry => {
+        const feeText = entry.feePaid > 0 ? `${entry.feePaid}G` : '—';
+        const gainText = entry.guildGain > 0 ? `+${entry.guildGain}G` : '—';
+        const rowStyle = entry.success === false ? 'background:rgba(139,0,0,0.25);' : '';
+
+        let actionLabel = '';
+        switch(entry.action) {
+            case 'none':     actionLabel = 'なし'; break;
+            case 'tavern':   actionLabel = '酒場休息'; break;
+            case 'gather':   actionLabel = '採取'; break;
+            case 'alchemy':  actionLabel = '錬成'; break;
+            case 'blacksmith': actionLabel = '鍛冶強化'; break;
+            case 'hunting': actionLabel = '狩り'; break;
+            default:         actionLabel = entry.action;
+        }
+
+        html += `
+<tr style="${rowStyle}">
+    <td style="padding:12px; border:1px solid #555; text-align:center;">Day ${entry.day}</td>
+    <td style="padding:12px; border:1px solid #555;">${actionLabel}</td>
+    <td style="padding:12px; border:1px solid #555;">${entry.description}</td>
+    <td style="padding:12px; border:1px solid #555; text-align:right; color:${entry.adventurerChange >= 0 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
+        ${entry.adventurerChange !== 0 ? (entry.adventurerChange > 0 ? '+' : '') + entry.adventurerChange + 'G' : '—'}
+    </td>
+    <td style="padding:12px; border:1px solid #555; text-align:right; color:#2ecc71; font-weight:bold;">
+        ${entry.guildGain > 0 ? '+' + entry.guildGain + 'G' : '—'}
+    </td>
+</tr>
+        `;
+    });
+
+    html += `
+                    </tbody>
+                </table>
+                <div style="text-align:center; margin-top:30px;">
+                    <button onclick="closeHistoryModal()" 
+                            style="padding:14px 40px; background:#e74c3c; color:white; border:none; border-radius:10px; font-size:1.2em; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+                        閉じる
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const modalDiv = document.createElement('div');
+    modalDiv.innerHTML = html;
+    document.body.appendChild(modalDiv.firstElementChild);
+
+    const modal = document.getElementById('historyModal');
+    modal.addEventListener('click', e => {
+        if (e.target === modal) closeHistoryModal();
+    });
+
+    const escHandler = e => {
+        if (e.key === 'Escape') {
+            closeHistoryModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
+function closeHistoryModal() {
+    const modal = document.getElementById('historyModal');
+    if (modal && modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+    }
+}
+
 function renderCurrentCharacter() {
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
@@ -7579,6 +8076,13 @@ function renderCurrentCharacter() {
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
         ${adv.name}と話す (AI)
     </button>`;
+
+    html += `
+        <button onclick="showActionHistory(${currentCharIndex})" 
+                style="margin:20px auto; display:block; padding:12px 30px; background:#e67e22; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
+            行動履歴を見る
+        </button>
+    `;
     html += `</div>`;
     html += `</div>`; // flexコンテナ閉じ
     document.getElementById('charactersContent').innerHTML = html;
@@ -7665,7 +8169,7 @@ function renderQuests() {
             } else {
                 let teamFocus = q.assigned.reduce((s, id) => s + getEffectiveStat(findAdv(id), q.focusStat), 0);
                 const excess = (teamFocus / q.minFocus) - 1;
-                const prob = Math.min(0.5, 0.1 + Math.max(0, excess) * 0.2);
+                const prob = Math.min(0.8, 0.1 + Math.max(0, excess) * 0.2);
                 chance = Math.round(prob * 100);
                 const days = Math.max(1, Math.ceil(1 / prob));
                 estDays = t('estimated_days', {days});
@@ -8366,6 +8870,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ゲームロード時に自動表示（例: ページ読み込み後やstartDay()の前に）
 window.addEventListener('load', function() {
 
+
 if (!gameState.activeQuests) {
     gameState.activeQuests = {};  
     
@@ -8818,14 +9323,14 @@ function getGameOverSequence(reason) {
         },
         rep: {
             ja: [
-                {speaker: '商人A', text: 'このギルドの評判が最低だ！もう絶対に取引しない！'},
-                {speaker: '商人B', text: '俺もだ！報酬の支払いが遅いし、クエストも怪しい！'},
+                {speaker: '商人', text: 'このギルドの評判が最低だ！もう絶対に取引しない！'},
+                {speaker: '商人', text: '報酬の支払いが遅いし、クエストも怪しい！'},
                 {speaker: '怒りの冒険者', text: 'そうだ！こんなゴミギルドは冒険者の名を汚すだけだ！'},
                 {speaker: '別の冒険者', text: '解散しろ！王国に恥をかかせるな！'},
                 {speaker: playerSpeaker, text: '待ってください！私たちは必死に頑張ってきたんです！'},
                 {speaker: 'カイト', text: 'そうだよ！ちゃんと成功したクエストだってたくさんある！'},
                 {speaker: 'ルナ', text: `どうか信じてください…${playerSpeaker}を…`},
-                {speaker: '商人A', text: '信じる？評判が地に落ちてるんだぞ！'},
+                {speaker: '商人', text: '信じる？評判が地に落ちてるんだぞ！'},
                 {speaker: '群衆', text: '解散だ！解散！逮捕しろ！'},
                 {speaker: '群衆', text: 'ギルドを潰せ！'},
                 {speaker: '王国衛兵', text: '王命により、このギルドを即時解散する！'},
@@ -9424,4 +9929,88 @@ function closeQuestLog() {
             modal.style.opacity = '1'; /* 次回用リセット */
         }, 300);
     }
+}
+
+
+// 1施設だけの使用料設定モーダルを開く
+function openFacilityFeeModal(facility) {
+    const modal = document.getElementById('feeSettingModal');
+    if (!modal) return;
+
+    // まずモーダルを閉じて完全にリセット（以前の表示状態をクリア）
+    closeFeeSettingModal();
+
+    // タイトル更新
+    const titleEl = modal.querySelector('h2');
+    if (titleEl) {
+        titleEl.textContent = `${t(`facilities_${facility}`)} の使用料設定`;
+    }
+
+    // 全ての入力セクションを非表示にする（inputの親divを対象）
+    ['tavern', 'alchemy', 'blacksmith'].forEach(f => {
+        const input = document.getElementById(`fee_${f}`);
+        if (input) {
+            const section = input.parentElement; // 直接の親div（label + input + small を含むdiv）
+            if (section) {
+                section.style.display = 'none';
+            }
+        }
+    });
+
+    // 対象施設のセクションだけ表示
+    const targetInput = document.getElementById(`fee_${facility}`);
+    if (targetInput) {
+        const targetSection = targetInput.parentElement;
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            targetInput.value = gameState.facilityFees?.[facility] || 0;
+        }
+    }
+
+    // 保存ボタンを専用関数に切り替え
+    const saveBtn = modal.querySelector('button[onclick*="save"]');
+    if (saveBtn) {
+        saveBtn.setAttribute('onclick', `saveSingleFacilityFee('${facility}')`);
+        saveBtn.textContent = 'この施設を保存';
+    }
+
+    // モーダル表示
+    modal.style.display = 'flex';
+}
+// 1施設だけ保存
+function saveSingleFacilityFee(facility) {
+    const input = document.getElementById(`fee_${facility}`);
+    if (!input) return;
+
+    const value = parseInt(input.value) || 0;
+
+    if (!gameState.facilityFees) gameState.facilityFees = {};
+    gameState.facilityFees[facility] = value;
+
+    better_alert(`${t(`facilities_${facility}`)} の使用料を ${value}G に更新しました`, "success");
+
+    closeFeeSettingModal();
+    renderFacilities(); // 現在の施設画面を更新
+}
+
+// モーダル閉じる（共通）
+function closeFeeSettingModal() {
+    document.getElementById('feeSettingModal').style.display = 'none';
+}
+
+function saveFacilityFees() {
+    const tavern     = parseInt(document.getElementById('fee_tavern').value)     || 0;
+    const alchemy    = parseInt(document.getElementById('fee_alchemy').value)    || 0;
+    const blacksmith = parseInt(document.getElementById('fee_blacksmith').value) || 0;
+
+    gameState.facilityFees = {
+        tavern,
+        alchemy,
+        blacksmith
+    };
+
+    better_alert("施設使用料を更新しました", "success");
+
+    closeFeeSettingModal();
+    toggleFacilities(); // refresh to show new fee values
 }
