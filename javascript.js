@@ -2726,6 +2726,157 @@ const shopSections = [
     { key: 'sell_items', render: renderSellItems }
 ];
 
+if (!gameState.loans) {
+    gameState.loans = [];
+}
+
+/* 毎日実行される handleLoans 関数（playDay() 内で gameState.day++ の直後に呼び出す想定） */
+function handleLoans() {
+    if (!gameState.loans || gameState.loans.length === 0) return;
+
+    gameState.loans = gameState.loans.filter(loan => {
+        const daysPassed = gameState.day - loan.startDay;
+
+        // 28日を超過したら即ゲームオーバー（債務不履行）
+        if (daysPassed > 28) {
+            queueGameOverDialogue(getGameOverSequence('gold'));
+            return false;
+        }
+
+        // 7日毎の支払い日（7,14,21,28日目）
+        if (daysPassed > 0 && daysPassed % 7 === 0 && daysPassed <= 28) {
+            const interest = Math.round(loan.principal * 0.1);
+            let payment = interest;
+            let isFinal = (daysPassed === 28);
+
+            if (isFinal) {
+                payment += loan.principal; // 最終日は元本も返済
+            }
+
+            if (gameState.gold < payment) {
+                queueGameOverDialogue(getGameOverSequence('gold'));
+                return false;
+            }
+
+            gameState.gold -= payment;
+            better_alert(
+                isFinal
+                    ? t('loan_final_payment', { payment: payment, principal: loan.principal })
+                    : t('loan_interest_payment', { payment: interest }),
+                "warning"
+            );
+
+            if (isFinal) {
+                return false; // 完済したローンは削除
+            }
+        }
+        return true;
+    });
+
+    updateDisplays();
+}
+
+/* 借金ページのレンダー関数 */
+function renderBorrowPage() {
+    // 名声を切り捨てて整数化（浮動小数点誤差を完全に排除 + 保守的に丸め下げ）
+    const reputationFloor = Math.floor(gameState.reputation);
+    const maxBorrowTotal = reputationFloor * 100;
+    const currentBorrowed = gameState.loans.reduce((sum, loan) => sum + loan.principal, 0);
+    const available = Math.max(0, maxBorrowTotal - currentBorrowed);
+
+    // 全体を白文字にするラッパー（背景が暗いため視認性向上）
+    let html = `<div  line-height:1.7; font-size:1.05em;">`;
+
+    html += `<p>${t('borrow_explanation')}</p>`;
+    html += `<p>${t('current_reputation')}: <strong style="color:#ffd700;">${reputationFloor}</strong> 
+             `;
+    html += `<p>${t('max_borrow_limit')}: <strong style="color:#ffd700;">${maxBorrowTotal}G</strong> 
+             (${t('currently_borrowed')}: <strong style="color:#ffaa66;">${currentBorrowed}G</strong> / 
+             ${t('available')}: <strong style="color:#88ff88;">${available}G</strong>)</p>`;
+
+    // 現在の借金一覧
+    if (gameState.loans.length > 0) {
+        html += `<h3 style="margin-top:30px; color:#ffd700;">${t('current_loans')}</h3>
+                 <ul style="margin:20px 0; padding-left:25px; list-style-type:disc;">`;
+        gameState.loans.forEach(loan => {
+            const interest = Math.round(loan.principal * 0.1);
+            const daysPassed = gameState.day - loan.startDay;
+            const periodsPassed = Math.floor(daysPassed / 7);
+            const nextPaymentDay = loan.startDay + (periodsPassed + 1) * 7;
+            const finalDay = loan.startDay + 28;
+
+            html += `<li style="margin:15px 0;">
+                • ${t('principal')}: <strong style="color:#ffd700;">${loan.principal}G</strong> 
+                  (${t('borrowed_on_day')}: ${loan.startDay})<br>
+                ${t('weekly_interest')}: <strong style="color:#ffaa66;">${interest}G</strong><br>
+                ${t('next_payment_day')}: <strong style="color:#ffdd77;">${nextPaymentDay}</strong> 
+                    ${periodsPassed < 4 ? `(${t('interest_only')})` : `(<strong style="color:#ff6666;">${t('final_with_principal')}</strong>)`}<br>
+                ${t('final_due_day')}: <strong style="color:#ff6666;">${finalDay}</strong>
+            </li>`;
+        });
+        html += `</ul>`;
+    }
+
+    // 借入フォーム（残り枠があれば表示）
+    if (available > 0) {
+        html += `<div style="margin-top:30px; padding:20px; background:rgba(40,40,40,0.7); border-radius:12px; border:1px solid #555;">
+            <label style="display:block; margin-bottom:12px; font-size:1.15em;">${t('borrow_amount')} (100G単位、最大 ${available}G):</label>
+            <input type="number" id="borrowAmount" min="100" step="100" max="${available}" value="0" 
+                   style="width:220px; padding:10px; font-size:1.1em; background:#333; color:#fff; border:1px solid #666; border-radius:6px;">
+            <button onclick="borrowGold()" 
+                    style="margin-left:15px; padding:10px 30px; font-size:1.15em; background:#e67e22; color:#ffffff; border:none; border-radius:8px; cursor:pointer;">
+                ${t('borrow_button')}
+            </button>
+        </div>`;
+    } else {
+        html += `<p style="margin-top:30px; color:#e74c3c; font-weight:bold; font-size:1.2em;">${t('borrow_max_reached')}</p>`;
+    }
+
+    html += `</div>`; // ラッパー閉じ
+
+    return html;
+}
+
+/* 実際に借入を実行する関数 */
+/* borrowGold() も同じ切り捨て計算に統一（表示とチェックを完全に一致させる） */
+function borrowGold() {
+    const input = document.getElementById('borrowAmount');
+    if (!input) return;
+
+    const amount = parseInt(input.value);
+
+    if (isNaN(amount) || amount < 100 || amount % 100 !== 0) {
+        better_alert(t('borrow_invalid_amount'), "error");
+        return;
+    }
+
+    // 表示と同じ切り捨て計算を使用
+    const reputationFloor = Math.floor(gameState.reputation);
+    const maxTotal = reputationFloor * 100;
+    const currentTotal = gameState.loans.reduce((sum, loan) => sum + loan.principal, 0);
+
+    if (currentTotal + amount > maxTotal) {
+        better_alert(t('borrow_exceeds_limit'), "error");
+        return;
+    }
+
+    gameState.loans.push({
+        principal: amount,
+        startDay: gameState.day
+    });
+
+    gameState.gold += amount;
+    better_alert(t('borrow_success', { amount: amount }), "success");
+    updateDisplays();
+    renderCurrentShopPage(); // ページ再描画
+}
+
+/* shopSections に借金ページを追加（最後のページとして） */
+shopSections.push({
+    key: 'shop_borrow_gold',
+    render: renderBorrowPage
+});
+
 
 function renderShopPurchase() {
     let html = '<ul class="shop-list">';
@@ -4103,6 +4254,8 @@ function isFacilityUsable(facilityName) {
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 function processAdventurerDailyActions() {
+    let totalGuildGain = 0;  // 全冒険者からのギルド純収支を合計
+
     gameState.adventurers.forEach(adv => {
         if (isAdventurerOnQuest(adv) || adv.temp) return;
 
@@ -4115,53 +4268,54 @@ function processAdventurerDailyActions() {
         const maxHp = adv.maxHp || 100;
         const maxMp = adv.maxMp || 100;
 
+        // ── 回復アイテムの自動使用（1日1個まで・HP優先） ──
+        let recoveryItemUsed = null;
+        let recoveryDescription = '';
+
+        // HP < 50% → HP回復アイテムを探す
+        if (adv.hp / maxHp < 0.5) {
+            const hpRecoveryItems = adv.bag.items.filter(item => 
+                (item.qty || 1) >= 1 &&
+                (item.restore === 'hp' ||  
+                 (!item.restore && /hp|heal|health|life|活力|回復|治癒|ヒール|ライフ|ヘルス/i.test(item.name)))
+            );
+
+            if (hpRecoveryItems.length > 0) {
+                hpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+                const item = hpRecoveryItems[0];
+                const usedAmount = item.amount || 50;
+                adv.hp = Math.min(maxHp, adv.hp + usedAmount);
+                removeItemFromBag(adv.bag, item.name, 1);
+                recoveryItemUsed = 'hp';
+                recoveryDescription = `${item.name} を使用 → HP +${usedAmount}`;
+            }
+        }
+
+        // HP回復を使わなかった場合、MP < 50% ならMP回復アイテムを試す
+        if (!recoveryItemUsed && adv.mp / maxMp < 0.5) {
+            const mpRecoveryItems = adv.bag.items.filter(item => 
+                (item.qty || 1) >= 1 &&
+                (item.restore === 'mp' || 
+                 (!item.restore && /mp|mana|magic|魔力|マナ/i.test(item.name)))
+            );
+
+            if (mpRecoveryItems.length > 0) {
+                mpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+                const item = mpRecoveryItems[0];
+                const usedAmount = item.amount || 50;
+                adv.mp = Math.min(maxMp, adv.mp + usedAmount);
+                removeItemFromBag(adv.bag, item.name, 1);
+                recoveryItemUsed = 'mp';
+                recoveryDescription = `${item.name} を使用 → MP +${usedAmount}`;
+            }
+        }
+
+        // ── 回復アイテム使用後の現在のステータスで比率を再計算 ──
         const hpRatio = adv.hp / maxHp;
         const mpRatio = adv.mp / maxMp;
-
-// ── 回復アイテムの自動使用（1日1個まで・HP優先） ──
-let recoveryItemUsed = null;
-let recoveryDescription = '';
-
-// HP < 50% → HP回復アイテムを探す
-if (hpRatio < 0.5) {
-    const hpRecoveryItems = adv.bag.items.filter(item => 
-        (item.qty || 1) >= 1 &&
-        (item.restore === 'hp' ||  // 正確なフィールドを優先
-         (!item.restore && /hp|heal|health|life|活力|回復|治癒|ヒール|ライフ|ヘルス/i.test(item.name)))  // ポーションを除去して厳密に
-    );
-
-    if (hpRecoveryItems.length > 0) {
-        hpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
-        const item = hpRecoveryItems[0];
-        const usedAmount = item.amount || 50;
-        adv.hp = Math.min(maxHp, adv.hp + usedAmount);
-        removeItemFromBag(adv.bag, item.name, 1);
-        recoveryItemUsed = 'hp';
-        recoveryDescription = `${item.name} を使用 → HP +${usedAmount}`;
-    }
-}
-
-// HP回復を使わなかった場合、MP < 50% ならMP回復アイテムを試す
-if (!recoveryItemUsed && mpRatio < 0.5) {
-    const mpRecoveryItems = adv.bag.items.filter(item => 
-        (item.qty || 1) >= 1 &&
-        (item.restore === 'mp' || 
-         (!item.restore && /mp|mana|magic|魔力|マナ/i.test(item.name)))
-    );
-
-    if (mpRecoveryItems.length > 0) {
-        mpRecoveryItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
-        const item = mpRecoveryItems[0];
-        const usedAmount = item.amount || 50;
-        adv.mp = Math.min(maxMp, adv.mp + usedAmount);
-        removeItemFromBag(adv.bag, item.name, 1);
-        recoveryItemUsed = 'mp';
-        recoveryDescription = `${item.name} を使用 → MP +${usedAmount}`;
-    }
-}
+        const isLow = hpRatio < 0.5 || mpRatio < 0.5;
 
         // ── 行動選択 ──
-        let action;
         let possibleActions = ['gather', 'none'];
 
         if (isFacilityUsable('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
@@ -4183,17 +4337,23 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
             possibleActions.push('tavern');
         }
 
-        // hunting は HP & MP が両方60%以上の場合のみ候補に追加
-        if (hpRatio > 0.6 && mpRatio > 0.6) {
-            possibleActions.push('hunting');
-        }
+        let action;
 
-        action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+        // HPまたはMPが50%未満の場合、酒場を強制選択（利用可能なら）
+        if (isLow && possibleActions.includes('tavern')) {
+            action = 'tavern';
+        } else {
+            // ハンティングは両方60%超の場合のみ
+            if (hpRatio > 0.6 && mpRatio > 0.6) {
+                possibleActions.push('hunting');
+            }
+            action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+        }
 
         // ── 料金確率ロジック ──
         const facilityFee = gameState.facilityFees?.[action] || 0;
-        let adventurerChange = 0;  // 冒険者の純金変動（+ = 収入, - = 支出）
-        let guildGain = 0;         // ギルドの収入
+        let adventurerChange = 0;  // 冒険者の純金変動
+        let guildGain = 0;         // この冒険者からのギルド収支
 
         if (facilityFee > 0 && adv.bag.gold > 0) {
             const feePercent = (facilityFee / adv.bag.gold) * 100;
@@ -4297,73 +4457,78 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
                 const tavernSubRandom = Math.random();
                 if (tavernSubRandom < 0.4) { // 40% 食事注文
                     const tavernLevel = gameState.facilities.tavern || 0;
-                    const availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
+                    let availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
+
+                    // 食事は所持金の20%以内に制限
+                    const maxFoodSpend = Math.floor(adv.bag.gold * 0.2);
+                    availableFoods = availableFoods.filter(food => (food.cost || 250) <= maxFoodSpend);
 
                     if (availableFoods.length > 0) {
                         const food = availableFoods[Math.floor(Math.random() * availableFoods.length)];
                         const foodCost = food.cost || 250;
 
-                        if (adv.bag.gold >= foodCost) {
-                            adv.bag.gold -= foodCost;
-                            adventurerChange -= foodCost;
+                        adv.bag.gold -= foodCost;
+                        adventurerChange -= foodCost;
 
-                            // 食事代は10%のみギルド収入
-                            const playerGainFromFood = Math.floor(foodCost * 0.1);
-                            gameState.gold += playerGainFromFood;
-                            guildGain += playerGainFromFood;
+                        const playerGainFromFood = Math.floor(foodCost * 0.1);
+                        gameState.gold += playerGainFromFood;
+                        guildGain += playerGainFromFood;
 
-                            // バフ適用
-                            if (!adv.buffs) adv.buffs = [];
-                            const buffCopy = JSON.parse(JSON.stringify(food.buff));
-                            buffCopy.daysLeft = buffCopy.days;
-                            adv.buffs.push(buffCopy);
+                        if (!adv.buffs) adv.buffs = [];
+                        const buffCopy = JSON.parse(JSON.stringify(food.buff));
+                        buffCopy.daysLeft = buffCopy.days;
+                        adv.buffs.push(buffCopy);
 
-                            description += `、ついでに「${food.name}」を注文した (${foodCost}G)`;
-                        } else {
-                            description += `（食事は頼みたかったが金が足りず断念）`;
-                        }
+                        description += `、ついでに「${food.name}」を注文した (${foodCost}G)`;
+                    } else {
+                        description += `（食事は頼みたかったが、どれも高くて断念）`;
                     }
-                } else if (tavernSubRandom < 0.5) { // 10% ギャンブル
-                    if (adv.bag.gold > 0) {
-                        const betPercent = 0.25 + Math.random() * 0.5; // 25%〜75%
-                        const bet = Math.floor(adv.bag.gold * betPercent);
+                } else if (tavernSubRandom < 0.5) { // 10% ギャンブル（ギルド vs 冒険者、ゼロサム）
+                    if (adv.bag.gold > 0 && gameState.gold > 0) {
+                        let betPercent = 0.25 + Math.random() * 0.5; // 25〜75%
+                        let bet = Math.floor(adv.bag.gold * betPercent);
+
+                        // ギルドの所持金で支払える額に制限
+                        bet = Math.min(bet, gameState.gold);
 
                         if (bet > 0) {
-                            adventurerChange -= bet; // 賭け金支出
+                            const isWin = Math.random() < 0.4; // 40%で冒険者勝ち
 
-                            if (Math.random() < 0.4) { // 40% 勝ち → 純利益 +bet
+                            if (isWin) {
                                 adv.bag.gold += bet;
+                                gameState.gold -= bet;
                                 adventurerChange += bet;
+                                guildGain -= bet;
                                 description += `、ギャンブルで勝ち！ ${bet}Gの利益`;
-                            } else { // 60% 負け → 純 -bet
+                            } else {
+                                adv.bag.gold -= bet;
+                                gameState.gold += bet;
+                                adventurerChange -= bet;
+                                guildGain += bet;
                                 description += `、ギャンブルで負け！ ${bet}Gを失った`;
                             }
                         }
                     }
                 }
-                // 50% は休息のみ
+                // 残り50% は休息のみ
 
                 break;
             }
 
             case 'hunting': {
-                // ダメージ（HP & MP 10~50%減少）
                 const damagePercent = 0.1 + Math.random() * 0.4;
                 const hpLoss = Math.floor(maxHp * damagePercent);
                 const mpLoss = Math.floor(maxMp * damagePercent);
                 adv.hp = Math.max(1, adv.hp - hpLoss);
                 adv.mp = Math.max(0, adv.mp - mpLoss);
 
-                // EXP獲得（次レベルまでの10%）
                 const expNeeded = adv.level * 100;
                 const expGain = Math.floor(expNeeded * 0.1);
                 adv.exp += expGain;
 
-                // 金獲得（level * 20, min 20, max 5000）
                 let goldGain = adv.level * 20;
                 goldGain = Math.max(20, Math.min(5000, goldGain));
 
-                // ギルド手数料10%
                 const guildFee = Math.floor(goldGain * 0.1);
                 const adventurerGain = goldGain - guildFee;
 
@@ -4374,7 +4539,6 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
 
                 description = `単独でモンスター狩りに行った（HP-${hpLoss}, MP-${mpLoss}, EXP+${expGain}, 金+${adventurerGain}G, ギルド手数料${guildFee}G）`;
 
-                // レベルアップチェック
                 if (adv.exp >= expNeeded) {
                     adv.level += 1;
                     adv.exp -= expNeeded;
@@ -4387,7 +4551,6 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
             case 'none': {
                 description = '一日を特に何もせずに過ごした';
 
-                // ── 寄付のチャンス（20%） ──
                 if (adv.friendliness >= 60 && Math.random() < 0.2) {
                     const donated = Math.floor(adv.bag.gold * 0.01 * adv.friendliness);
                     if (donated > 0) {
@@ -4402,6 +4565,9 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
                 break;
             }
         }
+
+        // この冒険者からのギルド収支を合計
+        totalGuildGain += guildGain;
 
         // 履歴記録
         const fullDescription = recoveryDescription 
@@ -4422,8 +4588,15 @@ if (!recoveryItemUsed && mpRatio < 0.5) {
             adv.actionHistory.shift();
         }
     });
-}
 
+    // ── 日次ギルド収支トータルアラート ──
+    if (totalGuildGain > 0) {
+        better_alert(`冒険者たちの行動より +${totalGuildGain}G`, "success");
+    } else if (totalGuildGain < 0) {
+        better_alert(`冒険者たちの行動より ${totalGuildGain}G`, "warning");
+    }
+    // 0G の場合はアラートなし（ノイズ削減）
+}
 // 補助関数：行動名を日本語で返す
 function getActionName(action) {
     const names = {
@@ -4478,7 +4651,7 @@ function playDay(){
 
     const evDay = gameState.day;
     gameState.day++;
-
+    handleLoans();
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day-1) * 10);
         gameState.gold -= tax;
@@ -7783,8 +7956,8 @@ function showActionHistory(charIndex) {
     <td style="padding:12px; border:1px solid #555; text-align:right; color:${entry.adventurerChange >= 0 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
         ${entry.adventurerChange !== 0 ? (entry.adventurerChange > 0 ? '+' : '') + entry.adventurerChange + 'G' : '—'}
     </td>
-    <td style="padding:12px; border:1px solid #555; text-align:right; color:#2ecc71; font-weight:bold;">
-        ${entry.guildGain > 0 ? '+' + entry.guildGain + 'G' : '—'}
+    <td style="padding:12px; border:1px solid #555; text-align:right; color:${entry.guildGain > 0 ? '#2ecc71' : '#e74c3c'}; font-weight:bold;">
+        ${entry.guildGain > 0 ? '+' + entry.guildGain + 'G' :  entry.guildGain + 'G'}
     </td>
 </tr>
         `;
