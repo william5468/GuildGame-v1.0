@@ -390,21 +390,13 @@ function postTrade(cityId) {
     updateDisplays();
 }
 // updateProgress() の完全版（テキスト充填に完全対応）
-
-let currentIndex = 0;
-let currentAsset = '';
-
 function updateProgress() {
-    const percent = totalAssets === 0 ? 100 : Math.round((loadedCount / totalAssets) * 100);
+    const percent = Math.round((loadedCount / totalAssets) * 100);
 
-    // パーセントテキスト更新（現在読み込んでいるファイル名も表示）
+    // パーセントテキスト更新
     const progressTextEl = document.getElementById('loadProgress');
     if (progressTextEl) {
-        let text = percent + '%';
-        if (currentAsset) {
-            text += ' (' + currentAsset + ')';
-        }
-        progressTextEl.textContent = text;
+        progressTextEl.textContent = percent + '%';
     }
 
     // 輝く文字の充填幅更新（左から右へスムーズに広がる）
@@ -443,62 +435,42 @@ function updateProgress() {
         if (readyBtn) readyBtn.style.display = 'block';
         const skipIntroBtn = document.getElementById('skipIntroBtn');
         if (skipIntroBtn) skipIntroBtn.style.display = 'block';
+
     }
 }
-
-function loadNext() {
-    if (currentIndex >= totalAssets) {
-        currentAsset = '';
-        updateProgress();
-        return;
-    }
-
-    const url = assetsToLoad[currentIndex];
-    currentAsset = url;
-    updateProgress(); // すぐに現在読み込んでいるファイルを表示
-
-    let asset;
-    const isAudio = /\.(mp3|ogg|wav)$/i.test(url);
-
-    if (isAudio) {
-        asset = new Audio();
-        asset.src = url;
-        asset.addEventListener('canplaythrough', handleComplete);
-        asset.addEventListener('error', handleComplete);
-        asset.load();
-    } else {
-        asset = new Image();
-        asset.src = url;
-        asset.addEventListener('load', handleComplete);
-        asset.addEventListener('error', handleComplete);
-    }
-
-    function handleComplete() {
-        // イベントリスナーを解除（念のため）
-        if (isAudio) {
-            asset.removeEventListener('canplaythrough', handleComplete);
-        } else {
-            asset.removeEventListener('load', handleComplete);
-        }
-        asset.removeEventListener('error', handleComplete);
-
-        loadedCount++;
-        currentIndex++;
-        updateProgress(); // 進捗更新（この時点ではまだ古いファイル名）
-        loadNext();       // 次のファイルをセットして再更新（新しいファイル名になる）
-    }
-}
-
 function preloadAssets() {
     if (totalAssets === 0) {
         updateProgress();
         return;
     }
 
-    loadedCount = 0;
-    currentIndex = 0;
-    currentAsset = '';
-    loadNext();
+    assetsToLoad.forEach(url => {
+        if (url.match(/\.(mp3|ogg|wav)$/i)) {
+            const audio = new Audio();
+            audio.src = url;
+            audio.addEventListener('canplaythrough', () => {
+                loadedCount++;
+                updateProgress();
+            });
+            audio.addEventListener('error', () => {
+                // エラーでもカウントを進めてブロックしない
+                loadedCount++;
+                updateProgress();
+            });
+            audio.load();
+        } else {
+            const img = new Image();
+            img.src = url;
+            img.addEventListener('load', () => {
+                loadedCount++;
+                updateProgress();
+            });
+            img.addEventListener('error', () => {
+                loadedCount++;
+                updateProgress();
+            });
+        }
+    });
 }
 
 function Render_Mainadventurer() {
