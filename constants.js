@@ -1948,6 +1948,216 @@ const QuestCompletionDialogue = {
       // Higher ranks to be added later
     }
     ]
+    , zh: [
+    // 0: STR - kill quests
+    {
+        'F': [
+            // 0: スライム5匹討伐（依頼主: 農夫）
+            [
+                {speaker: 'Luna', text: '我回來了。村莊周邊的史萊姆5隻，全都討伐完了。'},
+                {speaker: 'Kaito', text: '哇，史萊姆退治啊！跳來跳去的超麻煩對吧？老子一瞬間就碾平啦！'},
+                {speaker: 'Luna', text: '真的好累……全身都是史萊姆黏液……'},
+                {speaker: '{PLAYER}', text: '辛苦了，Luna。幹得漂亮。Kaito閉嘴，依頼的農夫還在等呢。'},
+                {speaker: 'Kaito', text: '嘖，老子也想去啊～。超想看有人滑倒在史萊姆汁裡的樣子！'},
+                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向農夫報告吧。'},
+                {speaker: '農夫', text: '哇，冒險者！你們把史萊姆全部打倒了啊！作物沒被溶掉，真是太好了！'},
+                {speaker: '農夫', text: '那些果凍一樣的史萊姆……應該不是食物吧？好可怕！真的謝謝！'},
+                {speaker: '{PLAYER}', text: '平安就好。這是報酬。下次帶Kaito去的話，可能會變成史萊姆滿身哦。'},
+                {speaker: 'Kaito', text: '來啦！輪到老子出場了！'},
+                {speaker: 'Luna', text: '那個……請饒了我吧……'}
+            ],
+            // 1: 巨大ネズミ退治（依頼主: 酒場主人）
+            [
+                {speaker: 'Luna', text: '酒館地下室的巨大老鼠，全都退治完了。'},
+                {speaker: 'Kaito', text: '巨大老鼠！？到底有多大啊？老子超想用劍砍個痛快！'},
+                {speaker: 'Luna', text: '相當大……差點被咬到，好可怕……'},
+                {speaker: '{PLAYER}', text: '幹得好，Luna。平安就好。Kaito，你去的话酒館會變成血海。'},
+                {speaker: 'Kaito', text: '那才帥啊！超華麗超酷吧！'},
+                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向酒場主人報告吧。'},
+                {speaker: '酒場主人', text: '哇！巨大老鼠全部收拾掉了啊！這下地下室又能用了！'},
+                {speaker: '酒場主人', text: '請你們喝一杯……不過血海就免了！真的幫了大忙，謝謝！'},
+                {speaker: '{PLAYER}', text: '太好了。這是報酬。Kaito，下次老鼠狩獵就交給你了。'},
+                {speaker: 'Kaito', text: '真的！？超期待啦！'},
+                {speaker: 'Luna', text: '酒館……好像會變得很慘……'}
+            ],
+            // 2: 野犬3匹討伐（依頼主: 農夫）
+            [
+                {speaker: 'Luna', text: '襲擊農場的野犬3隻，全都打倒了。家畜平安無事。'},
+                {speaker: 'Kaito', text: '野犬啊！老子超想追著它們砍個痛快！'},
+                {speaker: 'Luna', text: '跑得超快……真的好危險……'},
+                {speaker: '{PLAYER}', text: '辛苦了，Luna。家畜平安太好了。Kaito，你去的话連家畜都會被追著跑。'},
+                {speaker: 'Kaito', text: '哈哈！那也挺有趣的吧！狗跟家畜來場大賽跑！'},
+                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向農夫報告吧。'},
+                {speaker: '農夫', text: '野犬全部打倒了啊！家畜平安，大家都安心了！'},
+                {speaker: '農夫', text: '追逐賽……不是在玩吧？好可怕，真的謝謝！'},
+                {speaker: '{PLAYER}', text: '安心就好。這是報酬。Kaito，下次你就留守吧。'},
+                {speaker: 'Kaito', text: '诶～！老子也想去啦～！'},
+                {speaker: 'Luna', text: '那個……或許這樣最安全……'}
+            ]
+        ]
+    },
+    // 1: WIS - discovery quests
+    {
+        'F': [
+            // 0: ペンダント探索
+            [
+                {speaker: 'Luna', text: '鎮上老奶奶丟失的項鍊，平安找到了！掉在巷子裡的石頭下面。'},
+                {speaker: '{PLAYER}', text: '找得好，Luna。連細微的地方都搜得很仔細。'},
+                {speaker: 'Kaito', text: '哼，那種小東西老子一下就聞出來了！Luna，你只是運氣好吧？'},
+                {speaker: 'Luna', text: '呵呵，Kaito先生才不可能呢。得好好推理才行♪'},
+                {speaker: 'Kaito', text: '什麼啦！？……這雕刻……好像在哪見過。以前公會長的……'},
+                {speaker: 'Luna', text: '凱、Kaito先生！現在不行！{PLAYER}，快去還給老奶奶吧。'},
+                {speaker: '{PLAYER}', text: '……公會長的？算了，之後再問。老奶奶，這是您的項鍊。'},
+                {speaker: '老奶奶', text: '啊啊，我的寶貝項鍊……！這雕刻是以前豐收節拿到的。那是沒有戰爭傳聞的和平時代的回憶……'},
+                {speaker: '老奶奶', text: '最近又聽說國境有士兵在動，很擔心。真的謝謝，眼淚都快掉下來了……'},
+                {speaker: '{PLAYER}', text: '平安就好。這是報酬。請好好珍惜節日的回憶。'},
+                {speaker: 'Kaito', text: '國境的事啊……旅人說，王國軍好像在強化呢。'},
+                {speaker: 'Luna', text: '{PLAYER}，我們也要打起精神來了呢……'},
+                {speaker: '{PLAYER}', text: '嗯，是啊。漸漸開始在意過去的事了。'}
+            ],
+            // 1: 隠し宝箱発見
+            [
+                {speaker: 'Kaito', text: '森林的隱藏寶箱，找到了啦！埋在樹根下面……裡面居然只有3枚金幣！？'},
+                {speaker: '{PLAYER}', text: '能找到就很厲害了，Kaito。就算小也有價值。'},
+                {speaker: 'Luna', text: 'Kaito先生，期待太高了。這古幣是舊王政時代的，很稀有哦。'},
+                {speaker: 'Kaito', text: '嘖，本來想像堆成山的……咦？这地方，以前公會長帶{PLAYER}玩捉迷藏的……'},
+                {speaker: 'Luna', text: 'Kaito先生！多餘的話別說！快去向村人報告吧。'},
+                {speaker: '{PLAYER}', text: '捉迷藏……？我小時候在這裡玩過嗎？'},
+                {speaker: 'Kaito', text: '哎呀，說溜嘴了！快忘掉啦！村人在等呢！'},
+                {speaker: '村人', text: '真的找到隱藏寶箱了啊！小時候聽的傳說居然是真的。裡面的東西就當報酬拿去吧！'},
+                {speaker: '村人', text: '這古幣是王政時代的。最近王族血統的傳聞鬧得沸沸揚揚。'},
+                {speaker: '{PLAYER}', text: '傳說成真太好了。這是報酬。王政的事……好在意啊。'},
+                {speaker: 'Luna', text: '{PLAYER}，在這地方有沒有想起什麼？感覺很懷念嗎？'},
+                {speaker: 'Kaito', text: '慢慢來就好。我們一直都在你身邊啦。'},
+                {speaker: '{PLAYER}', text: '……嗯，有點溫暖的感覺。謝謝。'}
+            ],
+            // 2: 井戸の秘密
+            [
+                {speaker: 'Luna', text: '古老井底的秘密發現了！苔蘚下面有古代魔法陣在發光。'},
+                {speaker: '{PLAYER}', text: '很危險吧？平安就好，Luna。能潛下去真厲害。'},
+                {speaker: 'Kaito', text: '魔法陣！？超讚！老子也想跳下去，井底感覺超有冒險感吧！'},
+                {speaker: 'Luna', text: 'Kaito先生，掉下去會死的哦……啊，{PLAYER}以前在這裡……'},
+                {speaker: 'Kaito', text: '對啊！以前公會長跳下去救{PLAYER}的啊！……哎呀，說出來了！'},
+                {speaker: '{PLAYER}', text: '我掉進井裡……？所以記憶才……？'},
+                {speaker: 'Luna', text: '現在先向學者報告優先！魔法陣最近發光特別強。'},
+                {speaker: '學者', text: '井的魔法陣被揭開了啊！太棒了！這是古代封印陣，好興奮！'},
+                {speaker: '學者', text: '最近首都也有類似陣發生反應的報告。魔力可能出現巨大異變……這是大發現！'},
+                {speaker: '{PLAYER}', text: '魔力異變啊……好在意。這是報酬。請繼續研究。'},
+                {speaker: 'Kaito', text: '異變會讓魔物變強嗎？冒險要熱血起來啦！'},
+                {speaker: 'Luna', text: '{PLAYER}，以前井的事……總有一天會好好告訴你的。'},
+                {speaker: '{PLAYER}', text: '嗯，拜託了。感覺回憶好像要回來了。'},
+                {speaker: 'Kaito', text: '有我們在，絕對沒問題啦，{PLAYER}！'}
+            ]
+        ]
+    },
+    // 2: DEX - escort quests
+    {
+        'F': [
+            // 0: 農夫護衛
+            [
+                {speaker: 'Kaito', text: '農夫安全護送到市場完成了！途中什麼事都沒發生，超無聊的旅程啦！'},
+                {speaker: '{PLAYER}', text: '平安就好，Kaito。和平才是最好的。'},
+                {speaker: 'Luna', text: 'Kaito先生，沒發生事件才是最好的。你亂來農夫會很可憐的。'},
+                {speaker: 'Kaito', text: '喂喂，農夫也想看老子大顯身手吧！……咦？这條路，以前公會長護衛商隊走過的……'},
+                {speaker: 'Luna', text: 'Kaito先生！現在別說這個！{PLAYER}，去向農夫報告吧。'},
+                {speaker: '{PLAYER}', text: '商隊護衛……？是我爸的事嗎？之後再問。農夫，平安到了。'},
+                {speaker: '農夫', text: '真的謝謝！最近交易路上盜賊變多，一個人去好可怕。在市場賣了好價錢！'},
+                {speaker: '農夫', text: '聽說國境稅金也要漲，物價可能要上漲……託你們的福幫了大忙！'},
+                {speaker: '{PLAYER}', text: '盜賊增多啊……很危險。這是報酬。請小心回去。'},
+                {speaker: 'Kaito', text: '稅金漲？王國在集錢準備打仗嗎？感覺要變有趣了啦！'},
+                {speaker: 'Luna', text: '{PLAYER}，以前的護衛故事……有點在意嗎？'},
+                {speaker: '{PLAYER}', text: '嗯，這條路感覺好懷念。越來越想知道了。'},
+                {speaker: 'Kaito', text: '嘿嘿，慢慢回憶就好。我們一直陪著你啦！'}
+            ],
+            // 1: 子供送迎
+            [
+                {speaker: 'Luna', text: '危險的橋安全渡過，把孩子送到家了！途中還牽著手哦～。'},
+                {speaker: '{PLAYER}', text: '真溫柔，Luna。小孩一定很高興。幹得好。'},
+                {speaker: 'Kaito', text: '只是過橋而已啊！老子會給小孩木劍，一起玩魔物退治遊戲！'},
+                {speaker: 'Luna', text: 'Kaito先生，那太危險了！小孩會害怕的……啊，這座橋，{PLAYER}小時候……'},
+                {speaker: 'Kaito', text: '對啊！以前公會長抱著{PLAYER}渡過的啊！……哎呀，說溜嘴了！'},
+                {speaker: '{PLAYER}', text: '我在這橋上……？被抱著渡過？詳細告訴我。'},
+                {speaker: 'Luna', text: '現在先向親報告優先！最近橋附近有魔物出沒哦。'},
+                {speaker: '親', text: '孩子平安回來了！那座快塌的橋，一個人真的好可怕……真的謝謝！'},
+                {speaker: '親', text: '最近事故變多，魔物也靠近村子了。大家都在討論。託你們真是正確選擇！'},
+                {speaker: '{PLAYER}', text: '魔物靠近啊……要小心。這是報酬。小孩也很精神。'},
+                {speaker: 'Kaito', text: '橋事故？一定是魔物幹的吧。下次老子守小孩，保證華麗演出！'},
+                {speaker: 'Luna', text: '{PLAYER}，那座橋的記憶……有稍微回來一點嗎？'},
+                {speaker: '{PLAYER}', text: '……嗯，風的感覺好懷念。謝謝。'}
+            ],
+            // 2: 使者護衛
+            [
+                {speaker: 'Kaito', text: '使者的信護衛完成了！一個間諜都沒出現，超失望的啦！'},
+                {speaker: '{PLAYER}', text: '平安送到就好，Kaito。和平才是最好的。'},
+                {speaker: 'Luna', text: 'Kaito先生，想太多了。使者也鬆了一口氣哦。'},
+                {speaker: 'Kaito', text: '要是間諜出現，老子一刀解決！……這條路，以前公會長運送重要信件的……'},
+                {speaker: 'Luna', text: 'Kaito先生！現在不是說這個的時候！{PLAYER}，去向村長報告吧。'},
+                {speaker: '{PLAYER}', text: '重要信件……？是我爸嗎？好在意。村長，平安送到了。'},
+                {speaker: '村長', text: '使者平安，信也送到了！這下村子的同盟就定了。真的感謝！'},
+                {speaker: '村長', text: '王都政變傳聞不斷，這麼重要的書狀能守住……你們公會真可靠！'},
+                {speaker: '{PLAYER}', text: '同盟跟政變啊……世道要變了呢。這是報酬。能幫上忙太好了。'},
+                {speaker: 'Kaito', text: '政變！？國王要換人了嗎？冒險的預感來了！'},
+                {speaker: 'Luna', text: '{PLAYER}，信件護衛的舊事……想聽嗎？'},
+                {speaker: 'Kaito', text: '對啊，{PLAYER}。我們全都知道哦！'},
+                {speaker: '{PLAYER}', text: '嗯，拜託了。我的過去漸漸清晰，好期待。'},
+                {speaker: 'Luna', text: '呵呵，我們也很開心。一起回憶吧♪'}
+            ]
+        ]
+    },
+    // 3: LUC - fetch quests
+    {
+        'F': [
+            // 0: 薬草集め
+            [
+                {speaker: 'Luna', text: '錬金術師依頼的藥草，按照指定全收集來了！很新鮮哦～。'},
+                {speaker: '{PLAYER}', text: '幹得好，Luna。跑到森林深處了吧？辛苦了。'},
+                {speaker: 'Kaito', text: '藥草啊。老子可能直接踩壞了！不過能做藥水還不錯啦。'},
+                {speaker: 'Luna', text: 'Kaito先生，這能做強力回復藥水！最近魔力變薄，很珍貴哦。'},
+                {speaker: '{PLAYER}', text: '魔力變薄？最近聽說魔物也變弱了……'},
+                {speaker: 'Kaito', text: '那這藥草能不能做魔力增幅藥水？塗在老子劍上就最強了吧！'},
+                {speaker: 'Luna', text: '好有趣的主意！不過感覺會爆炸好可怕……問問錬金術師吧。'},
+                {speaker: '錬金術師', text: '哇，完美的藥草！這能做20個普通回復藥水。最近魔力枯竭，材料價格暴漲……幫大忙了！'},
+                {speaker: '錬金術師', text: '魔力增幅劑？好主意！失敗會大爆炸，但成功就能革命性強化武器。值得一試！'},
+                {speaker: '{PLAYER}', text: '成功了請分一點給公會。這是報酬。好期待啊。'},
+                {speaker: 'Kaito', text: '成了！老子劍要變無敵啦！'},
+                {speaker: 'Luna', text: '{PLAYER}，我們優先回復藥水哦♪'},
+                {speaker: '{PLAYER}', text: '哈哈，知道了。感覺世界要變了的預感呢。'}
+            ],
+            // 1: キノコ集め
+            [
+                {speaker: 'Kaito', text: '料理人依頼的新鮮蘑菇，大量收集來了啦！今晚來場蘑菇祭吧！？'},
+                {speaker: '{PLAYER}', text: '也太多了吧，Kaito。怎麼採這麼多。辛苦了。'},
+                {speaker: 'Luna', text: '這蘑菇香氣超棒！普通湯都能變成大餐哦～。'},
+                {speaker: 'Kaito', text: '老子要烤蘑菇！冒險者HP能回復250的那種！'},
+                {speaker: 'Luna', text: '烤蘑菇？好主意！今年豐收，蘑菇超多，正適合做保存食。'},
+                {speaker: '{PLAYER}', text: '豐收年啊。最近村子熱鬧起來就是因為這個……祭典準備也進行中呢。'},
+                {speaker: 'Kaito', text: '祭典！？蘑菇料理大賽老子一定拿冠軍！新菜譜已經想好了！'},
+                {speaker: '料理人', text: '超棒的蘑菇！今晚宴會菜單定了。這豐收年大家都能吃飽！'},
+                {speaker: '料理人', text: '耐力料理主意？可以針對冒險者開發！乾燥成粉能長期保存，還能當交易品。'},
+                {speaker: '{PLAYER}', text: '交易品啊……村子會更繁榮呢。這是報酬。很期待宴會。'},
+                {speaker: 'Luna', text: '{PLAYER}，我們也來開新菜譜試吃會吧♪'},
+                {speaker: 'Kaito', text: '當然老子吃最多！肚子餓扁啦－！'},
+                {speaker: '{PLAYER}', text: '哈哈，大家一起享受吧。感覺會是好年呢。'}
+            ],
+            // 2: 花集め
+            [
+                {speaker: 'Luna', text: '村人依頼的漂亮花，很多都收集來了！香氣超棒～。'},
+                {speaker: '{PLAYER}', text: '好香啊，Luna。拿來裝飾公會一定很療癒。採得好。'},
+                {speaker: 'Kaito', text: '花啊……老子可能直接踩壞了。被Luna瞪所以閉嘴！'},
+                {speaker: 'Luna', text: '這花還能做染料哦！衣服會變得很鮮豔，大家一定很高興。'},
+                {speaker: '{PLAYER}', text: '染料啊。最近結婚典禮變多，應該是因為花季吧？'},
+                {speaker: 'Kaito', text: '結婚典禮！？花束拋接老子接到的话下次就輪到老子啦！……開玩笑的。'},
+                {speaker: 'Luna', text: '有趣的主意……用這花做香袋如何？房間會一直充滿好香味，超療癒哦！'},
+                {speaker: '村人', text: '漂亮的花謝謝！廣場會變成花海一樣。最近結婚熱潮，正好需要！'},
+                {speaker: '村人', text: '香袋或療癒茶也行。混入花粉症藥草就能應付今年的需求。大家都幫了大忙！'},
+                {speaker: '{PLAYER}', text: '療癒茶啊……冒險者的疲勞應該也能消除。這是報酬。村子會變得很華麗呢。'},
+                {speaker: 'Luna', text: '{PLAYER}，公會也來做香袋吧！我幫忙♪'},
+                {speaker: 'Kaito', text: '老子……就負責聞香味。祈禱別得花粉症！'},
+                {speaker: '{PLAYER}', text: '哈哈，大家一起做吧。村子和公會都會變得更明亮。'}
+            ]
+        ]
+    }
+]
 }
 const cities = [
     {name: "セントラルシティ", guild: true},
