@@ -919,6 +919,7 @@ function appendKeyword(keyword) {
 function getRelevantKeywords(npcKey) {
     const keywords = new Set();
 
+    // 1. アクティブなクエストのdiscoveredKeywordsを追加（既存）
     Object.keys(gameState.activeQuests).forEach(questId => {
         const qState = gameState.activeQuests[questId];
         const def = questDefinitions.find(q => q.id === questId);
@@ -930,7 +931,22 @@ function getRelevantKeywords(npcKey) {
 
         // 発見済みキーワードを追加（過去のもの、会話の文脈として便利）
         qState.discoveredKeywords.forEach(kw => keywords.add(kw));
+    });
 
+    // 2. 新規追加: 未開始のクエストの開始キーワードを追加（最初のステージのnpcが一致する場合）
+    questDefinitions.forEach(def => {
+        const questId = def.id;
+        // 既にアクティブ or 完了したクエストはスキップ
+        if (gameState.activeQuests[questId] || gameState.completedQuests.includes(questId)) return;
+
+        // 最初のステージのみチェック
+        const firstStage = def.stages[0];
+        if (!firstStage || firstStage.npc !== npcKey) return;
+
+        // triggerがkeyword型の場合、そのkeywordsを追加
+        if (firstStage.trigger && firstStage.trigger.type === "keyword" && Array.isArray(firstStage.trigger.keywords)) {
+            firstStage.trigger.keywords.forEach(kw => keywords.add(kw));
+        }
     });
 
     return Array.from(keywords);
