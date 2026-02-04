@@ -384,7 +384,7 @@ async function sendToOpenRouter(message, game_state_info) {
                     { role: "system", content: systemPrompt },
                     ...history
                 ],
-                max_tokens: 200,
+                max_tokens: 500,
                 temperature: 0.7
             })
         });
