@@ -370,7 +370,7 @@ const questDefinitions = {
       completed_guidance: "This quest is already completed. The tavern owner, Luna, and Kaito remember successfully throwing {player}'s birthday party and occasionally reminisce with comments like \"That party was so much fun\" or \"The surprise was a huge success\".",
       stages: [
         {
-          npc: "Tavern Owner",
+          npc: "酒場主人",
           trigger: { type: "payment", amount: 200 },
           guidance_beforestage: "If {player} asks for secrets or information, the tavern owner says \"I'll tell you special information for 200 gold.\" Only reveals if {player} gave 200+ gold as a gift: Luna (such a good girl) has been seen at the tavern late at night recently. Never reveals for free. Knows nothing more.",
           guidance_afterstage: "Remembers telling {player} about seeing Luna at the tavern at night. Knows nothing more.",
@@ -394,7 +394,7 @@ const questDefinitions = {
           nextStage: 3
         },
         {
-          npc: "Tavern Owner",
+          npc: "酒場主人",
           trigger: { type: "keyword", keywords: ["return", "back", "tavern", "return to tavern at night"] },
           guidance_beforestage: "If {player} returns with Kaito's hint: \"Hehe, perfect timing. If you open a bottle of wine, I'll tell you the truth ♪\" Hints naturally at needing wine and gives one Tavern Wine to {player}. (It's for {player}'s birthday party—absolutely no spoilers.)",
           guidance_afterstage: "Remembers hinting about needing wine. Ready to joyfully accept if {player} returns with wine.",
@@ -402,7 +402,7 @@ const questDefinitions = {
           nextStage: 4
         },
         {
-          npc: "Tavern Owner",
+          npc: "酒場主人",
           trigger: { 
             type: "keyword_and_item", 
             keywords: ["party wine", "wine", "open", "give", "wine for the truth"], 
@@ -412,7 +412,7 @@ const questDefinitions = {
           guidance_afterstage: null,
           onComplete: {
             rewards: [
-              { type: "friendliness", targets: ["Luna", "Kaito", "Tavern Owner"], delta: 10 },
+              { type: "friendliness", targets: ["Luna", "Kaito", "酒場主人"], delta: 10 },
               { type: "item", name: "Birthday Cake", qty: 4, details: { type: "potion", restore: "hp", amount: 300, description: "Extra luxurious cake thanks to the wine!" } },
               { type: "item", name: "Party Memory Photo", qty: 1, details: { description: "Proof of bonds with everyone (collection item)" } }
             ],
@@ -427,7 +427,7 @@ const questDefinitions = {
       completed_guidance: "This quest is already completed. The farmer knows slime can actually be eaten and is quite delicious, so now looks forward to more slime drops.",
       stages: [
         {
-          npc: "Farmer",
+          npc: "農夫",
           trigger: { type: "keyword", keywords: ["crops", "damage", "slime"] },
           guidance_beforestage: "If slime is mentioned, the farmer says \"Adventurers defeated slimes and left the jelly behind, but maybe it can be used for something...\" and gives 10 Slime Jelly to {player}.",
           guidance_afterstage: "Remembers giving Slime Jelly to {player}, half-resigned that it might just be trash.",
@@ -435,7 +435,7 @@ const questDefinitions = {
           nextStage: { default: 1 }
         },
         {
-          npc: "Cook",
+          npc: "料理人",
           triggers: [
             {
               type: "keyword_and_item",
@@ -459,7 +459,7 @@ const questDefinitions = {
               onComplete: {
                 rewards: [
                   { type: "item", name: "Slime Jelly", qty: 3, details: { type: "potion", restore: "hp", amount: 100, description: "Jelly made from slime drops. Looks edible, but remembering the moving slime might put you off." }},
-                  { type: "friendliness", targets: ["Cook"], delta: 5 }
+                  { type: "friendliness", targets: ["料理人"], delta: 5 }
                 ]
               }
             },
@@ -470,7 +470,7 @@ const questDefinitions = {
           }
         },
         {
-          npc: "Farmer",
+          npc: "農夫",
           trigger: { 
             type: "keyword_and_item", 
             keywords: ["Slime Jelly"],
@@ -480,12 +480,12 @@ const questDefinitions = {
           guidance_afterstage: null,
           onComplete: {
             rewards: [
-              { type: "friendliness", targets: ["Farmer"], delta: 10 }
+              { type: "friendliness", targets: ["農夫"], delta: 10 }
             ]
           }
         },
         {
-          npc: "Farmer",
+          npc: "農夫",
           trigger: { 
             type: "keyword",
             keywords: ["Slime Jelly is gross", "jelly failed", "cook depressed"]
@@ -502,7 +502,7 @@ const questDefinitions = {
       completed_guidance: "This quest is already completed. The scholar is happy the ruin investigation succeeded and occasionally says happily \"Thanks to you, we're one step closer to ancient secrets.\" Villagers sometimes gather to hear about the discovered ruin.",
       stages: [
         {
-          npc: "Scholar",
+          npc: "学者",
           trigger: { type: "keyword", keywords: ["ruin", "ancient book"] },
           guidance_beforestage: "If {player} mentions ruins or ancient books, the scholar says \"I recently found an interesting description in an old book. There's apparently a lost ruin near the village. Would you investigate?\" Builds interest without mentioning reward yet.",
           guidance_afterstage: "Remembers asking {player} to investigate the ruin. Ready to happily listen when {player} returns.",
@@ -510,7 +510,7 @@ const questDefinitions = {
           nextStage: 1
         },
         {
-          npc: "Farmer",
+          npc: "農夫",
           trigger: { type: "keyword", keywords: ["ruin", "lost ruin", "nearby land"] },
           guidance_beforestage: "If {player} mentions the ruin, the farmer says \"There's an old stone ruin in the nearby dungeon, apparently on floor 1. But it's full of strong monsters and dangerous... If you're interested, be careful.\"",
           guidance_afterstage: "Remembers telling {player} the ruin is on dungeon floor 1. A bit worried about the monsters.",
@@ -518,7 +518,7 @@ const questDefinitions = {
           nextStage: 2,
           onComplete: {
             rewards: [
-              { type: "friendliness", targets: ["Farmer"], delta: 5 }
+              { type: "friendliness", targets: ["農夫"], delta: 5 }
             ]
           }
         },
@@ -558,7 +558,7 @@ const questDefinitions = {
           }
         },
         {
-          npc: "Scholar",
+          npc: "学者",
           trigger: {
             type: "keyword_and_item",
             keywords: ["Mana Fragment", "investigation complete", "ruin secret"],
@@ -570,12 +570,12 @@ const questDefinitions = {
             rewards: [
               { type: "item", name: "Ancient Scroll", qty: 1, details: { stat: "wisdom", bonus: 5, enhancement: 20, description: "Scroll containing knowledge of a lost civilization" } },
               { type: "gold", amount: 5000 },
-              { type: "friendliness", targets: ["Scholar"], delta: 15 }
+              { type: "friendliness", targets: ["学者"], delta: 15 }
             ]
           }
         },
         {
-          npc: "Scholar",
+          npc: "学者",
           trigger: {
             type: "keyword",
             keywords: ["ruin is dangerous", "cancel investigation", "many monsters"]
@@ -597,7 +597,7 @@ const questDefinitions = {
       completed_guidance: "This quest is already completed. The alchemist remembers {player} delivering the 'Cursed Goblin Charm' and occasionally says gratefully \"Thanks to you, my experiment progressed. Thank you\".",
       stages: [
         {
-          npc: "Alchemist",
+          npc: "酒場主人",
           trigger: { type: "keyword", keywords: ["experiment", "alchemy", "materials", "help", "secret"] },
           guidance_beforestage: "If {player} asks about experiments or materials, the alchemist whispers \"I'm doing a special experiment. I need one 'Cursed Goblin Charm' from dungeon floor 2. Bring it and I'll reward you... Keep this secret.\"",
           guidance_afterstage: "Remembers asking {player} for the 'Cursed Goblin Charm'. Waits expectantly for return.",
@@ -605,7 +605,7 @@ const questDefinitions = {
           nextStage: 1
         },
         {
-          npc: "Alchemist",
+          npc: "酒場主人",
           trigger: {
             type: "keyword_and_item",
             keywords: ["materials", "brought it", "Cursed Goblin Charm", "give"],
@@ -615,7 +615,7 @@ const questDefinitions = {
           guidance_afterstage: null,
           onComplete: {
             rewards: [
-              { type: "friendliness", targets: ["Alchemist"], delta: 15 }
+              { type: "friendliness", targets: ["酒場主人"], delta: 15 }
             ]
           }
         }
@@ -635,7 +635,7 @@ const questDefinitions = {
           nextStage: 1
         },
         {
-          npc: "Tavern Owner",
+          npc: "酒場主人",
           trigger: { type: "payment", amount: 1000 },
           guidance_beforestage: "If {player} mentions taxes, the chief, or rumors and seeks info, the tavern owner says \"Yes, telling you puts me at risk, but if you pay 1000 gold, I'll tell.\" Only reveals if {player} gave 1000 gold: One night the drunk chief said the kingdom dislikes the guild's existence. Local military power threatens royal authority, so heavy taxes are meant to crush the guild and enslave everyone with debt... Never reveals for free.",
           guidance_afterstage: "Remembers telling {player} the kingdom's true intent (crush the guild) for 1000 gold. If asked again, says \"I already told you. Ask the chief yourself now.\"",
@@ -703,7 +703,7 @@ const questDefinitions = {
       completed_guidance: "此任務已完成。酒館老闆、Luna、Kaito三人記得成功為{player}舉辦生日派對，偶爾會回憶說「那次的派對真開心」「驚喜大成功呢」等話。",
       stages: [
         {
-          npc: "酒館老闆",
+          npc: "酒場主人",
           trigger: { type: "payment", amount: 200 },
           guidance_beforestage: "若{player}詢問秘密或情報，酒館老闆說「200金幣我就告訴你特別情報。」僅在{player}贈送200+金幣時透露：Luna（這麼好的孩子）最近常在深夜出現在酒館。絕不免費透露。不知道更多。",
           guidance_afterstage: "記得告訴{player}深夜看到Luna的事。不知道更多。",
@@ -727,7 +727,7 @@ const questDefinitions = {
           nextStage: 3
         },
         {
-          npc: "酒館老闆",
+          npc: "酒場主人",
           trigger: { type: "keyword", keywords: ["回來", "返回", "酒館", "深夜回酒館"] },
           guidance_beforestage: "若{player}帶著Kaito的提示返回：「呵呵，正好。如果開一瓶酒，我就告訴你真相♪」自然暗示需要酒，並給{player}一瓶酒館葡萄酒。（這是為了{player}的生日派對——絕不劇透。）",
           guidance_afterstage: "記得暗示需要酒。若{player}帶酒回來會高興地接受。",
@@ -735,7 +735,7 @@ const questDefinitions = {
           nextStage: 4
         },
         {
-          npc: "酒館老闆",
+          npc: "酒場主人",
           trigger: { 
             type: "keyword_and_item", 
             keywords: ["派對葡萄酒", "葡萄酒", "開瓶", "給", "真相的葡萄酒"], 
@@ -745,7 +745,7 @@ const questDefinitions = {
           guidance_afterstage: null,
           onComplete: {
             rewards: [
-              { type: "friendliness", targets: ["Luna", "Kaito", "酒館老闆"], delta: 10 },
+              { type: "friendliness", targets: ["Luna", "Kaito", "酒場主人"], delta: 10 },
               { type: "item", name: "生日蛋糕", qty: 4, details: { type: "potion", restore: "hp", amount: 300, description: "多虧葡萄酒，特別豪華的蛋糕！" } },
               { type: "item", name: "派對回憶照片", qty: 1, details: { description: "與大家的羈絆證明（收藏品）" } }
             ],
@@ -840,7 +840,7 @@ const questDefinitions = {
       completed_guidance: "此任務已完成。學者很高興遺跡調查成功，偶爾開心地說：「多虧你，我們更接近古代秘密了。」村民有時會聚在一起聽發現的遺跡故事。",
       stages: [
         {
-          npc: "學者",
+          npc: "学者",
           trigger: { type: "keyword", keywords: ["遺跡", "古書"] },
           guidance_beforestage: "若{player}提到遺跡或古書，學者說：「最近在古書中發現有趣記載。村子附近似乎有失落遺跡。你能去調查嗎？」先引起興趣，尚未提報酬。",
           guidance_afterstage: "記得請{player}調查遺跡。{player}回來時準備開心聆聽。",
@@ -896,7 +896,7 @@ const questDefinitions = {
           }
         },
         {
-          npc: "學者",
+          npc: "学者",
           trigger: {
             type: "keyword_and_item",
             keywords: ["魔力碎片", "調查完成", "遺跡秘密"],
@@ -908,12 +908,12 @@ const questDefinitions = {
             rewards: [
               { type: "item", name: "古代卷軸", qty: 1, details: { stat: "wisdom", bonus: 5, enhancement: 20, description: "記載失落文明知識的卷軸" } },
               { type: "gold", amount: 5000 },
-              { type: "friendliness", targets: ["學者"], delta: 15 }
+              { type: "friendliness", targets: ["学者"], delta: 15 }
             ]
           }
         },
         {
-          npc: "學者",
+          npc: "学者",
           trigger: {
             type: "keyword",
             keywords: ["遺跡很危險", "中止調查", "怪物多"]
@@ -973,7 +973,7 @@ const questDefinitions = {
           nextStage: 1
         },
         {
-          npc: "酒館老闆",
+          npc: "酒場主人",
           trigger: { type: "payment", amount: 1000 },
           guidance_beforestage: "若{player}提到稅金、村長、傳聞並求情報，酒館老闆說：「嗯，告訴你我也有危險，但給1000金幣我就說。」僅在{player}給1000金幣時低聲透露：某晚醉酒的村長說，王國本來就討厭公會存在。地方武力威脅王權，所以用重稅壓垮公會，讓大家負債成為奴隸……絕不免費說。",
           guidance_afterstage: "記得用1000金幣告訴{player}王國真意（壓垮公會）。若再問說「我已經說了。剩下的自己問村長吧。」",
