@@ -2,6 +2,86 @@
 
 const translations = {
   ja: {
+    save_invalid_slot: "無効なスロット番号です（1～4）",
+    save_corrupted: "スロット {slot} のセーブデータが破損しています！",
+    save_loaded: "スロット {slot} からゲームを読み込みました！",
+    save_no_data: "スロット {slot} にセーブデータがありません！",
+    guild_defense_no_adventurer: "ギルトを防衛する冒険者は一人もいない！",
+    advancing_day_wait: "日を進めています… しばらくお待ちください。",
+    tax_day: "税金の日！{tax}G を徴収。",
+    quest_expired: "無視されたクエスト \"{desc}\" が期限切れ。Reputation -{penalty}。",
+    defense_battle_title: "防衛戦: {desc}",
+    dungeon_exploration_title: "ダンジョン{floor}階探索",
+    boss_battle_title: "{boss} との決戦",
+    day_label: "第{day}日",
+    end_day_button: "日終了 & 冒険者派遣",
+    dialogue_skip: "スキップ",
+    npc_farmer: "農夫 トマス",
+    npc_farmer_short: "トマス",
+    npc_farmer_desc: "村の農夫。お人よしで作物や家畜を大切にしている。以前、スライムや野犬の被害で困っていたが、ギルドに依頼して解決してもらった恩がある。誠実だが商売はしっかり。",
+
+    // 酒場主人
+    npc_tavern_owner: "酒場主人 エレナ",
+    npc_tavern_owner_short: "エレナ",
+    npc_tavern_owner_desc: "村の酒場の女主人。明るく気さくだが商売熱心で、情報や酒を金で売るタイプ。以前、地下室に巣食った巨大ネズミを退治してもらった恩があるが、ギルドとは距離を置いている。",
+
+    // 錬金術師
+    npc_alchemist: "錬金術師 アルベルト",
+    npc_alchemist_short: "アルベルト",
+    npc_alchemist_desc: "村の錬金術師。少し変わり者だが知識豊富。薬草集めクエストの恩あり。魔力関連実験熱心。",
+
+    // 料理人
+    npc_cook: "料理人 マリア",
+    npc_cook_short: "マリア",
+    npc_cook_desc: "村の料理人。明るく家庭的でキノコ料理得意。キノコ集めクエストの恩あり。豊作・宴会好き。",
+
+    // 学者
+    npc_scholar: "学者 セオドア",
+    npc_scholar_short: "セオドア",
+    npc_scholar_desc: "村の学者。古い書物や遺跡の研究に没頭する知的な老人。穏やかで物腰柔らかだが、知識のことになると熱く語り出す。以前、ギルドに古代文字の解読を依頼した恩がある。",
+    chat_with_npc: "{npc}と会話",
+    npc_luna: "ルナ",
+    npc_kaito: "カイト",
+    npc_farmer: "農夫",
+    npc_tavern_owner: "酒場主人",
+    npc_alchemist: "錬金術師",
+    npc_cook: "料理人",
+    npc_scholar: "学者",
+    npc_villager: "村人",
+    npc_village_chief: "村長",
+    npc_grandma: "おばあさん",
+
+
+    npcs_section_title: "チャット可能なNPC",
+    npcs_no_unlocked_desc: "まだ話せるNPCがいません。<br>クエストをクリアしてNPCをアンロックしてください。",
+    npcs_count_suffix: "人",
+    side_quest_accept_button: "サイドクエスト受注",
+    story_all_completed_title: "すべてのメインクエストを完了しました！",
+    story_all_completed_desc: "深淵の王ヴォルガスは倒され、世界に平和が戻った。おめでとう！",
+
+    story_current_title: "現在のストーリークエスト",
+    story_difficulty_reward: "難易度 {difficulty} | 報酬 {reward}g",
+    story_rep_required: "必要Reputation: {required} （現在 {current}）",
+    story_already_active: "既にメインクエストが進行中です。完了するまで次の投稿はできません。",
+    story_rep_insufficient: "Reputation不足です。サイドクエストなどでReputationを上げてください。",
+    story_post_button: "このメインクエストを投稿する",
+
+    main_quest_0_desc: "ギルドの名声を高める最初の試練 - 地域の盗賊団を壊滅せよ。近年、盗賊団の動きが異常に組織的だという噂がある。",
+    main_quest_0_rank: "Recommended >20",
+
+    main_quest_1_desc: "古代の遺跡を守る守護者が暴走し街に来た。守護者を倒し、彼は何を守ってるのかを明かそう。",
+    main_quest_1_rank: "Recommended >40",
+
+    main_quest_2_desc: "闇の魔導士が魂を集める為に街に来た、死者が出る前に彼女を止めましょう",
+    main_quest_2_rank: "Recommended >60",
+
+    main_quest_3_desc: "伝説のドラゴンが覚醒し、周辺を焼き払っている。ドラゴンを倒して、街の平和を守りましょう。",
+    main_quest_3_rank: "Recommended >80",
+
+    main_quest_4_desc: "闇のカルト集団が各地で儀式を行っている。彼らの指導者を捕らえ、深淵の王ヴォルガスの復活計画を暴け。",
+    main_quest_4_rank: "Recommended >100",
+    back_button: "戻る",
+    inventory: "インベントリ",
     shop_borrow_gold: '商人から借金',
     borrow_explanation: '商人から金を借りることができます。最大借入額は名声×100Gです。28日後に全額返済が必要です。7日ごとに借入額の10%の利息を支払います（計40%）。',
     current_reputation: '現在の名声',
@@ -57,8 +137,8 @@ const translations = {
     prev_page: "前",
     next_page: "次",
     day_format: "日 {day}",
-    gold_label: "ゴールド:",
-    reputation_label: "評判:",
+    gold_label: "Gold:",
+    reputation_label: "Reputation:",
     tax_today_prefix: "今日の税金:",
     tax_later_prefix: "{days}日後の税金:",
     game_over_text: "ゲームオーバー",    
@@ -96,7 +176,7 @@ const translations = {
     success_rate_label: "成功確率",
     assigned_label: "割り当て済み ({current}/{max})",
     reject_button: "クエスト拒否",
-    reputation_penalty: "評判 ",
+    reputation_penalty: "Reputation ",
     in_progress_message: "進行中 - 冒険者の割り当て解除不可",
     na: "N/A",
     failure: "失敗",
@@ -292,7 +372,7 @@ const translations = {
     dungeon_cooldown_remaining: "{floor}階ダンジョンクエストはあと{remaining}日投稿できません。",
     dungeon_post_available: "この階層は投稿可能です。",
     trade_insufficient_stock: "在庫不足: {item}",
-    trade_insufficient_gold: "ゴールド不足: 購入コスト {cost}g 必要（現在: {current}g）",
+    trade_insufficient_gold: "Gold不足: 購入コスト {cost}g 必要（現在: {current}g）",
     trade_quest_description: "貿易クエスト: {cityName}（往路{outLoad}/100・復路{inLoad}/100・所要{totalDays}日）",
     trade_rank: "交易",
     trade_post_success: "貿易クエストを投稿しました！冒険者を最低1人割り当てて派遣してください（確定成功）。",
@@ -315,9 +395,9 @@ const translations = {
     trade_cost: "購入コスト: ",
     trade_profit: "予想純利益: ",
     trade_profit_note: "（完了時加算）",
-    trade_required_gold: "必要ゴールド: ",
+    trade_required_gold: "必要Gold: ",
     trade_deduct_note: "（投稿時扣除）",
-    trade_gold_insufficient: "ゴールド不足",
+    trade_gold_insufficient: "Gold不足",
     trade_board_title: "貿易掲示板",
     trade_back_to_main: "戻る",
     trade_active_title: "進行中の貿易クエスト",
@@ -383,12 +463,193 @@ const translations = {
     city_herbria: "緑の里ハーブリア",
     city_spaisis: "香辛の港スパイシス",
     city_gemheart: "輝きの都ジェムハート",
+    daily_materials_today: "今日の素材",
+    daily_materials_empty: "今日の素材はありません。",
+    buy_button: "購入",
+
+    guild_slots_current: "現在の恒久冒険者スロット:",
+    guild_slots_next: "次のスロット: {next} - {cost}g でアップグレード",
+    guild_expansion_button: "拡張購入",
+    guild_max_expanded: "ギルドは最大まで拡張されています。",
+
+    corrupt_description: "10 Reputationを消費して 100g を得る",
+    corrupt_button: "商人を脅す",
+    borrow_input_note: '(100G単位、最大 {available}G)',
+    talk_to_ai_button: "{name}と話す (AI)",
+    view_action_history: "行動履歴を見る",
+    friendliness_label: "好感度:",
+    recovery_hp_used: "{item} を使用 → HP +{amount}",
+    recovery_mp_used: "{item} を使用 → MP +{amount}",
+
+    action_too_expensive: "使用料が高すぎるため（所持金の{percent}%）、{action}を断念した",
+    action_fee_reluctant: "使用料を払う気になれず、{action}を断念した",
+    recovery_already_used_note: "（{recovery}は使用済み）",
+
+    gather_success: "{item} を {qty}個 採取した",
+
+    alchemy_no_materials: "材料不足で錬成に失敗した",
+    alchemy_success: "{recipe} を錬成した",
+
+    blacksmith_no_equip: "装備品がないため強化を断念した",
+    blacksmith_success: "{equip} の強化に成功！ 絶対値 +1 ({old} → {new})",
+    blacksmith_failure: "強化に失敗した",
+
+    tavern_rest: "酒場で休息した",
+    tavern_food_order: "、ついでに「{food}」を注文した ({cost}G)",
+    tavern_food_too_expensive: "（食事は頼みたかったが、どれも高くて断念）",
+    tavern_gamble_win: "、ギャンブルで勝ち！ {amount}Gの利益",
+    tavern_gamble_loss: "、ギャンブルで負け！ {amount}Gを失った",
+
+    hunting_report: "単独でモンスター狩りに行った（HP-{hpLoss}, MP-{mpLoss}, EXP+{expGain}, 金+{goldGain}G, ギルド手数料{guildFee}G）",
+    hunting_level_up: " → レベルアップ！ Lv{level}",
+
+    none_idle: "一日を特に何もせずに過ごした",
+    none_donation: "一日を特に何もせずに過ごしたが、ギルドに{donation}G寄付した",
+
+    recovery_then_action: "{recovery} → その後{action}",
+
+    daily_guild_gain_positive: "冒険者たちの行動より +{amount}G",
+    daily_guild_gain_negative: "冒険者たちの行動より {amount}G",
+    action_gather: "採取",
+    action_alchemy: "錬成",
+    action_blacksmith: "鍛冶強化",
+    action_tavern: "酒場休息",
+    action_hunting: "単独狩り",
+    action_none: "なし",
+    story_dialogue_0_0: "{player}！最近、地域で盗賊団が活発に動いているみたいです。しかも、動きがとても組織的だという噂が…。",
+    story_dialogue_0_1: "ああ、ギルドの名を上げる絶好のチャンスだぜ！あいつらを壊滅させて、みんなに俺たちの実力を見せつけてやろう！",
+    story_dialogue_0_2: "私たちも全力でサポートします！さあ、{player}、メインクエストを掲示しましょう！",
+    story_dialogue_0_3: "あなたはギルドの名声を高める最初の試練として、盗賊団壊滅のメインクエストを投稿した。",
+
+    story_dialogue_1_0: "大変です、{player}！古代遺跡を守っていた守護者が暴走して、街に近づいてきているそうです…！",
+    story_dialogue_1_1: "守護者って何を守ってるんだろうな？倒して真相を確かめようぜ。面白そうだ！",
+    story_dialogue_1_2: "危険ですが…ギルドの力を見せる時です！メインクエストを掲示しましょう！",
+    story_dialogue_1_3: "あなたは暴走した古代守護者を討伐し、その秘密を解明するメインクエストを投稿した。",
+
+    story_dialogue_2_0: "{player}…恐ろしい噂を聞きました。闇の魔導士が魂を集めているそうです。もう死者が出る前に止めないと…！",
+    story_dialogue_2_1: "魂を集めるなんて許せねえ。魔導士を止めて、街を守ろう。俺たちの本気を見せてやる！",
+    story_dialogue_2_2: "はい…！私たちも全力で支えます。メインクエストを掲示してください！",
+    story_dialogue_2_3: "あなたは闇の魔導士を阻止する重要なメインクエストを投稿した。",
+
+    story_dialogue_3_0: "大変です！伝説のドラゴンが覚醒して、周辺を焼き払っているそうです…！",
+    story_dialogue_3_1: "ドラゴン退治か！これは伝説になるぜ、{player}！俺たちで倒して街の平和を取り戻そう！",
+    story_dialogue_3_2: "本当に危険ですが…ギルドの名にかけて！メインクエストを掲示しましょう！",
+    story_dialogue_3_3: "あなたは覚醒した伝説のドラゴンを討伐する偉大なメインクエストを投稿した。",
+
+    story_dialogue_4_0: "{player}、各地で闇のカルト集団が儀式を行っているそうです。深淵の王ヴォルガスの復活を目論んでいるらしいです…！",
+    story_dialogue_4_1: "カルトの指導者を捕まえて、計画を完全に潰そう。こんな邪悪なことは許さない！",
+    story_dialogue_4_2: "私たちも全力でサポートします！メインクエストを掲示してください！",
+    story_dialogue_4_3: "あなたは深淵の王復活を阻止する最終的なメインクエストを投稿した。",
   
 
 
 
   },
   en: {
+    save_invalid_slot: "Invalid slot number (1-4)",
+    save_corrupted: "Save data in slot {slot} is corrupted!",
+    save_loaded: "Game loaded from slot {slot}!",
+    save_no_data: "No save data in slot {slot}!",
+    guild_defense_no_adventurer: "No adventurers assigned to defend the guild!",
+    advancing_day_wait: "Advancing day... Please wait.",
+    tax_day: "Tax day! {tax}G collected.",
+    quest_expired: "Ignored quest \"{desc}\" expired. Reputation -{penalty}.",
+    defense_battle_title: "Defense Battle: {desc}",
+    dungeon_exploration_title: "Dungeon Floor {floor} Exploration",
+    boss_battle_title: "Decisive Battle with {boss}",
+    day_label: "Day {day}",
+    end_day_button: "End Day & Dispatch Adventurers",
+    dialogue_skip: "Skip",
+    npc_farmer: "Farmer Thomas",
+    npc_farmer_short: "Thomas",
+    npc_farmer_desc: "A kind-hearted village farmer who cherishes his crops and livestock. He owes the guild for resolving past slime and wild dog problems. Honest but firm in business.",
+
+    npc_tavern_owner: "Tavern Owner Elena",
+    npc_tavern_owner_short: "Elena",
+    npc_tavern_owner_desc: "The cheerful and sociable owner of the village tavern. She's business-minded, selling information and drinks for gold. Owes the guild for clearing giant rats from the basement but keeps some distance.",
+
+    npc_alchemist: "Alchemist Albert",
+    npc_alchemist_short: "Albert",
+    npc_alchemist_desc: "The village alchemist. A bit eccentric but knowledgeable. Owes the guild for herb gathering quests. Passionate about magic experiments.",
+
+    npc_cook: "Cook Maria",
+    npc_cook_short: "Maria",
+    npc_cook_desc: "The village cook. Bright and motherly, specializes in mushroom dishes. Owes the guild for mushroom gathering quests. Loves bountiful harvests and feasts.",
+
+    npc_scholar: "Scholar Theodore",
+    npc_scholar_short: "Theodore",
+    npc_scholar_desc: "The village scholar. An intellectual elder absorbed in ancient texts and ruins. Gentle and polite, but passionate when discussing knowledge. Owes the guild for deciphering ancient texts.",
+    chat_with_npc: "Chat with {npc}",
+    guild_quests_title: "Guild quest posting",
+    npc_luna: "Luna",
+    npc_kaito: "Kaito",
+    npc_farmer: "Farmer",
+    npc_tavern_owner: "Tavern Owner",
+    npc_alchemist: "Alchemist",
+    npc_cook: "Cook",
+    npc_scholar: "Scholar",
+    npc_villager: "Villager",
+    npc_village_chief: "Village Chief",
+    npc_grandma: "Old lady",
+    npcs_section_title: "Available NPCs for Chat",
+    npcs_no_unlocked_desc: "No NPCs available to chat with yet.<br>Clear quests to unlock NPCs.",
+    npcs_count_suffix: "",
+    side_quest_accept_button: "Accept Side Quest",
+    story_dialogue_0_0: "{player}! Lately, there's been a lot of bandit activity in the region. And there are rumors that their movements are unusually organized...",
+    story_dialogue_0_1: "Yeah, this is the perfect chance to raise the guild's reputation! Let's wipe them out and show everyone our strength!",
+    story_dialogue_0_2: "We'll support you with everything we've got! Come on, {player}—post the main quest!",
+    story_dialogue_0_3: "You posted the main quest to annihilate the bandits as the first trial to raise the guild's reputation.",
+
+    story_dialogue_1_0: "This is terrible, {player}! The guardian that was protecting an ancient ruin has gone berserk and is approaching the town...!",
+    story_dialogue_1_1: "I wonder what the guardian was protecting? Let's defeat it and find out the truth. Sounds exciting!",
+    story_dialogue_1_2: "It's dangerous, but... this is the time to show the guild's power! Let's post the main quest!",
+    story_dialogue_1_3: "You posted the main quest to defeat the rampaging ancient guardian and uncover its secret.",
+
+    story_dialogue_2_0: "{player}... I heard a terrifying rumor. A dark sorceress is collecting souls. We have to stop her before anyone dies...!",
+    story_dialogue_2_1: "Collecting souls? Unforgivable. Let's stop the sorceress and protect the town. We'll show them we're serious!",
+    story_dialogue_2_2: "Yes...! We'll support you fully. Please post the main quest!",
+    story_dialogue_2_3: "You posted an important main quest to stop the dark sorceress.",
+
+    story_dialogue_3_0: "This is bad! A legendary dragon has awakened and is burning everything around it...!",
+    story_dialogue_3_1: "Dragon slaying, huh? This will become legend, {player}! Let's defeat it together and restore peace to the town!",
+    story_dialogue_3_2: "It's really dangerous, but... for the guild's honor! Let's post the main quest!",
+    story_dialogue_3_3: "You posted a great main quest to defeat the awakened legendary dragon.",
+
+    story_dialogue_4_0: "{player}, dark cult groups are performing rituals all over the place. It seems they're plotting to resurrect the Abyss King Volgas...!",
+    story_dialogue_4_1: "Let's capture the cult leader and completely crush their plan. We won't allow such evil!",
+    story_dialogue_4_2: "We'll support you with all our strength! Please post the main quest!",
+    story_dialogue_4_3: "You posted the final main quest to prevent the resurrection of the Abyss King.",
+    story_all_completed_title: "All Main Quests Completed!",
+    story_all_completed_desc: "The Abyss King Volgas has been defeated, and peace has returned to the world. Congratulations!",
+
+    story_current_title: "Current Story Quest",
+    story_difficulty_reward: "Difficulty {difficulty} | Reward {reward}g",
+    story_rep_required: "Required Reputation: {required} (Current: {current})",
+    story_already_active: "A main quest is already in progress. You cannot post the next one until it is completed.",
+    story_rep_insufficient: "Insufficient Reputation. Please raise your Reputation with side quests.",
+    story_post_button: "Post This Main Quest",
+
+    main_quest_0_desc: "Annihilate the local bandit group..",
+    main_quest_0_rank: "Recommended >20",
+
+    main_quest_1_desc: "Defeat the guardian of ancient ruin.",
+    main_quest_1_rank: "Recommended >40",
+
+    main_quest_2_desc: "Stop dark sorceress.",
+    main_quest_2_rank: "Recommended >60",
+
+    main_quest_3_desc: "Defeat legendary dragon.",
+    main_quest_3_rank: "Recommended >80",
+
+    main_quest_4_desc: "Stop the resurrection plan of the Abyss King Volgas.",
+    main_quest_4_rank: "Recommended >100",
+    back_button: "Back",
+    inventory: "Inventory",
+    quest_log_title: "Quest Log",
+    quest_log_button: "Quest Log",
+    talk_to_hint: "Talk to {npc}",
+    quest_completed: "(Completed)",
+    quest_in_progress: "(In Progress)",
     AI_setting_button: "AI Setting",
     page_title: "Journey of Lost Adventure",
     game_title: "Journey of<br> Lost Adventure",
@@ -420,14 +681,13 @@ const translations = {
     tax_today_prefix: "Today's Tax:",
     tax_later_prefix: "Tax in {days} days:",
     game_over_text: "Game Over",
-    tutorial_speaker: "narrator",
+    tutorial_speaker: "Narrator",
     next_button: "Next",
     start_game_button: "Start Game",    
     intro_title: "Awakening",
     intro_description: "You wake up having lost all your memories.<br>Two people named Luna and Kaito claim to be your childhood friends<br>and are about to tell you your name and past.<br><br>Please enter the name you wish to use in the game.",
     intro_name_placeholder: "Enter your name...",
     intro_decide_button: "Confirm",
-    loading_header: "Guild Master v1.0<br>Loading...",
     new_game_button: "Start from beginning",
     continue_button: "Start from previous",
     shop_prev: "Previous",
@@ -731,8 +991,209 @@ const translations = {
     city_herbria: "Verdant Village Herbria",
     city_spaisis: "Spice Port Spaisis",
     city_gemheart: "Gem Capital Gemheart",
+    shop_borrow_gold: 'Borrow from Merchant',
+    borrow_explanation: 'You can borrow gold from the merchant. Maximum loan amount is Reputation × 100G. Full repayment is required after 28 days. Interest of 10% of the principal is paid every 7 days (total 40%).',
+    current_reputation: 'Current Reputation',
+    max_borrow_limit: 'Max Borrow Limit',
+    currently_borrowed: 'Currently Borrowed',
+    available: 'Available to Borrow',
+    current_loans: 'Current Loans',
+    principal: 'Principal',
+    borrowed_on_day: 'Borrowed on Day',
+    weekly_interest: 'Weekly Interest',
+    next_payment_day: 'Next Payment Day',
+    interest_only: 'Interest Only',
+    final_with_principal: 'Interest + Principal',
+    final_due_day: 'Final Repayment Day',
+    borrow_amount: 'Borrow Amount',
+    borrow_button: 'Borrow',
+    borrow_max_reached: 'Reputation limit reached; cannot borrow more.',
+    borrow_invalid_amount: 'Please enter in multiples of 100G.',
+    borrow_exceeds_limit: 'Exceeds borrowing limit.',
+    borrow_success: 'Borrowed {amount}G.',
+    loan_interest_payment: 'Paid {payment}G in interest.',
+    loan_final_payment: 'Paid {payment}G (including principal {principal}G) and cleared the loan.',
+    daily_materials_today: "Today's Materials",
+    daily_materials_empty: "No materials available today.",
+    buy_button: "Buy",
+
+    guild_slots_current: "Current Permanent Adventurer Slots:",
+    guild_slots_next: "Next Slot: {next} - Upgrade for {cost}g",
+    guild_expansion_button: "Purchase Expansion",
+    guild_max_expanded: "The guild is fully expanded.",
+
+    corrupt_description: "Spend 10 Reputation to gain 100g",
+    corrupt_button: "Intimidate Merchant",
+    borrow_input_note: '(in 100G increments, max {available}G)',
+    talk_to_ai_button: "Talk to {name} (AI)",
+    view_action_history: "View Action History",
+    friendliness_label: "Affinity:",
+    recovery_hp_used: "Used {item} → HP +{amount}",
+    recovery_mp_used: "Used {item} → MP +{amount}",
+
+    action_too_expensive: "Facility fee too high ({percent}% of held gold), gave up on {action}",
+    action_fee_reluctant: "Didn't feel like paying the fee, gave up on {action}",
+    recovery_already_used_note: "（{recovery} already used）",
+
+    gather_success: "Gathered {qty} {item}(s)",
+
+    alchemy_no_materials: "Failed alchemy due to insufficient materials",
+    alchemy_success: "Successfully synthesized {recipe}",
+
+    blacksmith_no_equip: "No equipment to enhance, gave up",
+    blacksmith_success: "Successfully enhanced {equip}! Absolute value +1 ({old} → {new})",
+    blacksmith_failure: "Enhancement failed",
+
+    tavern_rest: "Rested at the tavern",
+    tavern_food_order: ", and ordered \"{food}\" ({cost}G)",
+    tavern_food_too_expensive: "(Wanted to order food but everything was too expensive)",
+    tavern_gamble_win: ", won at gambling! +{amount}G profit",
+    tavern_gamble_loss: ", lost at gambling! -{amount}G",
+
+    hunting_report: "Went monster hunting alone (HP-{hpLoss}, MP-{mpLoss}, EXP+{expGain}, Gold +{goldGain}G, Guild fee {guildFee}G)",
+    hunting_level_up: " → Level up! Lv{level}",
+
+    none_idle: "Spent the day doing nothing in particular",
+    none_donation: "Spent the day idly but donated {donation}G to the guild",
+
+    recovery_then_action: "{recovery} → then {action}",
+
+    daily_guild_gain_positive: "From adventurers' actions: +{amount}G",
+    daily_guild_gain_negative: "From adventurers' actions: {amount}G",
+    action_gather: "Gathering",
+    action_alchemy: "Alchemy",
+    action_blacksmith: "Blacksmith Enhancement",
+    action_tavern: "Tavern Rest",
+    action_hunting: "Solo Hunting",
+    action_none: "None",
   },
   zh: {  // Traditional Chinese (繁體中文 - Taiwan/HK style)
+    save_invalid_slot: "無效的存檔槽編號（1～4）",
+    save_corrupted: "存檔槽 {slot} 的資料已損壞！",
+    save_loaded: "從存檔槽 {slot} 讀取遊戲！",
+    save_no_data: "存檔槽 {slot} 沒有存檔資料！",
+    guild_defense_no_adventurer: "沒有冒險者防守公會！",
+    advancing_day_wait: "正在推進日子… 請稍候。",
+    tax_day: "稅金日！徵收{tax}G。",
+    quest_expired: "被忽略的任務「{desc}」期限已過。聲望 -{penalty}。",
+    defense_battle_title: "防衛戰: {desc}",
+    dungeon_exploration_title: "地下城{floor}層探索",
+    boss_battle_title: "與{boss}的決戰",
+    day_label: "第{day}天",
+    end_day_button: "結束一天 & 派遣冒險者",
+    dialogue_skip: "跳過",
+    npc_farmer: "農夫 湯瑪斯",
+    npc_farmer_short: "湯瑪斯",
+    npc_farmer_desc: "村裡的農夫。心地善良，珍惜作物與家畜。以前因史萊姆與野犬受害而困擾，託公會解決後心存感激。誠實但做生意很精明。",
+
+    npc_tavern_owner: "酒館老闆娘 艾蕾娜",
+    npc_tavern_owner_short: "艾蕾娜",
+    npc_tavern_owner_desc: "村裡酒館的女老闆。開朗親切但精於算計，用金幣賣情報與酒。以前託公會清除地下室的巨大老鼠，心存恩情但與公會保持距離。",
+
+    npc_alchemist: "鍊金術師 阿爾貝特",
+    npc_alchemist_short: "阿爾貝特",
+    npc_alchemist_desc: "村裡的鍊金術師。有點古怪但知識豐富。因藥草收集任務欠公會人情。熱衷魔力相關實驗。",
+
+    npc_cook: "廚師 瑪麗亞",
+    npc_cook_short: "瑪麗亞",
+    npc_cook_desc: "村裡的廚師。開朗像媽媽一樣，擅長蘑菇料理。因蘑菇收集任務欠公會人情。喜歡豐收與宴會。",
+
+    npc_scholar: "學者 西奧多",
+    npc_scholar_short: "西奧多",
+    npc_scholar_desc: "村裡的學者。沉迷於古籍與遺跡研究的知識老人。溫文爾雅，但談到知識時會熱情起來。以前託公會解讀古代文字，心存恩情。",
+    chat_with_npc: "與{npc}對話",
+
+    npc_luna: "Luna",
+    npc_kaito: "Kaito",
+    npc_farmer: "農夫",
+    npc_tavern_owner: "酒館老闆",
+    npc_alchemist: "鍊金術師",
+    npc_cook: "廚師",
+    npc_scholar: "學者",
+    npc_villager: "村民",
+    npc_village_chief: "村長",
+    npc_grandma: "老奶奶",
+    npcs_section_title: "可聊天的NPC",
+    npcs_no_unlocked_desc: "還沒有可以聊天的NPC。<br>請完成任務來解鎖NPC。",
+    npcs_count_suffix: "人",
+    side_quest_accept_button: "接受支線任務",
+    story_dialogue_0_0: "{player}！最近地區盜賊團活動頻繁。而且有傳聞說他們的行動異常有組織…。",
+    story_dialogue_0_1: "對啊，這是提升公會名聲的絕佳機會！把他們殲滅，讓大家看看我們的實力！",
+    story_dialogue_0_2: "我們也會全力支援！來吧，{player}，發布主線任務吧！",
+    story_dialogue_0_3: "你發布了殲滅盜賊團的主線任務，作為提升公會名聲的首次試煉。",
+
+    story_dialogue_1_0: "糟了，{player}！守護古代遺跡的守護者失控，正在接近城鎮…！",
+    story_dialogue_1_1: "守護者在守護什麼呢？打倒它來確認真相吧。聽起來很有趣！",
+    story_dialogue_1_2: "雖然危險…但這是展現公會力量的時候了！發布主線任務吧！",
+    story_dialogue_1_3: "你發布了討伐失控古代守護者並揭開其秘密的主線任務。",
+
+    story_dialogue_2_0: "{player}…聽到了可怕的傳聞。黑暗魔導士正在收集靈魂。必須在有人死亡前阻止她…！",
+    story_dialogue_2_1: "收集靈魂什麼的絕對不能原諒。阻止魔導士，守護城鎮。我們要展現真正的實力！",
+    story_dialogue_2_2: "是的…！我們會全力支援。請發布主線任務！",
+    story_dialogue_2_3: "你發布了阻止黑暗魔導士的重要主線任務。",
+
+    story_dialogue_3_0: "糟了！傳說中的巨龍甦醒，正在焚燒周邊地區…！",
+    story_dialogue_3_1: "討伐巨龍嗎！這會成為傳說的，{player}！我們一起打倒它，恢復城鎮的和平吧！",
+    story_dialogue_3_2: "真的很危險…但為了公會的名譽！發布主線任務吧！",
+    story_dialogue_3_3: "你發布了討伐甦醒傳說巨龍的偉大主線任務。",
+
+    story_dialogue_4_0: "{player}，各地都有黑暗邪教團在進行儀式。聽說他們在策劃復活深淵之王沃爾加斯…！",
+    story_dialogue_4_1: "抓住邪教領袖，完全粉碎他們的計劃。這種邪惡絕對不能允許！",
+    story_dialogue_4_2: "我們也會全力支援！請發布主線任務！",
+    story_dialogue_4_3: "你發布了阻止深淵之王復活的最終主線任務。",
+    story_all_completed_title: "所有主線任務已完成！",
+    story_all_completed_desc: "深淵之王沃爾加斯已被擊敗，和平回到了世界。恭喜！",
+
+    story_current_title: "目前的主線任務",
+    story_difficulty_reward: "難度 {difficulty} | 報酬 {reward}g",
+    story_rep_required: "必要聲望: {required} （目前 {current}）",
+    story_already_active: "主線任務已在進行中。完成前無法發布下一個。",
+    story_rep_insufficient: "聲望不足。請透過日常任務提升聲望。",
+    story_post_button: "發布此主線任務",
+
+    main_quest_0_desc: "提升公會名聲的首次試煉 - 殲滅地區盜賊團。最近有傳聞盜賊團的行動異常有組織。",
+    main_quest_0_rank: "推薦 >20",
+
+    main_quest_1_desc: "守護古代遺跡的守護者失控來到城鎮。擊敗守護者並揭露它守護的東西。",
+    main_quest_1_rank: "推薦 >40",
+
+    main_quest_2_desc: "黑暗魔導士來到城鎮收集靈魂。在有人死亡前阻止她。",
+    main_quest_2_rank: "推薦 >60",
+
+    main_quest_3_desc: "傳說中的巨龍甦醒，正在焚燒周邊地區。擊敗巨龍，守護城鎮的和平。",
+    main_quest_3_rank: "推薦 >80",
+
+    main_quest_4_desc: "黑暗邪教團在各地進行儀式。捕獲他們的領袖，揭露深淵之王沃爾加斯的復活計劃。",
+    main_quest_4_rank: "推薦 >100",
+    back_button: "返回",
+    inventory: "庫存",
+    quest_log_title: "任務日誌",
+    quest_log_button: "任務日誌",
+    talk_to_hint: "與{npc}對話",
+    quest_completed: "（完成）",
+    quest_in_progress: "（進行中）",
+    shop_borrow_gold: '從商人借錢',
+    borrow_explanation: '可以從商人借金。最大借入額為聲望×100G。28日後需全額償還。每7日支付借入額10%的利息（合計40%）。',
+    current_reputation: '目前聲望',
+    max_borrow_limit: '借入上限',
+    currently_borrowed: '已借入額',
+    available: '剩餘可借額',
+    current_loans: '目前債務',
+    principal: '本金',
+    borrowed_on_day: '借入日',
+    weekly_interest: '每7日利息',
+    next_payment_day: '下次支付日',
+    interest_only: '僅利息',
+    final_with_principal: '利息＋本金',
+    final_due_day: '最終償還日',
+    borrow_amount: '希望借入額',
+    borrow_button: '執行借入',
+    borrow_max_reached: '聲望已達上限，無法再借。',
+    borrow_invalid_amount: '請以100G為單位輸入。',
+    borrow_exceeds_limit: '超過借入上限。',
+    borrow_success: '借入了{amount}G。',
+    loan_interest_payment: '支付了{payment}G的利息。',
+    loan_final_payment: '支付了{payment}G（其中本金{principal}G），債務已清償。',
     AI_setting_button: "AI設定",
     page_title: "失落的冒險之旅",
     game_title: "失落的<br>冒險之旅",
@@ -760,19 +1221,18 @@ const translations = {
     prev_page: "上一頁",
     next_page: "下一頁",
     day_format: "第{day}天",
-    gold_label: "金幣:",
+    gold_label: "Gold:",
     reputation_label: "聲望:",
     tax_today_prefix: "今日稅金:",
     tax_later_prefix: "{days}天後稅金:",
     game_over_text: "遊戲結束",
-    tutorial_speaker: "narrator",    
+    tutorial_speaker: "Narrator",    
     next_button: "下一頁",
     start_game_button: "開始遊戲",
     intro_title: "甦醒",
     intro_description: "你在失憶的狀態下醒來。<br>名為Luna與Kaito的兩人，自稱是你的青梅竹馬，<br>並準備告訴你你的名字與過去。<br><br>請輸入遊戲中要使用的名字。",
     intro_name_placeholder: "輸入名字...",
     intro_decide_button: "確定",
-    loading_header: "公會大師 v1.0<br>載入中...",
     new_game_button: "從頭開始",
     continue_button: "從上次繼續",
     shop_prev: "上一頁",
@@ -929,7 +1389,7 @@ const translations = {
     facilities_level_title: "{title}　等級 {level}",
     facilities_back_to_street: "返回街道",
 
-    facilities_upgrade_cost: "等級 {level} → {next}　升級費用：{cost} 金幣",
+    facilities_upgrade_cost: "等級 {level} → {next}　升級費用：{cost} Gold",
     facilities_upgrade_button: "升級",
     facilities_max_level: "已達到最大等級 {max}！",
 
@@ -940,7 +1400,7 @@ const translations = {
     facilities_required_materials: "必要素材：",
     facilities_none: "無",
     facilities_owned: "擁有：{have}個",
-    facilities_cost: "成本：{cost} 金幣",
+    facilities_cost: "成本：{cost} Gold",
 
     facilities_craft_alchemy: "合成",
     facilities_craft_alchemy_10: "合成10次",
@@ -967,7 +1427,7 @@ const translations = {
     stat_luck: "幸運",
 
     // その他、施設内で使う可能性のある補助キー（gold 表示など）
-    gold_label: "金幣：",
+    gold_label: "Gold：",
     sell_no_items: "沒有可賣出的物品。",
     sell_quantity: "x{count}",
     sell_price_each: "{price}{unit}/個",
@@ -1006,7 +1466,7 @@ const translations = {
     dungeon_cooldown_remaining: "第{floor}層地下城任務還需{remaining}天後才能再次投稿。",
     dungeon_post_available: "此層可投稿。",
     trade_insufficient_stock: "庫存不足: {item}",
-    trade_insufficient_gold: "金幣不足: 購買成本 {cost}金幣 必要（目前: {current}金幣）",
+    trade_insufficient_gold: "Gold不足: 購買成本 {cost}Gold 必要（目前: {current}Gold）",
     trade_quest_description: "貿易任務: {cityName}（去程{outLoad}/100・回程{inLoad}/100・所需{totalDays}天）",
     trade_rank: "交易",
     trade_post_success: "已發布貿易任務！請至少分配1名冒險者並派遣（確定成功）。",
@@ -1029,9 +1489,9 @@ const translations = {
     trade_cost: "購買成本: ",
     trade_profit: "預計純利益: ",
     trade_profit_note: "（完成時加算）",
-    trade_required_gold: "必要金幣: ",
+    trade_required_gold: "必要Gold: ",
     trade_deduct_note: "（投稿時扣除）",
-    trade_gold_insufficient: "金幣不足",
+    trade_gold_insufficient: "Gold不足",
     trade_board_title: "貿易掲示板",
     trade_back_to_main: "返回",
     trade_active_title: "進行中的貿易任務",
@@ -1095,13 +1555,85 @@ const translations = {
     city_herbria: "綠之里赫布利亞",
     city_spaisis: "香辛港口斯帕伊西斯",
     city_gemheart: "輝耀之都傑姆哈特",
+    daily_materials_today: "今日素材",
+    daily_materials_empty: "今日沒有素材。",
+    buy_button: "購買",
+
+    guild_slots_current: "目前恒久冒險者槽位:",
+    guild_slots_next: "下一個槽位: {next} - 升級費用 {cost}g",
+    guild_expansion_button: "購買擴建",
+    guild_max_expanded: "公會已擴建至最大。",
+
+    corrupt_description: "消耗10聲望獲得100g",
+    corrupt_button: "威脅商人",
+    borrow_input_note: '(100G單位、最大 {available}G)',
+    talk_to_ai_button: "與{name}對話 (AI)",
+    view_action_history: "查看行動履歷",
+    friendliness_label: "好感度:",
+    recovery_hp_used: "使用了{item} → HP +{amount}",
+    recovery_mp_used: "使用了{item} → MP +{amount}",
+
+    action_too_expensive: "使用費太高（佔所持金{percent}%），放棄了{action}",
+    action_fee_reluctant: "不想支付使用費，放棄了{action}",
+    recovery_already_used_note: "（{recovery}已使用）",
+
+    gather_success: "採集了{qty}個{item}",
+
+    alchemy_no_materials: "材料不足，鍊成失敗",
+    alchemy_success: "成功鍊成了{recipe}",
+
+    blacksmith_no_equip: "沒有裝備可強化，放棄了",
+    blacksmith_success: "成功強化了{equip}！絕對值 +1 ({old} → {new})",
+    blacksmith_failure: "強化失敗",
+
+    tavern_rest: "在酒館休息了",
+    tavern_food_order: "，順便點了「{food}」({cost}G)",
+    tavern_food_too_expensive: "（想點餐但都太貴了，放棄）",
+    tavern_gamble_win: "，賭博贏了！獲利{amount}G",
+    tavern_gamble_loss: "，賭博輸了！損失{amount}G",
+
+    hunting_report: "獨自去怪物狩獵（HP-{hpLoss}, MP-{mpLoss}, EXP+{expGain}, 金+{goldGain}G, 公會手續費{guildFee}G）",
+    hunting_level_up: " → 等級提升！ Lv{level}",
+
+    none_idle: "一天什麼也沒做就過去了",
+    none_donation: "一天閒著沒事做，但向公會捐贈了{donation}G",
+
+    recovery_then_action: "{recovery} → 之後{action}",
+
+    daily_guild_gain_positive: "冒險者們的行動帶來 +{amount}G",
+    daily_guild_gain_negative: "冒險者們的行動帶來 {amount}G",
+    action_gather: "採集",
+    action_alchemy: "鍊成",
+    action_blacksmith: "鐵匠強化",
+    action_tavern: "酒館休息",
+    action_hunting: "單獨狩獵",
+    action_none: "無",
     
 
   }
 };
 
 
-
+function getNpcDisplayName(internalKey) {
+    const keyMap = {
+        'ルナ': 'npc_luna',
+        'カイト': 'npc_kaito',
+        '農夫': 'npc_farmer',
+        '酒場主人': 'npc_tavern_owner',
+        '錬金術師': 'npc_alchemist',
+        '料理人': 'npc_cook',
+        '学者': 'npc_scholar',
+        '村人': 'npc_villager',
+        '村長': 'npc_village_chief',
+        'おばあさん': 'npc_grandma'
+        // 必要に応じて追加
+    };
+    const translationKey = keyMap[internalKey];
+    if (translationKey) {
+        return t(translationKey);
+    }
+    return internalKey; // フォールバック
+}
 
 const tavernRecipes = {
   ja: [
@@ -2351,7 +2883,7 @@ const fetchQuestsByRank = {
     'C+': [
         {desc: '為王宮帶來{qty}個獨角獸角。', itemName: '獨角獸角', minPrice: 400, maxPrice: 600},
         {desc: '為禁書庫收集{qty}頁禁斷魔導書。', itemName: '禁斷魔導書頁', minPrice: 500, maxPrice: 700},
-        {desc: '為鍊金大師帶來{qty}把鳳凰灰燼。', itemName: '鳳凰灰燼', minPrice: 450, maxPrice: 650}
+        {desc: '為鍊金術師帶來{qty}把鳳凰灰燼。', itemName: '鳳凰灰燼', minPrice: 450, maxPrice: 650}
     ],
     'B': [
         {desc: '為大賢者收集{qty}個星之碎片。', itemName: '星之碎片', minPrice: 1000, maxPrice: 1500},
@@ -2384,58 +2916,76 @@ const fetchQuestsByRank = {
 // === Tutorial Dialogue (fully translatable, per language) ===
 const tutorialDialogues = {
   ja: [
-    {speaker: translations.ja.tutorial_speaker, text: "ようこそ、新米ギルドマスター！\nこのゲームの基本操作と仕組みを簡単に説明するよ。"},
-    {speaker: translations.ja.tutorial_speaker, text: "目的はギルドを運営してゴールドと評判を増やし、\n仲間を育てて真実を探ること。\nゴールドか評判がマイナスになるとゲームオーバーになるから注意だ。"},
-    {speaker: translations.ja.tutorial_speaker, text: "左側がクエスト一覧だ。\n‹前 / 次›ボタンか、キーボードのA / Dキーでページを切り替えられる。"},
-    {speaker: translations.ja.tutorial_speaker, text: "クエストは主に4種類ある。\n・討伐クエスト（STR重視）：モンスター退治。成功すると新しい冒険者が加入するチャンス！\n・探索クエスト（WIS重視）：未知の場所を探る。NPCを発見する可能性あり。\n・護衛クエスト（DEX重視）：対象を安全に送る。評判が少し多めに上がることがある。\n・収集クエスト（LUC重視）：アイテム集め。錬金素材や売却用アイテムが手に入るチャンス。"},
-    {speaker: translations.ja.tutorial_speaker, text: "また、常に受けられる「トレーニングクエスト」もある。\n高レベル冒険者が低レベル冒険者に指導を行い、\n低レベル側に経験値を与えられる。\n育成に活用しよう！"},
-    {speaker: translations.ja.tutorial_speaker, text: "右上は利用可能な冒険者一覧。\n横にスクロールして確認し、ドラッグ＆ドロップまたはクリックでクエストに配置しよう。"},
-    {speaker: translations.ja.tutorial_speaker, text: "右下は募集中の冒険者。\nゴールドを払って雇用できる。\n強い仲間を増やしてクエスト成功率を上げよう。"},
-    {speaker: translations.ja.tutorial_speaker, text: "配置が終わったら「日終了 & 冒険者派遣」ボタンを押すか、\nEnterキーを押して1日を進めよう。\n翌日に結果が返ってくる。"},
-    {speaker: translations.ja.tutorial_speaker, text: "その他の便利な操作：\n・A / Dキー：クエスト、キャラクター、店のページ切り替え\n・スペースキー：店、キャラクター、イベントログを閉じる"},
-    {speaker: translations.ja.tutorial_speaker, text: "施設アップグレードもあるぞ。\n「ギルド周辺」ボタンから鍛冶屋・酒場・錬金工房をゴールドで強化できる。"},
-    {speaker: translations.ja.tutorial_speaker, text: "錬金工房ではポーションや素材を作れる。\n鍛冶屋の装備強化や酒場の料理にも必要だ。\n材料は収集クエストや交易クエストで手に入る。"},
-    {speaker: translations.ja.tutorial_speaker, text: "「ギルドクエスト」ボタンで自分でクエストを出せる。\nストーリークエスト・ダンジョンクエスト・交易クエストの3種類だ。\n報酬や内容を決めて冒険者を派遣しよう。"},
-    {speaker: translations.ja.tutorial_speaker, text: "30日目以降は防衛戦が発生する。\n失敗するとゲームオーバーになるから、\nギルドの戦力をしっかり整えておけ。"},
-    {speaker: translations.ja.tutorial_speaker, text: "戦闘はターン制で、DEXが高い冒険者から行動する。\n基本行動は軽攻撃・重攻撃・防御・カウンターだ。"},
-    {speaker: translations.ja.tutorial_speaker, text: "軽攻撃：安定したダメージ\n重攻撃：大ダメージだが2APが必要\n防御：被ダメージ軽減\nカウンター：次の敵攻撃を反射\n状況に応じて使い分けよう。"},
-    {speaker: translations.ja.tutorial_speaker, text: "これで基本は全部だ。\n分からないことがあればまた「説明」ボタンを押してくれ。\nがんばれ！"}
+    {speaker: "ナレーター", text: "ようこそ、{player}。\nこの世界へようこそ戻ってきたね。\nまずはこのゲームの基本を、私が説明してあげるよ。"},
+    {speaker: '{PLAYER}', text: "……あなたは？ どこから声が……？"},
+    {speaker: "ナレーター", text: "ふふ、気にしないで。\n今はゲームの説明を聞いてほしい。\n目的はギルドを運営してGoldとReputationを増やし、\n仲間を育てて真実を探ることだよ。\nGoldかReputationがマイナスになるとゲームオーバーだから注意してね。"},
+    {speaker: "ナレーター", text: "左側がクエスト一覧。\n‹前 / 次›ボタンか、キーボードのA / Dキーでページを切り替えられるよ。"},
+    {speaker: "ナレーター", text: "クエストは主に4種類ある。\n・討伐クエスト（STR重視）：モンスター退治。成功すると新しい冒険者が加入するチャンス！\n・探索クエスト（WIS重視）：未知の場所を探る。NPCを発見する可能性あり。\n・護衛クエスト（DEX重視）：対象を安全に送る。Reputationが少し多めに上がることがある。\n・収集クエスト（LUC重視）：アイテム集め。錬金素材や売却用アイテムが手に入るチャンス。"},
+    {speaker: "ナレーター", text: "また、常に受けられる「トレーニングクエスト」もあるよ。\n高レベル冒険者が低レベル冒険者に指導を行い、\n低レベル側に経験値を与えられる。\n育成に活用しよう！"},
+    {speaker: "ナレーター", text: "クエストに割り当てられていない冒険者は、\n自分で行動するようになる。\n何もしないこともあるし、素材を集めたり、\n酒場で休憩したり（レベル1以上ならHP/MP回復）、\n料理を注文してギルドに10%の収入が入ったり、\nギャンブル（ギルドが胴元で勝ち負けを負担）したりするよ。"},
+    {speaker: "ナレーター", text: "鍛冶屋（レベル1以上）では装備強化が可能。\n冒険者は50%の成功率で試すが、\n{player}が自分で強化すれば強化クリスタルを使えば100%成功だよ。\n錬金工房（レベル1以上）では集めた素材で\n冒険者は日常用のHP/MPポーションを合成してくれる。\n{player}はさらに高度な素材や高レベル装備用の素材も合成できる。"},
+    {speaker: "ナレーター", text: "施設の使用料は{player}が設定できるけど、\n冒険者の所持Goldの10%を超えると使わなくなるから注意。\n早めに酒場を強化するとHP/MP回復が便利だよ！"},
+    {speaker: "ナレーター", text: "Goldが足りない時は商人から借金もできる。\n最大名声×100Gまで借りられるけど、\n7日ごとに10%利息、28日後に全額返済が必要。\n返せないと破産でゲームオーバーだから慎重にね。"},
+    {speaker: "ナレーター", text: "右上は利用可能な冒険者一覧。\n横にスクロールして確認し、ドラッグ＆ドロップまたはクリックでクエストに配置しよう。"},
+    {speaker: "ナレーター", text: "右下は募集中の冒険者。\nGoldを払って雇用できる。\n強い仲間を増やしてクエスト成功率を上げよう。"},
+    {speaker: "ナレーター", text: "配置が終わったら「日終了 & 冒険者派遣」ボタンを押すか、\nEnterキーを押して1日を進めよう。\n翌日に結果が返ってくるよ。"},
+    {speaker: "ナレーター", text: "その他の便利な操作：\n・A / Dキー：クエスト、キャラクター、店のページ切り替え\n・スペースキー：店、キャラクター、イベントログを閉じる"},
+    {speaker: "ナレーター", text: "施設アップグレードもあるよ。\n「ギルド周辺」ボタンから鍛冶屋・酒場・錬金工房をGoldで強化できる。"},
+    {speaker: "ナレーター", text: "「ギルドクエスト」ボタンで自分でクエストを出せる。\nストーリークエスト・ダンジョンクエスト・交易クエストの3種類だ。\n報酬や内容を決めて冒険者を派遣しよう。"},
+    {speaker: "ナレーター", text: "30日目以降は防衛戦が発生する。\n失敗するとゲームオーバーになるから、\nギルドの戦力をしっかり整えておいてね。"},
+    {speaker: "ナレーター", text: "戦闘はターン制で、DEXが高い冒険者から行動する。\n基本行動は軽攻撃・重攻撃・防御・カウンターだよ。"},
+    {speaker: "ナレーター", text: "軽攻撃：安定したダメージ\n重攻撃：大ダメージだが2APが必要\n防御：被ダメージ軽減\nカウンター：次の敵攻撃を反射\n状況に応じて使い分けよう。"},
+    {speaker: "ナレーター", text: "これで基本は全部だよ。\n分からないことがあればまた「説明」ボタンを押してね。"},
+    {speaker: '{PLAYER}', text: "……ありがとう。ところで、あなたは一体誰なの？"},
+    {speaker: "ナレーター", text: "ふふ……いつか思い出す日が来るよ。\nでも、今はまだその時じゃない。\nさあ、{player}。君の冒険を始めよう。"}
   ],
   en: [
-    {speaker: translations.en.tutorial_speaker, text: "Welcome, novice Guild Master!\nI'll briefly explain the basic operations and mechanics of this game."},
-    {speaker: translations.en.tutorial_speaker, text: "The goal is to manage your guild, increase gold and reputation,\nand develop your companions to uncover the truth.\nBe careful—if gold or reputation goes negative, it's game over."},
-    {speaker: translations.en.tutorial_speaker, text: "The left side shows the quest list.\nUse the ‹ Previous / Next › buttons or A/D keys on the keyboard to switch pages."},
-    {speaker: translations.en.tutorial_speaker, text: "There are mainly 4 types of quests:\n・Extermination (STR focus): Monster hunting. Success gives a chance for new adventurers to join!\n・Exploration (WIS focus): Scouting unknown areas. Chance to discover NPCs.\n・Escort (DEX focus): Safely transport a target. Slightly higher reputation gain.\n・Collection (LUC focus): Item gathering. Chance to obtain alchemy materials or sellable items."},
-    {speaker: translations.en.tutorial_speaker, text: "There's also a constant \"Training Quest\" available.\nHigher-level adventurers can mentor lower-level ones,\ngiving EXP to the lower-level side.\nUse it for nurturing!"},
-    {speaker: translations.en.tutorial_speaker, text: "Top-right is the list of available adventurers.\nScroll horizontally, then drag & drop or click to assign them to quests."},
-    {speaker: translations.en.tutorial_speaker, text: "Bottom-right shows adventurers available for recruitment.\nPay gold to hire them.\nBuild a strong team to increase quest success rates."},
-    {speaker: translations.en.tutorial_speaker, text: "When assignments are done, press the \"End Day & Dispatch Adventurers\" button\nor hit Enter to advance the day.\nResults will return the next day."},
-    {speaker: translations.en.tutorial_speaker, text: "Other useful controls:\n・A / D keys: Switch pages in quests, characters, and shop\n・Space key: Close shop, characters, or event log"},
-    {speaker: translations.en.tutorial_speaker, text: "You can also upgrade facilities.\nUse the \"Guild Facilities\" button to upgrade the blacksmith, tavern, or alchemy lab with gold."},
-    {speaker: translations.en.tutorial_speaker, text: "The alchemy lab lets you craft potions and materials.\nThey're needed for blacksmith equipment upgrades and tavern cooking.\nMaterials come from collection or trade quests."},
-    {speaker: translations.en.tutorial_speaker, text: "The \"Guild Quests\" button lets you create your own quests.\nThere are 3 types: Story, Dungeon, and Trade.\nSet rewards and details, then dispatch adventurers."},
-    {speaker: translations.en.tutorial_speaker, text: "From day 30 onward, defense battles occur.\nFailure means game over,\nso prepare your guild's combat strength well."},
-    {speaker: translations.en.tutorial_speaker, text: "Battles are turn-based, with higher DEX adventurers acting first.\nBasic actions are Light Attack, Heavy Attack, Defense, and Counter."},
-    {speaker: translations.en.tutorial_speaker, text: "Light Attack: Stable damage\nHeavy Attack: High damage but costs 2 AP\nDefense: Reduces incoming damage\nCounter: Reflects the next enemy attack\nUse them situationally."},
-    {speaker: translations.en.tutorial_speaker, text: "That's all the basics.\nIf you have questions, just press the \"Tutorial\" button again.\nGood luck!"}
+    {speaker: "Narrator", text: "Welcome back to this world, {player}.\nLet me explain the basics of this game."},
+    {speaker: '{PLAYER}', text: "...Who are you? Where is this voice coming from?"},
+    {speaker: "Narrator", text: "Hehe, don't mind that.\nFor now, listen to the explanation.\nThe goal is to manage your guild, increase gold and reputation,\nand develop companions to uncover the truth.\nIf gold or reputation goes negative, it's game over—be careful."},
+    {speaker: "Narrator", text: "The left side shows the quest list.\nUse ‹ Previous / Next › buttons or A/D keys to switch pages."},
+    {speaker: "Narrator", text: "There are mainly 4 types of quests:\n・Extermination (STR focus): Monster hunting. Success gives a chance for new adventurers to join!\n・Exploration (WIS focus): Scouting unknown areas. Chance to discover NPCs.\n・Escort (DEX focus): Safely transport a target. Slightly higher reputation gain.\n・Collection (LUC focus): Item gathering. Chance to obtain alchemy materials or sellable items."},
+    {speaker: "Narrator", text: "There's also a constant \"Training Quest\" available.\nHigher-level adventurers can mentor lower-level ones,\ngiving EXP to the lower-level side.\nUse it for nurturing!"},
+    {speaker: "Narrator", text: "Adventurers not assigned to quests will act independently:\nThey might do nothing, gather ingredients, rest at the tavern\n(if tavern level 1+, recovers HP/MP—upgrade early!),\norder food (guild earns 10% of price), or gamble\n(guild is the house, taking all losses and wins)."},
+    {speaker: "Narrator", text: "At the blacksmith (level 1+): Adventurers have 50% chance to enhance equipment (+1 absolute stat on success).\nBut if {player} does it personally with enhancement crystals (from dungeons), it's 100% success.\nAt the alchemy lab (level 1+): Adventurers synthesize basic HP/MP potions from gathered ingredients.\n{player} can also synthesize advanced ingredients for high-level equipment at the blacksmith."},
+    {speaker: "Narrator", text: "You set facility usage fees, but adventurers avoid them if fees exceed 10% of their gold.\nEarly tavern upgrade is highly recommended for HP/MP recovery!"},
+    {speaker: "Narrator", text: "When short on gold, borrow from the merchant.\nMax: Reputation × 100G. 10% interest every 7 days, full repayment on day 28.\nFailure to repay causes bankruptcy and game over—be careful!"},
+    {speaker: "Narrator", text: "Top-right is the list of available adventurers.\nScroll horizontally, then drag & drop or click to assign them to quests."},
+    {speaker: "Narrator", text: "Bottom-right shows adventurers available for recruitment.\nPay gold to hire them.\nBuild a strong team to increase quest success rates."},
+    {speaker: "Narrator", text: "When assignments are done, press the \"End Day & Dispatch Adventurers\" button\nor hit Enter to advance the day.\nResults will return the next day."},
+    {speaker: "Narrator", text: "Other useful controls:\n・A / D keys: Switch pages in quests, characters, and shop\n・Space key: Close shop, characters, or event log"},
+    {speaker: "Narrator", text: "You can also upgrade facilities.\nUse the \"Guild Facilities\" button to upgrade the blacksmith, tavern, or alchemy lab with gold."},
+    {speaker: "Narrator", text: "The \"Guild Quests\" button lets you create your own quests.\nThere are 3 types: Story, Dungeon, and Trade.\nSet rewards and details, then dispatch adventurers."},
+    {speaker: "Narrator", text: "From day 30 onward, defense battles occur.\nFailure means game over,\nso prepare your guild's combat strength well."},
+    {speaker: "Narrator", text: "Battles are turn-based, with higher DEX adventurers acting first.\nBasic actions are Light Attack, Heavy Attack, Defense, and Counter."},
+    {speaker: "Narrator", text: "Light Attack: Stable damage\nHeavy Attack: High damage but costs 2 AP\nDefense: Reduces incoming damage\nCounter: Reflects the next enemy attack\nUse them situationally."},
+    {speaker: "Narrator", text: "That's all the basics.\nIf you have questions, just press the \"Tutorial\" button again."},
+    {speaker: '{PLAYER}', text: "...Thank you. By the way, who are you really?"},
+    {speaker: "Narrator", text: "Hehe... You'll remember me one day.\nBut now is not the time.\nNow, {player}—begin your adventure."}
   ],
-  zh: [  // Traditional Chinese
-    {speaker: translations.zh.tutorial_speaker, text: "歡迎，新手公會大師！\n我來簡單說明這個遊戲的基本操作和機制。"},
-    {speaker: translations.zh.tutorial_speaker, text: "目標是經營公會，增加金幣和聲望，\n培養夥伴以探尋真相。\n金幣或聲望變成負數就會遊戲結束，注意哦。"},
-    {speaker: translations.zh.tutorial_speaker, text: "左側是任務列表。\n使用‹ 前 / 次 ›按鈕，或鍵盤的A / D鍵來切換頁面。"},
-    {speaker: translations.zh.tutorial_speaker, text: "任務主要有4種：\n・討伐任務（STR重視）：怪物退治。成功有機會招募新冒險者！\n・探索任務（WIS重視）：探查未知地點。有機會發現NPC。\n・護衛任務（DEX重視）：安全護送目標。聲望提升較多。\n・收集任務（LUC重視）：收集物品。有機會獲得鍊金素材或可出售物品。"},
-    {speaker: translations.zh.tutorial_speaker, text: "另外還有隨時可接的「訓練任務」。\n高級冒險者指導低級冒險者，\n可給低級一方經驗值。\n好好利用來培養吧！"},
-    {speaker: translations.zh.tutorial_speaker, text: "右上是可以使用的冒險者列表。\n水平滾動確認後，用拖曳或點擊分配到任務。"},
-    {speaker: translations.zh.tutorial_speaker, text: "右下是招募中的冒險者。\n支付金幣即可雇用。\n增加強力夥伴來提高任務成功率吧。"},
-    {speaker: translations.zh.tutorial_speaker, text: "分配完成後，按「結束一天 & 派遣冒險者」按鈕，\n或按Enter鍵前進一天。\n隔天就會回報結果。"},
-    {speaker: translations.zh.tutorial_speaker, text: "其他便利操作：\n・A / D鍵：切換任務、角色、商店頁面\n・空白鍵：關閉商店、角色、事件記錄"},
-    {speaker: translations.zh.tutorial_speaker, text: "還有設施升級哦。\n從「公會設施」按鈕用金幣強化鐵匠鋪、酒館、鍊金工房。"},
-    {speaker: translations.zh.tutorial_speaker, text: "鍊金工房可以製作藥水和素材。\n鐵匠鋪的裝備強化和酒館的料理都需要。\n素材從收集任務或交易任務獲得。"},
-    {speaker: translations.zh.tutorial_speaker, text: "「發布公會任務」按鈕可以自己發布任務。\n有故事任務、地下城任務、交易任務3種。\n設定報酬和內容後派遣冒險者吧。"},
-    {speaker: translations.zh.tutorial_speaker, text: "第30天之後會發生防衛戰。\n失敗就會遊戲結束，\n請好好整頓公會戰力。"},
-    {speaker: translations.zh.tutorial_speaker, text: "戰鬥是回合制，DEX高的冒險者先行動。\n基本行動有輕攻擊、重攻擊、防禦、反擊。"},
-    {speaker: translations.zh.tutorial_speaker, text: "輕攻擊：穩定傷害\n重攻擊：高傷害但需要2AP\n防禦：減輕受到傷害\n反擊：反射下一次敵人攻擊\n根據情況靈活使用吧。"},
-    {speaker: translations.zh.tutorial_speaker, text: "基本說明就到這裡。\n有不懂的地方再按「教學」按鈕吧。\n加油！"}
+  zh: [
+    {speaker: "Narrator", text: "歡迎回到這個世界，{player}。\n讓我來為你說明遊戲的基本規則吧。"},
+    {speaker: '{PLAYER}', text: "……你是誰？這聲音從哪裡傳來的……？"},
+    {speaker: "Narrator", text: "呵呵，別在意。\n現在先聽我說明吧。\n目標是經營公會，增加Gold和聲望，\n培養夥伴以探尋真相。\nGold或聲望變成負數就會遊戲結束，要小心哦。"},
+    {speaker: "Narrator", text: "左側是任務列表。\n使用‹ 前 / 次 ›按鈕，或鍵盤的A / D鍵來切換頁面。"},
+    {speaker: "Narrator", text: "任務主要有4種：\n・討伐任務（STR重視）：怪物退治。成功有機會招募新冒險者！\n・探索任務（WIS重視）：探查未知地點。有機會發現NPC。\n・護衛任務（DEX重視）：安全護送目標。聲望提升較多。\n・收集任務（LUC重視）：收集物品。有機會獲得鍊金素材或可出售物品。"},
+    {speaker: "Narrator", text: "另外還有隨時可接的「訓練任務」。\n高級冒險者指導低級冒險者，\n可給低級一方經驗值。\n好好利用來培養吧！"},
+    {speaker: "Narrator", text: "未被分配任務的冒險者會自行行動：\n可能什麼都不做、收集素材、在酒館休息（等級1以上可恢復HP/MP，建議盡早升級！）、\n點餐（公會可得10%收入）、\n或賭博（公會當莊家，承擔所有輸贏）。"},
+    {speaker: "Narrator", text: "鐵匠鋪（等級1以上）：冒險者有50%機率強化裝備（成功時屬性絕對值+1）。\n但{player}親自使用強化水晶（地下城獲得）則100%成功。\n鍊金工房（等級1以上）：冒險者用收集的素材合成日常HP/MP藥水。\n{player}還能合成高級素材，用於鐵匠鋪製作高級裝備。"},
+    {speaker: "Narrator", text: "設施使用費由{player}設定，但若費用超過冒險者持有Gold的10%，他們就不會使用。\n盡早升級酒館以恢復HP/MP非常推薦！"},
+    {speaker: "Narrator", text: "Gold不足時可向商人借錢。\n最多名聲×100G。7天利息10%，第28天需全額歸還。\n還不出來會破產遊戲結束，要小心管理！"},
+    {speaker: "Narrator", text: "右上是可以使用的冒險者列表。\n水平滾動確認後，用拖曳或點擊分配到任務。"},
+    {speaker: "Narrator", text: "右下是招募中的冒險者。\n支付Gold即可雇用。\n增加強力夥伴來提高任務成功率吧。"},
+    {speaker: "Narrator", text: "分配完成後，按「結束一天 & 派遣冒險者」按鈕，\n或按Enter鍵前進一天。\n隔天就會回報結果。"},
+    {speaker: "Narrator", text: "其他便利操作：\n・A / D鍵：切換任務、角色、商店頁面\n・空白鍵：關閉商店、角色、事件記錄"},
+    {speaker: "Narrator", text: "還有設施升級哦。\n從「公會設施」按鈕用Gold強化鐵匠鋪、酒館、鍊金工房。"},
+    {speaker: "Narrator", text: "「發布公會任務」按鈕可以自己發布任務。\n有故事任務、地下城任務、交易任務3種。\n設定報酬和內容後派遣冒險者吧。"},
+    {speaker: "Narrator", text: "第30天之後會發生防衛戰。\n失敗就會遊戲結束，\n請好好整頓公會戰力。"},
+    {speaker: "Narrator", text: "戰鬥是回合制，DEX高的冒險者先行動。\n基本行動有輕攻擊、重攻擊、防禦、反擊。"},
+    {speaker: "Narrator", text: "輕攻擊：穩定傷害\n重攻擊：高傷害但需要2AP\n防禦：減輕受到傷害\n反擊：反射下一次敵人攻擊\n根據情況靈活使用吧。"},
+    {speaker: "Narrator", text: "基本說明就到這裡。\n有不懂的地方再按「教學」按鈕吧。"},
+    {speaker: '{PLAYER}', text: "……謝謝。順便問一下，你到底是誰？"},
+    {speaker: "Narrator", text: "呵呵……總有一天你會想起我的。\n但現在還不是時候。\n來吧，{player}。開始你的冒險吧。"}
   ]
 };
 
@@ -2482,21 +3032,21 @@ const facilityUpgradeDialogues = {
     },
     zh: {
         tavern: [
-            { speaker: '酒館老闆', text: '哦，{PLAYER}！又投資了啊！' },
-            { speaker: '酒館老闆', text: '冒險者們可以更好地休息了。使用費也會返還給公會！' },
-            { speaker: '酒館老闆', text: '他們點餐時，公會能拿到10%的收入。' },
-            { speaker: '酒館老闆', text: '不過有時他們會賭博輸大錢，要注意看著點啊…' },
-            { speaker: '敘述者', text: '酒館升級！冒險者休息，使用費返還公會。點餐收入10%，賭博可能（有損失風險）。' }
+            { speaker: '酒場主人', text: '哦，{PLAYER}！又投資了啊！' },
+            { speaker: '酒場主人', text: '冒險者們可以更好地休息了。使用費也會返還給公會！' },
+            { speaker: '酒場主人', text: '他們點餐時，公會能拿到10%的收入。' },
+            { speaker: '酒場主人', text: '不過有時他們會賭博輸大錢，要注意看著點啊…' },
+            { speaker: 'Narrator', text: '酒館升級！冒險者休息，使用費返還公會。點餐收入10%，賭博可能（有損失風險）。' }
         ],
         alchemy: [
             { speaker: '煉金術師', text: '呵呵，謝謝{PLAYER}的投資。' },
             { speaker: '煉金術師', text: '冒險者們可以用收集的素材合成藥水。這很重要 — 藥水能救命！' },
-            { speaker: '敘述者', text: '煉金工房升級！冒險者自動用素材合成藥水。生存率提升！' }
+            { speaker: 'Narrator', text: '煉金工房升級！冒險者自動用素材合成藥水。生存率提升！' }
         ],
         blacksmith: [
             { speaker: '鐵匠', text: '{PLAYER}，又投資了！謝了！' },
             { speaker: '鐵匠', text: '冒險者們可以強化裝備了（成功率看運）。使用費全額返還公會。' },
-            { speaker: '敘述者', text: '鐵匠鋪升級！裝備強化可用。使用費全額公會收入。' }
+            { speaker: 'Narrator', text: '鐵匠鋪升級！裝備強化可用。使用費全額公會收入。' }
         ]
     }
 };
@@ -2613,7 +3163,7 @@ const introDialogues = {
         text: "Yeah, we’ll always have your back.<br>If you become Guild Master, we’ll give you everything we’ve got.<br>Just like old times—the three of us, together."
     },
     {
-        speaker: "You",
+        speaker: "{player}",
         text: "…Thank you. But honestly… I don’t remember anything.<br>Am I really the person you say I am?"
     },
     {
@@ -2726,11 +3276,13 @@ function setLanguage(lang) {
   console.log("set language to:"+lang);
   applyTranslations();
   
-
   // Refresh dynamic parts (especially the day display)
   if (typeof updateDay === 'function') {
       updateDay();
   }
+
+  // Force full page reload to ensure ALL content (including dynamically generated dialogues, quests, etc.) is re-evaluated with the new language
+  location.reload();
 }
 
 

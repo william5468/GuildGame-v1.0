@@ -1430,7 +1430,7 @@ function closeSlotMenu() {
 // スロット番号（1～4）を指定して読み込み
 function loadGame(slot) {
     if (slot < 1 || slot > 4) {
-        better_alert('無効なスロット番号です（1～4）',"error");
+        better_alert(t('save_invalid_slot'), "error");
         return;
     }
 
@@ -1458,7 +1458,6 @@ function loadGame(slot) {
         };
     }
 
-
     // 現在の言語に応じたレシピをグローバルに設定
     currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
     currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
@@ -1473,7 +1472,7 @@ function loadGame(slot) {
         try {
             loadedState = JSON.parse(saved);
         } catch (e) {
-            better_alert(`スロット ${slot} のセーブデータが破損しています！`,"error");
+            better_alert(t('save_corrupted', { slot }), "error");
             console.warn('Save data parse error:', e);
             return;
         }
@@ -1601,10 +1600,10 @@ function loadGame(slot) {
         checkGameOver();
         updateDisplays();
         ensureTrainingQuest();
-        better_alert(`スロット ${slot} からゲームを読み込みました！`,"success");
+        better_alert(t('save_loaded', { slot }), "success");
     } else {
         // この分岐は通常到達しない（メニューで空スロットをブロックしている）が、安全のため
-        better_alert(`スロット ${slot} にセーブデータがありません！`,"warning");
+        better_alert(t('save_no_data', { slot }), "warning");
         updateDisplays(); // 新規ゲーム相当の表示更新
     }
 }
@@ -1657,7 +1656,7 @@ function addToInventory(template, qty = 1) {
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
-        better_alert("ゴールドが不足しています","error");
+        better_alert("Goldが不足しています","error");
         return false;
     }
     gameState.gold -= amount;
@@ -1681,12 +1680,12 @@ function addBattleLog(msg) {
 
 function corrupt() {
     if (gameState.reputation < 10) {
-        better_alert("評判が不足しています","error");
+        better_alert("Reputationが不足しています","error");
         return;
     }
     gameState.reputation -= 10;
     gameState.gold += 100;
-    better_alert("商人から100G貰ったけど、評判は"+gameState.reputation+"まで下がりました","success");
+    better_alert("商人から100G貰ったけど、Reputationは"+gameState.reputation+"まで下がりました","success");
     checkGameOver();
     updateDisplays();
 }
@@ -1706,7 +1705,7 @@ function checkGameOver() {
         Kaito.hp = Math.max(0, Kaito.hp);
     }
 
-    // 金・評判もクランプ
+    // 金・Reputationもクランプ
     gameState.gold = Math.max(0, gameState.gold);
     gameState.reputation = Math.max(0, gameState.reputation);
 
@@ -1721,7 +1720,7 @@ function checkGameOver() {
     // 2. Lunaのみ死亡 → lunaDeath
     // 3. Kaitoのみ死亡 → kaitoDeath
     // 4. 金欠 → gold
-    // 5. 評判ゼロ → rep
+    // 5. Reputationゼロ → rep
     if (isLunaDead && isKaitoDead) {
         reason = 'lunaKaitoDeath';
     } else if (isLunaDead) {
@@ -1770,7 +1769,7 @@ function randomName(gender) {  // gender: 'male' or 'female' (string, lowercase)
 
 // generateQuest 関数を以下のものに完全に置き換え
 function generateQuest(){
-    // 新しい難易度計算：評判に基づく範囲（平均 ≈ reputation / 10）
+    // 新しい難易度計算：Reputationに基づく範囲（平均 ≈ reputation / 10）
     const baseDiff = Math.max(0, Math.floor(gameState.reputation / 10));
     const minDiff = Math.max(1, baseDiff - 5);
     const maxDiff = Math.min(150, baseDiff + 5);
@@ -1819,22 +1818,15 @@ function generateQuest(){
         const descs = discoveryDescsByRank[currentLang] || discoveryDescsByRank.ja;
         const pool = descs[rank] || descs['F'];
         
-        let useEpic = ['B','B+','A','A+','S'].includes(rank);
 
         qType = 1;
         const selectedIndex = Math.floor(Math.random() * pool.length);
         const selectedDesc = pool[selectedIndex];
         desc = selectedDesc;
 
-        if (useEpic) {
-            const originalIndex = discoveryDescs.indexOf(selectedDesc);
-            if (originalIndex !== -1) {
-                npcIdx = originalIndex;
-            }
-            storyindex = 0;
-        } else {
-            storyindex = selectedIndex;
-        }
+
+        storyindex = selectedIndex;
+
     } 
     else if (primary === 2) { // escort (DEX)
         const descs = escortDescsByRank[currentLang] || escortDescsByRank.ja;
@@ -2314,7 +2306,7 @@ function generateKillRecruit(difficulty) {
         // === 新規追加: AIチャット対応属性 ===
         Friendliness: 50,                    // 初期好感度（村人NPCと同じ）
         bag: {                               // バッグ初期化
-            gold: Math.floor(difficulty * 5 + 50),  // 少しゴールド持たせる（難易度依存）
+            gold: Math.floor(difficulty * 5 + 50),  // 少しGold持たせる（難易度依存）
             items: []                        // 初期アイテムなし（後でcraft/give可能）
         }
     };
@@ -2339,7 +2331,7 @@ function generateKillRecruit(difficulty) {
     adv.mp = adv.maxMp;
     adv.exp = 0;
 
-    // === 好感度微調整（難易度/評判が高いほど初期好感度アップ） ===
+    // === 好感度微調整（難易度/Reputationが高いほど初期好感度アップ） ===
     adv.Friendliness = Math.min(100, 70 + Math.floor(difficulty / 5) + Math.floor(gameState.reputation / 20));
 
     return adv;
@@ -2593,7 +2585,7 @@ function rejectQuest(qId) {
     if (idx !== -1) {
         gameState.quests.splice(idx, 1);
     }
-    better_alert(`クエストを拒否しました！評判 -${penalty.toFixed(1)}`,"error");
+    better_alert(`クエストを拒否しました！Reputation -${penalty.toFixed(1)}`,"error");
     updateDisplays();
 }
 
@@ -2785,11 +2777,10 @@ function renderBorrowPage() {
     const available = Math.max(0, maxBorrowTotal - currentBorrowed);
 
     // 全体を白文字にするラッパー（背景が暗いため視認性向上）
-    let html = `<div  line-height:1.7; font-size:1.05em;">`;
+    let html = `<div style="line-height:1.7; font-size:1.05em;">`;
 
     html += `<p>${t('borrow_explanation')}</p>`;
-    html += `<p>${t('current_reputation')}: <strong style="color:#ffd700;">${reputationFloor}</strong> 
-             `;
+    html += `<p>${t('current_reputation')}: <strong style="color:#ffd700;">${reputationFloor}</strong></p>`;
     html += `<p>${t('max_borrow_limit')}: <strong style="color:#ffd700;">${maxBorrowTotal}G</strong> 
              (${t('currently_borrowed')}: <strong style="color:#ffaa66;">${currentBorrowed}G</strong> / 
              ${t('available')}: <strong style="color:#88ff88;">${available}G</strong>)</p>`;
@@ -2820,7 +2811,9 @@ function renderBorrowPage() {
     // 借入フォーム（残り枠があれば表示）
     if (available > 0) {
         html += `<div style="margin-top:30px; padding:20px; background:rgba(40,40,40,0.7); border-radius:12px; border:1px solid #555;">
-            <label style="display:block; margin-bottom:12px; font-size:1.15em;">${t('borrow_amount')} (100G単位、最大 ${available}G):</label>
+            <label style="display:block; margin-bottom:12px; font-size:1.15em;">
+                ${t('borrow_amount')} ${t('borrow_input_note', {available: available})}:
+            </label>
             <input type="number" id="borrowAmount" min="100" step="100" max="${available}" value="0" 
                    style="width:220px; padding:10px; font-size:1.1em; background:#333; color:#fff; border:1px solid #666; border-radius:6px;">
             <button onclick="borrowGold()" 
@@ -2895,17 +2888,17 @@ function renderShopPurchase() {
 
 function renderDailyMaterials() {
     if (gameState.dailyMaterials && gameState.dailyMaterials.length > 0) {
-        let html = '<ul class="shop-list">';
+        let html = `<ul class="shop-list">`;
         gameState.dailyMaterials.forEach((mat, i) => {
             html += `<li class="shop-item">`;
             html += `<strong>${mat.name}</strong> - ${mat.price}g`;
-            html += ` <button class="buy-btn" onclick="buyMaterial(${i})">購入</button>`;
+            html += ` <button class="buy-btn" onclick="buyMaterial(${i})">${t('buy_button')}</button>`;
             html += `</li>`;
         });
         html += '</ul>';
         return html;
     }
-    return '<p class="empty-msg">今日の素材はありません。</p>';
+    return `<p class="empty-msg">${t('daily_materials_empty')}</p>`;
 }
 
 function renderGuildExpansion() {
@@ -2915,18 +2908,18 @@ function renderGuildExpansion() {
         const level = nextSlots - 4;
         const cost = 500 + 250 * (level - 1);
         return `<div class="expansion-section">
-            <p>現在の恒久冒険者スロット: <strong>${currentSlots}</strong></p>
-            <p>次のスロット: <strong>${nextSlots}</strong> - ${cost}g でアップグレード</p>
-            <button class="buy-btn large" onclick="buyExpansion()">拡張購入</button>
+            <p>${t('guild_slots_current')} <strong>${currentSlots}</strong></p>
+            <p>${t('guild_slots_next', {next: nextSlots, cost: cost})}</p>
+            <button class="buy-btn large" onclick="buyExpansion()">${t('guild_expansion_button')}</button>
         </div>`;
     }
-    return '<p class="empty-msg">ギルドは最大まで拡張されています。</p>';
+    return `<p class="empty-msg">${t('guild_max_expanded')}</p>`;
 }
 
 function renderCorruption() {
     return `<div class="corruption-section">
-        <p>10 評判を消費して 100g を得る</p>
-        <button class="buy-btn warn" onclick="corrupt()">商人を脅す</button>
+        <p>${t('corrupt_description')}</p>
+        <button class="buy-btn warn" onclick="corrupt()">${t('corrupt_button')}</button>
     </div>`;
 }
 
@@ -3383,7 +3376,7 @@ if (q.type === 8 || q.type === 'trade') {
                 <div style="text-align: center;">
                     <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">貿易クエスト失敗！</div>
                     <div style="font-size: 15px; color: darkred;">
-                        評判 -${repLoss}
+                        Reputation -${repLoss}
                     </div>
                     <div style="font-size: 12px; margin: 40px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%;">
                         ${q.desc}<br><br>
@@ -3448,7 +3441,7 @@ if (q.buy) {
     });
 
 
-    // 評判ボーナス
+    // Reputationボーナス
     const repGain = q.difficulty * 0.5;
     gameState.reputation += repGain;
 
@@ -3467,9 +3460,9 @@ if (q.buy) {
     // leftHTML
     let leftHTML = `
         <div style="text-align: center;">
-            <div style="font-size: 15px; margin-bottom: 40px;">評判 +${repGain.toFixed(1)}</div>
+            <div style="font-size: 15px; margin-bottom: 40px;">Reputation +${repGain.toFixed(1)}</div>
             <div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
-                +${q.reward} ゴールド（売却収益）
+                +${q.reward} Gold（売却収益）
             </div>
             ${additionalItemHTML}          
         </div>`;
@@ -3582,7 +3575,7 @@ if (q.buy) {
             if (isPerm) {
                 gameState.reputation = Math.max(-100, gameState.reputation - 10);
             }
-            let deathMsg = `${adventurer.name} が "${q.desc}" で${isPerm ? '死亡しました' : '失われました'}！${isPerm ? ' 評判 -10。' : ''}`;
+            let deathMsg = `${adventurer.name} が "${q.desc}" で${isPerm ? '死亡しました' : '失われました'}！${isPerm ? ' Reputation -10。' : ''}`;
             better_alert(deathMsg,"death");
             const mainIdx = gameState.adventurers.findIndex(a => a.id === adventurerId);
             if (mainIdx > -1) gameState.adventurers.splice(mainIdx, 1);
@@ -3652,12 +3645,15 @@ if (q.buy) {
             extraMsg += `<br><strong>Reputation Bonus:</strong> ${orbQty} × EXPオーブ (小)${orbQty > 1 ? 's' : ''} を獲得!`;
         }
         if (q.type === 6) {
+            // 完了前の mainProgress を基準にボーナス計算（0-basedインデックス）
+            const currentProgress = gameState.mainProgress;  // 例: 最初のクエストなら 0、2番目なら 1
+            const storyRepBonus = 30 * Math.pow(3, currentProgress);  // 30, 90, 270, 810...
 
+            gameState.reputation += storyRepBonus;
+            repGain +=storyRepBonus;
 
 
             gameState.mainProgress++;
-            gameState.reputation += 30;
-            extraMsg += `<br><strong>ストーリーが進行しました！</strong> 次のメインクエストがギルドクエストメニューで確認できるようになりました。`;
         } else if (q.type === 7) {
     let treasureGold = q.floor * 300;
     gameState.gold += treasureGold;
@@ -3728,7 +3724,7 @@ if (q.buy) {
             if (Math.random() < repChance) {
                 const extraRep = q.difficulty * 0.6;
                 gameState.reputation += extraRep;
-                extraMsg += `<br>感謝のクライアントが言葉を広め、+${extraRep.toFixed(1)} 評判！`;
+                extraMsg += `<br>感謝のクライアントが言葉を広め、+${extraRep.toFixed(1)} Reputation！`;
             }
         }
         if (q.type === 1) {
@@ -3804,9 +3800,9 @@ if (q.buy) {
         // Unified layout for success
         let leftHTML = `
             <div style="text-align: center;">
-                <div style="font-size: 15px; margin-bottom: 40px;">評判 +${repGain.toFixed(1)}</div>
+                <div style="font-size: 15px; margin-bottom: 40px;">Reputation +${repGain.toFixed(1)}</div>
                 <div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
-                    +${netGold.toFixed(0)} ゴールド${payout > 0 ? ` <br><span style="font-size: 10px;">[${payout.toFixed(0)} ゴールドは冒険者に分けた]</span>` : ''}
+                    +${netGold.toFixed(0)} Gold${payout > 0 ? ` <br><span style="font-size: 10px;">[${payout.toFixed(0)} Goldは冒険者に分けた]</span>` : ''}
                 </div>
                 ${additionalItemHTML}          
             </div>`;
@@ -3850,7 +3846,7 @@ if (q.buy) {
         let leftHTML = `
             <div style="text-align: center;">
                 <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">失敗！</div>
-                <div style="font-size: 15px; color: darkred;">評判 -${repLoss}</div>
+                <div style="font-size: 15px; color: darkred;">Reputation -${repLoss}</div>
             </div>`;
 
         let rightHTML = survivingAdvs.length > 0 ? `
@@ -4254,7 +4250,7 @@ function isFacilityUsable(facilityName) {
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 function processAdventurerDailyActions() {
-    let totalGuildGain = 0;  // 全冒険者からのギルド純収支を合計
+    let totalGuildGain = 0;
 
     gameState.adventurers.forEach(adv => {
         if (isAdventurerOnQuest(adv) || adv.temp) return;
@@ -4272,7 +4268,6 @@ function processAdventurerDailyActions() {
         let recoveryItemUsed = null;
         let recoveryDescription = '';
 
-        // HP < 50% → HP回復アイテムを探す
         if (adv.hp / maxHp < 0.5) {
             const hpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
@@ -4287,11 +4282,10 @@ function processAdventurerDailyActions() {
                 adv.hp = Math.min(maxHp, adv.hp + usedAmount);
                 removeItemFromBag(adv.bag, item.name, 1);
                 recoveryItemUsed = 'hp';
-                recoveryDescription = `${item.name} を使用 → HP +${usedAmount}`;
+                recoveryDescription = t('recovery_hp_used', {item: item.name, amount: usedAmount});
             }
         }
 
-        // HP回復を使わなかった場合、MP < 50% ならMP回復アイテムを試す
         if (!recoveryItemUsed && adv.mp / maxMp < 0.5) {
             const mpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
@@ -4306,11 +4300,10 @@ function processAdventurerDailyActions() {
                 adv.mp = Math.min(maxMp, adv.mp + usedAmount);
                 removeItemFromBag(adv.bag, item.name, 1);
                 recoveryItemUsed = 'mp';
-                recoveryDescription = `${item.name} を使用 → MP +${usedAmount}`;
+                recoveryDescription = t('recovery_mp_used', {item: item.name, amount: usedAmount});
             }
         }
 
-        // ── 回復アイテム使用後の現在のステータスで比率を再計算 ──
         const hpRatio = adv.hp / maxHp;
         const mpRatio = adv.mp / maxMp;
         const isLow = hpRatio < 0.5 || mpRatio < 0.5;
@@ -4339,11 +4332,9 @@ function processAdventurerDailyActions() {
 
         let action;
 
-        // HPまたはMPが50%未満の場合、酒場を強制選択（利用可能なら）
         if (isLow && possibleActions.includes('tavern')) {
             action = 'tavern';
         } else {
-            // ハンティングは両方60%超の場合のみ
             if (hpRatio > 0.6 && mpRatio > 0.6) {
                 possibleActions.push('hunting');
             }
@@ -4352,17 +4343,18 @@ function processAdventurerDailyActions() {
 
         // ── 料金確率ロジック ──
         const facilityFee = gameState.facilityFees?.[action] || 0;
-        let adventurerChange = 0;  // 冒険者の純金変動
-        let guildGain = 0;         // この冒険者からのギルド収支
+        let adventurerChange = 0;
+        let guildGain = 0;
 
         if (facilityFee > 0 && adv.bag.gold > 0) {
             const feePercent = (facilityFee / adv.bag.gold) * 100;
             if (feePercent >= 10) {
+                const actionName = getActionName(action); // 既存の関数をそのまま使用（翻訳済みと仮定）
                 adv.actionHistory.push({
                     day: gameState.day - 1,
                     action: action,
-                    description: `使用料が高すぎるため（所持金の${Math.round(feePercent)}%）、${getActionName(action)}を断念した` +
-                                 (recoveryDescription ? `（${recoveryDescription}は使用済み）` : ''),
+                    description: t('action_too_expensive', {percent: Math.round(feePercent), action: actionName}) +
+                                 (recoveryDescription ? t('recovery_already_used_note', {recovery: recoveryDescription}) : ''),
                     adventurerChange: 0,
                     guildGain: 0,
                     success: false,
@@ -4374,11 +4366,12 @@ function processAdventurerDailyActions() {
 
             const successChance = Math.max(0, 1 - (feePercent / 10));
             if (Math.random() > successChance) {
+                const actionName = getActionName(action);
                 adv.actionHistory.push({
                     day: gameState.day - 1,
                     action: action,
-                    description: `使用料を払う気になれず、${getActionName(action)}を断念した` +
-                                 (recoveryDescription ? `（${recoveryDescription}は使用済み）` : ''),
+                    description: t('action_fee_reluctant', {action: actionName}) +
+                                 (recoveryDescription ? t('recovery_already_used_note', {recovery: recoveryDescription}) : ''),
                     adventurerChange: 0,
                     guildGain: 0,
                     success: false,
@@ -4404,7 +4397,7 @@ function processAdventurerDailyActions() {
                 const item = items[Math.floor(Math.random() * items.length)];
                 const qty = Math.floor(Math.random() * 3) + 1;
                 addItemToBag(adv.bag, item, qty);
-                description = `${item} を ${qty}個 採取した`;
+                description = t('gather_success', {item: item, qty: qty});
                 break;
             }
 
@@ -4418,20 +4411,20 @@ function processAdventurerDailyActions() {
                 );
                 if (available.length === 0) {
                     success = false;
-                    description = '材料不足で錬成に失敗した';
+                    description = t('alchemy_no_materials');
                     break;
                 }
                 const recipe = available[Math.floor(Math.random() * available.length)];
                 recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
                 addItemToBag(adv.bag, recipe.name, 1);
-                description = `${recipe.name} を錬成した`;
+                description = t('alchemy_success', {recipe: recipe.name});
                 break;
             }
 
             case 'blacksmith': {
                 if (!adv.equipment || Object.keys(adv.equipment).length === 0) {
                     success = false;
-                    description = '装備品がないため強化を断念した';
+                    description = t('blacksmith_no_equip');
                     break;
                 }
                 if (Math.random() < 0.5) {
@@ -4439,10 +4432,10 @@ function processAdventurerDailyActions() {
                     const eq = adv.equipment[eqKeys[Math.floor(Math.random() * eqKeys.length)]];
                     const oldEnh = eq.enhancement || 0;
                     eq.enhancement = oldEnh + 1;
-                    description = `${eq.name} の強化に成功！ 絶対値 +1 (${oldEnh} → ${eq.enhancement})`;
+                    description = t('blacksmith_success', {equip: eq.name, old: oldEnh, new: eq.enhancement});
                 } else {
                     success = false;
-                    description = '強化に失敗した';
+                    description = t('blacksmith_failure');
                 }
                 break;
             }
@@ -4451,15 +4444,13 @@ function processAdventurerDailyActions() {
                 const recoveryBonus = 1.5;
                 adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.2 * recoveryBonus));
                 adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.2 * recoveryBonus));
-                description = '酒場で休息した';
+                description = t('tavern_rest');
 
-                // ── 酒場サブアクション（食事40%、ギャンブル10%、休息のみ50%） ──
                 const tavernSubRandom = Math.random();
-                if (tavernSubRandom < 0.4) { // 40% 食事注文
+                if (tavernSubRandom < 0.4) {
                     const tavernLevel = gameState.facilities.tavern || 0;
                     let availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
 
-                    // 食事は所持金の20%以内に制限
                     const maxFoodSpend = Math.floor(adv.bag.gold * 0.2);
                     availableFoods = availableFoods.filter(food => (food.cost || 250) <= maxFoodSpend);
 
@@ -4479,39 +4470,35 @@ function processAdventurerDailyActions() {
                         buffCopy.daysLeft = buffCopy.days;
                         adv.buffs.push(buffCopy);
 
-                        description += `、ついでに「${food.name}」を注文した (${foodCost}G)`;
+                        description += t('tavern_food_order', {food: food.name, cost: foodCost});
                     } else {
-                        description += `（食事は頼みたかったが、どれも高くて断念）`;
+                        description += t('tavern_food_too_expensive');
                     }
-                } else if (tavernSubRandom < 0.5) { // 10% ギャンブル（ギルド vs 冒険者、ゼロサム）
+                } else if (tavernSubRandom < 0.5) {
                     if (adv.bag.gold > 0 && gameState.gold > 0) {
-                        let betPercent = 0.25 + Math.random() * 0.5; // 25〜75%
+                        let betPercent = 0.25 + Math.random() * 0.5;
                         let bet = Math.floor(adv.bag.gold * betPercent);
-
-                        // ギルドの所持金で支払える額に制限
                         bet = Math.min(bet, gameState.gold);
 
                         if (bet > 0) {
-                            const isWin = Math.random() < 0.4; // 40%で冒険者勝ち
+                            const isWin = Math.random() < 0.4;
 
                             if (isWin) {
                                 adv.bag.gold += bet;
                                 gameState.gold -= bet;
                                 adventurerChange += bet;
                                 guildGain -= bet;
-                                description += `、ギャンブルで勝ち！ ${bet}Gの利益`;
+                                description += t('tavern_gamble_win', {amount: bet});
                             } else {
                                 adv.bag.gold -= bet;
                                 gameState.gold += bet;
                                 adventurerChange -= bet;
                                 guildGain += bet;
-                                description += `、ギャンブルで負け！ ${bet}Gを失った`;
+                                description += t('tavern_gamble_loss', {amount: bet});
                             }
                         }
                     }
                 }
-                // 残り50% は休息のみ
-
                 break;
             }
 
@@ -4537,19 +4524,25 @@ function processAdventurerDailyActions() {
                 adventurerChange += adventurerGain;
                 guildGain += guildFee;
 
-                description = `単独でモンスター狩りに行った（HP-${hpLoss}, MP-${mpLoss}, EXP+${expGain}, 金+${adventurerGain}G, ギルド手数料${guildFee}G）`;
+                description = t('hunting_report', {
+                    hpLoss: hpLoss,
+                    mpLoss: mpLoss,
+                    expGain: expGain,
+                    goldGain: adventurerGain,
+                    guildFee: guildFee
+                });
 
                 if (adv.exp >= expNeeded) {
                     adv.level += 1;
                     adv.exp -= expNeeded;
-                    description += ` → レベルアップ！ Lv${adv.level}`;
+                    description += t('hunting_level_up', {level: adv.level});
                 }
 
                 break;
             }
 
             case 'none': {
-                description = '一日を特に何もせずに過ごした';
+                description = t('none_idle');
 
                 if (adv.friendliness >= 60 && Math.random() < 0.2) {
                     const donated = Math.floor(adv.bag.gold * 0.01 * adv.friendliness);
@@ -4558,7 +4551,7 @@ function processAdventurerDailyActions() {
                         gameState.gold += donated;
                         adventurerChange -= donated;
                         guildGain += donated;
-                        description = `一日を特に何もせずに過ごしたが、ギルドに${donated}G寄付した`;
+                        description = t('none_donation', {donation: donated});
                     }
                 }
 
@@ -4566,12 +4559,10 @@ function processAdventurerDailyActions() {
             }
         }
 
-        // この冒険者からのギルド収支を合計
         totalGuildGain += guildGain;
 
-        // 履歴記録
         const fullDescription = recoveryDescription 
-            ? `${recoveryDescription} → その後${description}`
+            ? t('recovery_then_action', {recovery: recoveryDescription, action: description})
             : description;
 
         adv.actionHistory.push({
@@ -4591,60 +4582,43 @@ function processAdventurerDailyActions() {
 
     // ── 日次ギルド収支トータルアラート ──
     if (totalGuildGain > 0) {
-        better_alert(`冒険者たちの行動より +${totalGuildGain}G`, "success");
+        better_alert(t('daily_guild_gain_positive', {amount: totalGuildGain}), "success");
     } else if (totalGuildGain < 0) {
-        better_alert(`冒険者たちの行動より ${totalGuildGain}G`, "warning");
+        better_alert(t('daily_guild_gain_negative', {amount: totalGuildGain}), "warning");
     }
-    // 0G の場合はアラートなし（ノイズ削減）
 }
 // 補助関数：行動名を日本語で返す
 function getActionName(action) {
-    const names = {
-        gather: '採取',
-        alchemy: '錬成',
-        blacksmith: '鍛冶強化',
-        tavern: '酒場休息',
-        none: 'なし'
+    const keys = {
+        gather: 'action_gather',
+        alchemy: 'action_alchemy',
+        blacksmith: 'action_blacksmith',
+        tavern: 'action_tavern',
+        hunting: 'action_hunting',  // processAdventurerDailyActions で使用されているため追加
+        none: 'action_none'
     };
-    return names[action] || action;
+    const key = keys[action];
+    if (key) {
+        return t(key);
+    }
+    // 未知の action が来た場合のフォールバック（デバッグしやすいように action 自体を返す）
+    return action;
 }
 
-// 補助関数：行動名を日本語で返す（履歴表示などで便利）
-function getActionName(action) {
-    const names = {
-        gather: '採取',
-        alchemy: '錬成',
-        blacksmith: '鍛冶強化',
-        tavern: '酒場休息',
-        none: 'なし'
-    };
-    return names[action] || action;
-}
 
-// 補助関数（履歴表示などで使うと便利）
-function getActionName(action) {
-    const names = {
-        gather: '採取',
-        alchemy: '錬成',
-        blacksmith: '鍛冶強化',
-        tavern: '酒場休息',
-        none: 'なし'
-    };
-    return names[action] || action;
-}
 
 // === playDay() の更新版（ストーリークエストを戦闘レンダリングに統合） ===
 function playDay(){
     const unassignedDefense = gameState.quests.find(q => q.defense && q.assigned.length === 0);
     if (unassignedDefense) {
-        better_alert(`ギルトを防衛する冒険者は一人もいない！`,"warning");
+        better_alert(t('guild_defense_no_adventurer'),"warning");
         return;
     }
 
     if (gameState.gameOver) return;
 
     if (gameState.isAdvancingDay) {
-        better_alert("日を進めています… しばらくお待ちください。", "warning");
+        better_alert(t('advancing_day_wait'), "warning");
         return;
     }
     gameState.isAdvancingDay = true;
@@ -4655,7 +4629,7 @@ function playDay(){
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day-1) * 10);
         gameState.gold -= tax;
-        better_alert(`税金の日！${tax}G を徴収。`,"warning");
+        better_alert(t('tax_day', { tax }), "warning");
         checkGameOver();
     }
 
@@ -4715,12 +4689,11 @@ function playDay(){
             } else {
                 const penalty = 0.5 * q.difficulty;
                 gameState.reputation -= penalty;
-                better_alert(`無視されたクエスト "${q.desc}" が期限切れ。評判 -${penalty}。`,"error");
+                better_alert(t('quest_expired', { desc: q.desc, penalty }), "error");
             }
             gameState.quests.splice(i, 1);
         }
     }
-
 
     const unassignedNonDefenseBattle = gameState.quests.filter(q => (q.type === 7 || q.type === 6) && q.assigned.length === 0);
     unassignedNonDefenseBattle.forEach(q => {
@@ -4748,16 +4721,16 @@ function playDay(){
         if (currentQ.defense) {
             generateEnemies(currentQ);
             CurrentQuestType = 'defense';
-            titleText = `防衛戦: ${currentQ.desc}`;
+            titleText = t('defense_battle_title', { desc: currentQ.desc });
         } else if (currentQ.type === 7) {
             generateDungeonEnemies(currentQ);
             CurrentQuestType = 'dungeon';
-            titleText = `ダンジョン${currentQ.floor}階探索`;
+            titleText = t('dungeon_exploration_title', { floor: currentQ.floor });
         } else if (currentQ.type === 6) {
             generateStoryEnemies(currentQ);
             CurrentQuestType = 'story';
             const boss = currentQ.enemies[0];
-            titleText = `${boss.name} との決戦`;
+            titleText = t('boss_battle_title', { boss: boss.name });
         }
 
         const team = currentQ.assigned.map(id => {
@@ -4792,8 +4765,8 @@ function playDay(){
     }
 
     if (!assignedBattleQuests.length) {
-            processAdventurerDailyActions();
-        }
+        processAdventurerDailyActions();
+    }
 
     const overlay = document.getElementById('dayTransitionOverlay');
     const info = document.getElementById('transitionDayInfo');
@@ -4803,7 +4776,7 @@ function playDay(){
     info.style.letterSpacing = '0.2em';
     info.style.textShadow = '0 0 20px rgba(255, 255, 255, 1)';
     info.style.transition = 'opacity 0.5s ease-in-out';
-    info.innerText = `Day ${gameState.day}`;
+    info.innerText = t('day_label', { day: gameState.day });
     info.style.opacity = '0';
 
     overlay.style.display = 'flex';
@@ -4825,7 +4798,7 @@ function playDay(){
             gameState.isAdvancingDay = false;
             if (endDayBtn) {
                 endDayBtn.disabled = false;
-                endDayBtn.querySelector('span').innerText = endDayBtn.dataset.originalText || '日終了 & 冒険者派遣';
+                endDayBtn.querySelector('span').innerText = endDayBtn.dataset.originalText || t('end_day_button');
                 delete endDayBtn.dataset.originalText;
             }
         }, 1100);
@@ -6283,7 +6256,7 @@ function endBattle(win) {
                 // Permanent adventurers dying always costs reputation (same for defense/dungeon)
                 if (!battleAdv.temp) {
                     gameState.reputation = Math.max(-100, gameState.reputation - 10);
-                    better_alert(`${battleAdv.name} が戦闘で死亡しました！ 評判 -10。`,"death");
+                    better_alert(`${battleAdv.name} が戦闘で死亡しました！ Reputation -10。`,"death");
                     
                     const idx = gameState.adventurers.findIndex(a => a.id === battleAdv.id);
                     if (idx > -1) gameState.adventurers.splice(idx, 1);
@@ -6456,30 +6429,30 @@ function showStoryQuest() {
     content.style.backgroundImage = "url('Images/StoryQuest_Background.jpg')";
 
     let html = `<div class="gq-panel">
-                    <button class="back-btn" onclick="showMainSelection()">戻る</button>`;
+                    <button class="back-btn" onclick="showMainSelection()">${t('back_button')}</button>`;
 
     if (gameState.mainProgress >= mainQuests.length) {
-        html += `<p><strong>すべてのメインクエストを完了しました！</strong><br>深淵の王ヴォルガスは倒され、世界に平和が戻った。おめでとう！</p>`;
+        html += `<p><strong>${t('story_all_completed_title')}</strong><br>${t('story_all_completed_desc')}</p>`;
     } else {
         let mq = mainQuests[gameState.mainProgress];
         const requiredRep = mq.repRequired || 0;
         const hasActiveMain = gameState.quests.some(q => q.type === 6);
         const canPost = gameState.reputation >= requiredRep && !hasActiveMain;
 
-        html += `<h4>現在のストーリークエスト</h4>
+        html += `<h4>${t('story_current_title')}</h4>
                  <p>${mq.desc}</p>
-                 <p>難易度 ${mq.difficulty} | 報酬 ${mq.reward}g</p>
-                 <p>必要評判: ${requiredRep} （現在 ${gameState.reputation}）</p>`;
+                 <p>${t('story_difficulty_reward', {difficulty: mq.difficulty, reward: mq.reward})}</p>
+                 <p>${t('story_rep_required', {required: requiredRep, current: gameState.reputation})}</p>`;
 
         if (hasActiveMain) {
-            html += `<p style="color:orange;">既にメインクエストが進行中です。完了するまで次の投稿はできません。</p>`;
+            html += `<p style="color:orange;">${t('story_already_active')}</p>`;
         } else if (gameState.reputation < requiredRep) {
-            html += `<p style="color:red;">評判不足です。サイドクエストなどで評判を上げてください。</p>`;
+            html += `<p style="color:red;">${t('story_rep_insufficient')}</p>`;
         }
 
         if (canPost) {
             html += `<div class="form-buttons">
-                        <button class="post-btn" onclick="postGuildQuest()">このメインクエストを投稿する</button>
+                        <button class="post-btn" onclick="postGuildQuest()">${t('story_post_button')}</button>
                      </div>`;
         }
     }
@@ -6494,7 +6467,7 @@ function showDungeonQuest() {
     content.style.backgroundImage = "url('Images/DungeonQuest_Background.jpg')";
 
     let html = `<div class="gq-panel">
-                    <button class="back-btn" onclick="showMainSelection()">戻る</button>
+                <button class="back-btn" onclick="showMainSelection()">${t('back_button')}</button>
                     <label>階層: <input type="number" id="dungeonFloor" min="1" value="1" onchange="updateDungeonCooldown()"></label>
                     <div id="dungeonCooldownMsg" style="margin:15px 0; min-height:30px;"></div>
                     <div class="form-buttons">
@@ -6747,7 +6720,7 @@ function performAlchemy() {
 function orderTavernItem(recipeIdx) {
     const r = currentTavernRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        better_alert('ゴールドが不足しています',"error");
+        better_alert('Goldが不足しています',"error");
         return;
     }
 
@@ -6887,7 +6860,7 @@ function enhanceEquipment(advId, itemId) {
 function produceBlacksmith(recipeIdx) {
     const r = currentBlacksmithRecipes[recipeIdx];
     if (gameState.gold < r.cost) {
-        better_alert('ゴールドが不足しています',"error");
+        better_alert('Goldが不足しています',"error");
         return;
     }
     if (r.materials) {
@@ -7240,7 +7213,7 @@ function craftAlchemyRecipe(index, qty) {
     const costPer = recipe.cost || 0;
     const totalCost = costPer * qty;
     if (gameState.gold < totalCost) {
-        better_alert(`ゴールドが不足しています！ (必要: ${totalCost}G)`,"error");
+        better_alert(`Goldが不足しています！ (必要: ${totalCost}G)`,"error");
         return;
     }
 
@@ -7381,7 +7354,7 @@ function upgradeFacility(fac) {
         if (typeof updateGold === 'function') updateGold();
         better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`, "success");
     } else {
-        better_alert('ゴールドが不足しています', "error");
+        better_alert('Goldが不足しています', "error");
     }
 
     updateDisplays();
@@ -7415,8 +7388,8 @@ function queueStoryPostDialogue(rawSequence, onComplete) {
     storyPostQueue.push({ sequence: processedSequence, callback: onComplete });
 
     if (!isPlayingStoryPost) {
-        crossfadeTo('storyBgm', 2000);                            // 専用BGMに切り替え
-        setDialogueBackground('Images/quest_completion_bg.jpg');  // クエスト完了と同じ背景で統一感
+        crossfadeTo('storyBgm', 2000);
+        setDialogueBackground('Images/quest_completion_bg.jpg');
         playNextStoryPostDialogue();
     }
 }
@@ -7428,7 +7401,6 @@ function playNextStoryPostDialogue() {
         const modal = document.getElementById('introModal');
         modal.style.display = 'none';
 
-        // クリーンアップ（原版と同一）
         const dialogueTextEl = document.getElementById('dialogueText');
         if (dialogueTextEl) dialogueTextEl.innerHTML = '';
         const speakerNameEl = document.getElementById('speakerName');
@@ -7462,23 +7434,20 @@ function playNextStoryPostDialogue() {
     const playerName = gameState.playerName || 'マスター';
 
     let localIndex = 0;
-    let typingInterval = null;  // 原版と同一のタイピングインターバル管理
+    let typingInterval = null;
 
     function renderLine() {
         const current = sequence[localIndex];
 
-        // 話者名
         document.getElementById('speakerName').textContent = current.speaker + ":";
 
-        // 継続インジケーター非表示
         document.getElementById('continueIndicator').style.opacity = '0';
 
-        // テキストクリア
         dialogueTextEl.innerHTML = '';
 
-        // 画像処理（原版と完全に同一ロジック）
         let imageSrc = 'Images/main_char.png';
         const speakerKey = current.speaker;
+        console.log("current.speaker is:"+speakerKey);
 
         if (current.image) {
             imageSrc = current.image;
@@ -7505,7 +7474,6 @@ function playNextStoryPostDialogue() {
             speakerImageCache[speakerKey] = imageSrc;
         }
 
-        // 画像キー比較関数（原版と同一）
         function getImageKey(src) {
             if (!src) return null;
             let filename = src.split('/').pop().split('?')[0].split('#')[0];
@@ -7515,10 +7483,14 @@ function playNextStoryPostDialogue() {
         const currentKey = getImageKey(charImg.src);
         const newKey = getImageKey(imageSrc);
 
-        // タイピング開始関数（原版と同一）
+        // === 修正: 言語に応じたタイピング速度 ===
         function startTyping() {
             clearInterval(typingInterval);
             let charIndex = 0;
+
+            // 英語の場合のみ高速（20ms）、それ以外は標準35ms
+            const typingDelay = (currentLang === 'en') ? 20 : 35;
+
             typingInterval = setInterval(() => {
                 if (charIndex < current.text.length) {
                     if (current.text.substr(charIndex, 4) === '<br>') {
@@ -7533,14 +7505,13 @@ function playNextStoryPostDialogue() {
                     typingInterval = null;
                     document.getElementById('continueIndicator').style.opacity = '1';
                 }
-            }, 35);
+            }, typingDelay);
         }
+        // === 修正ここまで ===
 
-        // 同一画像の場合 → 即タイピング（原版と同一）
         if (currentKey === newKey && currentKey !== null) {
             startTyping();
         } else {
-            // 画像変更 → フェードアウト → プリロード → フェードイン → タイピング（原版と完全に同一）
             charImg.style.opacity = '0';
 
             const onFadeOutComplete = () => {
@@ -7589,7 +7560,6 @@ function playNextStoryPostDialogue() {
             }, 600);
         }
 
-        // クリックハンドラー（原版と同一）
         stepDialogue.onclick = () => {
             if (typingInterval) {
                 clearInterval(typingInterval);
@@ -7633,7 +7603,7 @@ function postGuildQuest() {
 
         let mq = mainQuests[gameState.mainProgress];
         if (gameState.reputation < (mq.repRequired || 0)) {
-            better_alert(`評判が不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`,"error");
+            better_alert(`Reputationが不足しています（必要: ${mq.repRequired || 0} / 現在: ${gameState.reputation}）。`,"error");
             return;
         }
 
@@ -7937,17 +7907,7 @@ function showActionHistory(charIndex) {
         const gainText = entry.guildGain > 0 ? `+${entry.guildGain}G` : '—';
         const rowStyle = entry.success === false ? 'background:rgba(139,0,0,0.25);' : '';
 
-        let actionLabel = '';
-        switch(entry.action) {
-            case 'none':     actionLabel = 'なし'; break;
-            case 'tavern':   actionLabel = '酒場休息'; break;
-            case 'gather':   actionLabel = '採取'; break;
-            case 'alchemy':  actionLabel = '錬成'; break;
-            case 'blacksmith': actionLabel = '鍛冶強化'; break;
-            case 'hunting': actionLabel = '狩り'; break;
-            default:         actionLabel = entry.action;
-        }
-
+        let actionLabel = getActionName(entry.action);
         html += `
 <tr style="${rowStyle}">
     <td style="padding:12px; border:1px solid #555; text-align:center;">Day ${entry.day}</td>
@@ -8244,16 +8204,16 @@ function renderCurrentCharacter() {
 
     html += breathingDiv;
     html += `<p id="friendliness-${adv.name}" style="font-size:1.2em; color:#ffd700; margin-bottom:8px;">
-                            好感度: ${adv.Friendliness}
-                        </p>`;
+                ${t('friendliness_label')} ${adv.Friendliness}
+            </p>`;
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
-        ${adv.name}と話す (AI)
+        ${t('talk_to_ai_button', {name: adv.name})}
     </button>`;
 
     html += `
         <button onclick="showActionHistory(${currentCharIndex})" 
                 style="margin:20px auto; display:block; padding:12px 30px; background:#e67e22; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
-            行動履歴を見る
+            ${t('view_action_history')}
         </button>
     `;
     html += `</div>`;
@@ -9113,15 +9073,75 @@ function setDialogueBackground(bg_url = 'Images/intro_bg.jpg') {
 }
 
 
+// translations.js に追加（または constants.js に独立させる）
+
+// 表示名（翻訳後）→ 画像ファイル名（英語固定）のマップ
+// ユーザーがPNGファイルを英語名にリネームする前提
+const npcImageFileMap = {
+    // メインキャラクター
+    'ルナ': 'Luna',
+    'Luna': 'Luna',
+    '露娜': 'Luna',
+
+    'カイト': 'Kaito',
+    'Kaito': 'Kaito',
+    '凱特': 'Kaito',
+
+    // その他のNPC（スペースはアンダースコアに統一推奨、ファイル名は安全のため）
+    '農夫': 'Farmer',
+    'Farmer': 'Farmer',
+    '農夫': 'Farmer',  // zhも同じ
+
+    '酒場主人': 'TavernOwner',
+    'Tavern Owner': 'TavernOwner',
+    '酒館老闆': 'TavernOwner',
+
+    '錬金術師': 'Alchemist',
+    'Alchemist': 'Alchemist',
+    '鍊金術師': 'Alchemist',
+
+    '料理人': 'Cook',
+    'Cook': 'Cook',
+    '廚師': 'Cook',
+
+    '学者': 'Scholar',
+    'Scholar': 'Scholar',
+    '學者': 'Scholar',
+
+    '村人': 'Villager',
+    'Villager': 'Villager',
+    '村民': 'Villager',
+
+    '村長': 'VillageChief',
+    'VillageChief': 'VillageChief',
+    '村長': 'VillageChief',
+
+    'おばあさん': 'Old Lady',
+    'Old Lady': 'Old Lady',
+    'Old Lady': 'Old Lady',
+    '老奶奶': 'Old Lady',
+
+
+    '親': 'Parent',
+    'Parent': 'Parent',
+    // 他のNPCがあればここに追加
+    // 例: 'Blacksmith': 'Blacksmith'
+};
+
+// スピーカー名から正しい画像ファイル名（英語）を取得するヘルパー
+function getNpcImageFile(speaker) {
+    if (!speaker) return 'placeholder';
+    return npcImageFileMap[speaker] || 'placeholder'; // マップにない場合はプレースホルダー
+}
+
 
 function playNextQuestDialogue() {
     if (completionQueue.length === 0) {
         isPlayingDialogue = false;
 
-// ===== GAME OVER 専用処理（最後のダイアログ終了時のみ）=====
+        // ===== GAME OVER 専用処理（最後のダイアログ終了時のみ）=====
         if (gameState.isFinalGameOver) {
             // BGM 全停止（GameoverBgm も含めて静かにする）
-
 
             // dayTransitionOverlay を再利用して GAME OVER 表示
             const overlay = document.getElementById('dayTransitionOverlay');
@@ -9142,9 +9162,6 @@ function playNextQuestDialogue() {
             overlay.style.display = 'flex';
             overlay.style.opacity = '0';
             requestAnimationFrame(() => { overlay.style.opacity = '1'; });
-
-
-
 
             // ここで関数終了（通常のモーダル非表示などはスキップ）
             return;
@@ -9169,6 +9186,10 @@ function playNextQuestDialogue() {
             charImg.style.opacity = '0';
         }
 
+        // Skipボタンを非表示（ダイアログ終了時）
+        const skipBtn = document.getElementById('dialogueSkipBtn');
+        if (skipBtn) skipBtn.style.display = 'none';
+
         return;
     }
 
@@ -9179,6 +9200,9 @@ function playNextQuestDialogue() {
     const modal = document.getElementById('introModal');
     const stepDialogue = document.getElementById('stepDialogue');
     modal.style.display = 'flex';
+
+    // stepDialogueをrelativeに（Skipボタンのabsolute位置基準にする）
+    stepDialogue.style.position = 'relative';
 
     // 表示直後に確実にクリア
     const dialogueTextEl = document.getElementById('dialogueText');
@@ -9197,6 +9221,45 @@ function playNextQuestDialogue() {
     const playerName = gameState.playerName || defaultName;
 
     let localIndex = 0;
+
+    // Skipボタン（ダイアログ開始時に表示・設定）
+    let skipBtn = document.getElementById('dialogueSkipBtn');
+    if (!skipBtn) {
+        skipBtn = document.createElement('button');
+        skipBtn.id = 'dialogueSkipBtn';
+        skipBtn.style.cssText = `
+            position: absolute;
+            top: 15px;          /* stepDialogueの上部 */
+            left:30px;        /* stepDialogueの右寄せ */
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.28);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+        `;
+        skipBtn.onmouseover = () => skipBtn.style.background = 'rgba(255, 80, 120, 1)';
+        skipBtn.onmouseout = () => skipBtn.style.background = 'rgba(255, 255, 255, 0.28)';
+        // stepDialogueの子要素として追加（top-right配置）
+        stepDialogue.appendChild(skipBtn);
+    }
+    skipBtn.textContent = t('dialogue_skip'); // 多言語対応
+    skipBtn.style.display = 'block';
+
+    // Skipボタンクリック：現在のシーケンスを即終了 → 次シーケンスへ
+    skipBtn.onclick = () => {
+        clearInterval(typingInterval);
+        typingInterval = null;
+        localIndex = sequence.length; // 強制的にシーケンス終了
+        document.getElementById('continueIndicator').style.opacity = '0';
+        dialogueTextEl.innerHTML = ''; // テキストクリア（スキップ感演出）
+        playNextQuestDialogue(); // 即次へ
+    };
 
     function renderQuestDialogue() {
         const current = sequence[localIndex];
@@ -9217,7 +9280,6 @@ function playNextQuestDialogue() {
         // キャラクター画像パス計算（キャッシュ付き）
         let imageSrc = 'Images/main_char.png';
         const speakerKey = current.speaker; // 元のspeakerKey（置換前）でキャッシュ（一貫性確保）
-
         if (current.image) {
             // カスタム画像（表情差分など）はキャッシュせず優先
             imageSrc = current.image;
@@ -9227,15 +9289,14 @@ function playNextQuestDialogue() {
         } else {
             // 初回計算
             if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
-                imageSrc = 'Images/カイト.png';
+                imageSrc = 'Images/Kaito.png'; // 英語ファイル名対応
             } else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
-                imageSrc = 'Images/ルナ.png';
-            }else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
+                imageSrc = 'Images/Luna.png';
+            } else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
                 imageSrc = 'Images/narrator.png';
-            } else if (current.speaker.includes('おばあさん')) {  // ← 新規追加: おばあさん専用マッピング
-                imageSrc = 'Images/おばあさん.png';
-            }
-            else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
+            } else if (current.speaker.includes('おばあさん') || current.speaker.includes('Grandmother')) {
+                imageSrc = 'Images/Grandmother.png';
+            } else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
                 const playerImages = [
                     'Images/STR_RankF_F.png',
                     'Images/STR_RankF_M.png',
@@ -9249,15 +9310,14 @@ function playNextQuestDialogue() {
                 const randomIndex = Math.floor(Math.random() * playerImages.length);
                 imageSrc = playerImages[randomIndex];
             } else if (processedSpeaker !== playerName) {
-                imageSrc = 'Images/' + current.speaker + '.png';
+                const fileName = getNpcImageFile(current.speaker || processedSpeaker);
+                imageSrc = `Images/${fileName}.png`;
             }
-            console.log(processedSpeaker);
-            console.log(playerName);            
             // キャッシュに保存
             speakerImageCache[speakerKey] = imageSrc;
         }
 
-        // 画像ファイル名で同一判定（日本語ファイル名対応強化：URLデコード適用）
+        // 画像ファイル名で同一判定
         function getImageKey(src) {
             if (!src) return null;
             let filename = src.split('/').pop().split('?')[0].split('#')[0];
@@ -9271,6 +9331,10 @@ function playNextQuestDialogue() {
         function startTyping() {
             clearInterval(typingInterval);
             let charIndex = 0;
+
+            // 英語(en)の場合のみタイピングを速くする（20ms）、それ以外は従来の35ms
+            const typingSpeed = (currentLang === 'en') ? 20 : 35;
+
             typingInterval = setInterval(() => {
                 if (charIndex < fullText.length) {
                     if (fullText.substr(charIndex, 4) === '<br>') {
@@ -9285,7 +9349,7 @@ function playNextQuestDialogue() {
                     typingInterval = null;
                     document.getElementById('continueIndicator').style.opacity = '1';
                 }
-            }, 35);
+            }, typingSpeed);
         }
 
         if (currentKey === newKey && currentKey !== null) {
@@ -9343,6 +9407,9 @@ function playNextQuestDialogue() {
 
         // クリックで次へ（スキップ時は置換済みのfullTextを使用）
         stepDialogue.onclick = (e) => {
+            // Skipボタンクリックは別処理なのでここでは通常進みのみ
+            if (e.target === skipBtn) return; // Skipボタンクリックは無視
+
             if (typingInterval) {
                 clearInterval(typingInterval);
                 typingInterval = null;
@@ -9496,14 +9563,14 @@ function getGameOverSequence(reason) {
         },
         rep: {
             ja: [
-                {speaker: '商人', text: 'このギルドの評判が最低だ！もう絶対に取引しない！'},
+                {speaker: '商人', text: 'このギルドのReputationが最低だ！もう絶対に取引しない！'},
                 {speaker: '商人', text: '報酬の支払いが遅いし、クエストも怪しい！'},
                 {speaker: '怒りの冒険者', text: 'そうだ！こんなゴミギルドは冒険者の名を汚すだけだ！'},
                 {speaker: '別の冒険者', text: '解散しろ！王国に恥をかかせるな！'},
                 {speaker: playerSpeaker, text: '待ってください！私たちは必死に頑張ってきたんです！'},
                 {speaker: 'カイト', text: 'そうだよ！ちゃんと成功したクエストだってたくさんある！'},
                 {speaker: 'ルナ', text: `どうか信じてください…${playerSpeaker}を…`},
-                {speaker: '商人', text: '信じる？評判が地に落ちてるんだぞ！'},
+                {speaker: '商人', text: '信じる？Reputationが地に落ちてるんだぞ！'},
                 {speaker: '群衆', text: '解散だ！解散！逮捕しろ！'},
                 {speaker: '群衆', text: 'ギルドを潰せ！'},
                 {speaker: '王国衛兵', text: '王命により、このギルドを即時解散する！'},
@@ -9739,16 +9806,7 @@ function queueBirthdayParty() {
     }
 }
 
-// === クエスト初回クリアでNPCをアンロック（spawnは遅延） ===
-function unlockQuestNPC(npcKey) {
-    if (!gameState.unlockedNPCs) gameState.unlockedNPCs = [];
-    if (gameState.unlockedNPCs.includes(npcKey)) return;
 
-    gameState.unlockedNPCs.push(npcKey);
-    
-
-
-}
 
 
 function renderNPCList() {
@@ -9760,9 +9818,8 @@ function renderNPCList() {
     if (unlocked.length === 0) {
         content.innerHTML = `
             <div style="text-align:center; padding:60px; color:#6c757d;">
-                <h3>チャット可能なNPC</h3>
-                <p style="font-size:1.2em;">まだ話せるNPCがいません。<br>
-                クエストをクリアしてNPCをアンロックしてください。</p>
+                <h3>${t('npcs_section_title')}</h3>
+                <p style="font-size:1.2em;">${t('npcs_no_unlocked_desc')}</p>
             </div>`;
         return;
     }
@@ -9770,7 +9827,7 @@ function renderNPCList() {
     let html = `
         <div style="max-width:800px; margin:0 auto; padding:20px;">
             <h2 style="text-align:center; margin-bottom:30px; color:#ffd700; text-shadow:0 0 10px rgba(0,0,0,0.8);">
-                チャット可能なNPC (${unlocked.length}人)
+                ${t('npcs_section_title')} (${unlocked.length}${t('npcs_count_suffix')})
             </h2>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">`;
 
@@ -9780,31 +9837,32 @@ function renderNPCList() {
 
         const isDiscovery = discoveryNPCs.includes(npcKey);
         const idx = discoveryNPCs.indexOf(npcKey);
+        console.log(`Images/${getNpcImageFile(npcKey)}.png`);
 
         html += `
             <div style="background:rgba(30,30,30,0.7); border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.6);">
                 <!-- 画像を固定高さコンテナで中央寄せ・完全収納 -->
                 <div style="height:220px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; margin-bottom:15px; background:#222;">
-                    <img src="Images/${npcKey}.png" alt="${npcKey}"
+                    <img src="Images/${getNpcImageFile(npcKey)}.png" alt="${npcKey}"
                          style="max-width:100%; max-height:100%; object-fit:contain;"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTQwIDE4MCI+PHJlY3Qgd2lkdGg9IjE0MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM3NDc0NzQiLz48dGV4dCB4PSI3MCIgeT0iOTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7nlLvlg4/jgarjgZc8L3RleHQ+PC9zdmc+'; this.onerror=null;">
                 </div>
                 <h3 style="color:#ffd700; margin:10px 0;">${npcKey}</h3>
-                <!-- 好感度表示（冒険者と同じように） -->
+                <!-- 好感度表示 -->
                 <div style="color:#ff6b6b; font-size:1.1em; margin:10px 0;">
-                    好感度: ${friendliness}/100
+                    ${t('friendliness_label')} ${friendliness}/100
                 </div>
                 <div style="margin:15px 0;">
                     <button onclick="openNpcChat('${npcKey}')" 
                             style="background:#3498db; color:white; padding:12px 24px; font-size:1.1em; border:none; border-radius:8px; cursor:pointer; margin:5px;">
-                        ${npcKey}と話す (AI)
+                        ${t('talk_to_ai_button', { name: npcKey })}
                     </button>`;
 
         if (isDiscovery && idx !== -1) {
             html += `
                     <button onclick="receiveSideQuest(${idx})" 
                             style="background:#27ae60; color:white; padding:12px 24px; font-size:1.1em; border:none; border-radius:8px; cursor:pointer; margin:5px;">
-                        サイドクエスト受注
+                        ${t('side_quest_accept_button')}
                     </button>`;
         }
 
@@ -9823,6 +9881,7 @@ function renderNPCList() {
 
 // === unlockQuestNPC を拡張（villageNPCsにデータ作成） ===
 async function unlockQuestNPC(npcKey) {
+    console.log("unlockQuestNPC:"+npcKey);
     if (!gameState.unlockedNPCs) gameState.unlockedNPCs = [];
     if (gameState.unlockedNPCs.includes(npcKey)) return;
 
@@ -9834,8 +9893,8 @@ async function unlockQuestNPC(npcKey) {
     gameState.villageNPCs[npcKey] = {
         name: npcKey,
         Friendliness: 50, // 初期好感度（酒場主人など恩がある場合は80など調整）
-        bag: { gold: 300, items: [] }, // 初期ゴールド（酒販売用に少し持たせる）
-        image: `${npcKey}.png`,
+        bag: { gold: 300, items: [] }, // 初期Gold（酒販売用に少し持たせる）
+        image: `${getNpcImageFile(npcKey)}.png`, 
     };
 
 // 個別初期設定があれば適用（なければデフォルトのまま）
@@ -10029,7 +10088,8 @@ function openQuestLog() {
 
     // questDefinitionsをIDでマップ（検索高速化）
     const questMap = {};
-    questDefinitions.forEach(def => {
+    const quests = questDefinitions[currentLang] || questDefinitions.ja;
+    quests.forEach(def => {
         questMap[def.id] = def;
     });
 
@@ -10038,7 +10098,7 @@ function openQuestLog() {
     const active = [];
     const undiscovered = [];
 
-    questDefinitions.forEach(def => {
+    quests.forEach(def => {
         const id = def.id;
         const name = def.name || '不明なクエスト';
 

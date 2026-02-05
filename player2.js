@@ -57,7 +57,7 @@ function showNpcTyping() {
     div.style.color = '#cccccc';
     div.style.fontSize = '1.1em';
     div.innerHTML = `
-        <strong>${currentNpcKey}:</strong>
+        <strong>${getNpcDisplayName(currentNpcKey)}:</strong>
         <span style="margin-left:8px; opacity:0.7;">typing</span>
         <div class="typing-indicator" style="display:inline-block; margin-left:8px;">
             <span></span><span></span><span></span>
@@ -201,7 +201,7 @@ async function spawnNpc(npcKey) {
             },
             {
                 name: "give_to_player",
-                description: "プレイヤーにゴールドやアイテムをあげる",
+                description: "プレイヤーにGoldやアイテムをあげる",
                 parameters: {
                     type: "object",
                     properties: {
@@ -213,7 +213,7 @@ async function spawnNpc(npcKey) {
             },
             {
                 name: "craft_item",
-                description: "バッグのアイテムやゴールドを使って新しいアイテムを作成する（品質は投資額に応じて自然に）",
+                description: "バッグのアイテムやGoldを使って新しいアイテムを作成する（品質は投資額に応じて自然に）",
                 parameters: {
                     type: "object",
                     properties: {
@@ -286,7 +286,7 @@ function startResponseListener() {
                     if (cmd.name === 'adjust_friendliness') {
                         const delta = Math.max(-20, Math.min(20, args.delta || 0));
                         entity.Friendliness = Math.max(0, Math.min(100, (entity.Friendliness || 70) + delta));
-                        better_alert(`${currentNpcKey}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
+                        better_alert(`${getNpcDisplayName(currentNpcKey)}の好感度 ${delta > 0 ? '+' : ''}${delta}`, "friendliness", { delta: delta });
                     }
 
                     if (cmd.name === 'give_to_player') {
@@ -298,7 +298,7 @@ function startResponseListener() {
                             if (giveGold > 0) {
                                 gameState.gold += giveGold;
                                 entity.bag.gold -= giveGold;
-                                better_alert(`${currentNpcKey}が${giveGold}ゴールドをくれた！`, 'success');
+                                better_alert(`${getNpcDisplayName(currentNpcKey)}が${giveGold}Goldをくれた！`, 'success');
                             }
                         }
 
@@ -348,7 +348,7 @@ function startResponseListener() {
                                 gameState.inventory.push(newItem);
                             }
 
-                            better_alert(`${currentNpcKey}が${targetName} x${giveQty}をくれた！`, 'success');
+                            better_alert(`${getNpcDisplayName(currentNpcKey)}が${targetName} x${giveQty}をくれた！`, 'success');
                         }
                         updateNpcBagDisplay();
                         populateGiftItems();
@@ -408,7 +408,7 @@ function startResponseListener() {
                             ...itemDetails
                         });
 
-                        better_alert(`${currentNpcKey}が${name}（${quality}品質）を作成した！`, 'success');
+                        better_alert(`${getNpcDisplayName(currentNpcKey)}が${name}（${quality}品質）を作成した！`, 'success');
                         updateNpcBagDisplay();
                     }
                 });
@@ -499,7 +499,7 @@ function updateGiftQtyMax() {
     }
 }
 
-// === 単一送信関数：メッセージ + ゴールド贈り物 + アイテム贈り物を1回のAPIコールで処理 ===
+// === 単一送信関数：メッセージ + Gold贈り物 + アイテム贈り物を1回のAPIコールで処理 ===
 async function submitChatAndGifts() {
     if (!currentNpcId || !currentNpcKey) return;
 
@@ -532,7 +532,7 @@ async function submitChatAndGifts() {
 
     // バリデーション
     if (goldAmount > 0 && goldAmount > gameState.gold) {
-        better_alert('ゴールドが不足しています', 'error');
+        better_alert('Goldが不足しています', 'error');
         return;
     }
     if (itemGift && itemQty > (itemGift.item.qty || 1)) {
@@ -549,7 +549,7 @@ async function submitChatAndGifts() {
     if (goldAmount > 0) {
         gameState.gold -= goldAmount;
         entity.bag.gold += goldAmount;
-        recentGiftInfos.push(`ゴールド ${goldAmount}`);
+        recentGiftInfos.push(`Gold ${goldAmount}`);
         goldInput.value = '';
     }
 
@@ -582,7 +582,7 @@ async function submitChatAndGifts() {
     }
     if (recentGiftInfos.length > 0) {
         const giftLog = recentGiftInfos.join(' と ');
-        appendPlayerMessage(`あなたは${currentNpcKey}に ${giftLog} を贈り物として渡した`);
+        appendPlayerMessage(`あなたは${getNpcDisplayName(currentNpcKey)}に ${giftLog} を贈り物として渡した`);
     }
 
     chatInput.value = '';
@@ -594,7 +594,7 @@ async function submitChatAndGifts() {
 
     const friendliness = entity.Friendliness || 70;
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+    const bagInfo = `${getNpcDisplayName(currentNpcKey)}のバッグ: Gold ${entity.bag.gold}, アイテム: ${itemList}.`;
     const questGuidance = getQuestGuidance();
 
     let recentGiftInfo = '';
@@ -607,7 +607,7 @@ async function submitChatAndGifts() {
     // 贈り物情報準備
     const giftedGold = goldAmount;
     const giftedItems = [];
-    if (goldAmount > 0) giftedItems.push({ name: "ゴールド", qty: goldAmount });
+    if (goldAmount > 0) giftedItems.push({ name: "Gold", qty: goldAmount });
     if (itemGift) giftedItems.push({ name: itemGift.item.name, qty: itemGift.qty });
 
     // プレイヤーメッセージでクエストチェック（keyword / keyword_and_itemのkeyword部分）
@@ -882,7 +882,7 @@ async function openNpcChat(npcKey) {
         }, 15000);
 
         const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-        const bagInfo = `${currentNpcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+        const bagInfo = `${getNpcDisplayName(currentNpcKey)}のバッグ: Gold ${entity.bag.gold}, アイテム: ${itemList}.`;
         const questGuidance = getQuestGuidance();
 
         const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
@@ -922,7 +922,8 @@ function getRelevantKeywords(npcKey) {
     // 1. アクティブなクエストのdiscoveredKeywordsを追加（既存）
     Object.keys(gameState.activeQuests).forEach(questId => {
         const qState = gameState.activeQuests[questId];
-        const def = questDefinitions.find(q => q.id === questId);
+        const quests = questDefinitions[currentLang] || questDefinitions.ja;
+        const def = quests.find(q => q.id === questId);
         if (!def) return;
 
         // このNPCが関わるクエストのみ
@@ -934,7 +935,8 @@ function getRelevantKeywords(npcKey) {
     });
 
     // 2. 新規追加: 未開始のクエストの開始キーワードを追加（最初のステージのnpcが一致する場合）
-    questDefinitions.forEach(def => {
+    const quests = questDefinitions[currentLang] || questDefinitions.ja;
+    quests.forEach(def => {
         const questId = def.id;
         // 既にアクティブ or 完了したクエストはスキップ
         if (gameState.activeQuests[questId] || gameState.completedQuests.includes(questId)) return;
@@ -1007,7 +1009,7 @@ function appendNpcMessage(text) {
         border: 1px solid #e0e0e0;
     `;
     messageDiv.innerHTML = `
-        <strong style="color:#333333; font-size:1.05em;">${currentNpcKey}:</strong><br>
+        <strong style="color:#333333; font-size:1.05em;">${getNpcDisplayName(currentNpcKey)}:</strong><br>
         <span style="line-height:1.5;">${text.replace(/\n/g, '<br>')}</span>
     `;
 
@@ -1103,6 +1105,6 @@ function updateNpcBagDisplay() {
 
     const display = document.getElementById('npcBagDisplay');
     if (display) {
-        display.innerHTML = `<strong>${currentNpcKey}のバッグ:</strong><br>ゴールド: ${bag.gold}<br>アイテム:<br>${itemList}`;
+        display.innerHTML = `<strong>${getNpcDisplayName(currentNpcKey)}のバッグ:</strong><br>Gold: ${bag.gold}<br>アイテム:<br>${itemList}`;
     }
 }

@@ -33,7 +33,7 @@ JSON形式（厳密にこの形式を守ってください）:
    - params: {"delta": 整数}  // -20～+20の範囲（例: +10, -5）
 
 2. give_to_player
-   - プレイヤーにゴールドやアイテムを渡す場合に使用。
+   - プレイヤーにGoldやアイテムを渡す場合に使用。
    - params: {"gold": 整数（オプション）, "items": [{"name": "アイテム名", "qty": 整数}, ...]（オプション）}
 
 3. craft_item
@@ -43,7 +43,7 @@ JSON形式（厳密にこの形式を守ってください）:
        "type": "potion" または "equipment",
        "subtype": "hp"/"mp"/"status_heal"（potionの場合） または "STR"/"WIS"/"DEX"/"LUC"/"defense"（equipmentの場合）,
        "quality": "excellent"/"good"/"normal"/"bad",
-       "consume_gold": 整数（消費ゴールド、0でも可）,
+       "consume_gold": 整数（消費Gold、0でも可）,
        "consume_items": [{"name": "素材名", "qty": 整数}, ...]（消費アイテム、オプション）
      }
 
@@ -52,7 +52,7 @@ JSON形式（厳密にこの形式を守ってください）:
 
 {"command": "adjust_friendliness", "params": {"delta": 10}}
 
-例（ゴールド100とHPポーション1個を渡す場合）:
+例（Gold100とHPポーション1個を渡す場合）:
 「これ、持ってけよ。役に立つだろ。」
 
 {"command": "give_to_player", "params": {"gold": 100, "items": [{"name": "HPポーション（小）", "qty": 1}]}}
@@ -106,12 +106,12 @@ function processOpenRouterCommands(fullResponse) {
                             const giveGold = Math.min(goldDelta, entity.bag.gold);
                             gameState.gold += giveGold;
                             entity.bag.gold -= giveGold;
-                            better_alert(`ゴールド +${giveGold} をもらった！`, 'success');
+                            better_alert(`Gold +${giveGold} をもらった！`, 'success');
                         } else if (goldDelta < 0) {
                             const payGold = Math.min(-goldDelta, gameState.gold);
                             gameState.gold -= payGold;
                             entity.bag.gold += payGold;
-                            better_alert(`ゴールド ${goldDelta} を支払った`, 'basic');
+                            better_alert(`Gold ${goldDelta} を支払った`, 'basic');
                         }
                     }
 
@@ -221,7 +221,9 @@ async function openOpenRouterChat(npcKey) {
     currentNpcKey_OR = npcKey;
 
     const titleEl = document.querySelector('#OpenrouterChatModal h2');
-    if (titleEl) titleEl.textContent = `${npcKey}と会話`;
+if (titleEl) {
+    titleEl.textContent = t('chat_with_npc', { npc: getNpcDisplayName(npcKey) });
+}
 
     const log = document.getElementById('openRouterChatLog');
     if (log) log.innerHTML = '';
@@ -251,7 +253,7 @@ async function openOpenRouterChat(npcKey) {
 
     const inputEl = document.getElementById('openRouterInput');
     inputEl.onfocus = () => {
-        const keywords = getRelevantKeywords(npcKey);
+        const keywords = getRelevantKeywords(npcKey); 
         if (keywords.length > 0) {
             suggestionsDiv.innerHTML = keywords.map(kw => 
                 `<button type="button" style="
@@ -311,7 +313,7 @@ async function openOpenRouterChat(npcKey) {
         showNpcTyping_OR();
 
         const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-        const bagInfo = `${npcKey}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+        const bagInfo = `${npcKey}のバッグ: Gold ${entity.bag.gold}, アイテム: ${itemList}.`;
         const questGuidance = getQuestGuidance();
 
         const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}. ${gameState.playerName}がこっちに来て、ちょっと話をしたいみたい. ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
@@ -355,6 +357,26 @@ function closeOpenRouterChat() {
     hideNpcTyping_OR();
 }
 
+const commonShortResponsePrompt = {
+  ja: `
+以上は指示です。あなたはロールプレイキャラクターとしてのみ話してください。
+応答は簡潔に。100文字以内に収め、自然で短い会話を優先してください。長文は絶対避ける。
+`.trim(),
+
+  en: `
+The above are instructions. Respond only as the roleplay character.
+Keep responses concise. Limit to 100 characters. Prioritize natural, short conversations. Absolutely avoid long texts.
+`.trim(),
+
+  zh: `
+以上為指示。你只能以角色扮演人物身份說話。
+回應要簡潔。控制在100字以內，優先自然、短小的對話。絕對避免長文。
+`.trim()
+};
+
+// 使用方式（ゲーム中某處）：
+const shortResponsePrompt = commonShortResponsePrompt[currentLang];
+
 // === Send Message to OpenRouter ===
 async function sendToOpenRouter(message, game_state_info) {
     if (!gameState.npcConversations_OR[currentNpcKey_OR]) {
@@ -368,7 +390,7 @@ async function sendToOpenRouter(message, game_state_info) {
 
     const config = npcConfigs[currentNpcKey_OR];
     const systemPrompt = config.system_prompt.replace(/{player}/g, gameState.playerName || 'あなた') 
-        + '\n' + game_state_info + "以上は指示です、あなたはロールプレイキャラクターとしてのみ話してください, 応答は簡潔に。100文字以内に収め、自然で短い会話を優先してください。長文は絶対避ける。"
+        + '\n' + game_state_info + shortResponsePrompt
         + '\n' + commandInstruction;
 
     try {
@@ -430,7 +452,7 @@ async function submitChatAndGifts_OR() {
             const giveGold = Math.min(goldAmount, gameState.gold);
             entity.bag.gold += giveGold;
             gameState.gold -= giveGold;
-            recentGiftInfo += ` ゴールド ${giveGold}`;
+            recentGiftInfo += ` Gold ${giveGold}`;
         }
         if (itemGift) {
             const playerItem = gameState.inventory.find(it => it.name === itemGift.name);
@@ -459,9 +481,9 @@ async function submitChatAndGifts_OR() {
     const friendliness = entity.Friendliness || 70;
     const daysSinceLast = gameState.day - (gameState.lastNpcChatDay[currentNpcKey_OR] || 0);
     const itemList = entity.bag.items.map(it => `${it.name} x${it.qty || 1}`).join(", ") || "none";
-    const bagInfo = `${currentNpcKey_OR}のバッグ: ゴールド ${entity.bag.gold}, アイテム: ${itemList}.`;
+    const bagInfo = `${currentNpcKey_OR}のバッグ: Gold ${entity.bag.gold}, アイテム: ${itemList}.`;
     const questGuidance = getQuestGuidance();
-
+    console.log(questGuidance);
     const game_state_info = `${languageInstruction} 好感度: ${friendliness}/100. 前回話してから経った日数: ${daysSinceLast}.${recentGiftInfo ? ' ' + recentGiftInfo : ''} ${bagInfo}${questGuidance ? ' ' + questGuidance : ''}`;
 
     let aiResponse = await sendToOpenRouter(message, game_state_info);
@@ -724,7 +746,7 @@ function updateNpcBagDisplay_OR() {
 
     const display = document.getElementById('npcBagDisplay_OR');
     if (display) {
-        display.innerHTML = `<strong>${currentNpcKey_OR}のバッグ:</strong><br>ゴールド: ${bag.gold}<br>アイテム:<br>${itemList}`;
+        display.innerHTML = `<strong>${currentNpcKey_OR}のバッグ:</strong><br>Gold: ${bag.gold}<br>アイテム:<br>${itemList}`;
     }
 }
 

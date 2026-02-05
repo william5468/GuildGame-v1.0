@@ -1600,7 +1600,7 @@ const QuestCompletionDialogue = {
             {speaker: '{PLAYER}', text: 'Glad everything\'s okay. Here\'s your reward. If I send Kaito next time, you might get covered in slime.'},
             {speaker: 'Kaito', text: 'Yes! My turn next!'},
             {speaker: 'Luna', text: 'Please... spare me that...'}
-        ]
+        ],
         // 1: Exterminate Giant Rats (Client: Tavern Owner)
 [
             {speaker: 'Luna', text: 'All the giant rats in the tavern basement have been exterminated.'},
@@ -1634,27 +1634,27 @@ const QuestCompletionDialogue = {
         [
           {speaker: "Adventurer", text: "I eliminated all 8 goblins ambushing on the road... They were pretty persistent and tiring."},
           {speaker: "Kaito", text: "8 goblins!? Nice! I'd have cut down 10 easy! Take me next time, no excuses!"},
-          {speaker: "Guild Master", text: "Kaito, cool it. Let's report to the guard."},
+          {speaker: '{PLAYER}', text: "Kaito, cool it. Let's report to the guard."},
           {speaker: "Guard", text: "You took out 8 goblins! The road is safe now... Bragging about 10 is a bit much, huh? Thanks, adventurer!"},
-          {speaker: "Guild Master", text: "Take your reward. Kaito, get ready—I really will bring you next time."}
+          {speaker: '{PLAYER}', text: "Take your reward. Kaito, get ready—I really will bring you next time."}
         ],
         // 1: Eliminate 5 Bandits (Client: Merchant)
         [
           {speaker: "Adventurer", text: "I took out the 5 bandits hiding in the forest... Fighting humans made me tense."},
           {speaker: "Kaito", text: "Bandits!? Human or not, my sword doesn't care—I'd wipe them all out! My turn next!"},
           {speaker: "Luna", text: "Kaito, that's a bit scary... But yeah, they're trouble."},
-          {speaker: "Guild Master", text: "Both of you, quiet. Let's report to the merchant."},
+          {speaker: '{PLAYER}', text: "Both of you, quiet. Let's report to the merchant."},
           {speaker: "Merchant", text: "You eliminated all 5 bandits! Business can be safe again. I'm truly grateful, thank you!"},
-          {speaker: "Guild Master", text: "Here's the reward. Kaito, try not to scare anyone next time."}
+          {speaker: '{PLAYER}', text: "Here's the reward. Kaito, try not to scare anyone next time."}
         ],
         // 2: Kill 1 Giant Spider (Client: Villager)
         [
           {speaker: "Adventurer", text: "I defeated the giant spider lurking in the cave... Getting tangled in webs was the worst."},
           {speaker: "Kaito", text: "Giant spider!? Sounds strong! I'd have skewered it with my sword!"},
           {speaker: "Luna", text: "Spider silk is great magic material... What a waste."},
-          {speaker: "Guild Master", text: "Luna, think about materials later. Let's tell the villager."},
+          {speaker: '{PLAYER}', text: "Luna, think about materials later. Let's tell the villager."},
           {speaker: "Villager", text: "You beat the giant spider! The cave isn't scary anymore. Thank you so much!"},
-          {speaker: "Guild Master", text: "Take your reward. Maybe next time collect some silk?"}
+          {speaker: '{PLAYER}', text: "Take your reward. Maybe next time collect some silk?"}
         ]
       ],
       'D': [
@@ -1663,80 +1663,105 @@ const QuestCompletionDialogue = {
           {speaker: "Adventurer", text: "I wiped out the 10 orcs threatening the village... The stench was awful."},
           {speaker: "Kaito", text: "10 orcs!? Awesome! My sword would be singing! Take me next time!"},
           {speaker: "Luna", text: "Kaito, orc smell can't be removed even with magic..."},
-          {speaker: "Guild Master", text: "Both quiet. Report to the chief."},
+          {speaker: '{PLAYER}', text: "Both quiet. Report to the chief."},
           {speaker: "Village Chief", text: "You destroyed the orc pack! The village is saved... I'll endure the smell! Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Bringing Kaito next might make the whole village smell like orc."}
+          {speaker: '{PLAYER}', text: "Reward. Bringing Kaito next might make the whole village smell like orc."}
         ],
         // 1: Kill 1 Troll (Client: Bridge Keeper)
         [
           {speaker: "Adventurer", text: "I defeated the troll occupying the bridge... Its regeneration made it tough."},
           {speaker: "Kaito", text: "A troll!? The regenerating kind! I'd have burned it to ash! My turn next!"},
-          {speaker: "Guild Master", text: "Kaito, fire would burn the bridge too. Report to the keeper."},
+          {speaker: '{PLAYER}', text: "Kaito, fire would burn the bridge too. Report to the keeper."},
           {speaker: "Bridge Keeper", text: "You killed the troll! The bridge is safe... but no fire, please! Thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward. Next time, no fire."}
+          {speaker: '{PLAYER}', text: "Reward. Next time, no fire."}
         ],
         // 2: Kill Wolf King + Pack (Client: Hunter)
         [
           {speaker: "Adventurer", text: "I hunted the wolf king and its pack deep in the forest... The howling still rings in my ears."},
           {speaker: "Kaito", text: "Wolf king!? Cool! I wanted to fight the whole pack!"},
           {speaker: "Luna", text: "Kaito, getting bitten would be bad."},
-          {speaker: "Guild Master", text: "Quiet, you two. Report to the hunter."},
+          {speaker: '{PLAYER}', text: "Quiet, you two. Report to the hunter."},
           {speaker: "Hunter", text: "You took down the wolf king and pack! The forest is at peace. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Taking Kaito next might turn it into a howling concert."}
+          {speaker: '{PLAYER}', text: "Reward. Taking Kaito next might turn it into a howling concert."}
         ]
       ]},{
-      'F': [
-        // 0: Find Pendant
-        [
-          {speaker: "Adventurer", text: "I found the precious pendant that was lost in town."},
-          {speaker: "Luna", text: "Hehe, I might have found it faster. But good job!"},
-          {speaker: "Guild Master", text: "Luna, no bragging. Return it to the old lady."},
-          {speaker: "Old Lady", text: "You found my lost pendant... It holds dear memories. Tears are coming... Thank you so much!"},
-          {speaker: "Guild Master", text: "Take your reward. Luna, want a finding contest next time?"}
+        'F': [
+            // 0: Pendant Search
+            [
+                {speaker: 'Luna', text: 'We safely found the old lady\'s lost pendant in town! It had fallen under a stone in the back alley.'},
+                {speaker: '{PLAYER}', text: 'Nice job finding it, Luna. You\'re really good at searching the details.'},
+                {speaker: 'Kaito', text: 'Heh, if it were me, I\'d have sniffed it out in a second! Luna, that was just luck, right?'},
+                {speaker: 'Luna', text: 'Hehe, Kaito couldn\'t do it. You have to think carefully♪'},
+                {speaker: 'Kaito', text: 'What!? ...Hey, this carving... I feel like I\'ve seen it before. It\'s from the old guild master...'},
+                {speaker: 'Luna', text: `K-Kaito! Not now! {PLAYER}, let\'s hurry and return it to the old lady.`},
+                {speaker: '{PLAYER}', text: '...From the guild master? Whatever, I\'ll ask later. Here\'s your pendant, ma\'am.'},
+                {speaker: 'Grandmother', text: 'Oh, my precious pendant...! This carving is from the harvest festival long ago. A memory from peaceful times with no war rumors...'},
+                {speaker: 'Grandmother', text: 'I\'ve been worried hearing soldiers are moving at the border again lately. Thank you so much—I\'m tearing up...'},
+                {speaker: '{PLAYER}', text: 'I\'m glad it\'s safe. Here\'s your reward. Please treasure those festival memories.'},
+                {speaker: 'Kaito', text: 'Border talk, huh... I heard from travelers that the kingdom\'s army is being reinforced.'},
+                {speaker: 'Luna', text: '{PLAYER}, we need to stay on our guard too...'},
+                {speaker: '{PLAYER}', text: 'Yeah, you\'re right. I\'m starting to get curious about the past little by little.'}
+            ],
+            // 1: Hidden Treasure Chest Discovery
+            [
+                {speaker: 'Kaito', text: 'Found the hidden treasure chest in the forest! It was buried under tree roots... but only 3 gold coins inside!?'},
+                {speaker: '{PLAYER}', text: 'Finding it at all is impressive, Kaito. Even small things have value.'},
+                {speaker: 'Luna', text: 'Kaito, you expected too much. These old coins are from the royal era—they\'re rare.'},
+                {speaker: 'Kaito', text: `Tch, I imagined a mountain of treasure... Hey? This spot is where the old guild master used to play hide-and-seek with {PLAYER}...`},
+                {speaker: 'Luna', text: 'Kaito! Don\'t say unnecessary things! Let\'s report to the villager.'},
+                {speaker: '{PLAYER}', text: 'Hide-and-seek...? Did I play here as a kid?'},
+                {speaker: 'Kaito', text: 'O-Oops! Forget I said that! The villager\'s waiting!'},
+                {speaker: 'Villager', text: 'You really found the hidden treasure chest! The legend I heard as a kid was true. Keep the contents as your reward!'},
+                {speaker: 'Villager', text: 'These old coins are from the royal era. Lately there\'s talk about royal bloodlines, and everyone\'s buzzing about it.'},
+                {speaker: '{PLAYER}', text: 'Glad the legend was real. Here\'s your reward. The royal talk is interesting.'},
+                {speaker: 'Luna', text: `{PLAYER}, does this place feel familiar? Like something you might remember?`},
+                {speaker: 'Kaito', text: 'Take your time. We\'re always with you.'},
+                {speaker: '{PLAYER}', text: '...Yeah, it gives me a warm feeling. Thanks.'}
+            ],
+            // 2: Well Secret
+            [
+                {speaker: 'Luna', text: 'We discovered the secret at the bottom of the old well! An ancient magic circle was glowing under the moss.'},
+                {speaker: '{PLAYER}', text: 'That was dangerous, right? I\'m glad you\'re safe, Luna. Good job diving down.'},
+                {speaker: 'Kaito', text: 'A magic circle!? Awesome! I wanted to jump in too—well bottoms feel adventurous!'},
+                {speaker: 'Luna', text: 'Kaito, you\'d die if you fell... Oh, {PLAYER} used to here too...'},
+                {speaker: 'Kaito', text: `Yeah! The old guild master jumped in to save {PLAYER}! ...Oops, I said it!`},
+                {speaker: '{PLAYER}', text: 'I fell in the well...? Is that why my memories...?'},
+                {speaker: 'Luna', text: 'Let\'s report to the scholar first! The magic circle has been glowing strongly lately.'},
+                {speaker: 'Scholar', text: 'You uncovered the well\'s magic circle! Amazing! It\'s an ancient sealing array—I\'m thrilled!'},
+                {speaker: 'Scholar', text: 'There are reports of similar arrays reacting in the capital recently. There might be a major magical disturbance... This is a huge discovery!'},
+                {speaker: '{PLAYER}', text: 'Magical disturbance, huh... That\'s concerning. Here\'s your reward. Keep researching.'},
+                {speaker: 'Kaito', text: 'Are monsters getting stronger because of the disturbance? Things are heating up!'},
+                {speaker: 'Luna', text: `{PLAYER}, about the old well story... I\'ll tell you properly someday.`},
+                {speaker: '{PLAYER}', text: 'Yeah, please do. I feel like memories are starting to come back bit by bit.'},
+                {speaker: 'Kaito', text: `We\'ve got your back, {PLAYER}!`}
+            ]
         ],
-        // 1: Find Hidden Treasure Chest
-        [
-          {speaker: "Adventurer", text: "I discovered a small hidden treasure chest in the nearby forest."},
-          {speaker: "Luna", text: "The hint was probably at the tree roots, right? Just as I deduced~"},
-          {speaker: "Guild Master", text: "Luna, explain later. Report to the villager first."},
-          {speaker: "Villager", text: "You found the hidden forest chest! How did you notice that spot? The contents are your reward—take them!"},
-          {speaker: "Guild Master", text: "Good reward. Luna's deduction fee is extra."}
-        ],
-        // 2: Well Secret
-        [
-          {speaker: "Adventurer", text: "I found the secret at the bottom of the old well."},
-          {speaker: "Luna", text: "A well secret... Maybe an ancient magic circle? It's in my book!"},
-          {speaker: "Guild Master", text: "Luna, too excited. Tell the scholar."},
-          {speaker: "Scholar", text: "You uncovered the well's secret! An old mystery solved—fascinating! Thanks for the report!"},
-          {speaker: "Guild Master", text: "Here's the reward. Luna, book club next time?"}
-        ]
-      ],
       'F+': [
         // 0: Cave Behind Waterfall (Client: Explorer)
         [
           {speaker: "Adventurer", text: "I found the hidden cave behind the forest waterfall... Got completely soaked from the spray."},
           {speaker: "Luna", text: "Behind a waterfall!? So romantic~ Must be a hidden ruin!"},
           {speaker: "Kaito", text: "Water? Pass—I hate getting wet."},
-          {speaker: "Guild Master", text: "Quiet, you two. Report to the explorer."},
+          {speaker: '{PLAYER}', text: "Quiet, you two. Report to the explorer."},
           {speaker: "Explorer", text: "You found the cave behind the waterfall! New adventures can begin. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Next time, Kaito gets wet too."}
+          {speaker: '{PLAYER}', text: "Reward. Next time, Kaito gets wet too."}
         ],
         // 1: Hidden Basement in Old House (Client: Homeowner)
         [
           {speaker: "Adventurer", text: "I located the hidden basement in the old house... Covered in dust, can't stop sneezing."},
           {speaker: "Luna", text: "Hidden basement!? Secret library or treasure vault—my deduction was spot on!"},
-          {speaker: "Guild Master", text: "Luna, brag later. Report to the homeowner."},
+          {speaker: '{PLAYER}', text: "Luna, brag later. Report to the homeowner."},
           {speaker: "Homeowner", text: "You found the hidden basement! My ancestors' secrets can finally be uncovered. Thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward. Luna, cleaning duty next."}
+          {speaker: '{PLAYER}', text: "Reward. Luna, cleaning duty next."}
         ],
         // 2: Hidden Hut Along River (Client: Fisherman)
         [
           {speaker: "Adventurer", text: "I found the hidden hut along the river... So many bugs, it was rough."},
           {speaker: "Luna", text: "Hidden hut... Maybe a smuggler's hideout? Sounds interesting!"},
           {speaker: "Kaito", text: "Bugs!? I'd have crushed them all!"},
-          {speaker: "Guild Master", text: "You two overthinking. Report to the fisherman."},
+          {speaker: '{PLAYER}', text: "You two overthinking. Report to the fisherman."},
           {speaker: "Fisherman", text: "You found my old hidden hut by the river! The tools inside are still usable. Really helps—thanks!"},
-          {speaker: "Guild Master", text: "Reward. Bring bug repellent next time."}
+          {speaker: '{PLAYER}', text: "Reward. Bring bug repellent next time."}
         ]
       ],
       'D': [
@@ -1745,86 +1770,108 @@ const QuestCompletionDialogue = {
           {speaker: "Adventurer", text: "I discovered the entrance to a small ruin on the nearby hill... Lots of traps."},
           {speaker: "Luna", text: "Ruin entrance!? The patterns match my book—definitely ancient magic!"},
           {speaker: "Kaito", text: "Traps... I'd have smashed them all!"},
-          {speaker: "Guild Master", text: "Calm down, both. Report to the archaeologist."},
+          {speaker: '{PLAYER}', text: "Calm down, both. Report to the archaeologist."},
           {speaker: "Archaeologist", text: "You found the small ruin entrance! New discoveries await. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Next time, Luna disarms traps with magic."}
+          {speaker: '{PLAYER}', text: "Reward. Next time, Luna disarms traps with magic."}
         ],
         // 1: Hidden Bandit Camp (Client: Guard Captain)
         [
           {speaker: "Adventurer", text: "I located the bandits' hidden camp... Security was tight."},
           {speaker: "Luna", text: "Camp location... Just as I deduced from the terrain!"},
-          {speaker: "Guild Master", text: "Luna, brag later. Report to the captain."},
+          {speaker: '{PLAYER}', text: "Luna, brag later. Report to the captain."},
           {speaker: "Guard Captain", text: "You found the bandits' hidden camp! We can wipe them out now. Thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward. Next time, Luna's deduction wipes them out?"}
+          {speaker: '{PLAYER}', text: "Reward. Next time, Luna's deduction wipes them out?"}
         ],
         // 2: Missing Caravan Wreckage (Client: Merchant Guild Leader)
         [
           {speaker: "Adventurer", text: "I found the wreckage of the missing caravan... It was a sad sight."},
           {speaker: "Luna", text: "Caravan wreckage... Are the goods intact? I want the merchant records."},
-          {speaker: "Guild Master", text: "Luna, think of the bereaved. Report to the guild leader."},
+          {speaker: '{PLAYER}', text: "Luna, think of the bereaved. Report to the guild leader."},
           {speaker: "Merchant Guild Leader", text: "You found the caravan wreckage... Now we know the truth. Thank you so much."},
-          {speaker: "Guild Master", text: "Reward. Hope it brings some closure."}
+          {speaker: '{PLAYER}', text: "Reward. Hope it brings some closure."}
         ]
       ]
       // Higher ranks to be added later
     },// 2: DEX - escort quests (English - only F, F+, D ranks)
     {
-      'F': [
-        // 0: Escort Farmer
-        [
-          {speaker: "Adventurer", text: "I safely escorted the farmer to the nearby market."},
-          {speaker: "Kaito", text: "Nothing happened on the way? Boring!"},
-          {speaker: "Luna", text: "Kaito, nothing happening is the best outcome."},
-          {speaker: "Guild Master", text: "Quiet, you two. Farmer, how was it?"},
-          {speaker: "Farmer", text: "I made it to the market safely. No scary moments—really helped! Thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward. Bringing Kaito next might make it... exciting."}
+        'F': [
+            // 0: Farmer Escort
+            [
+                {speaker: 'Kaito', text: 'Escorted the farmer to the market safely! Nothing happened on the way—super boring trip!'},
+                {speaker: '{PLAYER}', text: 'Safe is best, Kaito. Peace is what matters.'},
+                {speaker: 'Luna', text: 'Kaito, it\'s good nothing happened. If you started fighting, the farmer would suffer.'},
+                {speaker: 'Kaito', text: `Hey, the farmer wanted to see me in action, right!? ...This road is where the old guild master used to escort caravans...`},
+                {speaker: 'Luna', text: 'Kaito! Not now! {PLAYER}, let\'s report to the farmer.'},
+                {speaker: '{PLAYER}', text: 'Caravan escort...? My father? I\'ll ask later. Farmer, we arrived safely.'},
+                {speaker: 'Farmer', text: 'Thank you so much! Bandits have increased on trade routes lately—I couldn\'t go alone. Sold high at the market!'},
+                {speaker: 'Farmer', text: 'There\'s talk of taxes rising at the border too—prices might skyrocket... You really saved me!'},
+                {speaker: '{PLAYER}', text: 'More bandits, huh... Dangerous. Here\'s your reward. Be careful going home.'},
+                {speaker: 'Kaito', text: 'Tax hike? Kingdom gathering money for war prep? Things are getting interesting!'},
+                {speaker: 'Luna', text: '{PLAYER}, are you curious about the old escort stories?'},
+                {speaker: '{PLAYER}', text: 'Yeah, this road feels nostalgic somehow. I want to know more.'},
+                {speaker: 'Kaito', text: 'Heh, take your time remembering. We\'re with you!'}
+            ],
+            // 1: Child Escort (Client: Parent)
+            [
+                {speaker: 'Luna', text: 'Safely escorted the child across the dangerous bridge and home! I even held their hand~.'},
+                {speaker: '{PLAYER}', text: 'So kind, Luna. The kid must have been happy. Good work.'},
+                {speaker: 'Kaito', text: 'Just crossing a bridge!? I would\'ve given the kid a wooden sword and played monster hunting!'},
+                {speaker: 'Luna', text: `Kaito, that\'s dangerous! The child would be scared... Oh, this bridge is where {PLAYER} as a kid...`},
+                {speaker: 'Kaito', text: `Yeah! The old guild master carried {PLAYER} across! ...I let that slip!`},
+                {speaker: '{PLAYER}', text: 'I was on this bridge...? Carried across? Tell me more.'},
+                {speaker: 'Luna', text: 'Let\'s report to the parents first! Monsters have been appearing near the bridge lately.'},
+                {speaker: 'Parent', text: 'The child is home safe! That crumbling bridge—I was too scared to go alone... Thank you so much!'},
+                {speaker: 'Parent', text: 'Accidents have increased lately, and monsters are getting closer—everyone in the village is talking about it. You were the right choice!'},
+                {speaker: '{PLAYER}', text: 'Monsters approaching... We need to be careful. Here\'s your reward. Take care of the child.'},
+                {speaker: 'Kaito', text: 'Bridge accidents? Probably monster-related. Next time I\'ll protect the kid in style!'},
+                {speaker: 'Luna', text: '{PLAYER}, does the bridge memory feel like it might come back?'},
+                {speaker: '{PLAYER}', text: '...Yeah, the wind and everything feels nostalgic. Thanks.'}
+            ],
+            // 2: Messenger Escort (Client: Village Chief)
+            [
+                {speaker: 'Kaito', text: 'Messenger escort complete! Not even one spy showed up—total letdown!'},
+                {speaker: '{PLAYER}', text: 'Good that it arrived safely, Kaito. Peace is best.'},
+                {speaker: 'Luna', text: 'Kaito, you imagine too much. The messenger was relieved too.'},
+                {speaker: 'Kaito', text: 'If a spy appeared I\'d cut them down in one slash! ...This road is where the old guild master carried important letters...'},
+                {speaker: 'Luna', text: `Kaito! Wrong timing! {PLAYER}, let\'s report to the village chief.`},
+                {speaker: '{PLAYER}', text: 'Important letters...? My father? Interesting. Chief, it arrived safely.'},
+                {speaker: 'Village Chief', text: 'The messenger and letter arrived safely! This seals our village alliance. Truly grateful!'},
+                {speaker: 'Village Chief', text: 'With political upheaval rumors in the capital, protecting such an important document... Your guild is reliable!'},
+                {speaker: '{PLAYER}', text: 'Alliance and upheaval... The world might change. Here\'s your reward. Glad we could help.'},
+                {speaker: 'Kaito', text: 'Upheaval!? King changing? I can feel adventure coming!'},
+                {speaker: 'Luna', text: `{PLAYER}, do you want to hear the old letter escort stories someday?`},
+                {speaker: 'Kaito', text: `Yeah, {PLAYER}. We know everything!`},
+                {speaker: '{PLAYER}', text: 'Yeah, please. My past is starting to come into view... I\'m looking forward to it.'},
+                {speaker: 'Luna', text: 'Hehe, we\'re happy too. Let\'s remember together♪'}
+            ]
         ],
-        // 1: Escort Child
-        [
-          {speaker: "Adventurer", text: "I safely escorted the child across the dangerous bridge home."},
-          {speaker: "Luna", text: "Kids are so cute~ I wanted to give them sweets."},
-          {speaker: "Kaito", text: "I wanted to practice swordplay with them!"},
-          {speaker: "Guild Master", text: "Behave in front of kids. Check with the parent."},
-          {speaker: "Parent", text: "You brought my child home safely! I was worried sick... I can't thank you enough."},
-          {speaker: "Guild Master", text: "Reward. Your kindness came through."}
-        ],
-        // 2: Escort Messenger
-        [
-          {speaker: "Adventurer", text: "I safely guarded the messenger delivering the letter."},
-          {speaker: "Kaito", text: "No spies showed up? If they did, I'd have slashed them!"},
-          {speaker: "Luna", text: "Kaito, peace is best."},
-          {speaker: "Guild Master", text: "You two... Report to the village chief."},
-          {speaker: "Village Chief", text: "The letter arrived safely thanks to your guard. It was important—the village is saved. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Taking you two next might turn it dramatic."}
-        ]
-      ],
       'F+': [
         // 0: Escort Merchant (Goblin Road)
         [
           {speaker: "Adventurer", text: "I escorted the merchant to the next town. Goblin road, but safe."},
           {speaker: "Kaito", text: "Goblins showed up and you didn't call me!? Next time, no excuses!"},
           {speaker: "Luna", text: "If Kaito went, the merchant would run in fear."},
-          {speaker: "Guild Master", text: "Both noisy. Merchant, your thoughts?"},
+          {speaker: '{PLAYER}', text: "Both noisy. Merchant, your thoughts?"},
           {speaker: "Merchant", text: "We passed the goblin road safely! You were reliable—thank you, adventurer!"},
-          {speaker: "Guild Master", text: "Reward. Taking Kaito next might lead to price hikes."}
+          {speaker: '{PLAYER}', text: "Reward. Taking Kaito next might lead to price hikes."}
         ],
         // 1: Escort Traveler Group
         [
           {speaker: "Adventurer", text: "I safely guarded the traveler group through the forest road."},
           {speaker: "Luna", text: "The travelers seemed to enjoy it? I wanted souvenir stories~"},
           {speaker: "Kaito", text: "Forest? I'd have made an iron defense! Call me next!"},
-          {speaker: "Guild Master", text: "You're tourists yourselves. Report to the group leader."},
+          {speaker: '{PLAYER}', text: "You're tourists yourselves. Report to the group leader."},
           {speaker: "Traveler Leader", text: "You got us safely through the forest! It was scary but fun thanks to you!"},
-          {speaker: "Guild Master", text: "Reward. Next time, tour guide duty?"}
+          {speaker: '{PLAYER}', text: "Reward. Next time, tour guide duty?"}
         ],
         // 2: Escort Caravan
         [
           {speaker: "Adventurer", text: "I safely protected the cargo caravan from bandits."},
           {speaker: "Kaito", text: "Bandits appeared!? I'd have wiped them all—damn, missed it!"},
           {speaker: "Luna", text: "Kaito, damaged cargo would be bad. Safe is best."},
-          {speaker: "Guild Master", text: "Quiet. Report to the caravan leader."},
+          {speaker: '{PLAYER}', text: "Quiet. Report to the caravan leader."},
           {speaker: "Caravan Leader", text: "You protected the cargo from bandits! Business can continue—thank you!"},
-          {speaker: "Guild Master", text: "Reward. Kaito, next bandit hunt is yours."}
+          {speaker: '{PLAYER}', text: "Reward. Kaito, next bandit hunt is yours."}
         ]
       ],
       'D': [
@@ -1833,87 +1880,109 @@ const QuestCompletionDialogue = {
           {speaker: "Adventurer", text: "I safely escorted the noble to the neighboring town... Assassin vibes kept me on edge."},
           {speaker: "Kaito", text: "Assassins!? If they showed, I'd have cut them down instantly! Take me next!"},
           {speaker: "Luna", text: "Kaito would scare the noble into fleeing..."},
-          {speaker: "Guild Master", text: "Quiet. Noble, how was the trip?"},
+          {speaker: '{PLAYER}', text: "Quiet. Noble, how was the trip?"},
           {speaker: "Noble", text: "I arrived safely in the next town. Assassin rumors, but no fear thanks to you. Grateful!"},
-          {speaker: "Guild Master", text: "Reward. Taking Kaito next might cause... negotiations."}
+          {speaker: '{PLAYER}', text: "Reward. Taking Kaito next might cause... negotiations."}
         ],
         // 1: Return Injured Soldier (Client: Medic)
         [
           {speaker: "Adventurer", text: "I escorted the injured soldier from the front line to camp... Battlefield air was heavy."},
           {speaker: "Luna", text: "Injured soldier... I wanted to cast healing magic. Should have gone."},
           {speaker: "Kaito", text: "Battlefield!? I'd have cleared all enemies!"},
-          {speaker: "Guild Master", text: "Read the room. Report to the medic."},
+          {speaker: '{PLAYER}', text: "Read the room. Report to the medic."},
           {speaker: "Medic", text: "You safely brought the injured soldier! A life saved—thank you!"},
-          {speaker: "Guild Master", text: "Reward. Luna's magic could heal everyone next time?"}
+          {speaker: '{PLAYER}', text: "Reward. Luna's magic could heal everyone next time?"}
         ],
         // 2: Escort Scholar to Ruin (Client: Scholar)
         [
           {speaker: "Adventurer", text: "I escorted the scholar to the dangerous ruin... Too many traps, nerve-wracking."},
           {speaker: "Luna", text: "Ruin traps!? I'd have disarmed them all~ Scholar must be thrilled."},
           {speaker: "Kaito", text: "Traps? I'd smash through!"},
-          {speaker: "Guild Master", text: "Don't crush the scholar. Scholar, impressions?"},
+          {speaker: '{PLAYER}', text: "Don't crush the scholar. Scholar, impressions?"},
           {speaker: "Scholar", text: "We reached the ruin safely. Impossible without your guard. Thank you!"},
-          {speaker: "Guild Master", text: "Reward. Taking you two next might collapse the ruin."}
+          {speaker: '{PLAYER}', text: "Reward. Taking you two next might collapse the ruin."}
         ]
       ]
       // Higher ranks to be added later
     },// 3: LUC - fetch quests (English - only F, F+, D ranks)
     {
-      'F': [
-        // 0: Collect Herbs
-        [
-          {speaker: "Adventurer", text: "I collected the herbs requested for the alchemist."},
-          {speaker: "Luna", text: "These herbs are perfect for healing potions! I want some too~"},
-          {speaker: "Guild Master", text: "Luna, you'll get some later. Show the alchemist."},
-          {speaker: "Alchemist", text: "You gathered all these herbs properly! I can make new potions now. Really helps—thanks!"},
-          {speaker: "Guild Master", text: "Take your reward. Luna's potion experiments later."}
+        'F': [
+            // 0: Herb Gathering
+            [
+                {speaker: 'Luna', text: 'We gathered all the herbs the alchemist requested! They\'re super fresh~.'},
+                {speaker: '{PLAYER}', text: 'Good work, Luna. You went deep into the forest, right? Thanks for the effort.'},
+                {speaker: 'Kaito', text: 'Herbs, huh. I might\'ve trampled them! But if they make potions, not bad.'},
+                {speaker: 'Luna', text: 'Kaito, with these we can make powerful healing potions! They\'re precious lately with magic thinning out.'},
+                {speaker: '{PLAYER}', text: 'Magic thinning? I heard monsters have been weaker lately...'},
+                {speaker: 'Kaito', text: 'Then can\'t we make a magic amplification potion? If I coat my sword it\'d be invincible!'},
+                {speaker: 'Luna', text: 'Interesting idea! But it might explode and scare me... Let\'s ask the alchemist.'},
+                {speaker: 'Alchemist', text: 'Perfect herbs! I can make 20 regular healing potions with these. Materials have skyrocketed lately with magic depletion... You saved me!'},
+                {speaker: 'Alchemist', text: 'Magic amplifier? Great idea! It might explode if it fails, but if successful it could revolutionize weapon enhancement. Worth experimenting!'},
+                {speaker: '{PLAYER}', text: 'If the experiment works, share some with the guild. Here\'s your reward. Looking forward to it.'},
+                {speaker: 'Kaito', text: 'Yes! The day my sword becomes invincible might come!'},
+                {speaker: 'Luna', text: '{PLAYER}, let\'s prioritize healing potions please♪'},
+                {speaker: '{PLAYER}', text: 'Haha, got it. Feels like the world might change.'}
+            ],
+            // 1: Mushroom Gathering for Cook
+            [
+                {speaker: 'Kaito', text: 'Gathered tons of fresh mushrooms for the cook! Tonight\'s a mushroom festival, right!?'},
+                {speaker: '{PLAYER}', text: 'That\'s way too many, Kaito. How did you gather so much? Good work.'},
+                {speaker: 'Luna', text: 'These mushrooms smell amazing! Regular soup will become a feast~.'},
+                {speaker: 'Kaito', text: 'I want grilled mushrooms! The kind that recovers 250 HP for adventurers!'},
+                {speaker: 'Luna', text: 'Grilled mushrooms? Great idea! With this year\'s bumper crop, they\'re perfect for preserved food too.'},
+                {speaker: '{PLAYER}', text: 'Bumper crop year, huh. That\'s why the village has been lively... Festival prep is advancing too.'},
+                {speaker: 'Kaito', text: 'Festival!? If there\'s a mushroom cooking contest I\'d win! Gotta think of new recipes!'},
+                {speaker: 'Cook', text: 'Wonderful mushrooms! Tonight\'s banquet menu is decided. With this harvest everyone can eat their fill!'},
+                {speaker: 'Cook', text: 'Stamina dish idea? I\'ll develop one for adventurers! Mushroom drying powder would work for long-term storage and trade goods too.'},
+                {speaker: '{PLAYER}', text: 'Trade goods... The village might prosper more. Here\'s your reward. Looking forward to the banquet.'},
+                {speaker: 'Luna', text: '{PLAYER}, let\'s have a new recipe tasting party♪'},
+                {speaker: 'Kaito', text: 'Of course I\'ll eat the most! I\'m starving!'},
+                {speaker: '{PLAYER}', text: 'Haha, let\'s all enjoy it. Looks like a good year ahead.'}
+            ],
+            // 2: Flower Gathering for Villager
+            [
+                {speaker: 'Luna', text: 'Gathered lots of beautiful flowers for the villager! The fragrance is wonderful~.'},
+                {speaker: '{PLAYER}', text: 'Smells nice, Luna. It\'d be healing to decorate the guild. Good gathering.'},
+                {speaker: 'Kaito', text: 'Flowers... I might\'ve stepped on them. But I\'ll stay quiet before Luna kills me!'},
+                {speaker: 'Luna', text: 'These flowers can be used as dye too! Clothes will be vibrant and everyone will be happy.'},
+                {speaker: '{PLAYER}', text: 'Dye, huh. I heard there are many weddings lately—is it flower season?'},
+                {speaker: 'Kaito', text: 'Weddings!? If I catch the bouquet next it\'s my turn! ...Just kidding.'},
+                {speaker: 'Luna', text: 'Interesting idea... How about making scented sachets? The room would smell nice and be healing!'},
+                {speaker: 'Villager', text: 'Thank you for the beautiful flowers! The village square will look like a flower field. With the recent wedding rush, we needed them!'},
+                {speaker: 'Villager', text: 'They can be used for scented sachets or healing tea too. Mixing with anti-pollen herbs would meet this year\'s demand. Everyone will be helped!'},
+                {speaker: '{PLAYER}', text: 'Healing tea... Would relieve adventurer fatigue too. Here\'s your reward. The village will be colorful.'},
+                {speaker: 'Luna', text: '{PLAYER}, let\'s make scented sachets for the guild too! I\'ll help♪'},
+                {speaker: 'Kaito', text: 'I\'ll... just smell them. Praying I don\'t get hay fever!'},
+                {speaker: '{PLAYER}', text: 'Haha, let\'s all make them. The village and guild will brighten up.'}
+            ]
         ],
-        // 1: Collect Mushrooms
-        [
-          {speaker: "Adventurer", text: "I brought fresh mushrooms for the cook."},
-          {speaker: "Kaito", text: "Mushrooms!? Mushroom hotpot tonight! I can eat 5 bowls!"},
-          {speaker: "Luna", text: "Kaito, overeating will upset your stomach."},
-          {speaker: "Guild Master", text: "You two only think about food. Give them to the cook."},
-          {speaker: "Cook", text: "Fresh mushrooms like this! Tonight's dinner will be amazing—everyone will love it. Thanks!"},
-          {speaker: "Guild Master", text: "Reward... Looks like mushroom overload tonight."}
-        ],
-        // 2: Collect Flowers
-        [
-          {speaker: "Adventurer", text: "I gathered and delivered beautiful flowers for the villager."},
-          {speaker: "Luna", text: "These flowers smell wonderful! Let's decorate the guild~"},
-          {speaker: "Kaito", text: "Flowers over dumplings... Wait, Luna's glaring, never mind."},
-          {speaker: "Guild Master", text: "You two can be cute sometimes. Ask the villager."},
-          {speaker: "Villager", text: "You brought such pretty flowers! Everyone's smiling now. Your kindness shows—thank you!"},
-          {speaker: "Guild Master", text: "Reward. Guild might turn into a flower garden."}
-        ]
-      ],
       'F+': [
         // 0: Collect Iron Scraps (Client: Blacksmith)
         [
           {speaker: "Adventurer", text: "I gathered plenty of iron scraps for the blacksmith... Heavy."},
           {speaker: "Kaito", text: "Iron!? Perfect for my new sword! Give me some!"},
           {speaker: "Luna", text: "Kaito, always swords... But good material."},
-          {speaker: "Guild Master", text: "You'll get shares later. Give to the blacksmith."},
+          {speaker: '{PLAYER}', text: "You'll get shares later. Give to the blacksmith."},
           {speaker: "Blacksmith", text: "So many iron scraps! I can make great weapons now. Really helps—thanks!"},
-          {speaker: "Guild Master", text: "Reward. Kaito's new sword later."}
+          {speaker: '{PLAYER}', text: "Reward. Kaito's new sword later."}
         ],
         // 1: Catch River Fish (Client: Fisherman)
         [
           {speaker: "Adventurer", text: "I caught the river fish requested by the fisherman... Took time."},
           {speaker: "Kaito", text: "Fish!? Grilled fish tonight! I can eat 10!"},
           {speaker: "Luna", text: "Kaito, moderation. But they look fresh and tasty~"},
-          {speaker: "Guild Master", text: "Food again... Give to the fisherman."},
+          {speaker: '{PLAYER}', text: "Food again... Give to the fisherman."},
           {speaker: "Fisherman", text: "You caught this many fish! Tonight's table will be lavish. Thanks!"},
-          {speaker: "Guild Master", text: "Reward... Fish feast tonight."}
+          {speaker: '{PLAYER}', text: "Reward... Fish feast tonight."}
         ],
         // 2: Collect Common Herbs (Client: Apothecary)
         [
           {speaker: "Adventurer", text: "I gathered lots of common herbs for the apothecary."},
           {speaker: "Luna", text: "Common herbs can make strong medicine with the right mix! I want to research~"},
           {speaker: "Kaito", text: "Herbs over meat... Luna's glaring again."},
-          {speaker: "Guild Master", text: "You two are greedy. Show the apothecary."},
+          {speaker: '{PLAYER}', text: "You two are greedy. Show the apothecary."},
           {speaker: "Apothecary", text: "So many common herbs! Village medicine stock is secure now. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Kaito, you're Luna's test subject."}
+          {speaker: '{PLAYER}', text: "Reward. Kaito, you're Luna's test subject."}
         ]
       ],
       'D': [
@@ -1922,27 +1991,27 @@ const QuestCompletionDialogue = {
           {speaker: "Adventurer", text: "I mined plenty of quality iron ore for the miner... Back hurts."},
           {speaker: "Kaito", text: "Iron ore!? I'd have smashed rocks and brought it all!"},
           {speaker: "Luna", text: "Quality ore could be for magic weapons... I want some."},
-          {speaker: "Guild Master", text: "Shares later. Give to the miner."},
+          {speaker: '{PLAYER}', text: "Shares later. Give to the miner."},
           {speaker: "Miner", text: "This much quality ore! The village will prosper. Really helps—thanks!"},
-          {speaker: "Guild Master", text: "Reward. Save Kaito's destruction for next time."}
+          {speaker: '{PLAYER}', text: "Reward. Save Kaito's destruction for next time."}
         ],
         // 1: Wolf Pelts (Client: Hunter)
         [
           {speaker: "Adventurer", text: "I brought lots of wolf pelts for the hunter... Hunting was tough."},
           {speaker: "Kaito", text: "Wolf pelts!? I'd have hunted the whole pack and made a mountain!"},
           {speaker: "Luna", text: "Pelts are perfect for cold protection. I want one~"},
-          {speaker: "Guild Master", text: "Greedy pair. Give to the hunter."},
+          {speaker: '{PLAYER}', text: "Greedy pair. Give to the hunter."},
           {speaker: "Hunter", text: "This many wolf pelts! Best cold gear ever. Thanks!"},
-          {speaker: "Guild Master", text: "Reward. Pelt coats next?"}
+          {speaker: '{PLAYER}', text: "Reward. Pelt coats next?"}
         ],
         // 2: Small Mana Crystals (Client: Mage)
         [
           {speaker: "Adventurer", text: "I collected small mana crystals for the mage... Monsters guarded them—close call."},
           {speaker: "Luna", text: "Mana crystals!? Perfect for my magic research! Share some~"},
           {speaker: "Kaito", text: "Monsters? I'd have slashed them all and monopolized the crystals!"},
-          {speaker: "Guild Master", text: "No monopolies. Show the mage."},
+          {speaker: '{PLAYER}', text: "No monopolies. Show the mage."},
           {speaker: "Mage", text: "This many mana crystals! New spells possible now. Thank you so much!"},
-          {speaker: "Guild Master", text: "Reward. Luna's experiments later."}
+          {speaker: '{PLAYER}', text: "Reward. Luna's experiments later."}
         ]
       ]
       // Higher ranks to be added later
@@ -1955,21 +2024,21 @@ const QuestCompletionDialogue = {
             // 0: スライム5匹討伐（依頼主: 農夫）
             [
                 {speaker: 'Luna', text: '我回來了。村莊周邊的史萊姆5隻，全都討伐完了。'},
-                {speaker: 'Kaito', text: '哇，史萊姆退治啊！跳來跳去的超麻煩對吧？老子一瞬間就碾平啦！'},
+                {speaker: 'Kaito', text: '哇，史萊姆退治啊！跳來跳去的超麻煩對吧？我一瞬間就碾平啦！'},
                 {speaker: 'Luna', text: '真的好累……全身都是史萊姆黏液……'},
                 {speaker: '{PLAYER}', text: '辛苦了，Luna。幹得漂亮。Kaito閉嘴，依頼的農夫還在等呢。'},
-                {speaker: 'Kaito', text: '嘖，老子也想去啊～。超想看有人滑倒在史萊姆汁裡的樣子！'},
+                {speaker: 'Kaito', text: '嘖，我也想去啊～。超想看有人滑倒在史萊姆汁裡的樣子！'},
                 {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向農夫報告吧。'},
                 {speaker: '農夫', text: '哇，冒險者！你們把史萊姆全部打倒了啊！作物沒被溶掉，真是太好了！'},
                 {speaker: '農夫', text: '那些果凍一樣的史萊姆……應該不是食物吧？好可怕！真的謝謝！'},
                 {speaker: '{PLAYER}', text: '平安就好。這是報酬。下次帶Kaito去的話，可能會變成史萊姆滿身哦。'},
-                {speaker: 'Kaito', text: '來啦！輪到老子出場了！'},
+                {speaker: 'Kaito', text: '來啦！輪到我出場了！'},
                 {speaker: 'Luna', text: '那個……請饒了我吧……'}
             ],
             // 1: 巨大ネズミ退治（依頼主: 酒場主人）
             [
                 {speaker: 'Luna', text: '酒館地下室的巨大老鼠，全都退治完了。'},
-                {speaker: 'Kaito', text: '巨大老鼠！？到底有多大啊？老子超想用劍砍個痛快！'},
+                {speaker: 'Kaito', text: '巨大老鼠！？到底有多大啊？我超想用劍砍個痛快！'},
                 {speaker: 'Luna', text: '相當大……差點被咬到，好可怕……'},
                 {speaker: '{PLAYER}', text: '幹得好，Luna。平安就好。Kaito，你去的话酒館會變成血海。'},
                 {speaker: 'Kaito', text: '那才帥啊！超華麗超酷吧！'},
@@ -1983,7 +2052,7 @@ const QuestCompletionDialogue = {
             // 2: 野犬3匹討伐（依頼主: 農夫）
             [
                 {speaker: 'Luna', text: '襲擊農場的野犬3隻，全都打倒了。家畜平安無事。'},
-                {speaker: 'Kaito', text: '野犬啊！老子超想追著它們砍個痛快！'},
+                {speaker: 'Kaito', text: '野犬啊！我超想追著它們砍個痛快！'},
                 {speaker: 'Luna', text: '跑得超快……真的好危險……'},
                 {speaker: '{PLAYER}', text: '辛苦了，Luna。家畜平安太好了。Kaito，你去的话連家畜都會被追著跑。'},
                 {speaker: 'Kaito', text: '哈哈！那也挺有趣的吧！狗跟家畜來場大賽跑！'},
@@ -1991,7 +2060,7 @@ const QuestCompletionDialogue = {
                 {speaker: '農夫', text: '野犬全部打倒了啊！家畜平安，大家都安心了！'},
                 {speaker: '農夫', text: '追逐賽……不是在玩吧？好可怕，真的謝謝！'},
                 {speaker: '{PLAYER}', text: '安心就好。這是報酬。Kaito，下次你就留守吧。'},
-                {speaker: 'Kaito', text: '诶～！老子也想去啦～！'},
+                {speaker: 'Kaito', text: '诶～！我也想去啦～！'},
                 {speaker: 'Luna', text: '那個……或許這樣最安全……'}
             ]
         ]
@@ -2003,7 +2072,7 @@ const QuestCompletionDialogue = {
             [
                 {speaker: 'Luna', text: '鎮上老奶奶丟失的項鍊，平安找到了！掉在巷子裡的石頭下面。'},
                 {speaker: '{PLAYER}', text: '找得好，Luna。連細微的地方都搜得很仔細。'},
-                {speaker: 'Kaito', text: '哼，那種小東西老子一下就聞出來了！Luna，你只是運氣好吧？'},
+                {speaker: 'Kaito', text: '哼，那種小東西我一下就聞出來了！Luna，你只是運氣好吧？'},
                 {speaker: 'Luna', text: '呵呵，Kaito先生才不可能呢。得好好推理才行♪'},
                 {speaker: 'Kaito', text: '什麼啦！？……這雕刻……好像在哪見過。以前公會長的……'},
                 {speaker: 'Luna', text: '凱、Kaito先生！現在不行！{PLAYER}，快去還給老奶奶吧。'},
@@ -2035,7 +2104,7 @@ const QuestCompletionDialogue = {
             [
                 {speaker: 'Luna', text: '古老井底的秘密發現了！苔蘚下面有古代魔法陣在發光。'},
                 {speaker: '{PLAYER}', text: '很危險吧？平安就好，Luna。能潛下去真厲害。'},
-                {speaker: 'Kaito', text: '魔法陣！？超讚！老子也想跳下去，井底感覺超有冒險感吧！'},
+                {speaker: 'Kaito', text: '魔法陣！？超讚！我也想跳下去，井底感覺超有冒險感吧！'},
                 {speaker: 'Luna', text: 'Kaito先生，掉下去會死的哦……啊，{PLAYER}以前在這裡……'},
                 {speaker: 'Kaito', text: '對啊！以前公會長跳下去救{PLAYER}的啊！……哎呀，說出來了！'},
                 {speaker: '{PLAYER}', text: '我掉進井裡……？所以記憶才……？'},
@@ -2058,7 +2127,7 @@ const QuestCompletionDialogue = {
                 {speaker: 'Kaito', text: '農夫安全護送到市場完成了！途中什麼事都沒發生，超無聊的旅程啦！'},
                 {speaker: '{PLAYER}', text: '平安就好，Kaito。和平才是最好的。'},
                 {speaker: 'Luna', text: 'Kaito先生，沒發生事件才是最好的。你亂來農夫會很可憐的。'},
-                {speaker: 'Kaito', text: '喂喂，農夫也想看老子大顯身手吧！……咦？这條路，以前公會長護衛商隊走過的……'},
+                {speaker: 'Kaito', text: '喂喂，農夫也想看我大顯身手吧！……咦？这條路，以前公會長護衛商隊走過的……'},
                 {speaker: 'Luna', text: 'Kaito先生！現在別說這個！{PLAYER}，去向農夫報告吧。'},
                 {speaker: '{PLAYER}', text: '商隊護衛……？是我爸的事嗎？之後再問。農夫，平安到了。'},
                 {speaker: '農夫', text: '真的謝謝！最近交易路上盜賊變多，一個人去好可怕。在市場賣了好價錢！'},
@@ -2073,7 +2142,7 @@ const QuestCompletionDialogue = {
             [
                 {speaker: 'Luna', text: '危險的橋安全渡過，把孩子送到家了！途中還牽著手哦～。'},
                 {speaker: '{PLAYER}', text: '真溫柔，Luna。小孩一定很高興。幹得好。'},
-                {speaker: 'Kaito', text: '只是過橋而已啊！老子會給小孩木劍，一起玩魔物退治遊戲！'},
+                {speaker: 'Kaito', text: '只是過橋而已啊！我會給小孩木劍，一起玩魔物退治遊戲！'},
                 {speaker: 'Luna', text: 'Kaito先生，那太危險了！小孩會害怕的……啊，這座橋，{PLAYER}小時候……'},
                 {speaker: 'Kaito', text: '對啊！以前公會長抱著{PLAYER}渡過的啊！……哎呀，說溜嘴了！'},
                 {speaker: '{PLAYER}', text: '我在這橋上……？被抱著渡過？詳細告訴我。'},
@@ -2081,7 +2150,7 @@ const QuestCompletionDialogue = {
                 {speaker: '親', text: '孩子平安回來了！那座快塌的橋，一個人真的好可怕……真的謝謝！'},
                 {speaker: '親', text: '最近事故變多，魔物也靠近村子了。大家都在討論。託你們真是正確選擇！'},
                 {speaker: '{PLAYER}', text: '魔物靠近啊……要小心。這是報酬。小孩也很精神。'},
-                {speaker: 'Kaito', text: '橋事故？一定是魔物幹的吧。下次老子守小孩，保證華麗演出！'},
+                {speaker: 'Kaito', text: '橋事故？一定是魔物幹的吧。下次我守小孩，保證華麗演出！'},
                 {speaker: 'Luna', text: '{PLAYER}，那座橋的記憶……有稍微回來一點嗎？'},
                 {speaker: '{PLAYER}', text: '……嗯，風的感覺好懷念。謝謝。'}
             ],
@@ -2090,7 +2159,7 @@ const QuestCompletionDialogue = {
                 {speaker: 'Kaito', text: '使者的信護衛完成了！一個間諜都沒出現，超失望的啦！'},
                 {speaker: '{PLAYER}', text: '平安送到就好，Kaito。和平才是最好的。'},
                 {speaker: 'Luna', text: 'Kaito先生，想太多了。使者也鬆了一口氣哦。'},
-                {speaker: 'Kaito', text: '要是間諜出現，老子一刀解決！……這條路，以前公會長運送重要信件的……'},
+                {speaker: 'Kaito', text: '要是間諜出現，我一刀解決！……這條路，以前公會長運送重要信件的……'},
                 {speaker: 'Luna', text: 'Kaito先生！現在不是說這個的時候！{PLAYER}，去向村長報告吧。'},
                 {speaker: '{PLAYER}', text: '重要信件……？是我爸嗎？好在意。村長，平安送到了。'},
                 {speaker: '村長', text: '使者平安，信也送到了！這下村子的同盟就定了。真的感謝！'},
@@ -2111,15 +2180,15 @@ const QuestCompletionDialogue = {
             [
                 {speaker: 'Luna', text: '錬金術師依頼的藥草，按照指定全收集來了！很新鮮哦～。'},
                 {speaker: '{PLAYER}', text: '幹得好，Luna。跑到森林深處了吧？辛苦了。'},
-                {speaker: 'Kaito', text: '藥草啊。老子可能直接踩壞了！不過能做藥水還不錯啦。'},
+                {speaker: 'Kaito', text: '藥草啊。我可能直接踩壞了！不過能做藥水還不錯啦。'},
                 {speaker: 'Luna', text: 'Kaito先生，這能做強力回復藥水！最近魔力變薄，很珍貴哦。'},
                 {speaker: '{PLAYER}', text: '魔力變薄？最近聽說魔物也變弱了……'},
-                {speaker: 'Kaito', text: '那這藥草能不能做魔力增幅藥水？塗在老子劍上就最強了吧！'},
+                {speaker: 'Kaito', text: '那這藥草能不能做魔力增幅藥水？塗在我劍上就最強了吧！'},
                 {speaker: 'Luna', text: '好有趣的主意！不過感覺會爆炸好可怕……問問錬金術師吧。'},
                 {speaker: '錬金術師', text: '哇，完美的藥草！這能做20個普通回復藥水。最近魔力枯竭，材料價格暴漲……幫大忙了！'},
                 {speaker: '錬金術師', text: '魔力增幅劑？好主意！失敗會大爆炸，但成功就能革命性強化武器。值得一試！'},
                 {speaker: '{PLAYER}', text: '成功了請分一點給公會。這是報酬。好期待啊。'},
-                {speaker: 'Kaito', text: '成了！老子劍要變無敵啦！'},
+                {speaker: 'Kaito', text: '成了！我劍要變無敵啦！'},
                 {speaker: 'Luna', text: '{PLAYER}，我們優先回復藥水哦♪'},
                 {speaker: '{PLAYER}', text: '哈哈，知道了。感覺世界要變了的預感呢。'}
             ],
@@ -2128,31 +2197,31 @@ const QuestCompletionDialogue = {
                 {speaker: 'Kaito', text: '料理人依頼的新鮮蘑菇，大量收集來了啦！今晚來場蘑菇祭吧！？'},
                 {speaker: '{PLAYER}', text: '也太多了吧，Kaito。怎麼採這麼多。辛苦了。'},
                 {speaker: 'Luna', text: '這蘑菇香氣超棒！普通湯都能變成大餐哦～。'},
-                {speaker: 'Kaito', text: '老子要烤蘑菇！冒險者HP能回復250的那種！'},
+                {speaker: 'Kaito', text: '我要烤蘑菇！冒險者HP能回復250的那種！'},
                 {speaker: 'Luna', text: '烤蘑菇？好主意！今年豐收，蘑菇超多，正適合做保存食。'},
                 {speaker: '{PLAYER}', text: '豐收年啊。最近村子熱鬧起來就是因為這個……祭典準備也進行中呢。'},
-                {speaker: 'Kaito', text: '祭典！？蘑菇料理大賽老子一定拿冠軍！新菜譜已經想好了！'},
+                {speaker: 'Kaito', text: '祭典！？蘑菇料理大賽我一定拿冠軍！新菜譜已經想好了！'},
                 {speaker: '料理人', text: '超棒的蘑菇！今晚宴會菜單定了。這豐收年大家都能吃飽！'},
                 {speaker: '料理人', text: '耐力料理主意？可以針對冒險者開發！乾燥成粉能長期保存，還能當交易品。'},
                 {speaker: '{PLAYER}', text: '交易品啊……村子會更繁榮呢。這是報酬。很期待宴會。'},
                 {speaker: 'Luna', text: '{PLAYER}，我們也來開新菜譜試吃會吧♪'},
-                {speaker: 'Kaito', text: '當然老子吃最多！肚子餓扁啦－！'},
+                {speaker: 'Kaito', text: '當然我吃最多！肚子餓扁啦－！'},
                 {speaker: '{PLAYER}', text: '哈哈，大家一起享受吧。感覺會是好年呢。'}
             ],
             // 2: 花集め
             [
                 {speaker: 'Luna', text: '村人依頼的漂亮花，很多都收集來了！香氣超棒～。'},
                 {speaker: '{PLAYER}', text: '好香啊，Luna。拿來裝飾公會一定很療癒。採得好。'},
-                {speaker: 'Kaito', text: '花啊……老子可能直接踩壞了。被Luna瞪所以閉嘴！'},
+                {speaker: 'Kaito', text: '花啊……我可能直接踩壞了。被Luna瞪所以閉嘴！'},
                 {speaker: 'Luna', text: '這花還能做染料哦！衣服會變得很鮮豔，大家一定很高興。'},
                 {speaker: '{PLAYER}', text: '染料啊。最近結婚典禮變多，應該是因為花季吧？'},
-                {speaker: 'Kaito', text: '結婚典禮！？花束拋接老子接到的话下次就輪到老子啦！……開玩笑的。'},
+                {speaker: 'Kaito', text: '結婚典禮！？花束拋接我接到的话下次就輪到我啦！……開玩笑的。'},
                 {speaker: 'Luna', text: '有趣的主意……用這花做香袋如何？房間會一直充滿好香味，超療癒哦！'},
                 {speaker: '村人', text: '漂亮的花謝謝！廣場會變成花海一樣。最近結婚熱潮，正好需要！'},
                 {speaker: '村人', text: '香袋或療癒茶也行。混入花粉症藥草就能應付今年的需求。大家都幫了大忙！'},
                 {speaker: '{PLAYER}', text: '療癒茶啊……冒險者的疲勞應該也能消除。這是報酬。村子會變得很華麗呢。'},
                 {speaker: 'Luna', text: '{PLAYER}，公會也來做香袋吧！我幫忙♪'},
-                {speaker: 'Kaito', text: '老子……就負責聞香味。祈禱別得花粉症！'},
+                {speaker: 'Kaito', text: '我……就負責聞香味。祈禱別得花粉症！'},
                 {speaker: '{PLAYER}', text: '哈哈，大家一起做吧。村子和公會都會變得更明亮。'}
             ]
         ]
@@ -2169,94 +2238,96 @@ const cities = [
 
 
 
+
+// storyQuestDialogues を翻訳キー対応に変更
 const storyQuestDialogues = [
     // 0: 盗賊団クエスト
     [
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター！最近、地域で盗賊団が活発に動いているみたいです。しかも、動きがとても組織的だという噂が…。" },
-        { speaker: "カイト", image: "Images/カイト.png", text: "ああ、ギルドの名を上げる絶好のチャンスだぜ！あいつらを壊滅させて、みんなに俺たちの実力を見せつけてやろう！" },
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "私たちも全力でサポートします！さあ、マスター、メインクエストを掲示しましょう！" },
-        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたはギルドの名声を高める最初の試練として、盗賊団壊滅のメインクエストを投稿した。" }
+        { speaker: "Luna", text: t('story_dialogue_0_0') },
+        { speaker: "Kaito",  text: t('story_dialogue_0_1') },
+        { speaker: "Luna", text: t('story_dialogue_0_2') },
+        { speaker: "Narrator", text: t('story_dialogue_0_3') }
     ],
     // 1: 古代遺跡の守護者
     [
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "大変です、マスター！古代遺跡を守っていた守護者が暴走して、街に近づいてきているそうです…！" },
-        { speaker: "カイト", image: "Images/カイト.png", text: "守護者って何を守ってるんだろうな？倒して真相を確かめようぜ。面白そうだ！" },
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "危険ですが…ギルドの力を見せる時です！メインクエストを掲示しましょう！" },
-        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは暴走した古代守護者を討伐し、その秘密を解明するメインクエストを投稿した。" }
+        { speaker: "Luna", text: t('story_dialogue_1_0') },
+        { speaker: "Kaito",  text: t('story_dialogue_1_1') },
+        { speaker: "Luna", text: t('story_dialogue_1_2') },
+        { speaker: "Narrator", text: t('story_dialogue_1_3') }
     ],
     // 2: 闇の魔導士
     [
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター…恐ろしい噂を聞きました。闇の魔導士が魂を集めているそうです。もう死者が出る前に止めないと…！" },
-        { speaker: "カイト", image: "Images/カイト.png", text: "魂を集めるなんて許せねえ。魔導士を止めて、街を守ろう。俺たちの本気を見せてやる！" },
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "はい…！私たちも全力で支えます。メインクエストを掲示してください！" },
-        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは闇の魔導士を阻止する重要なメインクエストを投稿した。" }
+        { speaker: "Luna", text: t('story_dialogue_2_0') },
+        { speaker: "Kaito",  text: t('story_dialogue_2_1') },
+        { speaker: "Luna", text: t('story_dialogue_2_2') },
+        { speaker: "Narrator", text: t('story_dialogue_2_3') }
     ],
     // 3: 伝説のドラゴン
     [
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "大変です！伝説のドラゴンが覚醒して、周辺を焼き払っているそうです…！" },
-        { speaker: "カイト", image: "Images/カイト.png", text: "ドラゴン退治か！これは伝説になるぜ、マスター！俺たちで倒して街の平和を取り戻そう！" },
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "本当に危険ですが…ギルドの名にかけて！メインクエストを掲示しましょう！" },
-        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは覚醒した伝説のドラゴンを討伐する偉大なメインクエストを投稿した。" }
+        { speaker: "Luna", text: t('story_dialogue_3_0') },
+        { speaker: "Kaito",  text: t('story_dialogue_3_1') },
+        { speaker: "Luna", text: t('story_dialogue_3_2') },
+        { speaker: "Narrator", text: t('story_dialogue_3_3') }
     ],
     // 4: 闇のカルト集団
     [
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "マスター、各地で闇のカルト集団が儀式を行っているそうです。深淵の王ヴォルガスの復活を目論んでいるらしいです…！" },
-        { speaker: "カイト", image: "Images/カイト.png", text: "カルトの指導者を捕まえて、計画を完全に潰そう。こんな邪悪なことは許さない！" },
-        { speaker: "ルナ", image: "Images/ルナ.png", text: "私たちも全力でサポートします！メインクエストを掲示してください！" },
-        { speaker: "Narrator", image: "Images/Narrator.png", text: "あなたは深淵の王復活を阻止する最終的なメインクエストを投稿した。" }
+        { speaker: "Luna", text: t('story_dialogue_4_0') },
+        { speaker: "Kaito",  text: t('story_dialogue_4_1') },
+        { speaker: "Luna", text: t('story_dialogue_4_2') },
+        { speaker: "Narrator", text: t('story_dialogue_4_3') }
     ]
 ];
 
 const mainQuests = [
     {
-        desc: "ギルドの名声を高める最初の試練 - 地域の盗賊団を壊滅せよ。近年、盗賊団の動きが異常に組織的だという噂がある。",
+        desc: t('main_quest_0_desc'),
         difficulty: 1,
         reward: 5000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "strength",
         minFocus: 1,
         repRequired: 100,
-        rank: "Recommended >20",
+        rank: t('main_quest_0_rank'),
     },
     {
-        desc: "古代の遺跡を守る守護者が暴走し街に来た。守護者を倒し、彼は何を守ってるのかを明かそう。",
+        desc: t('main_quest_1_desc'),
         difficulty: 1,
         reward: 20000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "wisdom",
         minFocus: 1,
         repRequired: 200,
-        rank: "Recommended >40",
+        rank: t('main_quest_1_rank'),
     },
     {
-        desc: "闇の魔導士が魂を集める為に街に来た、死者が出る前に彼女を止めましょう",
+        desc: t('main_quest_2_desc'),
         difficulty: 120,
         reward: 40000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "wisdom",
         minFocus: 1,
         repRequired: 300,
-        rank: "Recommended >60",
+        rank: t('main_quest_2_rank'),
     },
     {
-        desc: "伝説のドラゴンが覚醒し、周辺を焼き払っている。ドラゴンを倒して、街の平和を守りましょう。",
+        desc: t('main_quest_3_desc'),
         difficulty: 1,
         reward: 80000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "strength",
         minFocus: 1,
         repRequired: 400,
-        rank: "Recommended >80",
+        rank: t('main_quest_3_rank'),
     },
     {
-        desc: "闇のカルト集団が各地で儀式を行っている。彼らの指導者を捕らえ、深淵の王ヴォルガスの復活計画を暴け。",
+        desc: t('main_quest_4_desc'),
         difficulty: 1,
         reward: 30000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "luck",
         minFocus: 1,
         repRequired: 500,
-        rank: "Recommended >100",
+        rank: t('main_quest_4_rank'),
     },
 ];
 
