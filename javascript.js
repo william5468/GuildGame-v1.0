@@ -310,44 +310,89 @@ function postTrade(cityId) {
     const data = window.tempTradeData;
     if (!data || data.cityId !== cityId) return;
 
+    // リソースの正規キー一覧（言語に依存しない内部識別子）
+    const resourceKeys = ['iron_ore', 'medicinal_herb', 'spice', 'gem'];
+
     // 在庫チェック＆売却素材扣除
     let hasStockIssue = false;
-    resources.forEach(r => {
-        const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
+
+    resourceKeys.forEach(key => {
+        // 現在の言語での表示名（エラー表示用）
+        const currentName = translations[currentLang][`resource_${key}`] || key;
+
+        // このセッションで選択された売却数（data.sell のキーは現在の言語での名前）
+        const qtyToSell = data.sell[currentName] || 0;
+        if (qtyToSell === 0) return;
+
+        // 全ての言語での可能名称を集める（言語変更後にリロードしても、古い名前でもマッチするように）
+        const possibleNames = [];
+        Object.keys(translations).forEach(lang => {
+            const name = translations[lang][`resource_${key}`];
+            if (name) possibleNames.push(name);
+        });
+
+        // インベントリからマッチするアイテムを探す
+        const item = gameState.inventory.find(i => 
+            possibleNames.includes(i.name) && i.type === 'material'
+        );
+
         const stock = item ? item.qty : 0;
-        if (data.sell[r] > stock) {
-            better_alert(t('trade_insufficient_stock', { item: r }),"error");
+
+        if (qtyToSell > stock) {
+            better_alert(t('trade_insufficient_stock', { item: currentName }), "error");
             hasStockIssue = true;
+            return;
         }
-        if (data.sell[r] > 0 && item) {
-            item.qty -= data.sell[r];
+
+        // 在庫十分なら即座に扣除
+        if (item) {
+            item.qty -= qtyToSell;
         }
     });
+
+    // 在庫不足があった場合はここで終了（金銭扣除は行わない）
     if (hasStockIssue) return;
 
-    // 購入コストを事前に全額扣除（資本が必要になる現実的な貿易に）
+    // 購入コストを事前に全額扣除
     if (gameState.gold < data.cost) {
         better_alert(t('trade_insufficient_gold', {
             cost: data.cost,
             current: gameState.gold
-        }),"error");
-        // 売却素材を戻す（扣除取り消し）
-        resources.forEach(r => {
-            const item = gameState.inventory.find(i => i.name === r && i.type === 'material');
-            if (data.sell[r] > 0 && item) item.qty += data.sell[r];
+        }), "error");
+
+        // 売却素材を元に戻す（巻き戻し）
+        resourceKeys.forEach(key => {
+            const currentName = translations[currentLang][`resource_${key}`] || key;
+            const qtyToReturn = data.sell[currentName] || 0;
+            if (qtyToReturn === 0) return;
+
+            const possibleNames = [];
+            Object.keys(translations).forEach(lang => {
+                const name = translations[lang][`resource_${key}`];
+                if (name) possibleNames.push(name);
+            });
+
+            const item = gameState.inventory.find(i => 
+                possibleNames.includes(i.name) && i.type === 'material'
+            );
+
+            if (item) {
+                item.qty += qtyToReturn;
+            }
         });
+
         return;
     }
+
+    // コスト扣除
     gameState.gold -= data.cost;
 
     const city = gameState.tradeCityStates.find(c => c.id === cityId);
 
-    // generateQuestの返却形式に近づけた貿易クエストオブジェクト
     const outLoad = Object.values(data.sell).reduce((a, b) => a + b, 0);
     const inLoad = Object.values(data.buy).reduce((a, b) => a + b, 0);
 
-    // 難易度を所要日数ベースに調整（ランク表示・EXP量に影響）
-    const difficulty = Math.floor(data.totalDays * 10); // 例: 4日→40, 20日→200
+    const difficulty = Math.floor(data.totalDays * 10);
 
     const quest = {
         id: gameState.nextId++,
@@ -358,34 +403,34 @@ function postTrade(cityId) {
             totalDays: data.totalDays
         }),
         difficulty: 1,
-        rank: t('trade_rank'), // 翻訳可能にしたランク表示（必要に応じて調整）
+        rank: t('trade_rank'),
         minStrength: 0,
         minWisdom: 0,
         minDexterity: 0,
         minLuck: 0,
-        focusStat: 'luck',       // 貿易は運が重要という設定（表示用）
-        minFocus: 0,             // 確定成功なので実質ステータス不要
-        type: 'trade',           // 既存の 'trade' 文字列を維持（レンダリングで特殊扱い可能）
+        focusStat: 'luck',
+        minFocus: 0,
+        type: 'trade',
         item: null,
         npcIdx: null,
         daysLeft: data.totalDays + 5,
-        reward: data.revenue,    // 完了時に売却収益を加算（購入コストは事前扣除済み → 純利益 = reward - cost）
+        reward: data.revenue,
         assigned: [],
         inProgress: false,
-        questType: questTypeClasses.indexOf('trade'), // 'trade' のインデックス（例: 8）
+        questType: questTypeClasses.indexOf('trade'),
         questStoryindex: 0,
         // 貿易内部データ（完了処理用）
         sell: data.sell,
         buy: data.buy,
         outLoad: outLoad,
         inLoad: inLoad,
-        tradeRemainingDays: data.totalDays, // 進行管理用残り日数
-        cityName: city.name,                // ← 完了メッセージで使用するため明示的に保存
-        totalDaysRecorded: data.totalDays   // メッセージ表示用（所要日数表示）
+        tradeRemainingDays: data.totalDays,
+        cityName: city.name,
+        totalDaysRecorded: data.totalDays
     };
 
     gameState.quests.push(quest);
-    better_alert(t('trade_post_success'),"success");
+    better_alert(t('trade_post_success'), "success");
     showMainSelection();
     updateDisplays();
 }
@@ -2926,33 +2971,67 @@ function renderCorruption() {
 function renderSellItems() {
     let html = '';
     const allItems = [];
+
+    // sellables から有効なアイテムのみ追加（qty > 0 または qty 未定義のユニークアイテム）
     if (gameState.sellables) {
-        gameState.sellables.forEach(item => allItems.push({...item, source: 'sellables'}));
+        gameState.sellables.forEach(item => {
+            const qty = item.qty !== undefined ? item.qty : 1;
+            if (qty > 0) {
+                allItems.push({...item});  // source/index 不要に変更
+            }
+        });
     }
-    gameState.inventory.forEach(item => allItems.push({...item, source: 'inventory'}));
+
+    // inventory から有効なアイテムのみ追加
+    gameState.inventory.forEach(item => {
+        const qty = item.qty !== undefined ? item.qty : 1;
+        if (qty > 0) {
+            allItems.push({...item});
+        }
+    });
 
     if (allItems.length === 0) {
         return `<p class="empty-msg">${t('sell_no_items')}</p>`;
     }
 
+    // 名前でグループ化（同じ名前のアイテムをまとめる）
     const grouped = {};
-    allItems.forEach((item, origIndex) => {
-        const key = item.name;
+    allItems.forEach(copiedItem => {
+        const key = copiedItem.name;
         if (!grouped[key]) {
-            grouped[key] = { ...item, items: [] };
+            // 初回アイテムから共通プロパティをコピー（同じ名前のアイテムはプロパティが同一と仮定）
+            grouped[key] = {
+                name: key,
+                stat: copiedItem.stat,
+                type: copiedItem.type,
+                bonus: copiedItem.bonus,
+                amount: copiedItem.amount,
+                restore: copiedItem.restore,
+                buff: copiedItem.buff,
+                minPrice: copiedItem.minPrice,
+                maxPrice: copiedItem.maxPrice,
+                items: []
+            };
         }
-        grouped[key].items.push({source: item.source, index: origIndex});
+        grouped[key].items.push(copiedItem);
     });
 
     html += '<ul class="shop-list sell-list">';
     Object.values(grouped).forEach(group => {
+        // 合計数量を正確に計算
         let count = 0;
-        group.items.forEach(entry => {
-            const actualItem = entry.source === 'inventory' 
-                ? gameState.inventory[entry.index] 
-                : gameState.sellables?.[entry.index];
-            if (actualItem) count += (actualItem.qty || 1);
+        group.items.forEach(copiedItem => {
+            if (copiedItem.type === 'material' || copiedItem.type === 'potion' || copiedItem.type === 'consumable') {
+                // スタック可能アイテム（素材・ポーション・消費バフ）→ qty 未定義なら 0 扱い（幻の1防止）
+                count += (copiedItem.qty ?? 0);
+            } else {
+                // ユニーク装備など → qty 未定義なら 1
+                count += (copiedItem.qty ?? 1);
+            }
         });
+
+        // 数量が 0 なら表示しない（これで在庫0の香料などが幻で表示されるバグ修正）
+        if (count <= 0) return;
 
         const randMinMax = getDailyRandomFraction(group.name);
         const randVariance = getDailyRandomFraction(group.name + 'var');
@@ -2965,8 +3044,6 @@ function renderSellItems() {
             basePrice = Math.floor(group.minPrice + randMinMax * (group.maxPrice - group.minPrice + 1));
         } else {
             basePrice = 5;
-            
-            
         }
 
         const variance = Math.floor(basePrice * 0.4);
@@ -2976,22 +3053,22 @@ function renderSellItems() {
         html += `<li class="shop-item">`;
         html += `<strong>${group.name}</strong>`;
 
-        // 装備ボーナス表示（翻訳対応）
+        // 装備ボーナス表示
         if (group.stat) {
             const statText = t(`stat_${group.stat}`);
             html += ` <span class="bonus">(${t('sell_equip_bonus', {bonus: group.bonus, stat: statText})})</span>`;
         }
 
-        // ポーション効果表示（翻訳対応）
+        // ポーション効果表示
         if (group.type === 'potion') {
             const restoreText = t(`potion_${group.restore}`);
             html += ` <span class="bonus">(${restoreText} +${group.amount})</span>`;
         }
 
-        // 価格・数量表示（翻訳対応）
+        // 価格・数量表示
         html += ` <em>${t('sell_quantity', {count})}</em> - ${t('sell_price_each', {price: singlePrice, unit: t('gold_unit')})} (${t('sell_price_total', {total: totalPrice, unit: t('gold_unit')})})`;
 
-        // 売却ボタン（翻訳対応）
+        // 売却ボタン
         if (count === 1) {
             html += ` <button class="sell-btn" onclick="sellStackedItem('${group.name}', 1)">${t('sell_button')}</button>`;
         } else {
