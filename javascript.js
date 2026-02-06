@@ -10,6 +10,188 @@ let playerName = "";
 let audioPlayed = false;
 
 
+// === 拡張された特性リスト（表示名付き、多様な好み対応）===
+// 各特性に displayName を追加（キャラクターシートで表示用）
+// type で分類:
+// - gender: 性別好み
+// - primary: 主ステータス好み（STR=0, WIS=1, DEX=2, LUC=3）
+// - level: レベル比較好み（higher/lower）
+// - stat_compare: 自分とのステ比較好み（higher/lower + 対象ステ）
+// - action_preference: 行動傾向（特定の行動を優先、weight_bonus で確率ブースト用）
+
+const possibleTraits = [
+    // === 性別好み ===
+    { type: 'gender', preference: 'M', delta: 12, displayName: "男性好き" },
+    { type: 'gender', preference: 'F', delta: 12, displayName: "女性好き" },
+    { type: 'gender', preference: 'M', delta: -12, displayName: "男性嫌い" },
+    { type: 'gender', preference: 'F', delta: -12, displayName: "女性嫌い" },
+
+    // === 主ステータス好み ===
+    { type: 'primary', preference: 0, delta: 12, displayName: "力持ち好き" },      // STR
+    { type: 'primary', preference: 1, delta: 12, displayName: "賢者好き" },        // WIS
+    { type: 'primary', preference: 2, delta: 12, displayName: "器用好き" },    // DEX
+    { type: 'primary', preference: 3, delta: 12, displayName: "幸運児好き" },      // LUC
+    { type: 'primary', preference: 0, delta: -10, displayName: "力持ち嫌い" },
+    { type: 'primary', preference: 1, delta: -10, displayName: "賢者嫌い" },
+    { type: 'primary', preference: 2, delta: -10, displayName: "器用嫌い" },
+    { type: 'primary', preference: 3, delta: -10, displayName: "幸運児嫌い" },
+
+    // === レベル比較好み ===
+    { type: 'level', preference: 'higher', delta: 15, displayName: "先輩好き" },
+    { type: 'level', preference: 'lower', delta: 15, displayName: "後輩好き" },
+    { type: 'level', preference: 'higher', delta: -12, displayName: "先輩嫌い" },
+    { type: 'level', preference: 'lower', delta: -12, displayName: "後輩嫌い" },
+
+    // === 自分とのステ比較好み（特定のステで自分より高い/低い人を好む） ===
+    { type: 'stat_compare', stat: 0, preference: 'higher', delta: 12, displayName: "自分より強い人を尊敬" },   // STR higher
+    { type: 'stat_compare', stat: 1, preference: 'higher', delta: 12, displayName: "自分より賢い人を尊敬" },     // WIS higher
+    { type: 'stat_compare', stat: 2, preference: 'higher', delta: 12, displayName: "自分より器用な人を尊敬" },   // DEX higher
+    { type: 'stat_compare', stat: 3, preference: 'higher', delta: 12, displayName: "自分より運が良い人を羨む" }, // LUC higher
+    { type: 'stat_compare', stat: 0, preference: 'lower', delta: -10, displayName: "自分より弱い人を軽視" },
+    { type: 'stat_compare', stat: 1, preference: 'lower', delta: -10, displayName: "自分より愚かな人を軽視" },
+
+    // === 行動傾向（行動選択時の確率ブースト用、weight_bonus でスロット追加） ===
+    { type: 'action_preference', action: 'tavern', weight_bonus: 20, displayName: "酒場好き" },
+    { type: 'action_preference', action: 'blacksmith', weight_bonus: 15, displayName: "鍛冶好き" },
+    { type: 'action_preference', action: 'alchemy', weight_bonus: 15, displayName: "錬金好き" },
+    { type: 'action_preference', action: 'hunting', weight_bonus: 20, displayName: "狩り好き" },
+    { type: 'action_preference', action: 'gather', weight_bonus: 15, displayName: "採取好き" },
+    { type: 'action_preference', action: 'guild_stay', weight_bonus: 20, displayName: "引きこもり気味" },
+    { type: 'action_preference', action: 'street_walk', weight_bonus: 15, displayName: "街歩き好き" }
+];
+
+// 初期好感度計算（拡張特性対応版、全ステータス小文字キー対応 + 数値/文字列両対応）
+const statMap = {
+    0: 'strength',
+    1: 'wisdom',
+    2: 'dexterity',
+    3: 'luck'
+};
+
+
+// 特性による好感度ボーナス計算（現在の条件でボーナス合計を返す）
+function calculateTraitBonus(self, target) {
+    let bonus = 0;
+
+    if (!self.traits || self.traits.length === 0) {
+        return bonus;
+    }
+
+    self.traits.forEach(trait => {
+        // deltaがない特性（行動傾向など）は好感度に影響しない
+        if (trait.delta === undefined) return;
+
+        if (trait.type === 'gender' && target.gender === trait.preference) {
+            bonus += trait.delta;
+        } 
+        else if (trait.type === 'primary' && target.primary === trait.preference) {
+            bonus += trait.delta;
+        } 
+        else if (trait.type === 'level') {
+            if (trait.preference === 'higher' && target.level > self.level) {
+                bonus += trait.delta;
+            } else if (trait.preference === 'lower' && target.level < self.level) {
+                bonus += trait.delta;
+            }
+        } 
+        else if (trait.type === 'stat_compare') {
+            let statKey;
+            if (typeof trait.stat === 'number') {
+                statKey = statMap[trait.stat];
+            } else if (typeof trait.stat === 'string') {
+                statKey = trait.stat.toLowerCase();
+            }
+            if (!statKey || !['strength', 'wisdom', 'dexterity', 'luck'].includes(statKey)) return;
+
+            const selfStat = self[statKey];
+            const targetStat = target[statKey];
+
+            if (selfStat === undefined || targetStat === undefined) return;
+
+            if (trait.preference === 'higher' && targetStat > selfStat) {
+                bonus += trait.delta;
+            } else if (trait.preference === 'lower' && targetStat < selfStat) {
+                bonus += trait.delta;
+            }
+        }
+    });
+
+    return bonus;
+}
+
+function calculateInitialFriendliness(self, target) {
+    let val = 50;
+
+    if (!self.traits || self.traits.length === 0) {
+        return val;
+    }
+
+    self.traits.forEach(trait => {
+        // deltaがない特性（行動傾向など）は好感度に影響しない
+        if (trait.delta === undefined) return;
+
+        if (trait.type === 'gender' && target.gender === trait.preference) {
+            val += trait.delta;
+        } 
+        else if (trait.type === 'primary' && target.primary === trait.preference) {
+            val += trait.delta;
+        } 
+        else if (trait.type === 'level') {
+            if (trait.preference === 'higher' && target.level > self.level) {
+                val += trait.delta;
+            } else if (trait.preference === 'lower' && target.level < self.level) {
+                val += trait.delta;
+            }
+        } 
+        else if (trait.type === 'stat_compare') {
+            let statKey;
+            if (typeof trait.stat === 'number') {
+                statKey = statMap[trait.stat];
+            } else if (typeof trait.stat === 'string') {
+                statKey = trait.stat.toLowerCase();
+            }
+            if (!statKey || !['strength', 'wisdom', 'dexterity', 'luck'].includes(statKey)) return;
+
+            const selfStat = self[statKey];
+            const targetStat = target[statKey];
+
+            if (selfStat === undefined || targetStat === undefined) return;
+
+            if (trait.preference === 'higher' && targetStat > selfStat) {
+                val += trait.delta;
+            } else if (trait.preference === 'lower' && targetStat < selfStat) {
+                val += trait.delta;
+            }
+        }
+    });
+
+    return Math.max(0, Math.min(100, val));
+}
+
+// 交流時の説明テンプレート（日本語）
+const interactionTemplates = {
+  positive_mutual: [
+    "{a}と{b}は楽しく会話した",
+    "{a}と{b}は一緒に笑い合った",
+    "{a}と{b}は良い時間を過ごした"
+  ],
+  negative_mutual: [
+    "{a}と{b}は少し意見が対立した",
+    "{a}と{b}は軽い口論になった",
+    "{a}と{b}はちょっとした誤解が生まれた"
+  ],
+  positive_uni: [
+    "{a}は{b}の強さに感心した",
+    "{a}は{b}の知恵に尊敬の念を抱いた",
+    "{a}は{b}の器用さに驚いた"
+  ],
+  negative_uni: [
+    "{a}は{b}の態度に少しイラついた",
+    "{a}は{b}の行動に不満を感じた",
+    "{a}は{b}の話に退屈した"
+  ]
+};
+
 
 /**
  * better_alert(message, type = "basic")
@@ -521,11 +703,11 @@ function preloadAssets() {
 function Render_Mainadventurer() {
     const names = mainCharacterNames[currentLang] || mainCharacterNames.ja;  // Fallback to ja
 
-    // カイト (STR/DEX 特化の二刀流騎士) - 初期アイテム追加
+    // カイト (STR/DEX 特化の二刀流騎士) - 女性好き + 魔法使い（WISタイプ）好き
     const Kaito = {
         id: gameState.nextId++,
         name: names.Kaito,
-        gender: 'male',
+        gender: 'M',
         image: 'カイト.png',
         strength: 30,
         wisdom: 10,
@@ -543,25 +725,28 @@ function Render_Mainadventurer() {
         temp: false,
         busy: false,
         critChance: 10,
-        primary: 0,
+        primary: 0,                    // STRタイプ
         Friendliness: 70,
-        bag: {  // 初期バッグ追加（村NPC風）
+        traits: [                      // 特性追加
+            { type: 'gender', preference: 'F', delta: 12, displayName: "女性好き" },
+            { type: 'primary', preference: 1, delta: 12, displayName: "魔法使い好き" }  // WISタイプ
+        ],
+        friendliness: {},              // 初期化
+        bag: {
             gold: 150,
             items: [
-                { name: "鉄の短剣", qty: 2 },  // 二刀流らしい初期武器
+                { name: "鉄の短剣", qty: 2 },
                 { name: "HPポーション（小）", qty: 5, type: "potion", restore: "hp", amount: 50 },
-                { name: "冒険者の地図", qty: 1 }  // フレーバーアイテム
+                { name: "冒険者の地図", qty: 1 }
             ]
         }
     };
 
-    gameState.adventurers.push(Kaito);
-
-    // ルナ (WIS 特化の魔法使い) - 初期アイテム追加 + 古いアミュレット
+    // ルナ (WIS 特化の魔法使い) - 男性好き + STRタイプ好き
     const Luna = {
         id: gameState.nextId++,
         name: names.Luna,
-        gender: 'female',
+        gender: 'F',
         image: 'ルナ.png',
         strength: 10,
         wisdom: 30,
@@ -579,20 +764,44 @@ function Render_Mainadventurer() {
         temp: false,
         busy: false,
         critChance: 10,
-        primary: 1,
+        primary: 1,                    // WISタイプ
         Friendliness: 70,
-        bag: {  // 初期バッグ追加（村NPC風）
+        traits: [                      // 特性追加
+            { type: 'gender', preference: 'M', delta: 12, displayName: "男性好き" },
+            { type: 'primary', preference: 0, delta: 12, displayName: "力持ち好き" }  // STRタイプ
+        ],
+        friendliness: {},              // 初期化
+        bag: {
             gold: 200,
             items: [
-                { name: "古いアミュレット", qty: 1 },  // クエスト関連アイテム（lost_amuletクエストで使用可能）
+                { name: "古いアミュレット", qty: 1 },
                 { name: "魔力の結晶（小）", qty: 8 },
                 { name: "MPポーション（小）", qty: 6, type: "potion", restore: "mp", amount: 60 },
-                { name: "魔法の書", qty: 1 }  // フレーバーアイテム
+                { name: "魔法の書", qty: 1 }
             ]
         }
     };
 
+    // 両方をpush
+    gameState.adventurers.push(Kaito);
     gameState.adventurers.push(Luna);
+
+    // === メイン冒険者間の初期好感度を計算・設定 ===
+    // Kaito → Luna
+    Kaito.friendliness[Luna.id] = 50;
+    // Luna → Kaito
+    Luna.friendliness[Kaito.id] = 50;
+
+    // 将来的に他の初期冒険者が追加された場合も対応（全ペア相互設定）
+    // 例: const mains = [Kaito, Luna];
+    // for (let i = 0; i < mains.length; i++) {
+    //     for (let j = i + 1; j < mains.length; j++) {
+    //         const a = mains[i];
+    //         const b = mains[j];
+    //         a.friendliness[b.id] = calculateInitialFriendliness(a, b);
+    //         b.friendliness[a.id] = calculateInitialFriendliness(b, a);
+    //     }
+    // }
 }
 
 
@@ -2230,20 +2439,37 @@ function generateTempAdventurer(){
         generatedDay: 0,
         primary: primary,
         critChance: 10,
-        Friendliness: 50,
-        bag:
-            {gold: 300,
-            items: [] // Empty items array – matches village NPC structure
-        },
+        traits: [],                     // 新規（拡張版）
+        friendliness: {},               // 雇用時に初期化
+        Friendliness: 50,               // NPC用（冒険者は使用しない）
+        bag: {gold: 300, items: []},
     };
+
+    // 特性を0～3個ランダム付与（重複防止を強化）
+    const numTraits = Math.floor(Math.random() * 4); // 0～3個（平均1.5個程度）
+    const usedKeys = new Set();
+
+    for (let i = 0; i < numTraits; i++) {
+        let trait;
+        let key;
+        do {
+            trait = possibleTraits[Math.floor(Math.random() * possibleTraits.length)];
+            // 重複防止キー生成（type + 主要プロパティ）
+            if (trait.type === 'gender') key = `gender_${trait.preference}_${trait.delta}`;
+            else if (trait.type === 'primary') key = `primary_${trait.preference}_${trait.delta}`;
+            else if (trait.type === 'level') key = `level_${trait.preference}_${trait.delta}`;
+            else if (trait.type === 'stat_compare') key = `stat_${trait.stat}_${trait.preference}_${trait.delta}`;
+            else if (trait.type === 'action_preference') key = `action_${trait.action}`;
+            else key = JSON.stringify(trait);
+        } while (usedKeys.has(key));
+
+        usedKeys.add(key);
+        adv.traits.push(trait);
+    }
     
-    // Target level = floor(reputation / 20), minimum 1 → matches (reputation / 10)/2
     const targetLevel = Math.max(1, Math.floor(gameState.reputation / 20));
-    
-    // Force level-ups from level 1 to targetLevel
     levelUp(adv, targetLevel - 1);
     
-    // Costs are based on final total stats after all growth
     const total = adv.strength + adv.wisdom + adv.dexterity + adv.luck;
     adv.hiringCost = Math.floor(20 + total);
     adv.recruitingCost = Math.floor(100 + total * 3);
@@ -2656,15 +2882,36 @@ function recruit(i){
     }
     const adv=gameState.recruitPending[i];
     if(!spendGold(adv.recruitingCost)) return;
-    const newAdv={...adv};
-    delete newAdv.temp; delete newAdv.generatedDay;
+
+    // 深いコピーして正規メンバー化
+    const newAdv = JSON.parse(JSON.stringify(adv));
+    delete newAdv.temp;
+    delete newAdv.generatedDay;
     newAdv.hp = newAdv.maxHp;
     newAdv.mp = newAdv.maxMp;
-    newAdv.busy=false;
+    newAdv.busy = false;
     newAdv.buffs = [];
+
+    // === 好感度初期化（新規追加）===
+    newAdv.friendliness = {};                     // 自分から他者への好感度
+    newAdv.traits = newAdv.traits || [];          // generateTempAdventurerで付与済みのはず
+
+    // 既存メンバー全員との好感度を設定
+    gameState.adventurers.forEach(other => {
+        if (!other.friendliness) other.friendliness = {};
+
+        // 新メンバー → 既存メンバー
+        newAdv.friendliness[other.id] = 50;
+
+        // 既存メンバー → 新メンバー
+        other.friendliness[newAdv.id] = 50;
+    });
+
+    // ゲーム状態に追加
     gameState.adventurers.push(newAdv);
     gameState.recruitPending.splice(i,1);
-    better_alert(adv.name+"が新しいメンバーになりました","success");
+
+    better_alert(adv.name + "が新しいメンバーになりました","success");
     updateDisplays();
 }
 
@@ -4326,8 +4573,79 @@ function isFacilityUsable(facilityName) {
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
 // 冒険者の1日の自由行動を処理（playDay() から呼び出し）
+// === 場所別交流バリエーション（翻訳キー対応版）===
+// descKeyA / descKeyB に翻訳キー文字列を指定（{a} {b} プレースホルダー使用）
+// mutual の場合 descKeyA = descKeyB でOK（名前置換で自動反転）
+// unilateral の場合別キー
+
+const interactionsByAction = {
+    tavern: [
+        { type: 'mutual', positive: true, descKeyA: 'int_tavern_mutual_laugh', descKeyB: 'int_tavern_mutual_laugh', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: true, descKeyA: 'int_tavern_mutual_food', descKeyB: 'int_tavern_mutual_food', deltaA: +2, deltaB: +2 },
+        { type: 'mutual', positive: true, descKeyA: 'int_tavern_mutual_sing', descKeyB: 'int_tavern_mutual_sing', deltaA: +4, deltaB: +4 },
+        { type: 'mutual', positive: false, descKeyA: 'int_tavern_mutual_gamble_lose', descKeyB: 'int_tavern_mutual_gamble_lose', deltaA: -3, deltaB: -3 },
+        { type: 'mutual', positive: false, descKeyA: 'int_tavern_mutual_drink_argue', descKeyB: 'int_tavern_mutual_drink_argue', deltaA: -2, deltaB: -2 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_tavern_uni_treat', descKeyB: 'int_tavern_uni_treated', deltaA: +2, deltaB: +3 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_tavern_uni_rude_drink', descKeyB: 'int_tavern_uni_criticized', deltaA: -3, deltaB: +1 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_tavern_uni_funny_story', descKeyB: 'int_tavern_uni_listened', deltaA: +3, deltaB: +1 }
+    ],
+
+    blacksmith: [
+        { type: 'mutual', positive: true, descKeyA: 'int_blacksmith_mutual_polish', descKeyB: 'int_blacksmith_mutual_polish', deltaA: +2, deltaB: +2 },
+        { type: 'mutual', positive: true, descKeyA: 'int_blacksmith_mutual_success', descKeyB: 'int_blacksmith_mutual_success', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: false, descKeyA: 'int_blacksmith_mutual_failure', descKeyB: 'int_blacksmith_mutual_failure', deltaA: -2, deltaB: -2 },
+        { type: 'mutual', positive: false, descKeyA: 'int_blacksmith_mutual_technique_argue', descKeyB: 'int_blacksmith_mutual_technique_argue', deltaA: -3, deltaB: -3 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_blacksmith_uni_tip_learned', descKeyB: 'int_blacksmith_uni_tip_taught', deltaA: +3, deltaB: +1 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_blacksmith_uni_admire_tech', descKeyB: 'int_blacksmith_uni_praised', deltaA: +3, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_blacksmith_uni_hammer_noise', descKeyB: 'int_blacksmith_uni_annoyed', deltaA: -2, deltaB: +1 }
+    ],
+
+    alchemy: [
+        { type: 'mutual', positive: true, descKeyA: 'int_alchemy_mutual_share_materials', descKeyB: 'int_alchemy_mutual_share_materials', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: true, descKeyA: 'int_alchemy_mutual_new_recipe', descKeyB: 'int_alchemy_mutual_new_recipe', deltaA: +2, deltaB: +2 },
+        { type: 'mutual', positive: false, descKeyA: 'int_alchemy_mutual_failure', descKeyB: 'int_alchemy_mutual_failure', deltaA: -2, deltaB: -2 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_alchemy_uni_rare_material', descKeyB: 'int_alchemy_uni_gave_material', deltaA: +3, deltaB: +1 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_alchemy_uni_help_experiment', descKeyB: 'int_alchemy_uni_helped', deltaA: +2, deltaB: +2 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_alchemy_uni_bad_smell', descKeyB: 'int_alchemy_uni_smell_complaint', deltaA: -3, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_alchemy_uni_blame_mistake', descKeyB: 'int_alchemy_uni_blamed', deltaA: -3, deltaB: -2 }
+    ],
+
+    gather: [
+        { type: 'mutual', positive: true, descKeyA: 'int_gather_mutual_rare_herb', descKeyB: 'int_gather_mutual_rare_herb', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: true, descKeyA: 'int_gather_mutual_help', descKeyB: 'int_gather_mutual_help', deltaA: +2, deltaB: +2 },
+        { type: 'mutual', positive: false, descKeyA: 'int_gather_mutual_spot_argue', descKeyB: 'int_gather_mutual_spot_argue', deltaA: -3, deltaB: -3 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_gather_uni_tip_learned', descKeyB: 'int_gather_uni_tip_taught', deltaA: +3, deltaB: +1 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_gather_uni_admire_amount', descKeyB: 'int_gather_uni_praised_amount', deltaA: +2, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_gather_uni_noise', descKeyB: 'int_gather_uni_annoyed', deltaA: -2, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_gather_uni_spot_taken', descKeyB: 'int_gather_uni_spot_misunderstanding', deltaA: -3, deltaB: 0 }
+    ],
+
+    hunting: [
+        { type: 'mutual', positive: true, descKeyA: 'int_hunting_mutual_big_preys', descKeyB: 'int_hunting_mutual_big_preys', deltaA: +4, deltaB: +4 },
+        { type: 'mutual', positive: true, descKeyA: 'int_hunting_mutual_treat_wounds', descKeyB: 'int_hunting_mutual_treat_wounds', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: false, descKeyA: 'int_hunting_mutual_preys_argue', descKeyB: 'int_hunting_mutual_preys_argue', deltaA: -3, deltaB: -3 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_hunting_uni_saved_life', descKeyB: 'int_hunting_uni_saved', deltaA: +4, deltaB: +2 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_hunting_uni_reliable', descKeyB: 'int_hunting_uni_relied_on', deltaA: +3, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_hunting_uni_reckless', descKeyB: 'int_hunting_uni_worried', deltaA: -3, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_hunting_uni_scary_noise', descKeyB: 'int_hunting_uni_surprised', deltaA: -2, deltaB: 0 }
+    ],
+
+    default: [
+        { type: 'mutual', positive: true, descKeyA: 'int_default_mutual_quiet_talk', descKeyB: 'int_default_mutual_quiet_talk', deltaA: +2, deltaB: +2 },
+        { type: 'mutual', positive: true, descKeyA: 'int_default_mutual_guild_future', descKeyB: 'int_default_mutual_guild_future', deltaA: +3, deltaB: +3 },
+        { type: 'mutual', positive: false, descKeyA: 'int_default_mutual_distance', descKeyB: 'int_default_mutual_distance', deltaA: -2, deltaB: -2 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_default_uni_relieved', descKeyB: 'int_default_uni_presence', deltaA: +2, deltaB: +1 },
+        { type: 'unilateral', positive: false, descKeyA: 'int_default_uni_silence_bother', descKeyB: 'int_default_uni_ignored', deltaA: -2, deltaB: -1 },
+        { type: 'unilateral', positive: true, descKeyA: 'int_default_uni_light_talk', descKeyB: 'int_default_uni_talked_to', deltaA: +1, deltaB: +2 }
+    ]
+};
+
+
 function processAdventurerDailyActions() {
     let totalGuildGain = 0;
+
+    const actionGroups = {};       
+    const metPairs = new Set();    
 
     gameState.adventurers.forEach(adv => {
         if (isAdventurerOnQuest(adv) || adv.temp) return;
@@ -4337,6 +4655,7 @@ function processAdventurerDailyActions() {
         }
 
         if (!adv.actionHistory) adv.actionHistory = [];
+        if (!adv.friendliness) adv.friendliness = {};   
 
         const maxHp = adv.maxHp || 100;
         const maxMp = adv.maxMp || 100;
@@ -4359,7 +4678,7 @@ function processAdventurerDailyActions() {
                 adv.hp = Math.min(maxHp, adv.hp + usedAmount);
                 removeItemFromBag(adv.bag, item.name, 1);
                 recoveryItemUsed = 'hp';
-                recoveryDescription = t('recovery_hp_used', {item: item.name, amount: usedAmount});
+                recoveryDescription = t('recovery_hp_used', {item: item.name, amount: usedAmount}) || `${item.name}を使用してHPを${usedAmount}回復した`;
             }
         }
 
@@ -4377,269 +4696,285 @@ function processAdventurerDailyActions() {
                 adv.mp = Math.min(maxMp, adv.mp + usedAmount);
                 removeItemFromBag(adv.bag, item.name, 1);
                 recoveryItemUsed = 'mp';
-                recoveryDescription = t('recovery_mp_used', {item: item.name, amount: usedAmount});
+                recoveryDescription = t('recovery_mp_used', {item: item.name, amount: usedAmount}) || `${item.name}を使用してMPを${usedAmount}回復した`;
             }
         }
 
         const hpRatio = adv.hp / maxHp;
         const mpRatio = adv.mp / maxMp;
         const isLow = hpRatio < 0.5 || mpRatio < 0.5;
+        const isHigh = hpRatio > 0.6 && mpRatio > 0.6;
 
-        // ── 行動選択 ──
-        let possibleActions = ['gather', 'none'];
-
-        if (isFacilityUsable('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
-            possibleActions.push('blacksmith');
-        }
-
-        if (isFacilityUsable('alchemy')) {
-            const alchemyRecipes = [
-                { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
-                { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
-            ];
-            const canAlchemy = alchemyRecipes.some(r => 
-                r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
-            );
-            if (canAlchemy) possibleActions.push('alchemy');
-        }
-
-        if (isFacilityUsable('tavern')) {
-            possibleActions.push('tavern');
-        }
-
-        let action;
-
-        if (isLow && possibleActions.includes('tavern')) {
-            action = 'tavern';
-        } else {
-            if (hpRatio > 0.6 && mpRatio > 0.6) {
-                possibleActions.push('hunting');
-            }
-            action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
-        }
-
-        // ── 料金確率ロジック ──
-        const facilityFee = gameState.facilityFees?.[action] || 0;
+        let description = '';
+        let success = true;
         let adventurerChange = 0;
         let guildGain = 0;
 
-        if (facilityFee > 0 && adv.bag.gold > 0) {
-            const feePercent = (facilityFee / adv.bag.gold) * 100;
-            if (feePercent >= 10) {
-                const actionName = getActionName(action); // 既存の関数をそのまま使用（翻訳済みと仮定）
-                adv.actionHistory.push({
-                    day: gameState.day - 1,
-                    action: action,
-                    description: t('action_too_expensive', {percent: Math.round(feePercent), action: actionName}) +
-                                 (recoveryDescription ? t('recovery_already_used_note', {recovery: recoveryDescription}) : ''),
-                    adventurerChange: 0,
-                    guildGain: 0,
-                    success: false,
-                    recoveryItemUsed: recoveryItemUsed
-                });
-                if (adv.actionHistory.length > 30) adv.actionHistory.shift();
-                return;
-            }
+        // ── 行動選択（厳密な確率配分 + 特性による行動傾向ボーナス） ──
+        let action;
 
-            const successChance = Math.max(0, 1 - (feePercent / 10));
-            if (Math.random() > successChance) {
-                const actionName = getActionName(action);
-                adv.actionHistory.push({
-                    day: gameState.day - 1,
-                    action: action,
-                    description: t('action_fee_reluctant', {action: actionName}) +
-                                 (recoveryDescription ? t('recovery_already_used_note', {recovery: recoveryDescription}) : ''),
-                    adventurerChange: 0,
-                    guildGain: 0,
-                    success: false,
-                    recoveryItemUsed: recoveryItemUsed
-                });
-                if (adv.actionHistory.length > 30) adv.actionHistory.shift();
-                return;
-            }
-
-            adv.bag.gold -= facilityFee;
-            gameState.gold += facilityFee;
-            adventurerChange -= facilityFee;
-            guildGain += facilityFee;
-        }
-
-        // ── メイン行動の実行 ──
-        let description = '';
-        let success = true;
-
-        switch (action) {
-            case 'gather': {
-                const items = ['キノコ', '薬草', '花', '普通の薬草'];
-                const item = items[Math.floor(Math.random() * items.length)];
-                const qty = Math.floor(Math.random() * 3) + 1;
-                addItemToBag(adv.bag, item, qty);
-                description = t('gather_success', {item: item, qty: qty});
-                break;
-            }
-
-            case 'alchemy': {
-                const recipes = [
+        // 低HP/MP時、tavernが可能なら100% tavern（優先ルール維持）
+        if (isLow && isFacilityUsable('tavern')) {
+            action = 'tavern';
+        } else {
+            // 利用可能な施設リストを取得
+            const availableFacilities = [];
+            if (isFacilityUsable('tavern')) availableFacilities.push('tavern');
+            if (isFacilityUsable('alchemy')) {
+                const alchemyRecipes = [
                     { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
                     { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
                 ];
-                const available = recipes.filter(r => 
+                const canAlchemy = alchemyRecipes.some(r => 
                     r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
                 );
-                if (available.length === 0) {
-                    success = false;
-                    description = t('alchemy_no_materials');
-                    break;
-                }
-                const recipe = available[Math.floor(Math.random() * available.length)];
-                recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
-                addItemToBag(adv.bag, recipe.name, 1);
-                description = t('alchemy_success', {recipe: recipe.name});
-                break;
+                if (canAlchemy) availableFacilities.push('alchemy');
+            }
+            if (isFacilityUsable('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
+                availableFacilities.push('blacksmith');
             }
 
-            case 'blacksmith': {
-                if (!adv.equipment || Object.keys(adv.equipment).length === 0) {
-                    success = false;
-                    description = t('blacksmith_no_equip');
-                    break;
-                }
-                if (Math.random() < 0.5) {
-                    const eqKeys = Object.keys(adv.equipment);
-                    const eq = adv.equipment[eqKeys[Math.floor(Math.random() * eqKeys.length)]];
-                    const oldEnh = eq.enhancement || 0;
-                    eq.enhancement = oldEnh + 1;
-                    description = t('blacksmith_success', {equip: eq.name, old: oldEnh, new: eq.enhancement});
-                } else {
-                    success = false;
-                    description = t('blacksmith_failure');
-                }
-                break;
+            // 100スロット方式で基本確率実現
+            const slots = [];
+
+            // 基本確率
+            for (let i = 0; i < 20; i++) slots.push('guild_stay');
+            for (let i = 0; i < 20; i++) slots.push('street_walk');
+            for (let i = 0; i < 20; i++) slots.push('gather');
+            if (isHigh) {
+                for (let i = 0; i < 10; i++) slots.push('hunting');
             }
+            availableFacilities.forEach(fac => {
+                for (let i = 0; i < 10; i++) slots.push(fac);
+            });
 
-            case 'tavern': {
-                const recoveryBonus = 1.5;
-                adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.2 * recoveryBonus));
-                adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.2 * recoveryBonus));
-                description = t('tavern_rest');
-
-                const tavernSubRandom = Math.random();
-                if (tavernSubRandom < 0.4) {
-                    const tavernLevel = gameState.facilities.tavern || 0;
-                    let availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
-
-                    const maxFoodSpend = Math.floor(adv.bag.gold * 0.2);
-                    availableFoods = availableFoods.filter(food => (food.cost || 250) <= maxFoodSpend);
-
-                    if (availableFoods.length > 0) {
-                        const food = availableFoods[Math.floor(Math.random() * availableFoods.length)];
-                        const foodCost = food.cost || 250;
-
-                        adv.bag.gold -= foodCost;
-                        adventurerChange -= foodCost;
-
-                        const playerGainFromFood = Math.floor(foodCost * 0.1);
-                        gameState.gold += playerGainFromFood;
-                        guildGain += playerGainFromFood;
-
-                        if (!adv.buffs) adv.buffs = [];
-                        const buffCopy = JSON.parse(JSON.stringify(food.buff));
-                        buffCopy.daysLeft = buffCopy.days;
-                        adv.buffs.push(buffCopy);
-
-                        description += t('tavern_food_order', {food: food.name, cost: foodCost});
-                    } else {
-                        description += t('tavern_food_too_expensive');
-                    }
-                } else if (tavernSubRandom < 0.5) {
-                    if (adv.bag.gold > 0 && gameState.gold > 0) {
-                        let betPercent = 0.25 + Math.random() * 0.5;
-                        let bet = Math.floor(adv.bag.gold * betPercent);
-                        bet = Math.min(bet, gameState.gold);
-
-                        if (bet > 0) {
-                            const isWin = Math.random() < 0.4;
-
-                            if (isWin) {
-                                adv.bag.gold += bet;
-                                gameState.gold -= bet;
-                                adventurerChange += bet;
-                                guildGain -= bet;
-                                description += t('tavern_gamble_win', {amount: bet});
-                            } else {
-                                adv.bag.gold -= bet;
-                                gameState.gold += bet;
-                                adventurerChange -= bet;
-                                guildGain += bet;
-                                description += t('tavern_gamble_loss', {amount: bet});
+            // === 特性による行動傾向ボーナス適用 ===
+            // action_preference 特性を持つ場合、対応行動のスロットを追加
+            if (adv.traits) {
+                adv.traits.forEach(trait => {
+                    if (trait.type === 'action_preference' && trait.weight_bonus > 0) {
+                        const preferredAction = trait.action;
+                        // 基本スロットに存在する行動のみボーナス適用（無効行動防止）
+                        if (slots.includes(preferredAction)) {
+                            for (let i = 0; i < trait.weight_bonus; i++) {
+                                slots.push(preferredAction);
                             }
                         }
                     }
-                }
-                break;
-            }
-
-            case 'hunting': {
-                const damagePercent = 0.1 + Math.random() * 0.4;
-                const hpLoss = Math.floor(maxHp * damagePercent);
-                const mpLoss = Math.floor(maxMp * damagePercent);
-                adv.hp = Math.max(1, adv.hp - hpLoss);
-                adv.mp = Math.max(0, adv.mp - mpLoss);
-
-                const expNeeded = adv.level * 100;
-                const expGain = Math.floor(expNeeded * 0.1);
-                adv.exp += expGain;
-
-                let goldGain = adv.level * 20;
-                goldGain = Math.max(20, Math.min(5000, goldGain));
-
-                const guildFee = Math.floor(goldGain * 0.1);
-                const adventurerGain = goldGain - guildFee;
-
-                adv.bag.gold += adventurerGain;
-                gameState.gold += guildFee;
-                adventurerChange += adventurerGain;
-                guildGain += guildFee;
-
-                description = t('hunting_report', {
-                    hpLoss: hpLoss,
-                    mpLoss: mpLoss,
-                    expGain: expGain,
-                    goldGain: adventurerGain,
-                    guildFee: guildFee
                 });
-
-                if (adv.exp >= expNeeded) {
-                    adv.level += 1;
-                    adv.exp -= expNeeded;
-                    description += t('hunting_level_up', {level: adv.level});
-                }
-
-                break;
             }
 
-            case 'none': {
-                description = t('none_idle');
+            // スロットが空の場合の保険
+            if (slots.length === 0) {
+                slots.push('guild_stay');
+            }
 
-                if (adv.friendliness >= 60 && Math.random() < 0.2) {
-                    const donated = Math.floor(adv.bag.gold * 0.01 * adv.friendliness);
-                    if (donated > 0) {
-                        adv.bag.gold -= donated;
-                        gameState.gold += donated;
-                        adventurerChange -= donated;
-                        guildGain += donated;
-                        description = t('none_donation', {donation: donated});
-                    }
+            // ランダム選択
+            action = slots[Math.floor(Math.random() * slots.length)];
+        }
+
+        // === 施設使用料チェック（施設行動の場合のみ）===
+        const facilityActions = ['tavern', 'blacksmith', 'alchemy'];
+        const isFacilityAction = facilityActions.includes(action);
+
+        if (isFacilityAction) {
+            const facilityFee = gameState.facilityFees?.[action] || 0;
+
+            if (facilityFee > 0 && adv.bag.gold > 0) {
+                const feePercent = (facilityFee / adv.bag.gold) * 100;
+
+                if (feePercent >= 10 || Math.random() < feePercent / 10) {
+                    action = 'street_walk';
+                    description = t('action_fee_give_up') || "施設の使用料が高すぎて諦め、街に出た";
+                    success = false;
+                } else {
+                    adv.bag.gold -= facilityFee;
+                    gameState.gold += facilityFee;
+                    adventurerChange -= facilityFee;
+                    guildGain += facilityFee;
+                }
+            }
+        }
+
+        // 行動を記録
+        adv.dailyAction = action;
+        if (!actionGroups[action]) actionGroups[action] = [];
+        actionGroups[action].push(adv);
+
+        // ── メイン行動の実行 ──
+        if (description === '') {
+            switch (action) {
+                case 'gather': {
+                    const items = ['キノコ', '薬草', '花', '普通の薬草'];
+                    const item = items[Math.floor(Math.random() * items.length)];
+                    const qty = Math.floor(Math.random() * 3) + 1;
+                    addItemToBag(adv.bag, item, qty);
+                    description = t('gather_success', {item: item, qty: qty}) || `採取で${item}を${qty}個入手した`;
+                    break;
                 }
 
-                break;
+                case 'hunting': {
+                    const damagePercent = 0.1 + Math.random() * 0.4;
+                    const hpLoss = Math.floor(maxHp * damagePercent);
+                    const mpLoss = Math.floor(maxMp * damagePercent);
+                    adv.hp = Math.max(1, adv.hp - hpLoss);
+                    adv.mp = Math.max(0, adv.mp - mpLoss);
+
+                    const expNeeded = adv.level * 100;
+                    const expGain = Math.floor(expNeeded * 0.1);
+                    adv.exp += expGain;
+
+                    let goldGain = adv.level * 20;
+                    goldGain = Math.max(20, Math.min(5000, goldGain));
+
+                    const guildFee = Math.floor(goldGain * 0.1);
+                    const adventurerGain = goldGain - guildFee;
+
+                    adv.bag.gold += adventurerGain;
+                    gameState.gold += guildFee;
+                    adventurerChange += adventurerGain;
+                    guildGain += guildFee;
+
+                    description = t('hunting_report', {
+                        hpLoss: hpLoss,
+                        mpLoss: mpLoss,
+                        expGain: expGain,
+                        goldGain: adventurerGain,
+                        guildFee: guildFee
+                    }) || `狩りでHP-${hpLoss} MP-${mpLoss}、EXP+${expGain}、Gold+${adventurerGain}（ギルド手数料${guildFee}G）`;
+
+                    if (adv.exp >= expNeeded) {
+                        adv.level += 1;
+                        adv.exp -= expNeeded;
+                        description += t('hunting_level_up', {level: adv.level}) || ` レベルアップ！ Lv${adv.level}`;
+                    }
+                    break;
+                }
+
+                case 'guild_stay': {
+                    description = t('guild_stay_idle') || "ギルドで休憩した";
+                    break;
+                }
+
+                case 'street_walk': {
+                    description = t('street_walk_idle') || "街を散策した";
+
+                    if (Math.random() < 0.3) {
+                        const foundGold = Math.floor(Math.random() * 50) + 10;
+                        adv.bag.gold += foundGold;
+                        adventurerChange += foundGold;
+                        description += t('street_walk_found_gold', {amount: foundGold}) || ` 道端で小銭を見つけた！ +${foundGold}G`;
+                    }
+                    break;
+                }
+
+                case 'tavern': {
+                    const recoveryBonus = 1.5;
+                    adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.2 * recoveryBonus));
+                    adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.2 * recoveryBonus));
+                    description = t('tavern_rest') || "酒場で休息した";
+
+                    const tavernSubRandom = Math.random();
+                    if (tavernSubRandom < 0.4) {
+                        const tavernLevel = gameState.facilities.tavern || 0;
+                        let availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
+
+                        const maxFoodSpend = Math.floor(adv.bag.gold * 0.2);
+                        availableFoods = availableFoods.filter(food => (food.cost || 250) <= maxFoodSpend);
+
+                        if (availableFoods.length > 0) {
+                            const food = availableFoods[Math.floor(Math.random() * availableFoods.length)];
+                            const foodCost = food.cost || 250;
+
+                            adv.bag.gold -= foodCost;
+                            adventurerChange -= foodCost;
+
+                            const playerGainFromFood = Math.floor(foodCost * 0.1);
+                            gameState.gold += playerGainFromFood;
+                            guildGain += playerGainFromFood;
+
+                            if (!adv.buffs) adv.buffs = [];
+                            const buffCopy = JSON.parse(JSON.stringify(food.buff));
+                            buffCopy.daysLeft = buffCopy.days;
+                            adv.buffs.push(buffCopy);
+
+                            description += t('tavern_food_order', {food: food.name, cost: foodCost}) || ` ${food.name}を注文した（${foodCost}G）`;
+                        } else {
+                            description += t('tavern_food_too_expensive') || " 料理が高すぎて注文できなかった";
+                        }
+                    } else if (tavernSubRandom < 0.5) {
+                        if (adv.bag.gold > 0 && gameState.gold > 0) {
+                            let betPercent = 0.25 + Math.random() * 0.5;
+                            let bet = Math.floor(adv.bag.gold * betPercent);
+                            bet = Math.min(bet, gameState.gold);
+
+                            if (bet > 0) {
+                                const isWin = Math.random() < 0.4;
+
+                                if (isWin) {
+                                    adv.bag.gold += bet;
+                                    gameState.gold -= bet;
+                                    adventurerChange += bet;
+                                    guildGain -= bet;
+                                    description += t('tavern_gamble_win', {amount: bet}) || ` ギャンブルで勝った！ +${bet}G`;
+                                } else {
+                                    adv.bag.gold -= bet;
+                                    gameState.gold += bet;
+                                    adventurerChange -= bet;
+                                    guildGain += bet;
+                                    description += t('tavern_gamble_loss', {amount: bet}) || ` ギャンブルで負けた… -${bet}G`;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                case 'blacksmith': {
+                    if (!adv.equipment || Object.keys(adv.equipment).length === 0) {
+                        success = false;
+                        description = t('blacksmith_no_equip') || "装備がなく鍛冶を利用できなかった";
+                        break;
+                    }
+                    if (Math.random() < 0.5) {
+                        const eqKeys = Object.keys(adv.equipment);
+                        const eq = adv.equipment[eqKeys[Math.floor(Math.random() * eqKeys.length)]];
+                        const oldEnh = eq.enhancement || 0;
+                        eq.enhancement = oldEnh + 1;
+                        description = t('blacksmith_success', {equip: eq.name, old: oldEnh, new: eq.enhancement}) || `${eq.name}の強化に成功！ +1 (${oldEnh} → ${eq.enhancement})`;
+                    } else {
+                        success = false;
+                        description = t('blacksmith_failure') || "強化に失敗した…";
+                    }
+                    break;
+                }
+
+                case 'alchemy': {
+                    const recipes = [
+                        { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
+                        { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
+                    ];
+                    const available = recipes.filter(r => 
+                        r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
+                    );
+                    if (available.length === 0) {
+                        success = false;
+                        description = t('alchemy_no_materials') || "材料が足りず錬金できなかった";
+                        break;
+                    }
+                    const recipe = available[Math.floor(Math.random() * available.length)];
+                    recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
+                    addItemToBag(adv.bag, recipe.name, 1);
+                    description = t('alchemy_success', {recipe: recipe.name}) || `${recipe.name}を調合した`;
+                    break;
+                }
             }
         }
 
         totalGuildGain += guildGain;
 
         const fullDescription = recoveryDescription 
-            ? t('recovery_then_action', {recovery: recoveryDescription, action: description})
+            ? (recoveryDescription + ' ' + description)
             : description;
 
         adv.actionHistory.push({
@@ -4657,31 +4992,83 @@ function processAdventurerDailyActions() {
         }
     });
 
-    // ── 日次ギルド収支トータルアラート ──
+    // === 交流処理（すべての行動で可能、2人以上なら交流）===
+    for (const actionKey in actionGroups) {
+        const group = actionGroups[actionKey];
+        if (group.length < 2) continue;
+
+        group.forEach(adv => {
+            const others = group.filter(o => o.id !== adv.id);
+            if (others.length === 0) return;
+
+            const partner = others[Math.floor(Math.random() * others.length)];
+
+            const pairKey = `${Math.min(adv.id, partner.id)}-${Math.max(adv.id, partner.id)}`;
+            if (metPairs.has(pairKey)) return;
+            metPairs.add(pairKey);
+
+            const avgF = ((adv.friendliness[partner.id] ?? 50) + (partner.friendliness[adv.id] ?? 50)) / 2;
+            const positiveWeight = avgF > 50 ? 0.75 : 0.25;
+
+            let candidates = interactionsByAction[actionKey] || interactionsByAction.default;
+
+            candidates = candidates.filter(v => 
+                Math.random() < positiveWeight ? v.positive : !v.positive
+            );
+            if (candidates.length === 0) return;
+
+            const variation = candidates[Math.floor(Math.random() * candidates.length)];
+
+            adv.friendliness[partner.id] = Math.max(0, Math.min(100, (adv.friendliness[partner.id] ?? 50) + variation.deltaA));
+            partner.friendliness[adv.id] = Math.max(0, Math.min(100, (partner.friendliness[adv.id] ?? 50) + variation.deltaB));
+
+            // 翻訳キー対応（descKeyA / descKeyB 使用）
+            let descAdv = t(variation.descKeyA, {a: adv.name, b: partner.name});
+            let descPartner = t(variation.descKeyB || variation.descKeyA, {a: partner.name, b: adv.name});
+
+            const deltaAdvStr = variation.deltaA > 0 ? `+${variation.deltaA}` : `${variation.deltaA}`;
+            const deltaPartnerStr = variation.deltaB > 0 ? `+${variation.deltaB}` : `${variation.deltaB}`;
+
+            descAdv += ` [${partner.name}${deltaAdvStr}]`;
+            descPartner += ` [${adv.name}${deltaPartnerStr}]`;
+
+            const todayAdv = adv.actionHistory.find(e => e.day === gameState.day - 1);
+            if (todayAdv) todayAdv.description += `（${descAdv}）`;
+
+            const todayPartner = partner.actionHistory.find(e => e.day === gameState.day - 1);
+            if (todayPartner) todayPartner.description += `（${descPartner}）`;
+        });
+    }
+
+    // 後片付け
+    gameState.adventurers.forEach(adv => delete adv.dailyAction);
+
     if (totalGuildGain > 0) {
-        better_alert(t('daily_guild_gain_positive', {amount: totalGuildGain}), "success");
+        better_alert(t('daily_guild_gain_positive', {amount: totalGuildGain}) || `今日のギルド収入: +${totalGuildGain}G`, "success");
     } else if (totalGuildGain < 0) {
-        better_alert(t('daily_guild_gain_negative', {amount: totalGuildGain}), "warning");
+        better_alert(t('daily_guild_gain_negative', {amount: totalGuildGain}) || `今日のギルド収支: ${totalGuildGain}G`, "warning");
     }
 }
 // 補助関数：行動名を日本語で返す
+// === 行動名の翻訳対応ヘルパー関数（新規追加）===
 function getActionName(action) {
     const keys = {
-        gather: 'action_gather',
-        alchemy: 'action_alchemy',
-        blacksmith: 'action_blacksmith',
-        tavern: 'action_tavern',
-        hunting: 'action_hunting',  // processAdventurerDailyActions で使用されているため追加
-        none: 'action_none'
+        gather: 'action_gather',          // 採取
+        alchemy: 'action_alchemy',        // 錬金
+        blacksmith: 'action_blacksmith',  // 鍛冶
+        tavern: 'action_tavern',          // 酒場
+        hunting: 'action_hunting',        // 狩り
+        guild_stay: 'action_guild_stay',  // ギルド滞在
+        street_walk: 'action_street_walk',// 街散策
+        none: 'action_none'               // （将来の保険用）
     };
     const key = keys[action];
     if (key) {
-        return t(key);
+        return t(key) || action; // 翻訳キー未定義時もaction名でフォールバック
     }
-    // 未知の action が来た場合のフォールバック（デバッグしやすいように action 自体を返す）
+    // 未知のactionが来た場合の安全策
     return action;
 }
-
 
 
 // === playDay() の更新版（ストーリークエストを戦闘レンダリングに統合） ===
@@ -8038,6 +8425,136 @@ function closeHistoryModal() {
     }
 }
 
+// === 新規追加: 関係性表示モーダル関数 ===
+function showRelationships(charIndex) {
+    const perms = gameState.adventurers.filter(a => !a.temp);
+    if (perms.length === 0 || charIndex >= perms.length) return;
+
+    const adv = perms[charIndex];
+
+    // 評価テキストを取得するヘルパー（翻訳対応）
+    function getEvaluation(val) {
+        if (val >= 80) return { text: t('friendliness_love'), color: '#ff69b4' };
+        if (val >= 70) return { text: t('friendliness_like'), color: '#ff1493' };
+        if (val >= 60) return { text: t('friendliness_friendly'), color: '#ff8c00' };
+        if (val >= 40) return { text: t('friendliness_normal'), color: '#ffffff' };
+        if (val >= 30) return { text: t('friendliness_cold'), color: '#87cefa' };
+        if (val >= 20) return { text: t('friendliness_dislike'), color: '#4682b4' };
+        return { text: t('friendliness_hate'), color: '#00008b' };
+    }
+
+    // モーダル作成（すべて翻訳対応）
+    let html = `
+        <div id="relationshipModal" style="
+            display: flex;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 20px;
+            box-sizing: border-box;
+        ">
+            <div style="
+                background: #222;
+                border-radius: 15px;
+                padding: 25px;
+                max-width: 600px;
+                width: 100%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+                color: white;
+            ">
+                <h2 style="text-align:center; color:#ffd700; margin-bottom:20px;">
+                    ${t('relationship_title', {name: adv.name})}
+                </h2>
+                <div style="margin-bottom:20px; background: transparent;">
+    `;
+
+    // 他の冒険者全員との好感度を表示（自分以外）
+    const others = perms.filter(a => a.id !== adv.id);
+    if (others.length === 0) {
+        html += `<p style="text-align:center; color:#aaa;">${t('relationship_no_others')}</p>`;
+    } else {
+        html += `<table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #444;">
+                            <th style="padding:10px; text-align:left;">${t('relationship_table_opponent')}</th>
+                            <th style="padding:10px; text-align:right;">${t('relationship_table_friendliness')}</th>
+                            <th style="padding:10px; text-align:center;">${t('relationship_table_evaluation')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        others.forEach(other => {
+            let val = adv.friendliness?.[other.id] ?? 50;
+            val += calculateTraitBonus(adv,other);
+            const evaluation = getEvaluation(val);  // ← 'eval' を 'evaluation' に変更（安全で明確）
+
+            html += `
+                <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:10px;">${other.name}</td>
+                    <td style="padding:10px; text-align:right; font-weight:bold;">${val}</td>
+                    <td style="padding:10px; text-align:center; color:${evaluation.color};">${evaluation.text}</td>
+                </tr>`;
+        });
+        
+        html += `</tbody></table>`;
+    }
+
+    html += `
+                </div>
+                <div style="text-align:center; background: transparent;">
+                    <button onclick="closeRelationshipModal()" style="
+                        padding:12px 40px;
+                        background:#c0392b;
+                        color:white;
+                        border:none;
+                        border-radius:8px;
+                        cursor:pointer;
+                        font-size:1.1em;
+                    ">
+                        ${t('close_button')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// モーダル閉じる補助関数
+function closeRelationshipModal() {
+    const modal = document.getElementById('relationshipModal');
+    if (modal) modal.remove();
+}
+
+// === 特性を日本語で表示するヘルパー ===
+function getTraitsDisplay(adv) {
+    if (!adv.traits || adv.traits.length === 0) return '<span style="color:#aaa;">なし</span>';
+
+    return adv.traits.map(trait => {
+        let text = trait.displayName;
+        if (trait.delta !== undefined) text += ` (${trait.delta > 0 ? '+' : ''}${trait.delta})`;
+        if (trait.weight_bonus) text += ` (+${trait.weight_bonus}%傾向)`;
+        return text;
+    }).join(', ');
+}
+
+
+// モーダル閉じる補助関数
+function closeRelationshipModal() {
+    const modal = document.getElementById('relationshipModal');
+    if (modal) modal.remove();
+}
+
+
+
+// === 完全改修版 renderCurrentCharacter ===
 function renderCurrentCharacter() {
     const perms = gameState.adventurers.filter(a => !a.temp);
     if (perms.length === 0) {
@@ -8080,6 +8597,9 @@ function renderCurrentCharacter() {
     html += `<li>${t('stat_defense')}: ${eff.defense} (${t('base_stat_label')} ${adv.defense})</li>`;
     html += `</ul>`;
 
+    // === 特性表示（Statusのすぐ下）===
+    html += `<p style="margin:15px 0 10px 0;"><strong>特性:</strong> ${getTraitsDisplay(adv)}</p>`;
+
     html += `<div style="margin:15px 0;">
                 <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div>
                 ${t('exp_bar_label', {exp: adv.exp, needed: expNeeded})}<br>
@@ -8104,7 +8624,7 @@ function renderCurrentCharacter() {
         html += `<li>${t('none_equipment')}</li>`;
     } else {
         adv.equipment.forEach((eq, i) => {
-            const equipment_icon = getItemIconHtml(eq.name, 48); // サイズ48px推奨（必要なら64pxに変更）
+            const equipment_icon = getItemIconHtml(eq.name, 48);
             const statFull = t(`stat_${eq.stat}`) || t(`stat_${eq.stat}`);
             const baseBonus = `+${eq.bonus}% ${statFull}`;
             const enhBonus = (eq.enhancement > 0) 
@@ -8114,17 +8634,17 @@ function renderCurrentCharacter() {
             html += `<li style="
                 display: flex;
                 align-items: center;
-                gap: 12px;                  /* アイコンとテキストの間隔 */
+                gap: 12px;
                 padding: 8px 12px;
                 background: rgba(40,40,40,0.8);
                 border-radius: 6px;
                 margin-bottom: 8px;
-                list-style: none;           /* <ul>のマーカー削除用（必要に応じて） */
+                list-style: none;
             ">
                 ${equipment_icon}
 
                 <div style="
-                    flex: 1;                    /* 残りスペースをすべて占有（ボタンを右端に押しやる） */
+                    flex: 1;
                     color: white;
                     font-weight: bold;
                     text-shadow: 1px 1px 2px black;
@@ -8140,33 +8660,34 @@ function renderCurrentCharacter() {
     }
     html += `</ul>`;
 
+    // （装備可能アイテム・ポーション・EXPオーブ・消耗品の既存コードはここにそのまま貼り付け）
+
     const equippable = gameState.inventory.filter(it => it.stat && adv.equipment.length < 2 && (it.qty || 1) > 0);
     if (equippable.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>${t('equippable_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         equippable.forEach(it => {
-            const equipment_icon = getItemIconHtml(it.name, 48); // サイズ48px推奨（必要なら64pxに変更）
+            const equipment_icon = getItemIconHtml(it.name, 48);
             const statFull = t(`stat_${it.stat}`);
             const baseBonus = `+${it.bonus}% ${statFull}`;
             const enhBonus = (it.enhancement > 0) 
                 ? ` +${it.enhancement}${t('absolute_symbol')}` 
                 : '';
 
-            // 数量表示: 2以上なら xN を表示、1なら何も表示しない（装備品は通常1個なのでスッキリ）
             const qtyText = (it.qty || 1) > 1 ? ` x${it.qty || 1}` : '';
 
             html += `<li style="
                 display: flex;
                 align-items: center;
-                gap: 12px;                  /* アイコンとテキストの間隔 */
+                gap: 12px;
                 padding: 8px 12px;
                 border-radius: 6px;
                 margin-bottom: 8px;
-                list-style: none;           /* <ul>のマーカー削除用（必要に応じて） */
+                list-style: none;
             ">
                 ${equipment_icon}
 
                 <div style="
-                    flex: 1;                    /* 残りスペースを占有（ボタンを右端に） */
+                    flex: 1;
                     text-shadow: 1px 1px 2px black;
                 ">
                     ${it.name}${qtyText} (${baseBonus}${enhBonus})
@@ -8233,33 +8754,27 @@ function renderCurrentCharacter() {
     }
 
     html += `</div>`; // 左側閉じ
-// === 更新された生成関数呼び出し例（元の呼び出し場所に置き換え） ===
-    // 右側：画像（大きめ表示）
+
+    // 右側：画像・ボタン類
     html += `<div style="flex:0 0 auto; text-align:center;">`;
 
-    // baseImageからキー作成（拡張子除去）
+    // 呼吸アニメーション（既存コードそのまま）
     const baseKey = adv.image.replace(/\.png$/i, '');
-
-    // 設定取得（キャラクター専用があればそれ、なければデフォルト）
     const settings = breathingAnimationSettings[baseKey] || defaultBreathingSettings;
 
-    // 汎用関数呼び出し（全パラメータ渡し）
-// Add this helper if you don't have it already
     function escapeRegExp(string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // Your existing code with fallback added
     const primarySuffix = '_Breathing.png';
     const fallbackSuffix = '_breathing.png';
 
-    // First, generate with the preferred (capital B) version
     let breathingDiv = generateBreathingAnimation(
-        adv.image,                  // baseImage
-        220,                        // displayWidth
-        400,                        // maxHeight
-        settings.cycleDuration,     // cycleDuration
-        primarySuffix,              // suffix - try Breathing first
+        adv.image,
+        220,
+        400,
+        settings.cycleDuration,
+        primarySuffix,
         settings.rows,
         settings.cols,
         settings.frameW,
@@ -8269,20 +8784,19 @@ function renderCurrentCharacter() {
         settings.innerWidth,
     );
 
-    // Construct the expected sprite URLs (matches common pattern: base.png → base_Breathing.png)
     const basePath = adv.image.replace(/\.png$/i, '');
     const primaryUrl = basePath + primarySuffix;
     const fallbackUrl = basePath + fallbackSuffix;
 
-    // Add CSS multi-background fallback: if Breathing sprite 404s → automatically show breathing sprite
-    // Browser skips failed layers → perfect sync fallback, no async/preload needed
     const urlRegex = new RegExp(`(url\\(\\s*["']?${escapeRegExp(primaryUrl)}["']?\\s*\\))`, 'gi');
     breathingDiv = breathingDiv.replace(urlRegex, `$1, url("${fallbackUrl}")`);
 
     html += breathingDiv;
+
     html += `<p id="friendliness-${adv.name}" style="font-size:1.2em; color:#ffd700; margin-bottom:8px;">
                 ${t('friendliness_label')} ${adv.Friendliness}
             </p>`;
+
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
         ${t('talk_to_ai_button', {name: adv.name})}
     </button>`;
@@ -8292,9 +8806,17 @@ function renderCurrentCharacter() {
                 style="margin:20px auto; display:block; padding:12px 30px; background:#e67e22; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
             ${t('view_action_history')}
         </button>
+        
+        <!-- 新規追加: View Relationship ボタン -->
+        <button onclick="showRelationships(${currentCharIndex})" 
+                style="margin:20px auto; display:block; padding:12px 30px; background:#9b59b6; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
+            View Relationship
+        </button>
     `;
+
     html += `</div>`;
     html += `</div>`; // flexコンテナ閉じ
+
     document.getElementById('charactersContent').innerHTML = html;
 }
 
