@@ -21,45 +21,77 @@ let audioPlayed = false;
 
 const possibleTraits = [
     // === 性別好み ===
-    { type: 'gender', preference: 'M', delta: 12, displayName: "男性好き" },
-    { type: 'gender', preference: 'F', delta: 12, displayName: "女性好き" },
-    { type: 'gender', preference: 'M', delta: -12, displayName: "男性嫌い" },
-    { type: 'gender', preference: 'F', delta: -12, displayName: "女性嫌い" },
+    { type: 'gender', preference: 'M', delta: 12, translationKey: "trait.likes_men" },
+    { type: 'gender', preference: 'F', delta: 12, translationKey: "trait.likes_women" },
+    { type: 'gender', preference: 'M', delta: -12, translationKey: "trait.dislikes_men" },
+    { type: 'gender', preference: 'F', delta: -12, translationKey: "trait.dislikes_women" },
 
     // === 主ステータス好み ===
-    { type: 'primary', preference: 0, delta: 12, displayName: "力持ち好き" },      // STR
-    { type: 'primary', preference: 1, delta: 12, displayName: "賢者好き" },        // WIS
-    { type: 'primary', preference: 2, delta: 12, displayName: "器用好き" },    // DEX
-    { type: 'primary', preference: 3, delta: 12, displayName: "幸運児好き" },      // LUC
-    { type: 'primary', preference: 0, delta: -10, displayName: "力持ち嫌い" },
-    { type: 'primary', preference: 1, delta: -10, displayName: "賢者嫌い" },
-    { type: 'primary', preference: 2, delta: -10, displayName: "器用嫌い" },
-    { type: 'primary', preference: 3, delta: -10, displayName: "幸運児嫌い" },
+    { type: 'primary', preference: 0, delta: 12, translationKey: "trait.likes_strength" },      // STR
+    { type: 'primary', preference: 1, delta: 12, translationKey: "trait.likes_wisdom" },        // WIS
+    { type: 'primary', preference: 2, delta: 12, translationKey: "trait.likes_dexterity" },    // DEX
+    { type: 'primary', preference: 3, delta: 12, translationKey: "trait.likes_luck" },         // LUC
+    { type: 'primary', preference: 0, delta: -10, translationKey: "trait.dislikes_strength" },
+    { type: 'primary', preference: 1, delta: -10, translationKey: "trait.dislikes_wisdom" },
+    { type: 'primary', preference: 2, delta: -10, translationKey: "trait.dislikes_dexterity" },
+    { type: 'primary', preference: 3, delta: -10, translationKey: "trait.dislikes_luck" },
 
     // === レベル比較好み ===
-    { type: 'level', preference: 'higher', delta: 15, displayName: "先輩好き" },
-    { type: 'level', preference: 'lower', delta: 15, displayName: "後輩好き" },
-    { type: 'level', preference: 'higher', delta: -12, displayName: "先輩嫌い" },
-    { type: 'level', preference: 'lower', delta: -12, displayName: "後輩嫌い" },
+    { type: 'level', preference: 'higher', delta: 15, translationKey: "trait.likes_seniors" },
+    { type: 'level', preference: 'lower', delta: 15, translationKey: "trait.likes_juniors" },
+    { type: 'level', preference: 'higher', delta: -12, translationKey: "trait.dislikes_seniors" },
+    { type: 'level', preference: 'lower', delta: -12, translationKey: "trait.dislikes_juniors" },
 
-    // === 自分とのステ比較好み（特定のステで自分より高い/低い人を好む） ===
-    { type: 'stat_compare', stat: 0, preference: 'higher', delta: 12, displayName: "自分より強い人を尊敬" },   // STR higher
-    { type: 'stat_compare', stat: 1, preference: 'higher', delta: 12, displayName: "自分より賢い人を尊敬" },     // WIS higher
-    { type: 'stat_compare', stat: 2, preference: 'higher', delta: 12, displayName: "自分より器用な人を尊敬" },   // DEX higher
-    { type: 'stat_compare', stat: 3, preference: 'higher', delta: 12, displayName: "自分より運が良い人を羨む" }, // LUC higher
-    { type: 'stat_compare', stat: 0, preference: 'lower', delta: -10, displayName: "自分より弱い人を軽視" },
-    { type: 'stat_compare', stat: 1, preference: 'lower', delta: -10, displayName: "自分より愚かな人を軽視" },
+    // === 自分とのステ比較好み ===
+    { type: 'stat_compare', stat: 0, preference: 'higher', delta: 12, translationKey: "trait.respects_stronger" },
+    { type: 'stat_compare', stat: 1, preference: 'higher', delta: 12, translationKey: "trait.respects_wiser" },
+    { type: 'stat_compare', stat: 2, preference: 'higher', delta: 12, translationKey: "trait.respects_more_dexterous" },
+    { type: 'stat_compare', stat: 3, preference: 'higher', delta: 12, translationKey: "trait.envies_luckier" },
+    { type: 'stat_compare', stat: 0, preference: 'lower', delta: -10, translationKey: "trait.despises_weaker" },
+    { type: 'stat_compare', stat: 1, preference: 'lower', delta: -10, translationKey: "trait.despises_dumber" },
+    { type: 'stat_compare', stat: 2, preference: 'lower', delta: -10, translationKey: "trait.despises_less_dexterous" },
+    { type: 'stat_compare', stat: 3, preference: 'lower', delta: -10, translationKey: "trait.despises_less_lucky" },
 
-    // === 行動傾向（行動選択時の確率ブースト用、weight_bonus でスロット追加） ===
-    { type: 'action_preference', action: 'tavern', weight_bonus: 20, displayName: "酒場好き" },
-    { type: 'action_preference', action: 'blacksmith', weight_bonus: 15, displayName: "鍛冶好き" },
-    { type: 'action_preference', action: 'alchemy', weight_bonus: 15, displayName: "錬金好き" },
-    { type: 'action_preference', action: 'hunting', weight_bonus: 20, displayName: "狩り好き" },
-    { type: 'action_preference', action: 'gather', weight_bonus: 15, displayName: "採取好き" },
-    { type: 'action_preference', action: 'guild_stay', weight_bonus: 20, displayName: "引きこもり気味" },
-    { type: 'action_preference', action: 'street_walk', weight_bonus: 15, displayName: "街歩き好き" }
+    // === 行動傾向 ===
+    { type: 'action_preference', action: 'tavern', weight_bonus: 20, translationKey: "trait.likes_tavern" },
+    { type: 'action_preference', action: 'tavern', weight_bonus: -15, translationKey: "trait.teetotaler" },
+    { type: 'action_preference', action: 'blacksmith', weight_bonus: 15, translationKey: "trait.likes_blacksmith" },
+    { type: 'action_preference', action: 'alchemy', weight_bonus: 15, translationKey: "trait.likes_alchemy" },
+    { type: 'action_preference', action: 'hunting', weight_bonus: 20, translationKey: "trait.likes_hunting" },
+    { type: 'action_preference', action: 'hunting', weight_bonus: -20, translationKey: "trait.pacifist" },
+    { type: 'action_preference', action: 'gather', weight_bonus: 15, translationKey: "trait.likes_gathering" },
+    { type: 'action_preference', action: 'guild_stay', weight_bonus: 20, translationKey: "trait.reclusive" },
+    { type: 'action_preference', action: 'guild_stay', weight_bonus: -15, translationKey: "trait.active" },
+    { type: 'action_preference', action: 'street_walk', weight_bonus: 15, translationKey: "trait.likes_street_walking" },
+
+    // === 初期ステータスボーナス ===
+    { type: 'initial_bonus', target: 'strength', delta: 20, translationKey: "trait.super_strength" },
+    { type: 'initial_bonus', target: 'strength', delta: -10, translationKey: "trait.feeble" },
+    { type: 'initial_bonus', target: 'wisdom', delta: 20, translationKey: "trait.genius" },
+    { type: 'initial_bonus', target: 'wisdom', delta: -10, translationKey: "trait.dimwitted" },
+    { type: 'initial_bonus', target: 'dexterity', delta: 20, translationKey: "trait.godly_dexterity" },
+    { type: 'initial_bonus', target: 'dexterity', delta: -10, translationKey: "trait.clumsy" },
+    { type: 'initial_bonus', target: 'luck', delta: 20, translationKey: "trait.very_lucky" },
+    { type: 'initial_bonus', target: 'luck', delta: -10, translationKey: "trait.unlucky" },
+    { type: 'initial_bonus', target: 'defense', delta: 20, translationKey: "trait.tough" },
+    { type: 'initial_bonus', target: 'defense', delta: -10, translationKey: "trait.fragile" },
+    { type: 'initial_bonus', target: 'maxHp', delta: 100, translationKey: "trait.robust" },
+    { type: 'initial_bonus', target: 'maxHp', delta: -50, translationKey: "trait.frail" },
+    { type: 'initial_bonus', target: 'maxMp', delta: 50, translationKey: "trait.mana_abundant" },
+    { type: 'initial_bonus', target: 'maxMp', delta: -25, translationKey: "trait.mana_poor" },
+
+    // === パーセントボーナス ===
+    { type: 'percent_bonus', target: 'strength', delta: 20, translationKey: "trait.blessing_of_strength" },
+    { type: 'percent_bonus', target: 'strength', delta: -10, translationKey: "trait.curse_of_strength" },
+    { type: 'percent_bonus', target: 'wisdom', delta: 20, translationKey: "trait.blessing_of_wisdom" },
+    { type: 'percent_bonus', target: 'wisdom', delta: -10, translationKey: "trait.curse_of_wisdom" },
+    { type: 'percent_bonus', target: 'dexterity', delta: 20, translationKey: "trait.blessing_of_dexterity" },
+    { type: 'percent_bonus', target: 'dexterity', delta: -10, translationKey: "trait.curse_of_dexterity" },
+    { type: 'percent_bonus', target: 'luck', delta: 20, translationKey: "trait.blessing_of_luck" },
+    { type: 'percent_bonus', target: 'luck', delta: -10, translationKey: "trait.curse_of_luck" },
+    { type: 'percent_bonus', target: 'defense', delta: 20, translationKey: "trait.blessing_of_defense" },
+    { type: 'percent_bonus', target: 'defense', delta: -10, translationKey: "trait.curse_of_defense" }
 ];
-
 // 初期好感度計算（拡張特性対応版、全ステータス小文字キー対応 + 数値/文字列両対応）
 const statMap = {
     0: 'strength',
@@ -727,9 +759,8 @@ function Render_Mainadventurer() {
         critChance: 10,
         primary: 0,                    // STRタイプ
         Friendliness: 70,
-        traits: [                      // 特性追加
-            { type: 'gender', preference: 'F', delta: 12, displayName: "女性好き" },
-            { type: 'primary', preference: 1, delta: 12, displayName: "魔法使い好き" }  // WISタイプ
+        traits: [                      // 特性追加（翻訳キー対応）
+            { type: 'primary', preference: 1, delta: 12, translationKey: "trait.likes_wisdom" }  // WISタイプ好き
         ],
         friendliness: {},              // 初期化
         bag: {
@@ -766,9 +797,8 @@ function Render_Mainadventurer() {
         critChance: 10,
         primary: 1,                    // WISタイプ
         Friendliness: 70,
-        traits: [                      // 特性追加
-            { type: 'gender', preference: 'M', delta: 12, displayName: "男性好き" },
-            { type: 'primary', preference: 0, delta: 12, displayName: "力持ち好き" }  // STRタイプ
+        traits: [                      // 特性追加（翻訳キー対応）
+            { type: 'primary', preference: 0, delta: 12, translationKey: "trait.likes_strength" }  // STRタイプ好き
         ],
         friendliness: {},              // 初期化
         bag: {
@@ -2420,6 +2450,7 @@ function generateTempAdventurer(){
     let adv = {
         id: gameState.nextId++,
         name: name,
+        gender: gender,
         level: 1,
         exp: 0,
         strength: s,
@@ -2439,33 +2470,99 @@ function generateTempAdventurer(){
         generatedDay: 0,
         primary: primary,
         critChance: 10,
-        traits: [],                     // 新規（拡張版）
-        friendliness: {},               // 雇用時に初期化
-        Friendliness: 50,               // NPC用（冒険者は使用しない）
+        traits: [],                     
+        friendliness: {},               
+        Friendliness: 50,               
         bag: {gold: 300, items: []},
     };
 
-    // 特性を0～3個ランダム付与（重複防止を強化）
-    const numTraits = Math.floor(Math.random() * 4); // 0～3個（平均1.5個程度）
-    const usedKeys = new Set();
+    // === 特性キー生成ヘルパー（重複防止用）===
+    function getTraitKey(trait) {
+        if (trait.type === 'gender') return `gender_${trait.preference}`;  // 正負関係なく同じ性別は1つだけ
+        else if (trait.type === 'primary') return `primary_${trait.preference}`;  // 同じ主ステは好き/嫌いどちらか一方
+        else if (trait.type === 'level') return `level_${trait.preference}`;  // 先輩/後輩どちらか一方
+        else if (trait.type === 'stat_compare') return `statcmp_${trait.stat}_${trait.preference}`;  // 同じステのhigher/lowerどちらか一方
+        else if (trait.type === 'action_preference') return `action_${trait.action}`;
+        else if (trait.type === 'initial_bonus') return `initbonus_${trait.target}`;
+        else if (trait.type === 'percent_bonus') return `percentbonus_${trait.target}`;
+        else return JSON.stringify(trait);
+    }
 
-    for (let i = 0; i < numTraits; i++) {
-        let trait;
-        let key;
+    // === 特性プールをポジティブ/ネガティブに分離 ===
+    const positiveTraits = possibleTraits.filter(t => 
+        (t.delta ?? 0) > 0 || (t.weight_bonus ?? 0) > 0
+    );
+    const negativeTraits = possibleTraits.filter(t => 
+        (t.delta ?? 0) < 0 || (t.weight_bonus ?? 0) < 0
+    );
+
+    const usedKeys = new Set();
+    adv.traits = [];
+
+    // === ステップ1: 最低1つの「好き」（positive）と1つの「嫌い」（negative）を保証 ===
+    if (positiveTraits.length > 0) {
+        let trait, key;
+        do {
+            trait = positiveTraits[Math.floor(Math.random() * positiveTraits.length)];
+            key = getTraitKey(trait);
+        } while (usedKeys.has(key));
+        usedKeys.add(key);
+        adv.traits.push(trait);
+    }
+
+    if (negativeTraits.length > 0) {
+        let trait, key;
+        do {
+            trait = negativeTraits[Math.floor(Math.random() * negativeTraits.length)];
+            key = getTraitKey(trait);
+        } while (usedKeys.has(key));
+        usedKeys.add(key);
+        adv.traits.push(trait);
+    }
+
+    // === ステップ2: 合計特性数を2～4に決定し、追加特性をランダム付与 ===
+    const totalTraits = Math.floor(Math.random() * 3) + 2; // 2～4個
+    const additionalTraits = totalTraits - adv.traits.length;
+
+    for (let i = 0; i < additionalTraits; i++) {
+        let trait, key;
         do {
             trait = possibleTraits[Math.floor(Math.random() * possibleTraits.length)];
-            // 重複防止キー生成（type + 主要プロパティ）
-            if (trait.type === 'gender') key = `gender_${trait.preference}_${trait.delta}`;
-            else if (trait.type === 'primary') key = `primary_${trait.preference}_${trait.delta}`;
-            else if (trait.type === 'level') key = `level_${trait.preference}_${trait.delta}`;
-            else if (trait.type === 'stat_compare') key = `stat_${trait.stat}_${trait.preference}_${trait.delta}`;
-            else if (trait.type === 'action_preference') key = `action_${trait.action}`;
-            else key = JSON.stringify(trait);
+            key = getTraitKey(trait);
         } while (usedKeys.has(key));
 
         usedKeys.add(key);
         adv.traits.push(trait);
     }
+
+    // === 初期ボーナス特性の適用 ===
+    adv.traits.forEach(trait => {
+        if (trait.type === 'initial_bonus') {
+            const delta = trait.delta;
+            switch (trait.target) {
+                case 'strength': adv.strength += delta; break;
+                case 'wisdom': adv.wisdom += delta; break;
+                case 'dexterity': adv.dexterity += delta; break;
+                case 'luck': adv.luck += delta; break;
+                case 'defense': adv.defense += delta; break;
+                case 'maxHp':
+                    adv.maxHp += delta;
+                    adv.hp += delta;
+                    break;
+                case 'maxMp':
+                    adv.maxMp += delta;
+                    adv.mp += delta;
+                    break;
+            }
+            adv.hp = Math.max(1, adv.hp);
+            adv.mp = Math.max(0, adv.mp);
+            adv.strength = Math.max(1, adv.strength);
+            adv.wisdom = Math.max(1, adv.wisdom);
+            adv.dexterity = Math.max(1, adv.dexterity);
+            adv.luck = Math.max(1, adv.luck);
+            adv.defense = Math.max(0, adv.defense);
+        }
+    });
     
     const targetLevel = Math.max(1, Math.floor(gameState.reputation / 20));
     levelUp(adv, targetLevel - 1);
@@ -2677,15 +2774,25 @@ function getEffectiveStat(obj, stat) {
     if (!obj) return 0;
     const base = obj[stat] || 0;
 
-    // 元の装備ボーナス（%扱い） - 該当ステータスの装備のみ加算
+    // 元の装備ボーナス（%扱い）
     let percentFromEquip = obj.equipment ? obj.equipment.reduce((sum, e) => 
         (e.stat === stat ? sum + (e.bonus || 0) : sum), 0) : 0;
 
-    // バフボーナス（元コード通り%扱い）
+    // バフボーナス（%扱い）
     let percentFromBuff = 0;
     if (obj.buffs) {
         obj.buffs.forEach(b => {
             if (b.stat === stat) percentFromBuff += (b.bonus || 0);
+        });
+    }
+
+    // === 新規：特性によるパーセントボーナス ===
+    let percentFromTraits = 0;
+    if (obj.traits) {
+        obj.traits.forEach(t => {
+            if (t.type === 'percent_bonus' && t.target === stat) {
+                percentFromTraits += (t.delta || 0);
+            }
         });
     }
 
@@ -2696,13 +2803,13 @@ function getEffectiveStat(obj, stat) {
         ? 20 * (mpPct - 0.5) / 0.5 
         : -20 * (0.5 - mpPct) / 0.5;
 
-    // 合計%ボーナス（装備% + バフ% + MP%）
-    let totalPercent = percentFromEquip + percentFromBuff + mpPercent;
+    // 合計%ボーナス（装備% + バフ% + 特性% + MP%）
+    let totalPercent = percentFromEquip + percentFromBuff + percentFromTraits + mpPercent;
 
     // %適用後
     let afterPercent = Math.floor(base * (1 + totalPercent / 100));
 
-    // 新規：enhancementによる絶対値ボーナス（後から加算） - 該当ステータスの装備のみ加算
+    // enhancementによる絶対値ボーナス
     let absoluteFromEquip = obj.equipment ? obj.equipment.reduce((sum, e) => 
         (e.stat === stat ? sum + (e.enhancement || 0) : sum), 0) : 0;
 
@@ -2710,7 +2817,6 @@ function getEffectiveStat(obj, stat) {
 
     return Math.max(1, total);
 }
-
 function calcSumStats(adv){
     return ['strength','wisdom','dexterity','luck'].reduce((sum, st) => sum + getEffectiveStat(adv, st), 0);
 }
@@ -2822,14 +2928,168 @@ function assign(questId, advId){
     }
     const adv=findAdv(advId);
     if(!adv) return;
-    if(adv.mp <= 0){ better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`,"error"); return; }
-    const cost=adv.temp?adv.hiringCost:0;
-    if(cost > 0 && !spendGold(cost)) return;
+    if(adv.mp <= 0){ 
+        better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`,"error"); 
+        return; 
+    }
+
+    // === 今日すでに拒否されたペアは割り当て不可 ===
+    if (q.assigned.length > 0) {
+        for (let memberId of q.assigned) {
+            const member = findAdv(memberId);
+            if (!member) continue;
+
+            const pairKey = [adv.id, member.id].sort((a,b) => a - b).join('-');
+            if (gameState.dailyRejectedPairs.has(pairKey)) {
+                better_alert(`${adv.name}と${member.name}は今日すでに協力拒否しているため、一緒にクエストに参加できません。`,"error");
+                return;
+            }
+        }
+    }
+
+    // === 双方向相性拒否チェック（恒久冒険者のみ適用、tempは無条件参加）===
+    if (q.assigned.length > 0) {
+        console.log(`[割り当てデバッグ] ${adv.name} をクエストに追加しようとしています (temp: ${adv.temp})`);
+
+        let rejectReason = null;
+        let rejectedPairs = new Set();  // 今日拒否されたペアを記録（悪い関係のペアのみ）
+
+        // 1. 新規参加者（adv）の視点：既存メンバーに対する最終好感度
+        if (!adv.temp) {
+            let lowestFromAdv = 100;
+            let lowPairsFromAdv = [];  // 好感度<40のメンバー（拒否対象）
+
+            q.assigned.forEach(memberId => {
+                const member = findAdv(memberId);
+                if (!member) return;
+
+                let baseVal = adv.friendliness?.[member.id] ?? 50;
+                let bonus = 0;
+                adv.traits.forEach(trait => {
+                    let delta = 0;
+                    if (trait.type === 'gender' && trait.preference === member.gender) delta = trait.delta ?? 0;
+                    else if (trait.type === 'primary' && trait.preference === member.primary) delta = trait.delta ?? 0;
+                    else if (trait.type === 'level') {
+                        const levelDiff = member.level - adv.level;
+                        if ((trait.preference === 'higher' && levelDiff > 0) || (trait.preference === 'lower' && levelDiff < 0)) {
+                            delta = trait.delta ?? 0;
+                        }
+                    } else if (trait.type === 'stat_compare') {
+                        const stats = ['strength', 'wisdom', 'dexterity', 'luck'];
+                        const myStat = adv[stats[trait.stat]];
+                        const otherStat = member[stats[trait.stat]];
+                        if ((trait.preference === 'higher' && otherStat > myStat) || (trait.preference === 'lower' && otherStat < myStat)) {
+                            delta = trait.delta ?? 0;
+                        }
+                    }
+                    bonus += delta;
+                });
+
+                const finalVal = baseVal + bonus;
+                lowestFromAdv = Math.min(lowestFromAdv, finalVal);
+
+                if (finalVal < 40) {
+                    lowPairsFromAdv.push(member);
+                }
+            });
+
+            let rejectChance = 0;
+            if (lowestFromAdv < 20) rejectChance = 100;
+            else if (lowestFromAdv < 40) rejectChance = (40 - lowestFromAdv) * 5;
+
+            console.log(`[adv視点] 最低好感度: ${lowestFromAdv} → 拒否確率: ${rejectChance}%`);
+
+            if (Math.random() * 100 < rejectChance) {
+                rejectReason = `${adv.name}はチームメンバーとの相性が悪く、自分からクエスト参加を拒否した。（最低好感度${lowestFromAdv} → 拒否確率${rejectChance}%）`;
+
+                // 好感度<40のペアのみブロック（中立のKaitoとはブロックしない）
+                lowPairsFromAdv.forEach(member => {
+                    const pairKey = [adv.id, member.id].sort((a,b) => a - b).join('-');
+                    rejectedPairs.add(pairKey);
+                });
+            }
+        } else {
+            console.log(`[adv視点] temp冒険者のため拒否チェックスキップ`);
+        }
+
+        // 2. 既存メンバー（恒久のみ）の視点：新規参加者に対する最終好感度
+        if (!rejectReason) {
+            for (let memberId of q.assigned) {
+                const member = findAdv(memberId);
+                if (!member || member.temp) {
+                    console.log(`[member視点] ${member?.name || '不明'} はtempのため拒否チェックスキップ`);
+                    continue;
+                }
+
+                let baseVal = member.friendliness?.[adv.id] ?? 50;
+                let bonus = 0;
+                member.traits.forEach(trait => {
+                    let delta = 0;
+                    if (trait.type === 'gender' && trait.preference === adv.gender) delta = trait.delta ?? 0;
+                    else if (trait.type === 'primary' && trait.preference === adv.primary) delta = trait.delta ?? 0;
+                    else if (trait.type === 'level') {
+                        const levelDiff = adv.level - member.level;
+                        if ((trait.preference === 'higher' && levelDiff > 0) || (trait.preference === 'lower' && levelDiff < 0)) {
+                            delta = trait.delta ?? 0;
+                        }
+                    } else if (trait.type === 'stat_compare') {
+                        const stats = ['strength', 'wisdom', 'dexterity', 'luck'];
+                        const myStat = member[stats[trait.stat]];
+                        const otherStat = adv[stats[trait.stat]];
+                        if ((trait.preference === 'higher' && otherStat > myStat) || (trait.preference === 'lower' && otherStat < myStat)) {
+                            delta = trait.delta ?? 0;
+                        }
+                    }
+                    bonus += delta;
+                });
+
+                const finalVal = baseVal + bonus;
+
+                let rejectChance = 0;
+                if (finalVal < 20) rejectChance = 100;
+                else if (finalVal < 40) rejectChance = (40 - finalVal) * 5;
+
+                console.log(`[member視点] ${member.name} → ${adv.name}: ベース${baseVal} + ボーナス${bonus} = 最終${finalVal} → 拒否確率: ${rejectChance}%`);
+
+                if (Math.random() * 100 < rejectChance) {
+                    rejectReason = `${adv.name}は${member.name}からクエスト参加を拒否された。（${member.name}の好感度${finalVal} → 拒否確率${rejectChance}%）`;
+
+                    const pairKey = [adv.id, member.id].sort((a,b) => a - b).join('-');
+                    rejectedPairs.add(pairKey);
+                    break;
+                }
+            }
+        }
+
+        if (rejectReason) {
+            better_alert(rejectReason, "error");
+            console.log(`[拒否発生] ${rejectReason}`);
+
+            // 拒否されたペアのみ記録（中立ペアはブロックしない）
+            rejectedPairs.forEach(pair => gameState.dailyRejectedPairs.add(pair));
+
+            return;
+        } else {
+            console.log(`[割り当て成功] 拒否なし - ${adv.name} をクエストに追加`);
+        }
+    }
+
+    // === 雇用コスト処理（拒否されなかった場合のみ）===
+    const cost = adv.temp ? adv.hiringCost : 0;
+    if (cost > 0) {
+        if (gameState.gold < cost) {
+            better_alert("Goldが不足しています","error");
+            return;
+        }
+        gameState.gold -= cost;
+        console.log(`[雇用] ${adv.name} の雇用コスト ${cost}G 消費`);
+    }
+
+    // === 割り当て実行 ===
     q.assigned.push(advId);
-    adv.busy=true;
+    adv.busy = true;
     updateDisplays();
 }
-
 function unassign(questId, advId){
     const q=gameState.quests.find(q=>q.id===questId);
     if(!q || q.inProgress) return;
@@ -3601,6 +3861,7 @@ function updateDisplays(){
 }
 
 function startDay(){
+    gameState.dailyRejectedPairs = new Set();
     if (gameState.gameOver) {
         updateDisplays();
         return;
@@ -8461,7 +8722,7 @@ function showRelationships(charIndex) {
                 background: #222;
                 border-radius: 15px;
                 padding: 25px;
-                max-width: 600px;
+                max-width: 800px;
                 width: 100%;
                 max-height: 90vh;
                 overflow-y: auto;
@@ -8479,26 +8740,61 @@ function showRelationships(charIndex) {
     if (others.length === 0) {
         html += `<p style="text-align:center; color:#aaa;">${t('relationship_no_others')}</p>`;
     } else {
-        html += `<table style="width:100%; border-collapse:collapse;">
+        html += `<table style="width:100%; border-collapse:collapse; table-layout:fixed;">
                     <thead>
                         <tr style="border-bottom:2px solid #444;">
-                            <th style="padding:10px; text-align:left;">${t('relationship_table_opponent')}</th>
-                            <th style="padding:10px; text-align:right;">${t('relationship_table_friendliness')}</th>
-                            <th style="padding:10px; text-align:center;">${t('relationship_table_evaluation')}</th>
+                            <th style="width:25%; padding:12px; text-align:left;">${t('relationship_table_opponent')}</th>
+                            <th style="width:15%; padding:12px; text-align:center;">${t('relationship_table_friendliness')}</th>
+                            <th style="width:35%; padding:12px; text-align:left;">影響特性</th>
+                            <th style="width:25%; padding:12px; text-align:center;">${t('relationship_table_evaluation')}</th>
                         </tr>
                     </thead>
                     <tbody>`;
         
         others.forEach(other => {
-            let val = adv.friendliness?.[other.id] ?? 50;
-            val += calculateTraitBonus(adv,other);
-            const evaluation = getEvaluation(val);  // ← 'eval' を 'evaluation' に変更（安全で明確）
+            let baseVal = adv.friendliness?.[other.id] ?? 50;
+            let bonus = 0;
+            let traitsList = [];
+
+            // advの特性からotherに対するボーナスを計算し、影響特性を収集
+            adv.traits.forEach(trait => {
+                let delta = 0;
+                if (trait.type === 'gender' && trait.preference === other.gender) {
+                    delta = trait.delta ?? 0;
+                } else if (trait.type === 'primary' && trait.preference === other.primary) {
+                    delta = trait.delta ?? 0;
+                } else if (trait.type === 'level') {
+                    const levelDiff = other.level - adv.level;
+                    if ((trait.preference === 'higher' && levelDiff > 0) || (trait.preference === 'lower' && levelDiff < 0)) {
+                        delta = trait.delta ?? 0;
+                    }
+                } else if (trait.type === 'stat_compare') {
+                    const stats = ['strength', 'wisdom', 'dexterity', 'luck'];
+                    const myStat = adv[stats[trait.stat]];
+                    const otherStat = other[stats[trait.stat]];
+                    if ((trait.preference === 'higher' && otherStat > myStat) || (trait.preference === 'lower' && otherStat < myStat)) {
+                        delta = trait.delta ?? 0;
+                    }
+                }
+
+                if (delta !== 0) {
+                    bonus += delta;
+                    const sign = delta >= 0 ? "+" : "";
+                    traitsList.push(`${t(trait.translationKey)} (${sign}${delta})`);
+                }
+            });
+
+            const val = baseVal + bonus;
+            const evaluation = getEvaluation(val);
+
+            const traitDisplay = traitsList.length ? traitsList.join('<br>') : 'なし';
 
             html += `
                 <tr style="border-bottom:1px solid #333;">
-                    <td style="padding:10px;">${other.name}</td>
-                    <td style="padding:10px; text-align:right; font-weight:bold;">${val}</td>
-                    <td style="padding:10px; text-align:center; color:${evaluation.color};">${evaluation.text}</td>
+                    <td style="padding:12px; word-wrap:break-word;">${other.name}</td>
+                    <td style="padding:12px; text-align:center; font-weight:bold;">${val}</td>
+                    <td style="padding:12px; font-size:0.9em; color:#ffd700; line-height:1.4;">${traitDisplay}</td>
+                    <td style="padding:12px; text-align:center; color:${evaluation.color};">${evaluation.text}</td>
                 </tr>`;
         });
         
@@ -8534,17 +8830,78 @@ function closeRelationshipModal() {
 }
 
 // === 特性を日本語で表示するヘルパー ===
+// 新規追加関数：特性表示を詳細付きで生成
 function getTraitsDisplay(adv) {
-    if (!adv.traits || adv.traits.length === 0) return '<span style="color:#aaa;">なし</span>';
+    if (!adv.traits || adv.traits.length === 0) {
+        return t("trait.none") || "なし";
+    }
 
     return adv.traits.map(trait => {
-        let text = trait.displayName;
-        if (trait.delta !== undefined) text += ` (${trait.delta > 0 ? '+' : ''}${trait.delta})`;
-        if (trait.weight_bonus) text += ` (+${trait.weight_bonus}%傾向)`;
-        return text;
-    }).join(', ');
-}
+        const name = t(trait.translationKey);
+        let detailed = "";
 
+        // すべての数値で正しく + / - を表示
+        const rawValue = trait.delta ?? trait.weight_bonus ?? 0;
+        const sign = rawValue >= 0 ? "+" : "-";
+        const displayedValue = Math.abs(rawValue);
+
+        if (['gender', 'primary', 'level', 'stat_compare'].includes(trait.type)) {
+            let target = "";
+
+            if (trait.type === 'gender') {
+                const genderKey = trait.preference === 'M' ? "trait.male_adventurers" : "trait.female_adventurers";
+                target = t(genderKey);
+
+            } else if (trait.type === 'primary') {
+                const primaries = ["strength", "wisdom", "dexterity", "luck"];
+                const pStat = t(`stat_${primaries[trait.preference]}`);
+                target = pStat + t("trait.primary_suffix");
+
+            } else if (trait.type === 'level') {
+                const levelKey = trait.preference === 'higher' ? "trait.seniors" : "trait.juniors";
+                target = t(levelKey);
+
+            } else if (trait.type === 'stat_compare') {
+                const stats = ["strength", "wisdom", "dexterity", "luck"];
+                const sStat = t(`stat_${stats[trait.stat]}`);
+                const comp = trait.preference === 'higher' ? t("trait.higher") : t("trait.lower");
+                target = comp + sStat + t("trait.compare_suffix");
+            }
+
+            detailed = target + " " + t("trait.friendliness_prefix") + sign + displayedValue;
+
+        } else if (trait.type === 'action_preference') {
+            const actionName = t(`action_${trait.action}`) || trait.action;
+            detailed = actionName + t("trait.action_priority_suffix") + sign + displayedValue;
+
+        } else if (trait.type === 'initial_bonus') {
+            let targetName = "";
+            switch (trait.target) {
+                case 'strength': targetName = t("stat_strength"); break;
+                case 'wisdom': targetName = t("stat_wisdom"); break;
+                case 'dexterity': targetName = t("stat_dexterity"); break;
+                case 'luck': targetName = t("stat_luck"); break;
+                case 'defense': targetName = t("stat_defense"); break;
+                case 'maxHp': targetName = t("stat.max_hp"); break;
+                case 'maxMp': targetName = t("stat.max_mp"); break;
+            }
+            detailed = t("trait.initial_prefix") + targetName + sign + displayedValue;
+
+        } else if (trait.type === 'percent_bonus') {
+            let targetName = "";
+            switch (trait.target) {
+                case 'strength': targetName = t("stat_strength"); break;
+                case 'wisdom': targetName = t("stat_wisdom"); break;
+                case 'dexterity': targetName = t("stat_dexterity"); break;
+                case 'luck': targetName = t("stat_luck"); break;
+                case 'defense': targetName = t("stat_defense"); break;
+            }
+            detailed = targetName + sign + displayedValue + "%";
+        }
+
+        return `${name} (${detailed})`;
+    }).join("<br>");
+}
 
 // モーダル閉じる補助関数
 function closeRelationshipModal() {
@@ -8598,7 +8955,7 @@ function renderCurrentCharacter() {
     html += `</ul>`;
 
     // === 特性表示（Statusのすぐ下）===
-    html += `<p style="margin:15px 0 10px 0;"><strong>特性:</strong> ${getTraitsDisplay(adv)}</p>`;
+    html += `<p style="margin:15px 0 10px 0;"><strong>特性</strong><br> ${getTraitsDisplay(adv)}</p>`;
 
     html += `<div style="margin:15px 0;">
                 <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div>
@@ -8918,7 +9275,10 @@ function renderQuests() {
             if (q.inProgress) {
                 assignedHtml += `<span class="assigned-adventurer"><img src="Images/${a.image}" class="adventurer-img">${nameHtml}</span>`;
             } else {
-                assignedHtml += `<span class="assigned-adventurer"><img src="Images/${a.image}" class="adventurer-img">${nameHtml} <button class="cancel-btn" onclick="unassign(${q.id}, ${id})">X</button></span>`;
+                assignedHtml += `<span class="assigned-adventurer clickable" onclick="unassign(${q.id}, ${id})">
+                                    <img src="Images/${a.image}" class="adventurer-img">
+                                    ${nameHtml}
+                                 </span>`;
             }
         }
     });
@@ -9723,6 +10083,10 @@ const npcImageFileMap = {
 
     '親': 'Parent',
     'Parent': 'Parent',
+
+    '商人': 'Merchant',
+    'Merchant': 'Merchant',
+    '露娜': 'Luna',
     // 他のNPCがあればここに追加
     // 例: 'Blacksmith': 'Blacksmith'
 };
