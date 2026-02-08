@@ -763,6 +763,8 @@ function Render_Mainadventurer() {
             { type: 'primary', preference: 1, delta: 12, translationKey: "trait.likes_wisdom" }  // WISタイプ好き
         ],
         friendliness: {},              // 初期化
+        hunger: 0.8,
+        prohibitedActions:[],
         bag: {
             gold: 150,
             items: [
@@ -801,6 +803,8 @@ function Render_Mainadventurer() {
             { type: 'primary', preference: 0, delta: 12, translationKey: "trait.likes_strength" }  // STRタイプ好き
         ],
         friendliness: {},              // 初期化
+        hunger: 0.8,
+        prohibitedActions:[],
         bag: {
             gold: 200,
             items: [
@@ -2474,6 +2478,8 @@ function generateTempAdventurer(){
         friendliness: {},               
         Friendliness: 50,               
         bag: {gold: 300, items: []},
+        hunger: 0.6,
+        prohibitedActions:[],
     };
 
     // === 特性キー生成ヘルパー（重複防止用）===
@@ -2918,18 +2924,18 @@ function assign(questId, advId){
     const q=gameState.quests.find(q=>q.id===questId);
     if(!q) return;
     if (q.inProgress && !q.training && q.type !== 8) {
-        better_alert("クエスト進行中は冒険者を追加できません","error");
+        better_alert(t('quest_in_progress_no_add'),"error");
         return;
     }
     const maxSlots = q.training ? 2 : 4;
     if(q.assigned.length >= maxSlots){
-        better_alert(q.training ? "トレーニングクエストは最大2人までです。" : "クエストは満員です","error");
+        better_alert(q.training ? t('training_max_2') : t('quest_full'),"error");
         return;
     }
     const adv=findAdv(advId);
     if(!adv) return;
     if(adv.mp <= 0){ 
-        better_alert(`${adv.name}のMPがありません！ポーションで回復するか、回復を待ってください。`,"error"); 
+        better_alert(t('no_mp', {name: adv.name}),"error"); 
         return; 
     }
 
@@ -2941,7 +2947,7 @@ function assign(questId, advId){
 
             const pairKey = [adv.id, member.id].sort((a,b) => a - b).join('-');
             if (gameState.dailyRejectedPairs.has(pairKey)) {
-                better_alert(`${adv.name}と${member.name}は今日すでに協力拒否しているため、一緒にクエストに参加できません。`,"error");
+                better_alert(t('daily_rejected_pair', {name1: adv.name, name2: member.name}),"error");
                 return;
             }
         }
@@ -3000,7 +3006,11 @@ function assign(questId, advId){
             console.log(`[adv視点] 最低好感度: ${lowestFromAdv} → 拒否確率: ${rejectChance}%`);
 
             if (Math.random() * 100 < rejectChance) {
-                rejectReason = `${adv.name}はチームメンバーとの相性が悪く、自分からクエスト参加を拒否した。（最低好感度${lowestFromAdv} → 拒否確率${rejectChance}%）`;
+                rejectReason = t('self_reject_low_friendliness', {
+                    name: adv.name,
+                    lowest: lowestFromAdv,
+                    chance: rejectChance
+                });
 
                 // 好感度<40のペアのみブロック（中立のKaitoとはブロックしない）
                 lowPairsFromAdv.forEach(member => {
@@ -3052,7 +3062,12 @@ function assign(questId, advId){
                 console.log(`[member視点] ${member.name} → ${adv.name}: ベース${baseVal} + ボーナス${bonus} = 最終${finalVal} → 拒否確率: ${rejectChance}%`);
 
                 if (Math.random() * 100 < rejectChance) {
-                    rejectReason = `${adv.name}は${member.name}からクエスト参加を拒否された。（${member.name}の好感度${finalVal} → 拒否確率${rejectChance}%）`;
+                    rejectReason = t('rejected_by_member', {
+                        name: adv.name,
+                        member: member.name,
+                        final: finalVal,
+                        chance: rejectChance
+                    });
 
                     const pairKey = [adv.id, member.id].sort((a,b) => a - b).join('-');
                     rejectedPairs.add(pairKey);
@@ -3078,7 +3093,7 @@ function assign(questId, advId){
     const cost = adv.temp ? adv.hiringCost : 0;
     if (cost > 0) {
         if (gameState.gold < cost) {
-            better_alert("Goldが不足しています","error");
+            better_alert(t('insufficient_gold'),"error");
             return;
         }
         gameState.gold -= cost;
@@ -3171,7 +3186,7 @@ function recruit(i){
     gameState.adventurers.push(newAdv);
     gameState.recruitPending.splice(i,1);
 
-    better_alert(adv.name + "が新しいメンバーになりました","success");
+    better_alert(t('adventurer_joined', {name: adv.name}), "success");
     updateDisplays();
 }
 
@@ -3427,7 +3442,7 @@ function renderShopPurchase() {
     let html = '<ul class="shop-list">';
     shopItems.forEach((it, i) => {
         html += `<li class="shop-item">`;
-        html += `<strong>${it.name}</strong> - ${it.cost}g`;
+        html += `<strong>${it.name}</strong> - ${it.cost}G`;
         if (it.stat) html += ` <span class="bonus">(+${it.bonus}% ${statFull[it.stat]})</span>`;
         if (it.type === 'potion') html += ` <span class="bonus">(${it.restore.toUpperCase()} +${it.amount})</span>`;
         html += ` <button class="buy-btn" onclick="buy(${i},1)">購入</button>`;
@@ -3443,7 +3458,7 @@ function renderDailyMaterials() {
         let html = `<ul class="shop-list">`;
         gameState.dailyMaterials.forEach((mat, i) => {
             html += `<li class="shop-item">`;
-            html += `<strong>${mat.name}</strong> - ${mat.price}g`;
+            html += `<strong>${mat.name}</strong> - ${mat.price}G`;
             html += ` <button class="buy-btn" onclick="buyMaterial(${i})">${t('buy_button')}</button>`;
             html += `</li>`;
         });
@@ -3714,7 +3729,7 @@ function sellStackedItem(name, amount) {
     }
 
     gameState.gold += totalGold;
-    better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}g`,"success");
+    better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}G`,"success");
 
     // ショップモーダルを更新（価格が日固定なので再計算しても同じ値になる）
     document.getElementById('shopContent').innerHTML = renderCurrentShopPage();
@@ -3760,7 +3775,7 @@ function getRecruitsHtml(){
         html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
             ${img}${nameHtml}<br><small class="stats">${stats}</small><br>
             <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div> 経験値 ${adv.exp}/${expNeeded}<br>
-            コスト: ${adv.recruitingCost}g ${btnHtml}
+            Cost: ${adv.recruitingCost}G ${btnHtml}
         </div>`;
     });
     return html;
@@ -3793,7 +3808,9 @@ function getAvailableHtml(){
         const maxMpDisplay = Number(adv.maxMp) || 0;
         const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
         const nameHtml = getNameHtml(adv);
-        const cost=adv.temp?`雇用: ${adv.hiringCost}g`:'恒久的';
+        const cost = adv.temp 
+    ? t('hiring_cost_display', {cost: adv.hiringCost}) 
+    : t('permanent_member');
         html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
             ${img}${nameHtml}<br>
             <small class="stats">${stats}</small><br>
@@ -3821,9 +3838,9 @@ function updateDay(){
 
     let taxDisplay;
     if (daysUntilTax === 0) {
-        taxDisplay = `${t('tax_today_prefix')} ${estimatedTax}g`;
+        taxDisplay = `${t('tax_today_prefix')} ${estimatedTax}G`;
     } else {
-        taxDisplay = t('tax_later_prefix', {days: daysUntilTax}) + ` ${estimatedTax}g`;
+        taxDisplay = t('tax_later_prefix', {days: daysUntilTax}) + ` ${estimatedTax}G`;
     }
 
     let status = '';
@@ -4918,6 +4935,12 @@ function processAdventurerDailyActions() {
         if (!adv.actionHistory) adv.actionHistory = [];
         if (!adv.friendliness) adv.friendliness = {};   
 
+        // === 禁止行動の安全初期化 ===
+        adv.prohibitedActions = adv.prohibitedActions || [];
+
+        // Hunger が未定義の場合の安全策
+        if (adv.hunger === undefined) adv.hunger = 1.0;
+
         const maxHp = adv.maxHp || 100;
         const maxMp = adv.maxMp || 100;
 
@@ -4963,7 +4986,10 @@ function processAdventurerDailyActions() {
 
         const hpRatio = adv.hp / maxHp;
         const mpRatio = adv.mp / maxMp;
-        const isLow = hpRatio < 0.5 || mpRatio < 0.5;
+        const hungerRatio = adv.hunger;
+
+        // hunger <= 0.3 を low 状態に追加
+        const isLow = hpRatio < 0.5 || mpRatio < 0.5 || hungerRatio <= 0.3;
         const isHigh = hpRatio > 0.6 && mpRatio > 0.6;
 
         let description = '';
@@ -4974,14 +5000,14 @@ function processAdventurerDailyActions() {
         // ── 行動選択（厳密な確率配分 + 特性による行動傾向ボーナス） ──
         let action;
 
-        // 低HP/MP時、tavernが可能なら100% tavern（優先ルール維持）
-        if (isLow && isFacilityUsable('tavern')) {
+        // 低HP/MP/空腹時、tavernが可能かつ禁止されていないなら100% tavern
+        if (isLow && isFacilityUsable('tavern') && !adv.prohibitedActions.includes('tavern')) {
             action = 'tavern';
         } else {
-            // 利用可能な施設リストを取得
+            // 利用可能な施設リストを取得（禁止されているものは除外）
             const availableFacilities = [];
-            if (isFacilityUsable('tavern')) availableFacilities.push('tavern');
-            if (isFacilityUsable('alchemy')) {
+            if (isFacilityUsable('tavern') && !adv.prohibitedActions.includes('tavern')) availableFacilities.push('tavern');
+            if (isFacilityUsable('alchemy') && !adv.prohibitedActions.includes('alchemy')) {
                 const alchemyRecipes = [
                     { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
                     { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
@@ -4991,32 +5017,37 @@ function processAdventurerDailyActions() {
                 );
                 if (canAlchemy) availableFacilities.push('alchemy');
             }
-            if (isFacilityUsable('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
+            if (isFacilityUsable('blacksmith') && !adv.prohibitedActions.includes('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
                 availableFacilities.push('blacksmith');
             }
 
-            // 100スロット方式で基本確率実現
+            // 100スロット方式で基本確率実現（禁止行動はスロットに追加しない）
             const slots = [];
 
-            // 基本確率
+            // 基本確率（guild_stayは常に許可、禁止不可）
             for (let i = 0; i < 20; i++) slots.push('guild_stay');
-            for (let i = 0; i < 20; i++) slots.push('street_walk');
-            for (let i = 0; i < 20; i++) slots.push('gather');
-            if (isHigh) {
+
+            if (!adv.prohibitedActions.includes('street_walk')) {
+                for (let i = 0; i < 20; i++) slots.push('street_walk');
+            }
+            if (!adv.prohibitedActions.includes('gather')) {
+                for (let i = 0; i < 20; i++) slots.push('gather');
+            }
+            if (isHigh && !adv.prohibitedActions.includes('hunting')) {
                 for (let i = 0; i < 10; i++) slots.push('hunting');
             }
+
             availableFacilities.forEach(fac => {
                 for (let i = 0; i < 10; i++) slots.push(fac);
             });
 
-            // === 特性による行動傾向ボーナス適用 ===
-            // action_preference 特性を持つ場合、対応行動のスロットを追加
+            // === 特性による行動傾向ボーナス適用（禁止行動にはボーナス適用しない） ===
             if (adv.traits) {
                 adv.traits.forEach(trait => {
                     if (trait.type === 'action_preference' && trait.weight_bonus > 0) {
                         const preferredAction = trait.action;
-                        // 基本スロットに存在する行動のみボーナス適用（無効行動防止）
-                        if (slots.includes(preferredAction)) {
+                        // スロットに含まれていてかつ禁止されていない場合のみボーナス
+                        if (slots.includes(preferredAction) && !adv.prohibitedActions.includes(preferredAction)) {
                             for (let i = 0; i < trait.weight_bonus; i++) {
                                 slots.push(preferredAction);
                             }
@@ -5025,13 +5056,19 @@ function processAdventurerDailyActions() {
                 });
             }
 
-            // スロットが空の場合の保険
+            // スロットが空の場合の保険（すべて禁止ならguild_stayのみ）
             if (slots.length === 0) {
                 slots.push('guild_stay');
             }
 
             // ランダム選択
             action = slots[Math.floor(Math.random() * slots.length)];
+        }
+
+        // === 安全チェック: 万一禁止行動が選択された場合のフォールバック ===
+        if (adv.prohibitedActions.includes(action) && action !== 'guild_stay') {
+            description = t('action_prohibited_general') || "禁止された行動のため、ギルドで休憩した";
+            action = 'guild_stay';
         }
 
         // === 施設使用料チェック（施設行動の場合のみ）===
@@ -5136,34 +5173,135 @@ function processAdventurerDailyActions() {
                     description = t('tavern_rest') || "酒場で休息した";
 
                     const tavernSubRandom = Math.random();
-                    if (tavernSubRandom < 0.4) {
+
+                    // 食事注文確率を hunger に応じて決定
+                    const orderChance = (adv.hunger >= 1.0) ? 0 : (adv.hunger <= 0.3 ? 1.0 : 0.4);
+
+                    if (tavernSubRandom < orderChance) {
+                        // 食事注文を試みる
                         const tavernLevel = gameState.facilities.tavern || 0;
-                        let availableFoods = tavernRecipes[currentLang].filter(r => r.level <= tavernLevel);
+                        if (!gameState.tavernStock) gameState.tavernStock = {};
 
-                        const maxFoodSpend = Math.floor(adv.bag.gold * 0.2);
-                        availableFoods = availableFoods.filter(food => (food.cost || 250) <= maxFoodSpend);
+                        const maxFoodSpend = Math.floor(adv.bag.gold * 0.5);
 
-                        if (availableFoods.length > 0) {
-                            const food = availableFoods[Math.floor(Math.random() * availableFoods.length)];
-                            const foodCost = food.cost || 250;
+                        console.log(`[Tavern Debug] Adventurer: ${adv.name} (hunger: ${(adv.hunger * 100).toFixed(0)}%, gold: ${adv.bag.gold})`);
+                        console.log(`[Tavern Debug] Tavern level: ${tavernLevel}, Max spend: ${maxFoodSpend}G`);
+
+                        let stockedFoods = [];
+                        let paidAvailable = [];
+                        let rationAvailable = false;
+                        let rationIdx = -1;
+                        let rationQty = 0;
+
+                        currentTavernRecipes.forEach((r, idx) => {
+                            if (r.level > tavernLevel) return;
+
+                            const qty = gameState.tavernStock[idx] || 0;
+                            if (qty <= 0) return;
+
+                            let sellPrice = r.isRation ? 0 : Math.floor((r.cost || 250) * 1.2);
+
+                            stockedFoods.push({recipe: r, idx, sellPrice, qty});
+
+                            if (r.isRation) {
+                                rationAvailable = true;
+                                rationIdx = idx;
+                                rationQty = qty;
+                                return;
+                            }
+
+                            if (sellPrice <= maxFoodSpend) {
+                                paidAvailable.push({recipe: r, idx, sellPrice, qty});
+                            }
+                        });
+
+                        console.log(`[Tavern Debug] Total potential recipes checked: ${currentTavernRecipes.length}`);
+                        console.log(`[Tavern Debug] Current tavernStock:`, gameState.tavernStock);
+                        console.log(`[Tavern Debug] Stocked foods (stock > 0, level OK): ${stockedFoods.length}`);
+                        stockedFoods.forEach(item => {
+                            console.log(`  [Stocked] ${item.recipe.name} (index: ${item.idx}, stock: ${item.qty}, price: ${item.sellPrice}G)`);
+                        });
+
+                        console.log(`[Tavern Debug] Paid & affordable foods: ${paidAvailable.length}`);
+                        paidAvailable.forEach(item => {
+                            console.log(`  [Paid] ${item.recipe.name} (index: ${item.idx}, stock: ${item.qty}, price: ${item.sellPrice}G)`);
+                        });
+
+                        console.log(`[Tavern Debug] Guild Ration available: ${rationAvailable} (stock: ${rationQty})`);
+
+                        let foodOrdered = false;
+
+                        if (paidAvailable.length > 0) {
+                            const chosen = paidAvailable[Math.floor(Math.random() * paidAvailable.length)];
+                            const food = chosen.recipe;
+                            const foodIdx = chosen.idx;
+                            const foodCost = chosen.sellPrice;
+
+                            console.log(`[Tavern Debug] Ordered paid food: ${food.name} (${foodCost}G)`);
 
                             adv.bag.gold -= foodCost;
+                            gameState.gold += foodCost;
                             adventurerChange -= foodCost;
+                            guildGain += foodCost;
 
-                            const playerGainFromFood = Math.floor(foodCost * 0.1);
-                            gameState.gold += playerGainFromFood;
-                            guildGain += playerGainFromFood;
+                            gameState.tavernStock[foodIdx]--;
+                            if (gameState.tavernStock[foodIdx] <= 0) {
+                                console.log(`[Tavern Debug] Stock depleted for index ${foodIdx}`);
+                                delete gameState.tavernStock[foodIdx];
+                            }
 
-                            if (!adv.buffs) adv.buffs = [];
-                            const buffCopy = JSON.parse(JSON.stringify(food.buff));
-                            buffCopy.daysLeft = buffCopy.days;
-                            adv.buffs.push(buffCopy);
+                            if (food.buff && Object.keys(food.buff).length > 0) {
+                                if (!adv.buffs) adv.buffs = [];
+                                const buffCopy = JSON.parse(JSON.stringify(food.buff));
+                                buffCopy.daysLeft = buffCopy.days;
+                                adv.buffs.push(buffCopy);
+                            }
 
-                            description += t('tavern_food_order', {food: food.name, cost: foodCost}) || ` ${food.name}を注文した（${foodCost}G）`;
-                        } else {
-                            description += t('tavern_food_too_expensive') || " 料理が高すぎて注文できなかった";
+                            const hungerRecover = food.hunger_recover || 0.4;
+                            adv.hunger = Math.min(1, adv.hunger + hungerRecover);
+
+                            description += t('tavern_food_order', {food: food.name, cost: foodCost}) || 
+                                           ` ${food.name}を注文した（${foodCost}G）`;
+
+                            foodOrdered = true;
                         }
-                    } else if (tavernSubRandom < 0.5) {
+
+                        if (!foodOrdered && rationAvailable) {
+                            console.log(`[Tavern Debug] Fell back to Guild Ration (free, stock consumed)`);
+
+                            gameState.tavernStock[rationIdx]--;
+                            if (gameState.tavernStock[rationIdx] <= 0) {
+                                console.log(`[Tavern Debug] Ration stock depleted for index ${rationIdx}`);
+                                delete gameState.tavernStock[rationIdx];
+                            }
+
+                            adv.hunger = 1.0;
+
+                            const penalty = 10;
+                            adv.Friendliness = Math.max(0, adv.Friendliness - 10);
+
+                            const playerName = gameState.playerName || t('guild_master_default') || 'ギルドマスター';
+                            description += t('tavern_ration_message', {penalty: 10}) || 
+                                           ' 「ギルド配給食」を渋々食べた（無料）。「まずいが…生きるためだ…」（ギルドマスターへの好感度 -10）';
+
+                            better_alert(
+                                t('guild_friendliness_decrease_with_player', {
+                                    name: adv.name,
+                                    player: playerName,
+                                    penalty: penalty
+                                }),
+                                "friendliness",
+                                { delta: -penalty }
+                            );
+
+                            foodOrdered = true;
+                        }
+
+                        if (!foodOrdered) {
+                            console.log(`[Tavern Debug] No food available - even ration out of stock`);
+                            description += t('tavern_no_food_at_all') || " 何も食べられず、空腹のまま酒場を後にした…";
+                        }
+                    } else if (tavernSubRandom < orderChance + 0.1) {
                         if (adv.bag.gold > 0 && gameState.gold > 0) {
                             let betPercent = 0.25 + Math.random() * 0.5;
                             let bet = Math.floor(adv.bag.gold * betPercent);
@@ -5283,7 +5421,6 @@ function processAdventurerDailyActions() {
             adv.friendliness[partner.id] = Math.max(0, Math.min(100, (adv.friendliness[partner.id] ?? 50) + variation.deltaA));
             partner.friendliness[adv.id] = Math.max(0, Math.min(100, (partner.friendliness[adv.id] ?? 50) + variation.deltaB));
 
-            // 翻訳キー対応（descKeyA / descKeyB 使用）
             let descAdv = t(variation.descKeyA, {a: adv.name, b: partner.name});
             let descPartner = t(variation.descKeyB || variation.descKeyA, {a: partner.name, b: adv.name});
 
@@ -5350,6 +5487,47 @@ function playDay(){
 
     const evDay = gameState.day;
     gameState.day++;
+
+// === 新規追加: 常駐冒険者の hunger を日初めに減少（クエスト中か否かで差分） + 飢餓死処理 ===
+    const deadAdventurers = [];
+
+    gameState.adventurers.forEach(adv => {
+        if (adv.temp) return; // 一時的な冒険者は除外
+        if (adv.hunger === undefined) adv.hunger = 1.0;
+
+        // 減少量：クエスト中なら10%、クエスト中でなければ5%
+        const hungerLoss = isAdventurerOnQuest(adv) ? 0.06 : 0.03;
+        adv.hunger = Math.max(0, adv.hunger - hungerLoss);
+
+        // hunger が0になったら死亡リストに追加
+        if (adv.hunger <= 0) {
+            deadAdventurers.push(adv);
+        }
+    });
+
+    // 飢餓死処理（減少後にまとめて実行）
+    if (deadAdventurers.length > 0) {
+        let totalRepPenalty = 0;
+
+        deadAdventurers.forEach(adv => {
+            // リストから削除
+            gameState.adventurers = gameState.adventurers.filter(a => a.id !== adv.id);
+
+            // 死亡メッセージ
+            better_alert(t('adventurer_starved_to_death', {name: adv.name}) || `${adv.name} は飢えで死にました…！`, "error");
+
+            // Reputation ペナルティ（1人あたり -10）
+            gameState.reputation = Math.max(0, gameState.reputation - 10);
+            totalRepPenalty += 10;
+        });
+
+        // 複数死亡時のまとめメッセージ（Reputationペナルティも表示）
+        if (deadAdventurers.length > 1) {
+            better_alert(t('multiple_adventurers_starved', {count: deadAdventurers.length, penalty: totalRepPenalty}) || 
+                         `${deadAdventurers.length}人の冒険者が飢えで死にました…（Reputation -${totalRepPenalty}）`, "error");
+        }
+    }
+
     handleLoans();
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day-1) * 10);
@@ -7327,9 +7505,9 @@ function updateTradeInfo() {
     let info = '';
     if (city && city.items[0]) {
         let it = city.items[0];
-        info += `アイテム: ${it.name}<br>価格範囲: ${it.minPrice}~${it.maxPrice}g`;
+        info += `アイテム: ${it.name}<br>価格範囲: ${it.minPrice}~${it.maxPrice}G`;
         let curr = gameState.dailyPrices[cityName] ? gameState.dailyPrices[cityName][it.name] : 'N/A';
-        info += `<br>今日の価格: ${curr}g`;
+        info += `<br>今日の価格: ${curr}G`;
         document.getElementById('tradeMaxPrice').value = it.maxPrice;
     }
     document.getElementById('tradeInfo').innerHTML = info;
@@ -7497,6 +7675,8 @@ function orderTavernItem(recipeIdx) {
     </div>`;
 
     document.querySelector('.facility-panel').insertAdjacentHTML('beforeend', selectHtml);
+
+    updateDisplays();
 }
 function applyTavernBuff(recipeIdx, advId) {
     const r = currentTavernRecipes[recipeIdx];
@@ -7517,8 +7697,13 @@ function applyTavernBuff(recipeIdx, advId) {
     adv.buffs.push(buffCopy);
 
     better_alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`,"success");
+    const hungerRecover = r.hunger_recover || 0.4;
+    adv.hunger = Math.min(1, adv.hunger + hungerRecover);
+    better_alert(`${adv.name}の空腹度が+${hungerRecover}。`,"success");
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
+
+
 }
 
 
@@ -7608,6 +7793,44 @@ function produceBlacksmith(recipeIdx) {
     better_alert(`${r.name} を製作しました！`,"success");
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
+    updateDisplays();
+}
+
+function produceAndStock(recipeIndex) {
+    const r = currentTavernRecipes[recipeIndex];
+    if (!r) return;
+
+    const cost = r.cost || 0;
+    if (gameState.gold < cost) return;
+
+    const materials = r.materials || [];
+
+    // Check materials
+    for (const mat of materials) {
+        const owned = countItem(mat.name); // your existing count function (player inventory)
+        if (owned < mat.qty) return;
+    }
+
+    // Consume gold
+    gameState.gold -= cost;
+
+    // Consume materials from player inventory
+    for (const mat of materials) {
+        let item = gameState.inventory.find(i => i.name === mat.name);
+        if (item) {
+            item.qty -= mat.qty;
+            if (item.qty <= 0) {
+                gameState.inventory = gameState.inventory.filter(i => i.name !== mat.name);
+            }
+        }
+    }
+
+    // Add to stock
+    if (!gameState.tavernStock) gameState.tavernStock = {};
+    gameState.tavernStock[recipeIndex] = (gameState.tavernStock[recipeIndex] || 0) + 1;
+
+    renderFacilities(); // refresh UI
+    better_alert(`${r.name}を生産して在庫に加えました`, "success");
     updateDisplays();
 }
 
@@ -7831,6 +8054,17 @@ function renderFacilities() {
                                   </p>`;
                 }
 
+                // === NEW: Tavern stock display ===
+                let stockHtml = '';
+                let stockQty = 0;
+                if (currentFacility === 'tavern') {
+                    if (!gameState.tavernStock) gameState.tavernStock = {};
+                    stockQty = gameState.tavernStock[originalIndex] || 0;
+                    stockHtml = `<p style="margin:15px 0 8px 0; font-size:1.3em; color:#f39c12; font-weight:bold;">
+                                    在庫: ${stockQty}個
+                                 </p>`;
+                }
+
                 let craftButtonHtml = '';
                 if (currentFacility === 'alchemy') {
                     const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
@@ -7848,27 +8082,39 @@ function renderFacilities() {
                             </button>
                         </div>`;
                 } else {
-                    let buttonText, onclick;
-                    if (currentFacility === 'tavern') {
-                        buttonText = t('facilities_order_tavern');
-                        onclick = `orderTavernItem(${originalIndex})`;
-                    } else {
-                        buttonText = t('facilities_produce_blacksmith');
-                        onclick = `produceBlacksmith(${originalIndex})`;
-                    }
                     const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
-                    craftButtonHtml = `
-                        <button onclick="${onclick}" 
-                                ${disabledAttr}
-                                style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
-                            ${buttonText}
-                        </button>`;
+                    if (currentFacility === 'tavern') {
+                        craftButtonHtml = `
+                            <div style="margin-top:20px; display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">
+                                <button onclick="produceAndStock(${originalIndex})"
+                                        ${disabledAttr}
+                                        style="padding:12px 28px; font-size:1.2em; background:#e67e22; flex:1; min-width:160px;">
+                                    ${t('facilities_produce_and_stock')}
+                                </button>
+                                <button onclick="orderTavernItem(${originalIndex})"
+                                        ${disabledAttr}
+                                        style="padding:12px 28px; font-size:1.2em; flex:1; min-width:160px;">
+                                    ${t('facilities_order_tavern')}
+                                </button>
+                            </div>`;
+                    } else {
+                        // blacksmith (unchanged)
+                        const buttonText = t('facilities_produce_blacksmith');
+                        const onclick = `produceBlacksmith(${originalIndex})`;
+                        craftButtonHtml = `
+                            <button onclick="${onclick}" 
+                                    ${disabledAttr}
+                                    style="margin-top:15px; padding:12px 30px; font-size:1.2em;">
+                                ${buttonText}
+                            </button>`;
+                    }
                 }
 
                 html += `
                     <div class="facility-item">
                         <h3>${itemName}</h3>
                         ${effectHtml}
+                        ${stockHtml}
                         <p>${t('facilities_cost', {cost})}</p>
                         ${matHtml}
                         ${craftButtonHtml}
@@ -8404,7 +8650,7 @@ function postGuildQuest() {
         let maxPrice = parseInt(maxPriceEl.value) || city.items[0].maxPrice;
         q = {
             id: gameState.nextId++,
-            desc: `${cityName}で${itemName} ${qty}個購入 (最大${maxPrice}g/個)`,
+            desc: `${cityName}で${itemName} ${qty}個購入 (最大${maxPrice}G/個)`,
             difficulty: 1,
             minDexterity: 5,
             minLuck: 5,
@@ -8910,6 +9156,171 @@ function closeRelationshipModal() {
 }
 
 
+// === 新規関数: 冒険者カード編集モーダル ===
+// === 新規関数: 冒険者カード編集モーダル（動的作成 + 既存関数非依存）===
+function openAdventurerCard(index) {
+    const perms = gameState.adventurers.filter(a => !a.temp);
+    const adv = perms[index];
+    if (!adv) return;
+
+    // === 安全初期化（セーブデータ互換性確保 + 型チェック）===
+    if (!adv.rank) adv.rank = 'F';
+    if (!Array.isArray(adv.prohibitedActions)) {
+        adv.prohibitedActions = [];
+    }
+
+    // ランクリスト（F- から S+ まで）
+    const ranks = [ 'F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
+
+    let rankOptions = '';
+    ranks.forEach(r => {
+        const selected = r === adv.rank ? 'selected' : '';
+        rankOptions += `<option value="${r}" ${selected}>${r}ランク</option>`;
+    });
+
+    // 禁止行動チェックボックス
+    const actions = ['tavern', 'blacksmith', 'alchemy', 'guild_stay', 'street_walk','hunting','gather'];
+    let prohibitChecks = '';
+    actions.forEach(act => {
+        const checked = adv.prohibitedActions.includes(act) ? 'checked' : '';
+        const label = t(`action_${act}`) || act;
+        prohibitChecks += `
+            <label style="display:block; margin:8px 0;">
+                <input type="checkbox" id="prohibit_${act}" ${checked}> ${label}禁止
+            </label>`;
+    });
+
+    // === モーダルを動的に作成（既存のcreateModal非依存）===
+    let modal = document.getElementById('cardModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cardModal';
+        modal.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        `;
+
+        const closeBtn = document.createElement('div');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 10px; right: 20px;
+            font-size: 40px;
+            color: #ffd700;
+            cursor: pointer;
+            text-shadow: 0 0 10px black;
+        `;
+        closeBtn.onclick = () => closeAdventurerCard();
+
+        modal.appendChild(closeBtn);
+        document.body.appendChild(modal);
+    }
+
+    // コンテンツ部分を作成/更新
+    let content = modal.querySelector('.modal-content');
+    if (!content) {
+        content = document.createElement('div');
+        content.className = 'modal-content';
+        modal.appendChild(content);
+    }
+
+    content.innerHTML = `
+        <div style="max-width:600px; background:rgba(30,30,50,0.95); border-radius:16px; padding:30px; position:relative;">
+            <h2 style="text-align:center; color:#ffd700; margin-bottom:30px;">${adv.name} のギルドカード編集</h2>
+            <div style="margin:20px 0;">
+                <p><strong>現在のランク:</strong> ${adv.rank}</p>
+                <label><strong>ランク変更:</strong></label>
+                <select id="cardRankSelect" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; background:#333; color:white;">
+                    ${rankOptions}
+                </select>
+            </div>
+            <div style="margin:20px 0;">
+                <p><strong>行動禁止設定:</strong>（更新時に禁止数×-5の好感度ペナルティ）</p>
+                ${prohibitChecks}
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button onclick="saveAdventurerCard(${index})" style="padding:12px 30px; background:#27ae60; color:white; border:none; border-radius:8px; font-size:1.2em; margin:0 10px;">
+                    ${t('save_card')}
+                </button>
+                <button onclick="closeAdventurerCard()" style="padding:12px 30px; background:#95a5a6; color:white; border:none; border-radius:8px; font-size:1.2em; margin:0 10px;">
+                    ${t('close')}
+                </button>
+            </div>
+        </div>`;
+
+    // モーダル表示
+    modal.style.display = 'flex';
+}
+
+// === カードモーダル閉じる関数 ===
+function closeAdventurerCard() {
+    const modal = document.getElementById('cardModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// === カード保存処理 ===
+function saveAdventurerCard(index) {
+    const perms = gameState.adventurers.filter(a => !a.temp);
+    const adv = perms[index];
+    if (!adv) return;
+
+    // === 安全初期化（好感度フィールド）===
+    if (adv.Friendliness === undefined) adv.Friendliness = 50;
+
+    // ランク更新
+    const newRank = document.getElementById('cardRankSelect').value;
+    adv.rank = newRank;
+
+    // 禁止行動更新
+    const actions = ['tavern', 'blacksmith', 'alchemy', 'guild_stay', 'street_walk', 'hunting', 'gather'];
+    const newProhibited = [];
+    actions.forEach(act => {
+        if (document.getElementById(`prohibit_${act}`).checked) {
+            newProhibited.push(act);
+        }
+    });
+
+    // 旧禁止数（安全取得）
+    const oldCount = Array.isArray(adv.prohibitedActions) ? adv.prohibitedActions.length : 0;
+    const newCount = newProhibited.length;
+
+    // 差分計算
+    const difference = newCount - oldCount; // 正: 増加、負: 減少、0: 変化なし
+
+    if (difference !== 0) {
+        const changeAmount = Math.abs(difference) * 5;
+        const changeAmount_increase = Math.abs(difference) * 2;
+
+        if (difference > 0) {
+            // 禁止増加 → 好感度減少
+            adv.Friendliness = Math.max(0, adv.Friendliness - changeAmount);
+
+            better_alert(t('card_prohibit_penalty', {name: adv.name, penalty: changeAmount}), "friendliness", {delta: -changeAmount});
+        } else {
+            // 禁止減少 → 好感度増加（上限100）
+            adv.Friendliness = Math.min(100, adv.Friendliness + changeAmount_increase);
+
+            better_alert(t('card_prohibit_reward', {name: adv.name, reward: changeAmount_increase}), "friendliness", {delta: changeAmount_increase});
+        }
+    }
+
+    // 禁止リストを更新
+    adv.prohibitedActions = newProhibited;
+
+    // カード更新日記録（28日周期用）
+    adv.cardLastRenewed = gameState.day;
+
+    closeAdventurerCard();
+    renderCurrentCharacter();
+    better_alert(t('card_updated', {name: adv.name}), "success");
+}
 
 // === 完全改修版 renderCurrentCharacter ===
 function renderCurrentCharacter() {
@@ -8957,13 +9368,17 @@ function renderCurrentCharacter() {
     // === 特性表示（Statusのすぐ下）===
     html += `<p style="margin:15px 0 10px 0;"><strong>特性</strong><br> ${getTraitsDisplay(adv)}</p>`;
 
+    const hungerPct = Math.round((adv.hunger || 0) * 100);
+
     html += `<div style="margin:15px 0;">
                 <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div>
                 ${t('exp_bar_label', {exp: adv.exp, needed: expNeeded})}<br>
                 <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div>
                 ${t('hp_bar_label', {hp: adv.hp, maxHp: adv.maxHp})}<br>
                 <div class="progress-bar"><div class="progress-fill mp-fill" style="width:${mpPct}%"></div></div>
-                ${t('mp_bar_label', {mp: adv.mp, maxMp: adv.maxMp})}
+                ${t('mp_bar_label', {mp: adv.mp, maxMp: adv.maxMp})}<br>
+                <div class="progress-bar"><div class="progress-fill hunger-fill" style="width:${hungerPct}%"></div></div>
+                ${t('hunger_label')}: ${hungerPct}%
              </div>`;
 
     if (adv.buffs && adv.buffs.length > 0) {
@@ -9107,6 +9522,8 @@ function renderCurrentCharacter() {
         html += `<div style="text-align:center;">
                     <button style="background:#e74c3c; color:white; padding:10px 20px; border:none; border-radius:4px; cursor:pointer;"
                             onclick="firePerm(${currentCharIndex})">${t('fire_adventurer_button')}</button>
+                            <button style="background:#3498db; color:white; padding:10px 20px; border:none; border-radius:4px; cursor:pointer;"
+                            onclick="openAdventurerCard(${currentCharIndex})">${t('edit_adventurer_card')}</button>
                  </div>`;
     }
 
@@ -9311,7 +9728,7 @@ function renderQuests() {
         html += `<p>${t('training_quest_desc')}</p>`;
         html += `<p>${t('difficulty_label')}: ${q.difficulty} | ${t('required_stats')}: ${t('all_zero')}</p>`;
     } else {
-        html += `<p>${t('difficulty_label')}: ${q.difficulty} (${q.rank || ''}) | ${t('days_left_label')}: ${q.daysLeft} | ${t('reward_label')}: ${q.reward}g</p>`;
+        html += `<p>${t('difficulty_label')}: ${q.difficulty} (${q.rank || ''}) | ${t('days_left_label')}: ${q.daysLeft} | ${t('reward_label')}: ${q.reward}G</p>`;
         if (q.defense) {
             html += `<p><strong style="color:red;">${t('defense_warning')}</strong></p>`;
         }
