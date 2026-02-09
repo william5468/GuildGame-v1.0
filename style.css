@@ -365,13 +365,14 @@ body {
     -webkit-backdrop-filter: blur(10px);    /* Safari support */
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+     overflow: hidden;
 
     
 }
 /* Panels – larger width with min-width for wider screens, right slightly prioritized for large quest cards */
 .left {
     flex: 1.2;                       /* Slightly more space for adventurers/recruits */
-    min-width: 1000px;                /* Forces wider panel even on medium screens */
+    min-width: 700px;                /* Forces wider panel even on medium screens */
     background: rgba(255, 255, 255, 0.08);
     padding: 20px;
     border-radius: 14px;
@@ -384,7 +385,7 @@ body {
 
 .right {
     flex: 1.8;                       /* More space for larger quest cards */
-    min-width: 600px;                /* Ensures quests have room to breathe */
+    min-width: 300px;                /* Ensures quests have room to breathe */
     background: rgba(255, 255, 255, 0.08);
     padding: 20px;
     border-radius: 14px;
@@ -401,9 +402,11 @@ body {
 #day {
     display: block;                    /* Block-level for margin auto centering */
     width: fit-content;                /* Shrink-to-fit content (respects min-width) */
+    height: fit-content;   
     min-width: 240px;                  /* Keeps minimum prominence */
+    max-height: 100px;  
     margin: 15px auto;                 /* Vertical 15px, horizontal auto → perfect center */
-    padding: 14px 32px;                /* Slightly more horizontal padding for balance */
+    padding: 0px 0px;                /* Slightly more horizontal padding for balance */
     text-align: center;
     color: #ffffff !important;
     font-size: 1em;
@@ -417,6 +420,7 @@ body {
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     box-sizing: border-box;            /* Ensures padding doesn't affect centering */
+    overflow: hidden;
 }
 
 /* Ensure any inner text (e.g., spans, p) inside #day is also white */
@@ -1194,7 +1198,7 @@ h1, h3, button, .adventurer-card, .quest-card {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: hidden;
     padding: 20px 10px;
     gap: 25px;                     /* カード間の間隔 */

@@ -765,6 +765,7 @@ function Render_Mainadventurer() {
         friendliness: {},              // 初期化
         hunger: 0.8,
         prohibitedActions:[],
+        rank: 'F',
         bag: {
             gold: 150,
             items: [
@@ -805,6 +806,7 @@ function Render_Mainadventurer() {
         friendliness: {},              // 初期化
         hunger: 0.8,
         prohibitedActions:[],
+        rank: 'F',
         bag: {
             gold: 200,
             items: [
@@ -1112,14 +1114,17 @@ function cleanupAdventurers() {
 // === セーブ時にタイムスタンプを追加 ===
 function saveGame(slot = 1) {
     if (slot < 1 || slot > 4) {
-        better_alert('無効なスロット番号です（1～4）',"error");
+        better_alert(t('invalid_save_slot'), "error");
         return;
     }
 
     const savableState = {
         ...gameState,
         seenCompletionDialogues: Array.from(gameState.seenCompletionDialogues || new Set()),
-        saveTimestamp: new Date().toLocaleString('ja-JP', {
+        dailyRejectedPairs: Array.from(gameState.dailyRejectedPairs || new Set()), // ← 新規追加: Set → Array変換で保存互換性確保
+        saveTimestamp: new Date().toLocaleString(currentLang === 'ja' ? 'ja-JP' : 
+                                                   currentLang === 'en' ? 'en-US' : 
+                                                   currentLang === 'zh' ? 'zh-TW' : 'en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -1131,7 +1136,7 @@ function saveGame(slot = 1) {
 
     const key = `guildMasterSave${slot}`;
     localStorage.setItem(key, JSON.stringify(savableState));
-    better_alert(`スロット ${slot} にゲームを保存しました！`,"success");
+    better_alert(t('game_saved_success', { slot: slot }), "success");
     
     // メニューが開いている場合は即時更新
     if (document.getElementById('save-load-modal')) {
@@ -1222,7 +1227,7 @@ function openSlotMenu(mode) {
     content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
     
     const title = document.createElement('h2');
-    title.textContent = mode === 'save' ? 'セーブスロットを選択' : 'ロードスロットを選択';
+    title.textContent = mode === 'save' ? t('save_slot_select_title') : t('load_slot_select_title');
     title.style.textAlign = 'center';
     title.style.marginBottom = '20px';
     title.style.fontSize = '24px';
@@ -1242,32 +1247,32 @@ function openSlotMenu(mode) {
         slotDiv.onmouseout = () => { slotDiv.style.background = '#2d2d2d'; };
         
         const info = getSlotSummary(i);
-        let text = `スロット ${i} : `;
+        let text = t('slot_label', { slot: i }) + ' : ';
         
         if (info.empty) {
-            text += info.corrupted ? '破損' : '空';
+            text += info.corrupted ? t('slot_corrupted') : t('slot_empty');
             slotDiv.style.opacity = '0.6';
+            slotDiv.innerHTML = text;
         } else {
-            text += `${info.time}<br>Player: ${info.playerName} | ${info.day} │ ${info.gold} G │ Level: ${info.highestLevel}`;
+            text += `${info.time}<br>${t('player_label')}: ${info.playerName} | ${info.day} | ${info.gold} ${t('gold_unit')} | ${t('level_label')}: ${info.highestLevel}`;
             slotDiv.innerHTML = text;
         }
-        if (info.empty) slotDiv.innerHTML = text;
         
         slotDiv.onclick = (e) => {
             e.stopPropagation(); // 背景クリック防止
             
             if (mode === 'save') {
-                if (!info.empty && !confirm(`スロット ${i} を上書きしますか？`)) {
+                if (!info.empty && !confirm(t('overwrite_confirm', { slot: i }))) {
                     return;
                 }
                 saveGame(i);
                 closeSlotMenu();
             } else { // load
                 if (info.empty) {
-                    better_alert('このスロットは空です！',"warning");
+                    better_alert(t('slot_empty_alert'), "warning");
                     return;
                 }
-                if (confirm(`スロット ${i} からロードしますか？`)) {
+                if (confirm(t('load_confirm', { slot: i }))) {
                     loadGame(i);
                     closeSlotMenu();
                 }
@@ -1277,12 +1282,12 @@ function openSlotMenu(mode) {
         content.appendChild(slotDiv);
     }
     
-    // === セーブモードの場合、5番目の「現在のゲームをテキストにエクスポート」オプションを追加 ===
+    // === セーブモードの場合、テキストエクスポートオプション ===
     if (mode === 'save') {
         const exportDiv = document.createElement('div');
         exportDiv.style.padding = '20px';
         exportDiv.style.margin = '20px 0 10px';
-        exportDiv.style.background = '#7c2d12'; // 暖かいオレンジブラウンでセーブらしい目立つ色
+        exportDiv.style.background = '#7c2d12';
         exportDiv.style.borderRadius = '10px';
         exportDiv.style.cursor = 'pointer';
         exportDiv.style.transition = 'background 0.2s';
@@ -1293,23 +1298,23 @@ function openSlotMenu(mode) {
         exportDiv.onmouseover = () => { exportDiv.style.background = '#9a3412'; };
         exportDiv.onmouseout = () => { exportDiv.style.background = '#7c2d12'; };
         
-        exportDiv.innerHTML = '<strong>📄 現在のゲームをテキストにエクスポート</strong><br><small>現在のゲーム状態を文字列として出力（他のPCへ転送可能）</small>';
+        exportDiv.innerHTML = `<strong>📄 ${t('export_text_title')}</strong><br><small>${t('export_text_desc')}</small>`;
         
         exportDiv.onclick = (e) => {
             e.stopPropagation();
-            closeSlotMenu(); // メニューを閉じてエクスポートモーダルを開く
+            closeSlotMenu();
             openTextExportModal();
         };
         
         content.appendChild(exportDiv);
     }
     
-    // === ロードモードの場合、5番目の「テキストからインポート」オプションを追加（既存）===
+    // === ロードモードの場合、テキストインポートオプション ===
     if (mode === 'load') {
         const importDiv = document.createElement('div');
         importDiv.style.padding = '20px';
         importDiv.style.margin = '20px 0 10px';
-        importDiv.style.background = '#1e40af'; // 青系
+        importDiv.style.background = '#1e40af';
         importDiv.style.borderRadius = '10px';
         importDiv.style.cursor = 'pointer';
         importDiv.style.transition = 'background 0.2s';
@@ -1320,7 +1325,7 @@ function openSlotMenu(mode) {
         importDiv.onmouseover = () => { importDiv.style.background = '#2563eb'; };
         importDiv.onmouseout = () => { importDiv.style.background = '#1e40af'; };
         
-        importDiv.innerHTML = '<strong>📄 テキストからインポートしてロード</strong><br><small>エクスポートされた文字列を貼り付けて直接ゲームをロード</small>';
+        importDiv.innerHTML = `<strong>📄 ${t('import_text_title')}</strong><br><small>${t('import_text_desc')}</small>`;
         
         importDiv.onclick = (e) => {
             e.stopPropagation();
@@ -1332,7 +1337,7 @@ function openSlotMenu(mode) {
     }
     
     const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'キャンセル';
+    cancelBtn.textContent = t('cancel_button');
     cancelBtn.style.display = 'block';
     cancelBtn.style.margin = '20px auto 0';
     cancelBtn.style.padding = '12px 30px';
@@ -1358,7 +1363,9 @@ function openTextExportModal() {
     const savableState = {
         ...gameState,
         seenCompletionDialogues: Array.from(gameState.seenCompletionDialogues || new Set()),
-        saveTimestamp: new Date().toLocaleString('ja-JP', {
+        saveTimestamp: new Date().toLocaleString(currentLang === 'ja' ? 'ja-JP' : 
+                                                   currentLang === 'en' ? 'en-US' : 
+                                                   currentLang === 'zh' ? 'zh-TW' : 'en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -1395,13 +1402,13 @@ function openTextExportModal() {
     content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
 
     const title = document.createElement('h2');
-    title.textContent = '現在のゲームをテキストにエクスポート';
+    title.textContent = t('export_text_modal_title');
     title.style.textAlign = 'center';
     title.style.marginBottom = '20px';
     content.appendChild(title);
 
     const info = document.createElement('p');
-    info.textContent = '以下の文字列をコピーして、他のPCやブラウザでインポートできます。この文字列は現在のゲーム状態を完全に表しています。';
+    info.textContent = t('export_text_modal_info');
     info.style.marginBottom = '20px';
     content.appendChild(info);
 
@@ -1419,7 +1426,7 @@ function openTextExportModal() {
     content.appendChild(textarea);
 
     const copyBtn = document.createElement('button');
-    copyBtn.textContent = 'クリップボードにコピー';
+    copyBtn.textContent = t('copy_to_clipboard_button');
     copyBtn.style.display = 'block';
     copyBtn.style.margin = '20px auto';
     copyBtn.style.padding = '12px 30px';
@@ -1431,17 +1438,17 @@ function openTextExportModal() {
     copyBtn.onclick = async () => {
         try {
             await navigator.clipboard.writeText(encodedData);
-            better_alert('クリップボードにコピーしました！',"success");
+            better_alert(t('copy_success'), "success");
         } catch (err) {
             textarea.select();
             document.execCommand('copy');
-            better_alert('コピーしました（古いブラウザモード）',"success");
+            better_alert(t('copy_success_fallback'), "success");
         }
     };
     content.appendChild(copyBtn);
 
     const closeBtn = document.createElement('button');
-    closeBtn.textContent = '閉じる';
+    closeBtn.textContent = t('close_button');
     closeBtn.style.display = 'block';
     closeBtn.style.margin = '10px auto 0';
     closeBtn.style.padding = '10px 24px';
@@ -1488,18 +1495,18 @@ function openTextImportModal() {
     content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.6)';
 
     const title = document.createElement('h2');
-    title.textContent = 'テキストからセーブデータをインポートしてロード';
+    title.textContent = t('import_text_modal_title');
     title.style.textAlign = 'center';
     title.style.marginBottom = '20px';
     content.appendChild(title);
 
     const info = document.createElement('p');
-    info.textContent = 'エクスポートされた文字列を以下に貼り付けてください。貼り付け後、「ロード実行」を押すとゲームが直接ロードされます（スロットは使用しません）。';
+    info.textContent = t('import_text_modal_info');
     info.style.marginBottom = '20px';
     content.appendChild(info);
 
     const textarea = document.createElement('textarea');
-    textarea.placeholder = 'ここにエクスポートされたテキストを貼り付け...';
+    textarea.placeholder = t('import_text_placeholder');
     textarea.style.width = '100%';
     textarea.style.height = '300px';
     textarea.style.background = '#2d2d2d';
@@ -1511,11 +1518,11 @@ function openTextImportModal() {
     content.appendChild(textarea);
 
     const loadBtn = document.createElement('button');
-    loadBtn.textContent = 'ロード実行';
+    loadBtn.textContent = t('import_load_button');
     loadBtn.style.display = 'block';
     loadBtn.style.margin = '20px auto';
     loadBtn.style.padding = '12px 30px';
-    loadBtn.style.background = '#10b981';
+    loadBtn.style.background = '#10b981'; // エメラルドグリーンでロードらしい
     loadBtn.style.color = '#fff';
     loadBtn.style.border = 'none';
     loadBtn.style.borderRadius = '8px';
@@ -1523,7 +1530,7 @@ function openTextImportModal() {
     loadBtn.onclick = () => {
         const text = textarea.value.trim();
         if (!text) {
-            better_alert('テキストが空です！',"error");
+            better_alert(t('import_empty_text'), "error");
             return;
         }
 
@@ -1531,7 +1538,7 @@ function openTextImportModal() {
         try {
             decoded = decodeURIComponent(escape(atob(text)));
         } catch (e) {
-            better_alert('無効なデータ形式です（Base64デコード失敗）',"error");
+            better_alert(t('import_invalid_format'), "error");
             return;
         }
 
@@ -1539,7 +1546,7 @@ function openTextImportModal() {
         try {
             loadedState = JSON.parse(decoded);
         } catch (e) {
-            better_alert('データが壊れています（JSON解析失敗）',"error");
+            better_alert(t('import_corrupted_data'), "error");
             return;
         }
 
@@ -1573,6 +1580,13 @@ function openTextImportModal() {
             gameState.seenCompletionDialogues = new Set(gameState.seenCompletionDialogues);
         } else if (!gameState.seenCompletionDialogues) {
             gameState.seenCompletionDialogues = new Set();
+        }
+
+        // dailyRejectedPairs 復元（必要に応じて追加）
+        if (Array.isArray(gameState.dailyRejectedPairs)) {
+            gameState.dailyRejectedPairs = new Set(gameState.dailyRejectedPairs);
+        } else if (!gameState.dailyRejectedPairs) {
+            gameState.dailyRejectedPairs = new Set();
         }
 
         gameState.adventurers.forEach(a => {
@@ -1677,13 +1691,13 @@ function openTextImportModal() {
         updateDisplays();
         ensureTrainingQuest();
         
-        better_alert('テキストからゲームをロードしました！',"success");
+        better_alert(t('import_success'), "success");
         closeTextImportModal();
     };
     content.appendChild(loadBtn);
 
     const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'キャンセル';
+    closeBtn.textContent = t('cancel_button');
     closeBtn.style.display = 'block';
     closeBtn.style.margin = '10px auto 0';
     closeBtn.style.padding = '10px 24px';
@@ -1724,34 +1738,6 @@ function loadGame(slot) {
 
     const key = `guildMasterSave${slot}`;
 
-    // === 初期化（新規ゲーム時やセーブがない場合のデフォルト）===
-    gameState.tradeCityStates = tradeCities.map(city => ({
-        ...city,
-        event: getRandomEvent(),
-        variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {}) // ±20%
-    }));
-
-    gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
-    gameState.materialPrices = {}; // ギルドショップ用
-
-    if (!gameState.dungeonCooldowns) {
-        gameState.dungeonCooldowns = {}; // { floor: nextAvailableDay }
-    }
-    // Default fees (player can change them later)
-    if (!gameState.facilityFees) {
-        gameState.facilityFees = {
-            tavern: 10,
-            alchemy: 20,
-            blacksmith: 15
-        };
-    }
-
-    // 現在の言語に応じたレシピをグローバルに設定
-    currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
-    currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
-    currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
-    currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
-
     const saved = localStorage.getItem(key);
     console.log("Current Lang is" + currentLang);
 
@@ -1764,6 +1750,42 @@ function loadGame(slot) {
             console.warn('Save data parse error:', e);
             return;
         }
+
+        // === 初期化（新規ゲーム相当のデフォルト値 – セーブにないプロパティを補完）===
+        // これらはロード後も上書きされないよう、loadedStateにない場合のみ設定
+        if (!loadedState.tradeCityStates) {
+            gameState.tradeCityStates = tradeCities.map(city => ({
+                ...city,
+                event: getRandomEvent(),
+                variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {})
+            }));
+        }
+
+        if (!loadedState.homeVariances) {
+            gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+        }
+
+        if (!loadedState.materialPrices) {
+            gameState.materialPrices = {};
+        }
+
+        if (!loadedState.dungeonCooldowns) {
+            gameState.dungeonCooldowns = {};
+        }
+
+        if (!loadedState.facilityFees) {
+            gameState.facilityFees = {
+                tavern: 10,
+                alchemy: 20,
+                blacksmith: 15
+            };
+        }
+
+        // 現在の言語に応じたレシピをグローバルに設定（ロード時も最新言語に更新）
+        currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
+        currentTavernRecipes = tavernRecipes[currentLang] || tavernRecipes.ja;
+        currentBlacksmithRecipes = blacksmithRecipes[currentLang] || blacksmithRecipes.ja;
+        currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 
         // 既存の gameState にマージ
         Object.assign(gameState, loadedState);
@@ -1778,6 +1800,13 @@ function loadGame(slot) {
             gameState.seenCompletionDialogues = new Set(gameState.seenCompletionDialogues);
         } else if (!gameState.seenCompletionDialogues) {
             gameState.seenCompletionDialogues = new Set();
+        }
+
+        // dailyRejectedPairs を Array → Set に復元（セーブ互換性対応）
+        if (Array.isArray(gameState.dailyRejectedPairs)) {
+            gameState.dailyRejectedPairs = new Set(gameState.dailyRejectedPairs);
+        } else if (!gameState.dailyRejectedPairs) {
+            gameState.dailyRejectedPairs = new Set();
         }
 
         // 冒険者関連の後方互換処理
@@ -1890,9 +1919,24 @@ function loadGame(slot) {
         ensureTrainingQuest();
         better_alert(t('save_loaded', { slot }), "success");
     } else {
-        // この分岐は通常到達しない（メニューで空スロットをブロックしている）が、安全のため
+        // セーブがない場合：新規ゲーム相当の初期化を実行
+        gameState.tradeCityStates = tradeCities.map(city => ({
+            ...city,
+            event: getRandomEvent(),
+            variances: resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {})
+        }));
+
+        gameState.homeVariances = resources.reduce((acc, r) => ({...acc, [r]: 0.8 + Math.random() * 0.4}), {});
+        gameState.materialPrices = {};
+        gameState.dungeonCooldowns = {};
+        gameState.facilityFees = {
+            tavern: 10,
+            alchemy: 20,
+            blacksmith: 15
+        };
+
         better_alert(t('save_no_data', { slot }), "warning");
-        updateDisplays(); // 新規ゲーム相当の表示更新
+        updateDisplays();
     }
 }
 
@@ -1944,7 +1988,7 @@ function addToInventory(template, qty = 1) {
 
 function spendGold(amount) {
     if (gameState.gold < amount) {
-        better_alert("Goldが不足しています","error");
+        better_alert(t('insufficient_gold'), "error");
         return false;
     }
     gameState.gold -= amount;
@@ -2038,14 +2082,20 @@ function checkGameOver() {
 function buyExpansion() {
     const current = gameState.maxPermanentSlots;
     if (current >= 12) {
-        better_alert('最大拡張に達しました',"error");
+        better_alert(t('max_expansion_reached'), "error");
         return;
     }
     const next = current + 1;
-    const level = next - 4;
+    const level = next - 4; // 拡張レベル（5スロット目からレベル1）
     const cost = 500 + 250 * (level - 1);
+
     if (!spendGold(cost)) return;
+
     gameState.maxPermanentSlots = next;
+
+    // 成功時の翻訳可能アラート（拡張レベルとコストを表示）
+    better_alert(t('expansion_purchased', { slots: next, cost: cost }), "success");
+
     updateDisplays();
 }
 
@@ -2938,7 +2988,17 @@ function assign(questId, advId){
         better_alert(t('no_mp', {name: adv.name}),"error"); 
         return; 
     }
+    // === ランク不足チェック（クエストにrankがあれば）===
+    if (q.rank && adv.rank) {
+        const ranks = ['F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
+        const advIndex = ranks.indexOf(adv.rank);
+        const questIndex = ranks.indexOf(q.rank);
 
+        if (advIndex !== -1 && questIndex !== -1 && advIndex < questIndex) {
+            better_alert(t('rank_too_low') || `${adv.name} のランク(${adv.rank})がクエスト必要ランク(${q.rank})未満です`, "error");
+            return;
+        }
+    }
     // === 今日すでに拒否されたペアは割り当て不可 ===
     if (q.assigned.length > 0) {
         for (let memberId of q.assigned) {
@@ -3170,6 +3230,7 @@ function recruit(i){
     // === 好感度初期化（新規追加）===
     newAdv.friendliness = {};                     // 自分から他者への好感度
     newAdv.traits = newAdv.traits || [];          // generateTempAdventurerで付与済みのはず
+    newAdv.rank = 'F',
 
     // 既存メンバー全員との好感度を設定
     gameState.adventurers.forEach(other => {
@@ -3797,7 +3858,13 @@ function getAvailableHtml(){
         const equipWis = effWis - baseWis;
         const equipDex = effDex - baseDex;
         const equipLuk = effLuk - baseLuk;
-        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+
+        const stats=`Lv ${adv.level} | 
+                     <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) 
+                     <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) 
+                     <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) 
+                     <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+
         const expNeeded = adv.level * 100;
         const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
         const hpPct = adv && typeof adv.hp === 'number' && typeof adv.maxHp === 'number' && adv.maxHp > 0 ? Math.max(0, Math.min(100, (adv.hp / adv.maxHp) * 100)) : 0;
@@ -3808,19 +3875,25 @@ function getAvailableHtml(){
         const maxMpDisplay = Number(adv.maxMp) || 0;
         const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
         const nameHtml = getNameHtml(adv);
-        const cost = adv.temp 
-    ? t('hiring_cost_display', {cost: adv.hiringCost}) 
-    : t('permanent_member');
+
+        // === 下部の表示：tempなら雇用コスト、permanentならランクを直接表示 ===
+        const bottomDisplay = adv.temp 
+            ? t('hiring_cost_display', {cost: adv.hiringCost || 0})
+            : (adv.rank 
+                ? t('guild_rank_display', {rank: adv.rank})  // 例: "Rank F+" または "F+ランク"
+                : t('permanent_member'));  // rankがないpermanentはフォールバックで従来の表示
+
         html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
             ${img}${nameHtml}<br>
             <small class="stats">${stats}</small><br>
             <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div> 経験値 ${adv.exp}/${expNeeded}<br>
             <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div> HP ${hpDisplay}/${maxHpDisplay}<br>
             <div class="progress-bar"><div class="progress-fill mp-fill" style="width:${mpPct}%"></div></div> MP ${mpDisplay}/${maxMpDisplay}<br>
-            ${cost}
+            ${bottomDisplay}
+            
         </div>`;
     });
-    if(!avail.length) html+='<p>今日利用可能な冒険者なし。</p>';
+    if(!avail.length) html+='<p>'+t('no_available_adventurers')+'</p>';
     return html;
 }
 
@@ -3832,15 +3905,95 @@ function calcTradeRequiredDays(avgDex, avgLuc) {
 
 function updateDay(){
     const current_week = Math.floor((gameState.day - 1) / 7);
-    const next_tax_day = (current_week + 1) * 7;
+    const next_tax_day = (current_week + 1) * 7 + 1;
     const daysUntilTax = next_tax_day - gameState.day;
-    const estimatedTax = Math.floor(next_tax_day * 10);  // Fixed minor redundancy in original
 
-    let taxDisplay;
-    if (daysUntilTax === 0) {
-        taxDisplay = `${t('tax_today_prefix')} ${estimatedTax}G`;
-    } else {
-        taxDisplay = t('tax_later_prefix', {days: daysUntilTax}) + ` ${estimatedTax}G`;
+    const estimatedTax = Math.floor((next_tax_day - 1) * 10);
+
+    const ranks = ['F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
+    let estimatedSalary = 0;
+
+    gameState.adventurers.forEach(adv => {
+        if (adv.temp) return;
+
+        const index = ranks.indexOf(adv.rank || 'F');
+        const salary = 50 + 50 * index * (index + 1) / 2;
+        estimatedSalary += salary;
+    });
+
+    const estimatedTotal = estimatedTax + estimatedSalary;
+
+    // === 借金情報：超過 or 明日支払いがある場合のみ表示 ===
+    let debtDisplay = '';
+    if (gameState.loans && gameState.loans.length > 0) {
+        let tomorrowInterest = 0;
+        let tomorrowPrincipal = 0;
+        let hasOverdue = false;
+        let overdueCount = 0;
+
+        gameState.loans.forEach(loan => {
+            const daysPassed = gameState.day - loan.startDay;
+
+            let daysToNextInterest = 7 - (daysPassed % 7);
+            if (daysToNextInterest === 7) daysToNextInterest = 0;
+
+            const daysToFinal = 28 - daysPassed;
+
+            const interest = Math.floor(loan.principal * 0.1);
+
+            if (daysToFinal <= 0) {
+                hasOverdue = true;
+                overdueCount++;
+                return;
+            }
+
+            if (daysToNextInterest === 1) {
+                tomorrowInterest += interest;
+            }
+
+            if (daysToFinal === 1) {
+                tomorrowPrincipal += loan.principal + interest; // 満期は本金+最終利息
+            }
+        });
+
+        let debtText = '';
+        let debtColor = '#ffaa66'; // 明日注意オレンジ
+
+        if (hasOverdue) {
+            debtText = t('debt_overdue_simple', { count: overdueCount });
+            debtColor = '#ff4444';
+        } else if (tomorrowInterest > 0 || tomorrowPrincipal > 0) {
+            const totalTomorrow = tomorrowInterest + tomorrowPrincipal;
+            if (tomorrowPrincipal > 0) {
+                debtText = t('debt_tomorrow_final', { amount: totalTomorrow });
+            } else {
+                debtText = t('debt_tomorrow_interest', { amount: totalTomorrow });
+            }
+        }
+
+        if (debtText) {
+            debtDisplay = `<p style="margin:4px 0 0; font-size:0.95em; color:${debtColor};">
+                ${debtText}
+            </p>`;
+        }
+    }
+
+    // === 税・給与支払い情報（7日以内の場合のみ）===
+    let paymentDisplay = '';
+    if (daysUntilTax <= 7) {
+        let paymentText;
+        let paymentColor = '#ffd700';
+
+        if (daysUntilTax <= 0) {
+            paymentText = t('payment_today_warning', { total: estimatedTotal, tax: estimatedTax, salary: estimatedSalary });
+            paymentColor = '#ff6666';
+        }  else {
+            paymentText = t('payment_in_days', { days: daysUntilTax, total: estimatedTotal, tax: estimatedTax, salary: estimatedSalary });
+        }
+
+        paymentDisplay = `<p style="margin:4px 0 0; font-size:0.95em; color:${paymentColor};">
+            ${paymentText}
+        </p>`;
     }
 
     let status = '';
@@ -3853,10 +4006,12 @@ function updateDay(){
     const repPart = `${t('reputation_label')} ${Math.max(0, gameState.reputation.toFixed(0))}`;
 
     document.getElementById('day').innerHTML = 
-        `<h2>${dayPart} | ${goldPart} | ${repPart} | ${taxDisplay}${status}</h2>`;
-
+        `<div style="text-align:center; background: transparent">
+            <h2 style="margin:0;">${dayPart} | ${goldPart} | ${repPart}${status}</h2>
+            ${paymentDisplay}
+            ${debtDisplay}
+        </div>`;
 }
-
 function updateDisplays(){
     updateDay();
     document.getElementById('recruits').innerHTML=getRecruitsHtml();
@@ -5303,7 +5458,7 @@ function processAdventurerDailyActions() {
                         }
                     } else if (tavernSubRandom < orderChance + 0.1) {
                         if (adv.bag.gold > 0 && gameState.gold > 0) {
-                            let betPercent = 0.25 + Math.random() * 0.5;
+                            let betPercent = 0.25;
                             let bet = Math.floor(adv.bag.gold * betPercent);
                             bet = Math.min(bet, gameState.gold);
 
@@ -5495,7 +5650,7 @@ function playDay(){
         if (adv.temp) return; // 一時的な冒険者は除外
         if (adv.hunger === undefined) adv.hunger = 1.0;
 
-        // 減少量：クエスト中なら10%、クエスト中でなければ5%
+        // 減少量：クエスト中なら6%、クエスト中でなければ3%
         const hungerLoss = isAdventurerOnQuest(adv) ? 0.06 : 0.03;
         adv.hunger = Math.max(0, adv.hunger - hungerLoss);
 
@@ -5514,7 +5669,7 @@ function playDay(){
             gameState.adventurers = gameState.adventurers.filter(a => a.id !== adv.id);
 
             // 死亡メッセージ
-            better_alert(t('adventurer_starved_to_death', {name: adv.name}) || `${adv.name} は飢えで死にました…！`, "error");
+            better_alert(t('adventurer_starved_to_death', {name: adv.name}), "error");
 
             // Reputation ペナルティ（1人あたり -10）
             gameState.reputation = Math.max(0, gameState.reputation - 10);
@@ -5523,19 +5678,77 @@ function playDay(){
 
         // 複数死亡時のまとめメッセージ（Reputationペナルティも表示）
         if (deadAdventurers.length > 1) {
-            better_alert(t('multiple_adventurers_starved', {count: deadAdventurers.length, penalty: totalRepPenalty}) || 
-                         `${deadAdventurers.length}人の冒険者が飢えで死にました…（Reputation -${totalRepPenalty}）`, "error");
+            better_alert(t('multiple_adventurers_starved', {count: deadAdventurers.length, penalty: totalRepPenalty}), "error");
+        }
+    }
+
+    // === 新規追加: ギルドマスターへの好感度 < 30 の常駐冒険者の離脱処理（毎日10%確率）===
+    const leavingAdventurers = [];
+    let totalLeaveRepPenalty = 0;
+
+    gameState.adventurers.forEach(adv => {
+        if (adv.temp) return; // 一時冒険者は対象外
+
+        // ギルドマスターへの好感度（playerFriendliness が未定義時は50と仮定）
+        const playerFriendliness = adv.Friendliness ?? 50;
+
+        if (playerFriendliness < 30 && Math.random() < 0.3) {
+            leavingAdventurers.push(adv);
+        }
+    });
+
+    if (leavingAdventurers.length > 0) {
+        leavingAdventurers.forEach(adv => {
+            // リストから削除
+            gameState.adventurers = gameState.adventurers.filter(a => a.id !== adv.id);
+
+            // 個別離脱メッセージ
+            better_alert(t('adventurer_left_low_friendliness', {name: adv.name}), "warning");
+
+            // Reputation ペナルティ（1人あたり -5）
+            gameState.reputation = Math.max(0, gameState.reputation - 5);
+            totalLeaveRepPenalty += 5;
+        });
+
+        // 複数離脱時のまとめメッセージ
+        if (leavingAdventurers.length > 1) {
+            better_alert(t('multiple_adventurers_left', {count: leavingAdventurers.length, penalty: totalLeaveRepPenalty}), "warning");
         }
     }
 
     handleLoans();
+
+    // === 7日ごとの税金＋給与支払い処理 ===
     if (evDay % 7 === 0) {
-        const tax = Math.floor((gameState.day-1) * 10);
-        gameState.gold -= tax;
-        better_alert(t('tax_day', { tax }), "warning");
+        const tax = Math.floor((gameState.day - 1) * 10);
+
+        // 常駐冒険者の給与計算
+        const ranks = ['F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
+        let totalSalary = 0;
+
+        gameState.adventurers.forEach(adv => {
+            if (adv.temp) return; // 一時冒険者は給与なし
+
+            const index = ranks.indexOf(adv.rank || 'F');
+            const salary = 50 + 50 * index * (index + 1) / 2;
+            totalSalary += salary;
+        });
+
+        // 扣除 + アラート（税金と給与は別々に表示）
+        if (tax > 0) {
+            gameState.gold -= tax;
+            better_alert(t('tax_day', { tax }), "warning");
+        }
+
+        if (totalSalary > 0) {
+            gameState.gold -= totalSalary;
+            better_alert(t('weekly_salary_paid', { amount: totalSalary }), "warning");
+        }
+
         checkGameOver();
     }
 
+    // 以下は変更なし（省略せずそのまま残す）
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
         if (q.defense || q.type === 7 || q.type === 6) continue;
@@ -9169,14 +9382,22 @@ function openAdventurerCard(index) {
         adv.prohibitedActions = [];
     }
 
-    // ランクリスト（F- から S+ まで）
-    const ranks = [ 'F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
+    // ランクリスト（F から S+ まで）
+    const ranks = ['F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
 
     let rankOptions = '';
     ranks.forEach(r => {
         const selected = r === adv.rank ? 'selected' : '';
-        rankOptions += `<option value="${r}" ${selected}>${r}ランク</option>`;
+        rankOptions += `<option value="${r}" ${selected}>${r}</option>`;
     });
+
+    // 給与計算関数
+    const getSalary = (rank) => {
+        const idx = ranks.indexOf(rank);
+        return 50 + 50 * idx * (idx + 1) / 2;
+    };
+
+    const currentSalary = getSalary(adv.rank);
 
     // 禁止行動チェックボックス
     const actions = ['tavern', 'blacksmith', 'alchemy', 'guild_stay', 'street_walk','hunting','gather'];
@@ -9186,11 +9407,11 @@ function openAdventurerCard(index) {
         const label = t(`action_${act}`) || act;
         prohibitChecks += `
             <label style="display:block; margin:8px 0;">
-                <input type="checkbox" id="prohibit_${act}" ${checked}> ${label}禁止
+                <input type="checkbox" id="prohibit_${act}" ${checked}> ${label}
             </label>`;
     });
 
-    // === モーダルを動的に作成（既存のcreateModal非依存）===
+    // === モーダルを動的に作成 ===
     let modal = document.getElementById('cardModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -9223,7 +9444,6 @@ function openAdventurerCard(index) {
         document.body.appendChild(modal);
     }
 
-    // コンテンツ部分を作成/更新
     let content = modal.querySelector('.modal-content');
     if (!content) {
         content = document.createElement('div');
@@ -9233,16 +9453,26 @@ function openAdventurerCard(index) {
 
     content.innerHTML = `
         <div style="max-width:600px; background:rgba(30,30,50,0.95); border-radius:16px; padding:30px; position:relative;">
-            <h2 style="text-align:center; color:#ffd700; margin-bottom:30px;">${adv.name} のギルドカード編集</h2>
+            <h2 style="text-align:center; color:#ffd700; margin-bottom:30px;">
+                ${t('edit_adventurer_card_title', { name: adv.name })}
+            </h2>
             <div style="margin:20px 0;">
-                <p><strong>現在のランク:</strong> ${adv.rank}</p>
-                <label><strong>ランク変更:</strong></label>
+                <p><strong>${t('current_rank')}:</strong> ${adv.rank} 
+                    <span style="color:#ffd700;">(${currentSalary}G / 7 days)</span>
+                </p>
+                <label><strong>${t('rank_change')}:</strong></label>
                 <select id="cardRankSelect" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; background:#333; color:white;">
                     ${rankOptions}
                 </select>
+                <p style="margin-top:12px;">
+                    <strong>${t('preview_salary_label')}:</strong> 
+                    <span id="previewSalary" style="color:#ffd700; font-weight:bold;">${currentSalary}G / 7 days</span>
+                </p>
             </div>
             <div style="margin:20px 0;">
-                <p><strong>行動禁止設定:</strong>（更新時に禁止数×-5の好感度ペナルティ）</p>
+                <p><strong>${t('prohibited_actions_setting')}:</strong> 
+                    ${t('prohibit_penalty_note')}
+                </p>
                 ${prohibitChecks}
             </div>
             <div style="text-align:center; margin-top:30px;">
@@ -9255,8 +9485,22 @@ function openAdventurerCard(index) {
             </div>
         </div>`;
 
-    // モーダル表示
+    // モーダル表示後にプレビュー更新ロジックを追加
     modal.style.display = 'flex';
+
+    const rankSelect = document.getElementById('cardRankSelect');
+    const previewSalary = document.getElementById('previewSalary');
+
+    if (rankSelect && previewSalary) {
+        const updatePreview = () => {
+            const selectedRank = rankSelect.value;
+            const salary = getSalary(selectedRank);
+            previewSalary.innerText = `${salary}G / 7 days`;
+        };
+
+        updatePreview(); // 初期表示
+        rankSelect.addEventListener('change', updatePreview);
+    }
 }
 
 // === カードモーダル閉じる関数 ===
@@ -9318,6 +9562,7 @@ function saveAdventurerCard(index) {
     adv.cardLastRenewed = gameState.day;
 
     closeAdventurerCard();
+    updateDisplays();
     renderCurrentCharacter();
     better_alert(t('card_updated', {name: adv.name}), "success");
 }
@@ -10212,7 +10457,7 @@ let dialogueIndex = 0;
 function startIntroDialogue() {
     let playerName = document.getElementById('playerNameInput').value.trim();
     if (playerName === "") {
-        better_alert("名前を入力してください！","warning");
+        better_alert(t('enter_player_name'), "warning");
         return;
     }
     gameState.playerName = playerName;
@@ -11626,4 +11871,218 @@ function saveFacilityFees() {
 
     closeFeeSettingModal();
     toggleFacilities(); // refresh to show new fee values
+}
+
+// === 新規関数: Guild Card 表示モーダル ===
+function openGuildCard(advId) {
+    const adv = findAdv(advId);
+    if (!adv) return;
+
+    // 安全初期化
+    if (!adv.rank) adv.rank = 'F';
+
+    // Primary Type 翻訳（多言語対応）
+    const typeKeys = ['strength_type', 'magic_type', 'dexterity_type', 'luck_type'];
+    const typeText = t(typeKeys[adv.primary || 1]) || 'UNKNOWN TYPE';
+
+    // 効果ステータス取得
+    const effStr = getEffectiveStat(adv, 'strength');
+    const effWis = getEffectiveStat(adv, 'wisdom');
+    const effDex = getEffectiveStat(adv, 'dexterity');
+    const effLuk = getEffectiveStat(adv, 'luck');
+
+    // 禁止行動リスト（翻訳済み、なしなら「なし」）
+    let prohibitedText = '';
+    if (adv.prohibitedActions && adv.prohibitedActions.length > 0) {
+        prohibitedText = adv.prohibitedActions
+            .map(act => t(`action_${act}`) || act)
+            .join(', ') + t('prohibited_suffix');
+    } else {
+        prohibitedText = t('no_prohibited_actions');
+    }
+
+    // === モーダル動的作成（cardModalと同様）===
+    let modal = document.getElementById('guildCardModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'guildCardModal';
+        modal.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            backdrop-filter: blur(8px);
+        `;
+
+        const closeBtn = document.createElement('div');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 20px; right: 30px;
+            font-size: 50px;
+            color: #ffd700;
+            cursor: pointer;
+            text-shadow: 0 0 15px black;
+        `;
+        closeBtn.onclick = () => closeGuildCard();
+
+        modal.appendChild(closeBtn);
+        document.body.appendChild(modal);
+    }
+
+    let content = modal.querySelector('.modal-content');
+    if (!content) {
+        content = document.createElement('div');
+        content.className = 'modal-content';
+        modal.appendChild(content);
+    }
+
+    content.innerHTML = `
+        <div style="
+            width: 480px;
+            height: 720px;
+            background: url('Images/guild_card_template.png') center/cover no-repeat; /* テンプレート画像を背景に */
+            position: relative;
+            border: 8px solid #d4af37;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(255,215,0,0.6);
+            overflow: hidden;
+        ">
+            <!-- Rank Circle (Top Left) -->
+            <div style="
+                position: absolute;
+                top: 30px; left: 30px;
+                width: 90px; height: 90px;
+                background: radial-gradient(circle, #1a1a1a, #000);
+                border: 6px solid #d4af37;
+                border-radius: 50%;
+                text-align: center;
+                color: white;
+                padding-top: 12px;
+                font-weight: bold;
+                box-shadow: 0 0 20px rgba(255,215,0,0.8);
+            ">
+                <div style="font-size: 14px;">${t('rank_label')}</div>
+                <div style="font-size: 42px; margin-top: -8px;">${adv.rank}</div>
+            </div>
+
+            <!-- Adventurer Name (Big Title) -->
+            <div style="
+                position: absolute;
+                top: 40px; left: 140px; right: 40px;
+                text-align: center;
+                color: #ffd700;
+                font-size: 36px;
+                font-weight: bold;
+                text-shadow: 3px 3px 8px black;
+                letter-spacing: 2px;
+            ">
+                ${adv.name}
+            </div>
+
+            <!-- Character Image -->
+            <div style="
+                position: absolute;
+                top: 140px; left: 50%;
+                transform: translateX(-50%);
+                width: 320px; height: 320px;
+                overflow: hidden;
+                border-radius: 20px;
+                border: 4px solid #d4af37;
+            ">
+                <img src="Images/${adv.image}" alt="${adv.name}"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+
+            <!-- HP / MP (Right Side) -->
+            <div style="
+                position: absolute;
+                top: 180px; right: 40px;
+                color: white;
+                font-size: 20px;
+                text-align: right;
+                text-shadow: 2px 2px 4px black;
+            ">
+                <div>HP ${adv.hp || 0}/${adv.maxHp || 0}</div>
+                <div style="margin-top: 10px;">MP ${adv.mp || 0}/${adv.maxMp || 0}</div>
+            </div>
+
+            <!-- Type Badge -->
+            <div style="
+                position: absolute;
+                bottom: 280px; left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(to bottom, #4a148c, #7b1fa2);
+                color: white;
+                padding: 10px 40px;
+                border-radius: 30px;
+                font-size: 24px;
+                font-weight: bold;
+                border: 4px solid #d4af37;
+                box-shadow: 0 0 15px rgba(123,31,162,0.8);
+            ">
+                ${typeText}
+            </div>
+
+            <!-- Level & DEF -->
+            <div style="
+                position: absolute;
+                bottom: 180px; left: 40px;
+                color: white;
+                font-size: 20px;
+                text-shadow: 2px 2px 4px black;
+            ">
+                <div>${t('level_label')} ${adv.level}</div>
+                <div style="margin-top: 10px;">DEF ${adv.defense || 0}</div>
+            </div>
+
+            <!-- Stats Row -->
+            <div style="
+                position: absolute;
+                bottom: 120px; left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 30px;
+                color: white;
+                font-size: 22px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px black;
+            ">
+                <div>STR ${effStr}</div>
+                <div>WIS ${effWis}</div>
+                <div>DEX ${effDex}</div>
+                <div>LUK ${effLuk}</div>
+            </div>
+
+            <!-- Prohibited Actions (Parchment Area) -->
+            <div style="
+                position: absolute;
+                bottom: 30px; left: 40px; right: 40px;
+                background: rgba(220,200,160,0.85);
+                border-radius: 20px;
+                padding: 20px;
+                color: #3c2f00;
+                font-size: 18px;
+                text-align: center;
+                min-height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 3px solid #d4af37;
+                box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            ">
+                ${prohibitedText}
+            </div>
+        </div>`;
+
+    modal.style.display = 'flex';
+}
+
+function closeGuildCard() {
+    const modal = document.getElementById('guildCardModal');
+    if (modal) modal.style.display = 'none';
 }
