@@ -2400,18 +2400,44 @@ const shopItems = [
 
     {name: 'HP Potion', cost: 100, type: 'potion', restore: 'hp', amount: 30, description: 'A small red vial that instantly heals wounds.'},
     {name: 'MP Potion', cost: 150, type: 'potion', restore: 'mp', amount: 30, description: 'A glowing blue vial that replenishes magical energy.'},
-    {name: 'Small Knife', cost: 100, stat: 'strength', bonus: 3, enhancement: 5, description: 'A basic dagger suitable for beginners.'},
-    {name: 'Iron Sword', cost: 200, stat: 'strength', bonus: 6, enhancement: 10, description: 'A sturdy iron blade favored by seasoned fighters.'},
-    {name: 'Beginner Scroll', cost: 100, stat: 'wisdom', bonus: 3, enhancement: 5, description: 'A simple scroll containing introductory magical knowledge.'},
-    {name: 'Magician Scroll', cost: 200, stat: 'wisdom', bonus: 6, enhancement: 10, description: 'An advanced scroll filled with powerful arcane secrets.'},
-    {name: 'Leather Gloves', cost: 100, stat: 'dexterity', bonus: 3, enhancement: 5, description: 'Light, flexible gloves that improve precision.'},
-    {name: 'Elf Boots', cost: 200, stat: 'dexterity', bonus: 6, enhancement: 10, description: 'Elegant elven footwear that enhances agility.'},
-    {name: 'Lucky Coin', cost: 100, stat: 'luck', bonus: 3, enhancement: 5, description: 'An old coin said to bring good fortune.'},
-    {name: 'Four-Leaf Clover', cost: 200, stat: 'luck', bonus: 3, enhancement: 10, description: 'A rare clover that significantly boosts luck.'},
 
+    // === One Hand Weapons ===
+    {name: 'Small Knife', cost: 200, stat: 'strength', bonus: 3, enhancement: 5, category: 'One Hand', description: 'A basic dagger suitable for beginners.'},
+    {name: 'Beginner Scroll', cost: 200, stat: 'wisdom', bonus: 3, enhancement: 5, category: 'One Hand', description: 'A simple scroll containing introductory magical knowledge.'},
+
+    // === Both Hands Weapons ===
+    {name: 'Iron Sword', cost: 400, stat: 'strength', bonus: 6, enhancement: 10, category: 'Both Hands', description: 'A sturdy iron blade favored by seasoned fighters.'},
+    {name: 'Magician Scroll', cost: 400, stat: 'wisdom', bonus: 6, enhancement: 10, category: 'Both Hands', description: 'An advanced scroll filled with powerful arcane secrets (requires both hands).'},
+
+    // === Head ===
+    {name: 'Leather Cap', cost: 200, stat: 'defense', bonus: 3, enhancement: 5, category: 'Head', description: 'A simple leather cap offering basic head protection.'},
+    {name: 'Iron Helmet', cost: 400, stat: 'defense', bonus: 6, enhancement: 10, category: 'Head', description: 'A sturdy iron helmet for improved protection.'},
+
+    // === Body ===
+    {name: 'Leather Armor', cost: 300, stat: 'defense', bonus: 5, enhancement: 8, category: 'Body', description: 'Light leather armor providing moderate protection.'},
+    {name: 'Chain Mail', cost: 600, stat: 'defense', bonus: 10, enhancement: 15, category: 'Body', description: 'Heavy chain mail for superior defense.'},
+
+    // === Legs ===
+    {name: 'Leather Pants', cost: 200, stat: 'dexterity', bonus: 3, enhancement: 5, category: 'Legs', description: 'Flexible leather pants that improve mobility.'},
+    {name: 'Greaves', cost: 400, stat: 'defense', bonus: 5, enhancement: 10, category: 'Legs', description: 'Metal greaves protecting the legs.'},
+
+    // === Feet ===
+    {name: 'Leather Boots', cost: 200, stat: 'dexterity', bonus: 3, enhancement: 5, category: 'Feet', description: 'Comfortable leather boots for better movement.'},
+    {name: 'Elf Boots', cost: 400, stat: 'dexterity', bonus: 6, enhancement: 10, category: 'Feet', description: 'Elegant elven footwear that enhances agility.'},
+
+    // === Gloves ===
+    {name: 'Work Gloves', cost: 200, stat: 'strength', bonus: 3, enhancement: 5, category: 'Gloves', description: 'Sturdy gloves that improve grip and strength.'},
+    {name: 'Enchanted Gauntlets', cost: 400, stat: 'strength', bonus: 6, enhancement: 10, category: 'Gloves', description: 'Magically enhanced gauntlets for greater power.'},
+
+    // === Cape ===
+    {name: 'Traveler\'s Cloak', cost: 200, stat: 'luck', bonus: 3, enhancement: 5, category: 'Cape', description: 'A simple cloak said to bring good fortune on journeys.'},
+    {name: 'Mystic Cape', cost: 400, stat: 'wisdom', bonus: 6, enhancement: 10, category: 'Cape', description: 'A flowing cape imbued with magical energy.'},
+
+    // === Accessory ===
+    {name: 'Lucky Coin', cost: 200, stat: 'luck', bonus: 3, enhancement: 5, category: 'Accessory', description: 'An old coin said to bring good fortune.'},
+    {name: 'Four-Leaf Clover', cost: 400, stat: 'luck', bonus: 6, enhancement: 10, category: 'Accessory', description: 'A rare clover that significantly boosts luck.'},
 
 ];
-
 const materialShop = [
     {name: "鉄鉱石", basePrice: 30, variance: 1.5},
     {name: "薬草", basePrice: 20, variance: 1.5},

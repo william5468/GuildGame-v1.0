@@ -2,6 +2,12 @@
 
 const translations = {
   ja: {
+    "temp_cannot_join_trade": "{name} は一時冒険者なので貿易クエストに参加できません",
+    "shop_purchase_success": "{name} x {qty}を購入した、合計：{total}G、残り：{gold}G",
+    "buy_10_button":"10個購入",
+    "equipment_buyback": "{name}に{amount}Gを支払い、「{item}」を解除しました",
+    "card_rank_promotion_bonus": "{name}のランクが{old}→{new}に昇格した！ 好感度 +{bonus}",
+    "card_rank_demotion_penalty": "{name}のランクが{old}→{new}に降格した… 好感度 -{penalty}",
     "debt_tomorrow_interest": "明日利息支払い：{amount}G",
 "debt_tomorrow_final": "明日満期返済：{amount}G (本金+利息)",
 "debt_overdue_simple": "借金満期超過（{count}件）！即時返済必要",
@@ -70,7 +76,7 @@ const translations = {
   "rank_too_low_for_quest": "{name}のランク{rank}ではこのクエストに参加できません（必要{rank}以上）",
   "action_prohibited": "{action}は禁止されているためギルドで休憩した",
   "guild_friendliness_decrease_with_player": "ギルド配給食を食べた、{name}の{player}への好感度-{penalty}",
-  "guild_master_default": "ギルドマスター",
+  "guild_master_default": "ギルドマスター", 
     // === translations.js に追加（すべて引用符付きキー）===
 "hiring_cost_display": "雇用: {cost}g",
   "permanent_member": "ギルトメンバー",
@@ -636,7 +642,7 @@ relationship_title: "{name} の関係性",
     stat_dexterity_full: "敏捷",
     stat_luck_full: "運",
     percent_symbol: "%",
-    absolute_symbol: "（絶対値）",
+    absolute_symbol: " 絶対値",
     blacksmith_enhancement_desc: "強化クリスタルを使用して装備のステータスボーナスを永久に+1（絶対値）できます。<br>元の%ボーナスは維持され、%計算後に絶対値が加算されます。",
     blacksmith_enhance_button: "強化",
     blacksmith_enhance_success: "{item}を強化しました！ {stat} +{bonus}% + {enhancement}（絶対値）",
@@ -825,6 +831,12 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "temp_cannot_join_trade":"{name} is a temporary adventurer and cannot join trade quests",
+    "shop_purchase_success": "Purchased {name} x {qty} for {total}G, remaining: {gold}G",
+    "buy_10_button": "Buy 10",
+    "equipment_buyback": "Paid {amount}G to {name} and unequipped \"{item}\"",
+    "card_rank_promotion_bonus": "{name}'s rank promoted from {old} to {new}! Friendliness +{bonus}",
+    "card_rank_demotion_penalty": "{name}'s rank demoted from {old} to {new}... Friendliness -{penalty}",
 "debt_tomorrow_interest": "Tomorrow interest payment: {amount}G",
 "debt_tomorrow_final": "Tomorrow final repayment: {amount}G (principal + interest)",
 "debt_overdue_simple": "Loan overdue ({count} contracts)! Immediate repayment required",
@@ -1441,7 +1453,7 @@ relationship_title: "{name}'s Relationships",
     stat_dexterity_full: "Dexterity",
     stat_luck_full: "Luck",
     percent_symbol: "%",
-    absolute_symbol: " (absolute)",
+    absolute_symbol: " absolute",
     blacksmith_enhancement_desc: "Use an Enhancement Crystal to permanently increase an equipment's stat bonus by +1 (absolute).<br>The original % bonus is preserved and applied first, followed by the absolute bonus.",
     blacksmith_enhance_button: "Enhance",
     blacksmith_enhance_success: "Enhanced {item}! {stat} +{bonus}% + {enhancement} (absolute)",
@@ -1622,6 +1634,12 @@ relationship_title: "{name}'s Relationships",
     // Add to translations.zh (inside the zh: { ... } object) – Traditional Chinese
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
+    "temp_cannot_join_trade":"{name} 是臨時冒險者，無法參加貿易任務",
+    "shop_purchase_success":"購買了{name} x {qty}，合計{total}G，剩餘{gold}G",
+    "buy_10_button": "購買10個",
+    "equipment_buyback":  "向{name}支付{amount}G並解除了「{item}」",
+    "card_rank_promotion_bonus": "{name}的階級從{old}升至{new}！好感度 +{bonus}",
+    "card_rank_demotion_penalty": "{name}的階級從{old}降至{new}…好感度 -{penalty}",
     "debt_tomorrow_interest": "明天利息支付：{amount}G",
 "debt_tomorrow_final": "明天滿期還款：{amount}G (本金+利息)",
 "debt_overdue_simple": "借款逾期（{count}件）！需立即還款",
@@ -2279,7 +2297,7 @@ relationship_title: "{name} 的關係性",
     stat_luck_full: "幸運",
     stat_luck_defense: "幸運",
     percent_symbol: "%",
-    absolute_symbol: "（絕對值）",
+    absolute_symbol: " 絕對值",
     blacksmith_enhancement_desc: "使用強化水晶永久提升裝備的屬性加成+1（絕對值）。<br>原本的%加成保持不變，先計算%後再加上絕對值。",
     blacksmith_enhance_button: "強化",
     blacksmith_enhance_success: "強化了{item}！ {stat} +{bonus}% + {enhancement}（絕對值）",
@@ -2620,152 +2638,270 @@ const tavernRecipes = {
 
 const blacksmithRecipes = {
   ja: [
-    {level: 1, name: "木製の盾", stat: "defense", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鉄の盾", stat: "defense", bonus: 25, cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
-    {level: 3, name: "精鉄の守護盾", stat: "defense", bonus: 38, cost: 2200, materials: [{name: "精鉄インゴット", qty: 4}]},
-    {level: 5, name: "牙鋼の守護盾", stat: "defense", bonus: 65, cost: 4800, materials: [{name: "牙鋼インゴット", qty: 3}, {name: "オークの牙", qty: 2}]},
-    {level: 7, name: "龍鋼の守護盾", stat: "defense", bonus: 95, cost: 8500, materials: [{name: "龍鋼装甲材", qty: 4}, {name: "古代ドラゴンの鱗", qty: 2}]},
-    {level: 9, name: "巨神の守護盾", stat: "defense", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
-    {level: 11, name: "古龍心の守護盾", stat: "defense", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
-    {level: 12, name: "創世源の守護神盾", stat: "defense", bonus: 350, cost: 50000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
+    // === One Hands (片手盾: 武器と併用可能、防御特化) ===
+    {level: 1, name: "木製の小盾", stat: "defense", bonus: 15, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 3, name: "鉄の小盾", stat: "defense", bonus: 30, enhancement: 8, category: "One Hand", cost: 1800, materials: [{name: "鋼のインゴット", qty: 3}]},
+    {level: 6, name: "龍鱗の小盾", stat: "defense", bonus: 60, enhancement: 12, category: "One Hand", cost: 6200, materials: [{name: "龍鋼装甲材", qty: 3}, {name: "古代ドラゴンの鱗", qty: 1}]},
+    {level: 10, name: "古龍の小盾", stat: "defense", bonus: 130, enhancement: 18, category: "One Hand", cost: 18000, materials: [{name: "古龍心鋼", qty: 3}, {name: "エルダードラゴンの心臓", qty: 1}]},
 
-    {level: 1, name: "上級の剣", stat: "strength", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鋼鉄の剣", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
-    {level: 4, name: "ドラゴンスレイヤー", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "魔法の結晶", qty: 2}, {name: "鋼のインゴット", qty: 5}]},
-    {level: 1, name: "賢者の杖", stat: "wisdom", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "神秘の杖", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "魔法の結晶", qty: 2}]},
+    // === Both Handss (両手大盾: 両手占有、高防御・特殊効果) ===
+    {level: 2, name: "木製の守護盾", stat: "defense", bonus: 25, enhancement: 8, category: "Both Hands", cost: 800, materials: []},
+    {level: 4, name: "精鉄の守護盾", stat: "defense", bonus: 45, enhancement: 12, category: "Both Hands", cost: 3200, materials: [{name: "精鉄インゴット", qty: 4}]},
+    {level: 7, name: "牙鋼の守護盾", stat: "defense", bonus: 85, enhancement: 16, category: "Both Hands", cost: 9800, materials: [{name: "牙鋼インゴット", qty: 4}, {name: "オークの牙", qty: 3}]},
+    {level: 9, name: "巨神の守護盾", stat: "defense", bonus: 150, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
+    {level: 11, name: "創世源の守護神盾", stat: "defense", bonus: 280, enhancement: 30, category: "Both Hands", cost: 40000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
 
-    {level: 3, name: "精鉄の大剣", stat: "strength", bonus: 38, cost: 2200, materials: [{name: "精鉄インゴット", qty: 4}]},
-    {level: 5, name: "牙鋼の両手斧", stat: "strength", bonus: 65, cost: 4800, materials: [{name: "牙鋼インゴット", qty: 3}, {name: "オークの牙", qty: 2}]},
-    {level: 7, name: "龍鋼の滅殺剣", stat: "strength", bonus: 95, cost: 8500, materials: [{name: "龍鋼装甲材", qty: 4}, {name: "古代ドラゴンの鱗", qty: 2}]},
-    {level: 9, name: "巨神の戦斧", stat: "strength", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
-    {level: 11, name: "古龍心滅剣", stat: "strength", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
+    // === Head ===
+    {level: 1, name: "革の帽子", stat: "defense", bonus: 10, enhancement: 5, category: "Head", cost: 400, materials: []},
+    {level: 3, name: "鉄の兜", stat: "defense", bonus: 25, enhancement: 8, category: "Head", cost: 1800, materials: [{name: "鋼のインゴット", qty: 3}]},
+    {level: 6, name: "龍鱗の兜", stat: "defense", bonus: 55, enhancement: 12, category: "Head", cost: 6200, materials: [{name: "龍鋼装甲材", qty: 3}, {name: "古代ドラゴンの鱗", qty: 1}]},
+    {level: 10, name: "古龍の兜", stat: "defense", bonus: 120, enhancement: 18, category: "Head", cost: 18000, materials: [{name: "古龍心鋼", qty: 3}, {name: "エルダードラゴンの心臓", qty: 1}]},
 
-    {level: 3, name: "聖魔導の杖", stat: "wisdom", bonus: 38, cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
-    {level: 5, name: "禁断魔導のロッド", stat: "wisdom", bonus: 65, cost: 4800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
-    {level: 7, name: "エーテル魔晶杖", stat: "wisdom", bonus: 95, cost: 8500, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
-    {level: 9, name: "深淵の魔導杖", stat: "wisdom", bonus: 140, cost: 14500, materials: [{name: "深淵エーテル晶", qty: 3}, {name: "深淵の核", qty: 2}]},
-    {level: 11, name: "光神器の神杖", stat: "wisdom", bonus: 220, cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光の神器の欠片", qty: 1}]},
+    // === Body ===
+    {level: 1, name: "革の鎧", stat: "defense", bonus: 15, enhancement: 8, category: "Body", cost: 600, materials: []},
+    {level: 4, name: "鎖帷子", stat: "defense", bonus: 40, enhancement: 12, category: "Body", cost: 3200, materials: [{name: "精鉄インゴット", qty: 5}]},
+    {level: 7, name: "牙鋼の鎧", stat: "defense", bonus: 80, enhancement: 16, category: "Body", cost: 9800, materials: [{name: "牙鋼インゴット", qty: 4}, {name: "オークの牙", qty: 3}]},
+    {level: 11, name: "巨神の鎧", stat: "defense", bonus: 180, enhancement: 22, category: "Body", cost: 32000, materials: [{name: "巨神骨鋼", qty: 4}, {name: "タイタンの骨", qty: 3}]},
 
-    {level: 1, name: "獣皮の短剣", stat: "dexterity", bonus: 12, cost: 400, materials: [{name: "獣皮エキス", qty: 2}]},
-    {level: 3, name: "風翼の弓", stat: "dexterity", bonus: 38, cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "グリフォンの羽", qty: 2}]},
-    {level: 5, name: "ユニコーンのダガー", stat: "dexterity", bonus: 65, cost: 4800, materials: [{name: "ユニコーンの角", qty: 2}, {name: "獣皮エキス", qty: 3}]},
-    {level: 7, name: "天使の迅弓", stat: "dexterity", bonus: 95, cost: 8500, materials: [{name: "天使の羽", qty: 3}, {name: "風翼結晶", qty: 2}]},
-    {level: 9, name: "神聖迅撃短剣", stat: "dexterity", bonus: 140, cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
-    {level: 11, name: "創世の神弓", stat: "dexterity", bonus: 220, cost: 28500, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+    // === Legs ===
+    {level: 2, name: "革のズボン", stat: "dexterity", bonus: 12, enhancement: 6, category: "Legs", cost: 800, materials: [{name: "獣皮エキス", qty: 2}]},
+    {level: 5, name: "鉄の脛当て", stat: "defense", bonus: 35, enhancement: 10, category: "Legs", cost: 4200, materials: [{name: "鋼のインゴット", qty: 4}]},
+    {level: 8, name: "龍鋼の脛当て", stat: "defense", bonus: 70, enhancement: 15, category: "Legs", cost: 12000, materials: [{name: "龍鋼装甲材", qty: 3}]},
 
-    {level: 1, name: "希少スパイスの短棍", stat: "luck", bonus: 12, cost: 400, materials: [{name: "希少活力粉", qty: 2}]},
-    {level: 3, name: "星の幸運棍", stat: "luck", bonus: 38, cost: 2200, materials: [{name: "星の欠片", qty: 2}]},
-    {level: 5, name: "不死鳥の幸運斧", stat: "luck", bonus: 65, cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
-    {level: 7, name: "神涙の福杖", stat: "luck", bonus: 95, cost: 8500, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
-    {level: 9, name: "終焉の幸運剣", stat: "luck", bonus: 140, cost: 14500, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
-    {level: 11, name: "滅び深淵の神器棍", stat: "luck", bonus: 220, cost: 28500, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
+    // === Feet ===
+    {level: 1, name: "革のブーツ", stat: "dexterity", bonus: 8, enhancement: 4, category: "Feet", cost: 400, materials: []},
+    {level: 4, name: "エルフのブーツ", stat: "dexterity", bonus: 35, enhancement: 10, category: "Feet", cost: 3200, materials: [{name: "風翼結晶", qty: 2}, {name: "獣皮エキス", qty: 2}]},
+    {level: 9, name: "天使の迅靴", stat: "dexterity", bonus: 90, enhancement: 18, category: "Feet", cost: 16000, materials: [{name: "天使の羽", qty: 3}, {name: "風翼結晶", qty: 3}]},
 
-    {level: 12, name: "創世源の神剣", stat: "strength", bonus: 350, cost: 50000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
-    {level: 12, name: "世界源の神杖", stat: "wisdom", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 5}]},
-    {level: 12, name: "終焉の神弓", stat: "dexterity", bonus: 350, cost: 50000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 5}]},
-    {level: 12, name: "源石の幸運神器", stat: "luck", bonus: 350, cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 5}]}
+    // === Gloves ===
+    {level: 2, name: "作業用手袋", stat: "strength", bonus: 12, enhancement: 6, category: "Gloves", cost: 800, materials: [{name: "獣皮エキス", qty: 2}]},
+    {level: 5, name: "魔法の手袋", stat: "wisdom", bonus: 30, enhancement: 10, category: "Gloves", cost: 4000, materials: [{name: "魔法の結晶", qty: 3}]},
+    {level: 8, name: "龍鋼の手甲", stat: "strength", bonus: 65, enhancement: 14, category: "Gloves", cost: 11000, materials: [{name: "龍鋼装甲材", qty: 2}, {name: "牙鋼インゴット", qty: 2}]},
+
+    // === Cape ===
+    {level: 3, name: "旅人のマント", stat: "luck", bonus: 15, enhancement: 7, category: "Cape", cost: 1200, materials: [{name: "希少活力粉", qty: 2}]},
+    {level: 6, name: "神秘のマント", stat: "wisdom", bonus: 45, enhancement: 12, category: "Cape", cost: 6800, materials: [{name: "エーテル魔晶", qty: 2}, {name: "聖魔導結晶", qty: 2}]},
+    {level: 10, name: "神聖のマント", stat: "luck", bonus: 110, enhancement: 20, category: "Cape", cost: 22000, materials: [{name: "神聖遺晶", qty: 3}, {name: "天使の羽", qty: 2}]},
+
+    // === Accessory ===
+    {level: 1, name: "幸運のコイン", stat: "luck", bonus: 10, enhancement: 5, category: "Accessory", cost: 400, materials: []},
+    {level: 4, name: "四つ葉のクローバー", stat: "luck", bonus: 35, enhancement: 10, category: "Accessory", cost: 3000, materials: [{name: "希少活力粉", qty: 3}]},
+    {level: 9, name: "神の涙の首飾り", stat: "luck", bonus: 100, enhancement: 18, category: "Accessory", cost: 15000, materials: [{name: "神の涙", qty: 2}, {name: "星の欠片", qty: 3}]},
+
+    // === One Hand Weapons ===
+    {level: 1, name: "上級の剣", stat: "strength", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "鋼鉄の剣", stat: "strength", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "鋼のインゴット", qty: 3}]},
+    {level: 4, name: "ドラゴンスレイヤー", stat: "strength", bonus: 45, enhancement: 12, category: "One Hand", cost: 3000, materials: [{name: "魔法の結晶", qty: 2}, {name: "鋼のインゴット", qty: 5}]},
+    {level: 1, name: "賢者の杖", stat: "wisdom", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "神秘の杖", stat: "wisdom", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "魔法の結晶", qty: 2}]},
+    {level: 1, name: "獣皮の短剣", stat: "dexterity", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "獣皮エキス", qty: 2}]},
+    {level: 5, name: "ユニコーンのダガー", stat: "dexterity", bonus: 65, enhancement: 14, category: "One Hand", cost: 4800, materials: [{name: "ユニコーンの角", qty: 2}, {name: "獣皮エキス", qty: 3}]},
+    {level: 1, name: "希少スパイスの短棍", stat: "luck", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "希少活力粉", qty: 2}]},
+
+    // === Both Hands Weapons ===
+    {level: 3, name: "精鉄の大剣", stat: "strength", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "精鉄インゴット", qty: 4}]},
+    {level: 5, name: "牙鋼の両手斧", stat: "strength", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "牙鋼インゴット", qty: 3}, {name: "オークの牙", qty: 2}]},
+    {level: 7, name: "龍鋼の滅殺剣", stat: "strength", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "龍鋼装甲材", qty: 4}, {name: "古代ドラゴンの鱗", qty: 2}]},
+    {level: 9, name: "巨神の戦斧", stat: "strength", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "タイタンの骨", qty: 3}]},
+    {level: 11, name: "古龍心滅剣", stat: "strength", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "エルダードラゴンの心臓", qty: 1}]},
+    {level: 3, name: "聖魔導の杖", stat: "wisdom", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
+    {level: 5, name: "禁断魔導のロッド", stat: "wisdom", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "禁断魔導晶", qty: 3}, {name: "禁断の魔導書頁", qty: 2}]},
+    {level: 7, name: "エーテル魔晶杖", stat: "wisdom", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "エーテル魔晶", qty: 4}, {name: "エーテルの結晶", qty: 2}]},
+    {level: 9, name: "深淵の魔導杖", stat: "wisdom", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "深淵エーテル晶", qty: 3}, {name: "深淵の核", qty: 2}]},
+    {level: 11, name: "光神器の神杖", stat: "wisdom", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光の神器の欠片", qty: 1}]},
+    {level: 3, name: "風翼の弓", stat: "dexterity", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "グリフォンの羽", qty: 2}]},
+    {level: 7, name: "天使の迅弓", stat: "dexterity", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "天使の羽", qty: 3}, {name: "風翼結晶", qty: 2}]},
+    {level: 9, name: "神聖迅撃短剣", stat: "dexterity", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖な遺物", qty: 2}]},
+    {level: 11, name: "創世の神弓", stat: "dexterity", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "創世の欠片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+    {level: 3, name: "星の幸運棍", stat: "luck", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "星の欠片", qty: 2}]},
+    {level: 5, name: "不死鳥の幸運斧", stat: "luck", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "フェニックスの灰", qty: 2}]},
+    {level: 7, name: "神涙の福杖", stat: "luck", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "神の涙", qty: 2}, {name: "永劫炎粉", qty: 2}]},
+    {level: 9, name: "終焉の幸運剣", stat: "luck", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "終焉破壊粉", qty: 3}, {name: "滅びの結晶", qty: 2}]},
+    {level: 11, name: "滅び深淵の神器棍", stat: "luck", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "滅び深淵晶", qty: 4}, {name: "世界の源石", qty: 1}]},
+
+    // === 最終装備（レベル12）===
+    {level: 12, name: "創世源の神剣", stat: "strength", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "創世源ポーション", qty: 1}, {name: "古龍心鋼", qty: 5}]},
+    {level: 12, name: "世界源の神杖", stat: "wisdom", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "光神器晶", qty: 5}]},
+    {level: 12, name: "終焉の神弓", stat: "dexterity", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "創世魔力薬", qty: 1}, {name: "神聖遺晶", qty: 5}]},
+    {level: 12, name: "源石の幸運神器", stat: "luck", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 5}]}
   ],
   en: [
+    // === One Hands ===
+    {level: 1, name: "Small Wooden Shield", stat: "defense", bonus: 15, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 3, name: "Small Iron Shield", stat: "defense", bonus: 30, enhancement: 8, category: "One Hand", cost: 1800, materials: [{name: "Steel Ingot", qty: 3}]},
+    {level: 6, name: "Small Dragon Scale Shield", stat: "defense", bonus: 60, enhancement: 12, category: "One Hand", cost: 6200, materials: [{name: "Dragon Steel Armor Material", qty: 3}, {name: "Ancient Dragon Scale", qty: 1}]},
+    {level: 10, name: "Small Ancient Dragon Shield", stat: "defense", bonus: 130, enhancement: 18, category: "One Hand", cost: 18000, materials: [{name: "Ancient Dragon Heart Steel", qty: 3}, {name: "Elder Dragon Heart", qty: 1}]},
 
-    {level: 1, name: "Wooden Shield", stat: "defense", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "Iron Shield", stat: "defense", bonus: 25, cost: 1200, materials: [{name: "Steel Ingot", qty: 3}]},
-    {level: 3, name: "Refined Iron Guardian Shield", stat: "defense", bonus: 38, cost: 2200, materials: [{name: "Refined Iron Ingot", qty: 4}]},
-    {level: 5, name: "Fang-Steel Guardian Shield", stat: "defense", bonus: 65, cost: 4800, materials: [{name: "Fang Steel Ingot", qty: 3}, {name: "Orc Tusk", qty: 2}]},
-    {level: 7, name: "Dragon-Steel Guardian Shield", stat: "defense", bonus: 95, cost: 8500, materials: [{name: "Dragon Steel Armor Material", qty: 4}, {name: "Ancient Dragon Scale", qty: 2}]},
-    {level: 9, name: "Titan Guardian Shield", stat: "defense", bonus: 140, cost: 14500, materials: [{name: "Titan Bone Steel", qty: 3}, {name: "Titan Bone", qty: 3}]},
-    {level: 11, name: "Ancient Dragon Heart Guardian Shield", stat: "defense", bonus: 220, cost: 28500, materials: [{name: "Ancient Dragon Heart Steel", qty: 4}, {name: "Elder Dragon Heart", qty: 1}]},
-    {level: 12, name: "Creation Source Guardian God Shield", stat: "defense", bonus: 350, cost: 50000, materials: [{name: "Creation Source Potion", qty: 1}, {name: "Ancient Dragon Heart Steel", qty: 5}]},
+    // === Both Handss ===
+    {level: 2, name: "Wooden Guardian Shield", stat: "defense", bonus: 25, enhancement: 8, category: "Both Hands", cost: 800, materials: []},
+    {level: 4, name: "Refined Iron Guardian Shield", stat: "defense", bonus: 45, enhancement: 12, category: "Both Hands", cost: 3200, materials: [{name: "Refined Iron Ingot", qty: 4}]},
+    {level: 7, name: "Fang-Steel Guardian Shield", stat: "defense", bonus: 85, enhancement: 16, category: "Both Hands", cost: 9800, materials: [{name: "Fang Steel Ingot", qty: 4}, {name: "Orc Tusk", qty: 3}]},
+    {level: 9, name: "Titan Guardian Shield", stat: "defense", bonus: 150, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "Titan Bone Steel", qty: 3}, {name: "Titan Bone", qty: 3}]},
+    {level: 11, name: "Creation Source Guardian God Shield", stat: "defense", bonus: 280, enhancement: 30, category: "Both Hands", cost: 40000, materials: [{name: "Creation Source Potion", qty: 1}, {name: "Ancient Dragon Heart Steel", qty: 5}]},
 
+    // === Head ===
+    {level: 1, name: "Leather Cap", stat: "defense", bonus: 10, enhancement: 5, category: "Head", cost: 400, materials: []},
+    {level: 3, name: "Iron Helmet", stat: "defense", bonus: 25, enhancement: 8, category: "Head", cost: 1800, materials: [{name: "Steel Ingot", qty: 3}]},
+    {level: 6, name: "Dragon Scale Helm", stat: "defense", bonus: 55, enhancement: 12, category: "Head", cost: 6200, materials: [{name: "Dragon Steel Armor Material", qty: 3}, {name: "Ancient Dragon Scale", qty: 1}]},
+    {level: 10, name: "Ancient Dragon Helm", stat: "defense", bonus: 120, enhancement: 18, category: "Head", cost: 18000, materials: [{name: "Ancient Dragon Heart Steel", qty: 3}, {name: "Elder Dragon Heart", qty: 1}]},
 
-    {level: 1, name: "Advanced Sword", stat: "strength", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "Steel Sword", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "Steel Ingot", qty: 3}]},
-    {level: 4, name: "Dragon Slayer", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "Magic Crystal", qty: 2}, {name: "Steel Ingot", qty: 5}]},
-    {level: 1, name: "Sage's Staff", stat: "wisdom", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "Mystic Staff", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "Magic Crystal", qty: 2}]},
+    // === Body ===
+    {level: 1, name: "Leather Armor", stat: "defense", bonus: 15, enhancement: 8, category: "Body", cost: 600, materials: []},
+    {level: 4, name: "Chain Mail", stat: "defense", bonus: 40, enhancement: 12, category: "Body", cost: 3200, materials: [{name: "Refined Iron Ingot", qty: 5}]},
+    {level: 7, name: "Fang-Steel Armor", stat: "defense", bonus: 80, enhancement: 16, category: "Body", cost: 9800, materials: [{name: "Fang Steel Ingot", qty: 4}, {name: "Orc Tusk", qty: 3}]},
+    {level: 11, name: "Titan Armor", stat: "defense", bonus: 180, enhancement: 22, category: "Body", cost: 32000, materials: [{name: "Titan Bone Steel", qty: 4}, {name: "Titan Bone", qty: 3}]},
 
-    {level: 3, name: "Refined Iron Greatsword", stat: "strength", bonus: 38, cost: 2200, materials: [{name: "Refined Iron Ingot", qty: 4}]},
-    {level: 5, name: "Fang-Steel Greataxe", stat: "strength", bonus: 65, cost: 4800, materials: [{name: "Fang Steel Ingot", qty: 3}, {name: "Orc Tusk", qty: 2}]},
-    {level: 7, name: "Dragon-Steel Slayer Sword", stat: "strength", bonus: 95, cost: 8500, materials: [{name: "Dragon Steel Armor Material", qty: 4}, {name: "Ancient Dragon Scale", qty: 2}]},
-    {level: 9, name: "Titan War Axe", stat: "strength", bonus: 140, cost: 14500, materials: [{name: "Titan Bone Steel", qty: 3}, {name: "Titan Bone", qty: 3}]},
-    {level: 11, name: "Ancient Dragon Heart Slayer", stat: "strength", bonus: 220, cost: 28500, materials: [{name: "Ancient Dragon Heart Steel", qty: 4}, {name: "Elder Dragon Heart", qty: 1}]},
+    // === Legs ===
+    {level: 2, name: "Leather Pants", stat: "dexterity", bonus: 12, enhancement: 6, category: "Legs", cost: 800, materials: [{name: "Beast Skin Extract", qty: 2}]},
+    {level: 5, name: "Iron Greaves", stat: "defense", bonus: 35, enhancement: 10, category: "Legs", cost: 4200, materials: [{name: "Steel Ingot", qty: 4}]},
+    {level: 8, name: "Dragon Steel Greaves", stat: "defense", bonus: 70, enhancement: 15, category: "Legs", cost: 12000, materials: [{name: "Dragon Steel Armor Material", qty: 3}]},
 
-    {level: 3, name: "Holy Magic Staff", stat: "wisdom", bonus: 38, cost: 2200, materials: [{name: "Holy Magic Crystal", qty: 3}]},
-    {level: 5, name: "Forbidden Magic Rod", stat: "wisdom", bonus: 65, cost: 4800, materials: [{name: "Forbidden Magic Crystal", qty: 3}, {name: "Forbidden Grimoire Page", qty: 2}]},
-    {level: 7, name: "Aether Crystal Staff", stat: "wisdom", bonus: 95, cost: 8500, materials: [{name: "Aether Magic Crystal", qty: 4}, {name: "Aether Crystal", qty: 2}]},
-    {level: 9, name: "Abyss Magic Staff", stat: "wisdom", bonus: 140, cost: 14500, materials: [{name: "Abyss Aether Crystal", qty: 3}, {name: "Abyss Core", qty: 2}]},
-    {level: 11, name: "Light Artifact God Staff", stat: "wisdom", bonus: 220, cost: 28500, materials: [{name: "Light Artifact Crystal", qty: 4}, {name: "Light Artifact Fragment", qty: 1}]},
+    // === Feet ===
+    {level: 1, name: "Leather Boots", stat: "dexterity", bonus: 8, enhancement: 4, category: "Feet", cost: 400, materials: []},
+    {level: 4, name: "Elf Boots", stat: "dexterity", bonus: 35, enhancement: 10, category: "Feet", cost: 3200, materials: [{name: "Wind Wing Crystal", qty: 2}, {name: "Beast Skin Extract", qty: 2}]},
+    {level: 9, name: "Angel Swift Boots", stat: "dexterity", bonus: 90, enhancement: 18, category: "Feet", cost: 16000, materials: [{name: "Angel Feather", qty: 3}, {name: "Wind Wing Crystal", qty: 3}]},
 
-    {level: 1, name: "Beast Skin Dagger", stat: "dexterity", bonus: 12, cost: 400, materials: [{name: "Beast Skin Extract", qty: 2}]},
-    {level: 3, name: "Wind Wing Bow", stat: "dexterity", bonus: 38, cost: 2200, materials: [{name: "Wind Wing Crystal", qty: 3}, {name: "Griffon Feather", qty: 2}]},
-    {level: 5, name: "Unicorn Dagger", stat: "dexterity", bonus: 65, cost: 4800, materials: [{name: "Unicorn Horn", qty: 2}, {name: "Beast Skin Extract", qty: 3}]},
-    {level: 7, name: "Angel Swift Bow", stat: "dexterity", bonus: 95, cost: 8500, materials: [{name: "Angel Feather", qty: 3}, {name: "Wind Wing Crystal", qty: 2}]},
-    {level: 9, name: "Sacred Swift Dagger", stat: "dexterity", bonus: 140, cost: 14500, materials: [{name: "Sacred Relic Crystal", qty: 3}, {name: "Sacred Relic", qty: 2}]},
-    {level: 11, name: "Creation God Bow", stat: "dexterity", bonus: 220, cost: 28500, materials: [{name: "Creation Fragment", qty: 2}, {name: "Wind Wing Crystal", qty: 4}]},
+    // === Gloves ===
+    {level: 2, name: "Work Gloves", stat: "strength", bonus: 12, enhancement: 6, category: "Gloves", cost: 800, materials: [{name: "Beast Skin Extract", qty: 2}]},
+    {level: 5, name: "Magic Gauntlets", stat: "wisdom", bonus: 30, enhancement: 10, category: "Gloves", cost: 4000, materials: [{name: "Magic Crystal", qty: 3}]},
+    {level: 8, name: "Dragon Steel Gauntlets", stat: "strength", bonus: 65, enhancement: 14, category: "Gloves", cost: 11000, materials: [{name: "Dragon Steel Armor Material", qty: 2}, {name: "Fang Steel Ingot", qty: 2}]},
 
-    {level: 1, name: "Rare Spice Club", stat: "luck", bonus: 12, cost: 400, materials: [{name: "Rare Vitality Powder", qty: 2}]},
-    {level: 3, name: "Star Luck Club", stat: "luck", bonus: 38, cost: 2200, materials: [{name: "Star Fragment", qty: 2}]},
-    {level: 5, name: "Phoenix Luck Axe", stat: "luck", bonus: 65, cost: 4800, materials: [{name: "Phoenix Flame Powder", qty: 3}, {name: "Phoenix Ash", qty: 2}]},
-    {level: 7, name: "Divine Tear Fortune Staff", stat: "luck", bonus: 95, cost: 8500, materials: [{name: "Divine Tear", qty: 2}, {name: "Eternal Calamity Flame Powder", qty: 2}]},
-    {level: 9, name: "Apocalypse Luck Sword", stat: "luck", bonus: 140, cost: 14500, materials: [{name: "Apocalypse Destruction Powder", qty: 3}, {name: "Crystal of Destruction", qty: 2}]},
-    {level: 11, name: "Abyss God Artifact Club", stat: "luck", bonus: 220, cost: 28500, materials: [{name: "Destruction Abyss Crystal", qty: 4}, {name: "World Origin Stone", qty: 1}]},
+    // === Cape ===
+    {level: 3, name: "Traveler's Cloak", stat: "luck", bonus: 15, enhancement: 7, category: "Cape", cost: 1200, materials: [{name: "Rare Vitality Powder", qty: 2}]},
+    {level: 6, name: "Mystic Cape", stat: "wisdom", bonus: 45, enhancement: 12, category: "Cape", cost: 6800, materials: [{name: "Aether Magic Crystal", qty: 2}, {name: "Holy Magic Crystal", qty: 2}]},
+    {level: 10, name: "Sacred Cape", stat: "luck", bonus: 110, enhancement: 20, category: "Cape", cost: 22000, materials: [{name: "Sacred Relic Crystal", qty: 3}, {name: "Angel Feather", qty: 2}]},
 
-    {level: 12, name: "Creation Source God Sword", stat: "strength", bonus: 350, cost: 50000, materials: [{name: "Creation Source Potion", qty: 1}, {name: "Ancient Dragon Heart Steel", qty: 5}]},
-    {level: 12, name: "World Source God Staff", stat: "wisdom", bonus: 350, cost: 50000, materials: [{name: "World Source Divine Potion", qty: 1}, {name: "Light Artifact Crystal", qty: 5}]},
-    {level: 12, name: "Apocalypse God Bow", stat: "dexterity", bonus: 350, cost: 50000, materials: [{name: "Creation Mana Potion", qty: 1}, {name: "Sacred Relic Crystal", qty: 5}]},
-    {level: 12, name: "Source Stone Luck God Artifact", stat: "luck", bonus: 350, cost: 50000, materials: [{name: "World Source Divine Potion", qty: 1}, {name: "Destruction Abyss Crystal", qty: 5}]}
+    // === Accessory ===
+    {level: 1, name: "Lucky Coin", stat: "luck", bonus: 10, enhancement: 5, category: "Accessory", cost: 400, materials: []},
+    {level: 4, name: "Four-Leaf Clover", stat: "luck", bonus: 35, enhancement: 10, category: "Accessory", cost: 3000, materials: [{name: "Rare Vitality Powder", qty: 3}]},
+    {level: 9, name: "Divine Tear Necklace", stat: "luck", bonus: 100, enhancement: 18, category: "Accessory", cost: 15000, materials: [{name: "Divine Tear", qty: 2}, {name: "Star Fragment", qty: 3}]},
+
+    // === One Hand Weapons ===
+    {level: 1, name: "Advanced Sword", stat: "strength", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "Steel Sword", stat: "strength", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "Steel Ingot", qty: 3}]},
+    {level: 4, name: "Dragon Slayer", stat: "strength", bonus: 45, enhancement: 12, category: "One Hand", cost: 3000, materials: [{name: "Magic Crystal", qty: 2}, {name: "Steel Ingot", qty: 5}]},
+    {level: 1, name: "Sage's Staff", stat: "wisdom", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "Mystic Staff", stat: "wisdom", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "Magic Crystal", qty: 2}]},
+    {level: 1, name: "Beast Skin Dagger", stat: "dexterity", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "Beast Skin Extract", qty: 2}]},
+    {level: 5, name: "Unicorn Dagger", stat: "dexterity", bonus: 65, enhancement: 14, category: "One Hand", cost: 4800, materials: [{name: "Unicorn Horn", qty: 2}, {name: "Beast Skin Extract", qty: 3}]},
+    {level: 1, name: "Rare Spice Club", stat: "luck", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "Rare Vitality Powder", qty: 2}]},
+
+    // === Both Hands Weapons ===
+    {level: 3, name: "Refined Iron Greatsword", stat: "strength", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "Refined Iron Ingot", qty: 4}]},
+    {level: 5, name: "Fang-Steel Greataxe", stat: "strength", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "Fang Steel Ingot", qty: 3}, {name: "Orc Tusk", qty: 2}]},
+    {level: 7, name: "Dragon-Steel Slayer Sword", stat: "strength", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "Dragon Steel Armor Material", qty: 4}, {name: "Ancient Dragon Scale", qty: 2}]},
+    {level: 9, name: "Titan War Axe", stat: "strength", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "Titan Bone Steel", qty: 3}, {name: "Titan Bone", qty: 3}]},
+    {level: 11, name: "Ancient Dragon Heart Slayer", stat: "strength", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "Ancient Dragon Heart Steel", qty: 4}, {name: "Elder Dragon Heart", qty: 1}]},
+    {level: 3, name: "Holy Magic Staff", stat: "wisdom", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "Holy Magic Crystal", qty: 3}]},
+    {level: 5, name: "Forbidden Magic Rod", stat: "wisdom", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "Forbidden Magic Crystal", qty: 3}, {name: "Forbidden Grimoire Page", qty: 2}]},
+    {level: 7, name: "Aether Crystal Staff", stat: "wisdom", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "Aether Magic Crystal", qty: 4}, {name: "Aether Crystal", qty: 2}]},
+    {level: 9, name: "Abyss Magic Staff", stat: "wisdom", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "Abyss Aether Crystal", qty: 3}, {name: "Abyss Core", qty: 2}]},
+    {level: 11, name: "Light Artifact God Staff", stat: "wisdom", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "Light Artifact Crystal", qty: 4}, {name: "Light Artifact Fragment", qty: 1}]},
+    {level: 3, name: "Wind Wing Bow", stat: "dexterity", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "Wind Wing Crystal", qty: 3}, {name: "Griffon Feather", qty: 2}]},
+    {level: 7, name: "Angel Swift Bow", stat: "dexterity", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "Angel Feather", qty: 3}, {name: "Wind Wing Crystal", qty: 2}]},
+    {level: 9, name: "Sacred Swift Dagger", stat: "dexterity", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "Sacred Relic Crystal", qty: 3}, {name: "Sacred Relic", qty: 2}]},
+    {level: 11, name: "Creation God Bow", stat: "dexterity", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "Creation Fragment", qty: 2}, {name: "Wind Wing Crystal", qty: 4}]},
+    {level: 3, name: "Star Luck Club", stat: "luck", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "Star Fragment", qty: 2}]},
+    {level: 5, name: "Phoenix Luck Axe", stat: "luck", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "Phoenix Flame Powder", qty: 3}, {name: "Phoenix Ash", qty: 2}]},
+    {level: 7, name: "Divine Tear Fortune Staff", stat: "luck", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "Divine Tear", qty: 2}, {name: "Eternal Calamity Flame Powder", qty: 2}]},
+    {level: 9, name: "Apocalypse Luck Sword", stat: "luck", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "Apocalypse Destruction Powder", qty: 3}, {name: "Crystal of Destruction", qty: 2}]},
+    {level: 11, name: "Abyss God Artifact Club", stat: "luck", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "Destruction Abyss Crystal", qty: 4}, {name: "World Origin Stone", qty: 1}]},
+
+    // === Ultimate Equipment ===
+    {level: 12, name: "Creation Source God Sword", stat: "strength", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "Creation Source Potion", qty: 1}, {name: "Ancient Dragon Heart Steel", qty: 5}]},
+    {level: 12, name: "World Source God Staff", stat: "wisdom", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "World Source Divine Potion", qty: 1}, {name: "Light Artifact Crystal", qty: 5}]},
+    {level: 12, name: "Apocalypse God Bow", stat: "dexterity", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "Creation Mana Potion", qty: 1}, {name: "Sacred Relic Crystal", qty: 5}]},
+    {level: 12, name: "Source Stone Luck God Artifact", stat: "luck", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "World Source Divine Potion", qty: 1}, {name: "Destruction Abyss Crystal", qty: 5}]}
   ],
   zh: [
+    // === 片手盾 ===
+    {level: 1, name: "小型木盾", stat: "defense", bonus: 15, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 3, name: "小型鐵盾", stat: "defense", bonus: 30, enhancement: 8, category: "One Hand", cost: 1800, materials: [{name: "鋼錠", qty: 3}]},
+    {level: 6, name: "小型龍鱗盾", stat: "defense", bonus: 60, enhancement: 12, category: "One Hand", cost: 6200, materials: [{name: "龍鋼裝甲材", qty: 3}, {name: "古代龍鱗", qty: 1}]},
+    {level: 10, name: "小型古龍盾", stat: "defense", bonus: 130, enhancement: 18, category: "One Hand", cost: 18000, materials: [{name: "古龍心鋼", qty: 3}, {name: "長老龍之心", qty: 1}]},
 
-    {level: 1, name: "木製之盾", stat: "defense", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鐵之盾", stat: "defense", bonus: 25, cost: 1200, materials: [{name: "鋼錠", qty: 3}]},
-    {level: 3, name: "精鐵守護盾", stat: "defense", bonus: 38, cost: 2200, materials: [{name: "精鐵錠", qty: 4}]},
-    {level: 5, name: "牙鋼守護盾", stat: "defense", bonus: 65, cost: 4800, materials: [{name: "牙鋼錠", qty: 3}, {name: "獸人獠牙", qty: 2}]},
-    {level: 7, name: "龍鋼守護盾", stat: "defense", bonus: 95, cost: 8500, materials: [{name: "龍鋼裝甲材", qty: 4}, {name: "古代龍鱗", qty: 2}]},
-    {level: 9, name: "巨神守護盾", stat: "defense", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "泰坦骨頭", qty: 3}]},
-    {level: 11, name: "古龍心守護盾", stat: "defense", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "長老龍之心", qty: 1}]},
-    {level: 12, name: "創世源守護神盾", stat: "defense", bonus: 350, cost: 50000, materials: [{name: "創世源藥劑", qty: 1}, {name: "古龍心鋼", qty: 5}]},
-    
-    
-    {level: 1, name: "上級之劍", stat: "strength", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "鋼鐵之劍", stat: "strength", bonus: 25, cost: 1200, materials: [{name: "鋼錠", qty: 3}]},
-    {level: 4, name: "屠龍劍", stat: "strength", bonus: 45, cost: 3000, materials: [{name: "魔法結晶", qty: 2}, {name: "鋼錠", qty: 5}]},
-    {level: 1, name: "賢者之杖", stat: "wisdom", bonus: 12, cost: 400, materials: []},
-    {level: 2, name: "神秘之杖", stat: "wisdom", bonus: 25, cost: 1200, materials: [{name: "魔法結晶", qty: 2}]},
+    // === 雙手大盾 ===
+    {level: 2, name: "木製守護盾", stat: "defense", bonus: 25, enhancement: 8, category: "Both Hands", cost: 800, materials: []},
+    {level: 4, name: "精鐵守護盾", stat: "defense", bonus: 45, enhancement: 12, category: "Both Hands", cost: 3200, materials: [{name: "精鐵錠", qty: 4}]},
+    {level: 7, name: "牙鋼守護盾", stat: "defense", bonus: 85, enhancement: 16, category: "Both Hands", cost: 9800, materials: [{name: "牙鋼錠", qty: 4}, {name: "獸人獠牙", qty: 3}]},
+    {level: 9, name: "泰坦守護盾", stat: "defense", bonus: 150, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "泰坦骨鋼", qty: 3}, {name: "泰坦骨頭", qty: 3}]},
+    {level: 11, name: "創世源守護神盾", stat: "defense", bonus: 280, enhancement: 30, category: "Both Hands", cost: 40000, materials: [{name: "創世源藥劑", qty: 1}, {name: "古龍心鋼", qty: 5}]},
 
-    {level: 3, name: "精鐵大劍", stat: "strength", bonus: 38, cost: 2200, materials: [{name: "精鐵錠", qty: 4}]},
-    {level: 5, name: "牙鋼雙手斧", stat: "strength", bonus: 65, cost: 4800, materials: [{name: "牙鋼錠", qty: 3}, {name: "獸人獠牙", qty: 2}]},
-    {level: 7, name: "龍鋼滅殺劍", stat: "strength", bonus: 95, cost: 8500, materials: [{name: "龍鋼裝甲材", qty: 4}, {name: "古代龍鱗", qty: 2}]},
-    {level: 9, name: "巨神戰斧", stat: "strength", bonus: 140, cost: 14500, materials: [{name: "巨神骨鋼", qty: 3}, {name: "泰坦骨頭", qty: 3}]},
-    {level: 11, name: "古龍心滅劍", stat: "strength", bonus: 220, cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "長老龍之心", qty: 1}]},
+    // === 頭部 ===
+    {level: 1, name: "皮帽", stat: "defense", bonus: 10, enhancement: 5, category: "Head", cost: 400, materials: [], description: 'A simple leather cap offering basic head protection.' },
+    {level: 3, name: "鐵頭盔", stat: "defense", bonus: 25, enhancement: 8, category: "Head", cost: 1800, materials: [{name: "鋼錠", qty: 3}]},
+    {level: 6, name: "龍鱗頭盔", stat: "defense", bonus: 55, enhancement: 12, category: "Head", cost: 6200, materials: [{name: "龍鋼裝甲材", qty: 3}, {name: "古代龍鱗", qty: 1}]},
+    {level: 10, name: "古龍頭盔", stat: "defense", bonus: 120, enhancement: 18, category: "Head", cost: 18000, materials: [{name: "古龍心鋼", qty: 3}, {name: "長老龍之心", qty: 1}]},
 
-    {level: 3, name: "聖魔導之杖", stat: "wisdom", bonus: 38, cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
-    {level: 5, name: "禁斷魔導魔棒", stat: "wisdom", bonus: 65, cost: 4800, materials: [{name: "禁斷魔導晶", qty: 3}, {name: "禁斷魔導書頁", qty: 2}]},
-    {level: 7, name: "以太魔晶杖", stat: "wisdom", bonus: 95, cost: 8500, materials: [{name: "以太魔晶", qty: 4}, {name: "以太結晶", qty: 2}]},
-    {level: 9, name: "深淵魔導杖", stat: "wisdom", bonus: 140, cost: 14500, materials: [{name: "深淵以太晶", qty: 3}, {name: "深淵核心", qty: 2}]},
-    {level: 11, name: "光神器神杖", stat: "wisdom", bonus: 220, cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光之神器碎片", qty: 1}]},
+    // === 胴體 ===
+    {level: 1, name: "皮甲", stat: "defense", bonus: 15, enhancement: 8, category: "Body", cost: 600, materials: []},
+    {level: 4, name: "鎖甲", stat: "defense", bonus: 40, enhancement: 12, category: "Body", cost: 3200, materials: [{name: "精鐵錠", qty: 5}]},
+    {level: 7, name: "牙鋼鎧甲", stat: "defense", bonus: 80, enhancement: 16, category: "Body", cost: 9800, materials: [{name: "牙鋼錠", qty: 4}, {name: "獸人獠牙", qty: 3}]},
+    {level: 11, name: "泰坦鎧甲", stat: "defense", bonus: 180, enhancement: 22, category: "Body", cost: 32000, materials: [{name: "泰坦骨鋼", qty: 4}, {name: "泰坦骨頭", qty: 3}]},
 
-    {level: 1, name: "獸皮短劍", stat: "dexterity", bonus: 12, cost: 400, materials: [{name: "獸皮精華", qty: 2}]},
-    {level: 3, name: "風翼之弓", stat: "dexterity", bonus: 38, cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "獅鷲羽毛", qty: 2}]},
-    {level: 5, name: "獨角獸匕首", stat: "dexterity", bonus: 65, cost: 4800, materials: [{name: "獨角獸角", qty: 2}, {name: "獸皮精華", qty: 3}]},
-    {level: 7, name: "天使迅弓", stat: "dexterity", bonus: 95, cost: 8500, materials: [{name: "天使羽毛", qty: 3}, {name: "風翼結晶", qty: 2}]},
-    {level: 9, name: "神聖迅擊短劍", stat: "dexterity", bonus: 140, cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖遺物", qty: 2}]},
-    {level: 11, name: "創世神弓", stat: "dexterity", bonus: 220, cost: 28500, materials: [{name: "創世碎片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+    // === 腿部 ===
+    {level: 2, name: "皮褲", stat: "dexterity", bonus: 12, enhancement: 6, category: "Legs", cost: 800, materials: [{name: "獸皮精華", qty: 2}]},
+    {level: 5, name: "鐵護脛", stat: "defense", bonus: 35, enhancement: 10, category: "Legs", cost: 4200, materials: [{name: "鋼錠", qty: 4}]},
+    {level: 8, name: "龍鋼護脛", stat: "defense", bonus: 70, enhancement: 15, category: "Legs", cost: 12000, materials: [{name: "龍鋼裝甲材", qty: 3}]},
 
-    {level: 1, name: "稀有香料短棍", stat: "luck", bonus: 12, cost: 400, materials: [{name: "稀有活力粉末", qty: 2}]},
-    {level: 3, name: "星星幸運棍", stat: "luck", bonus: 38, cost: 2200, materials: [{name: "星之碎片", qty: 2}]},
-    {level: 5, name: "不死鳥幸運斧", stat: "luck", bonus: 65, cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "鳳凰灰燼", qty: 2}]},
-    {level: 7, name: "神淚福運杖", stat: "luck", bonus: 95, cost: 8500, materials: [{name: "神之淚", qty: 2}, {name: "永劫炎粉", qty: 2}]},
-    {level: 9, name: "終焉幸運劍", stat: "luck", bonus: 140, cost: 14500, materials: [{name: "終焉破壞粉", qty: 3}, {name: "滅亡結晶", qty: 2}]},
-    {level: 11, name: "深淵神器棍", stat: "luck", bonus: 220, cost: 28500, materials: [{name: "滅亡深淵晶", qty: 4}, {name: "世界源石", qty: 1}]},
+    // === 腳部 ===
+    {level: 1, name: "皮靴", stat: "dexterity", bonus: 8, enhancement: 4, category: "Feet", cost: 400, materials: []},
+    {level: 4, name: "精靈之靴", stat: "dexterity", bonus: 35, enhancement: 10, category: "Feet", cost: 3200, materials: [{name: "風翼結晶", qty: 2}, {name: "獸皮精華", qty: 2}]},
+    {level: 9, name: "天使迅靴", stat: "dexterity", bonus: 90, enhancement: 18, category: "Feet", cost: 16000, materials: [{name: "天使羽毛", qty: 3}, {name: "風翼結晶", qty: 3}]},
 
-    {level: 12, name: "創世源神劍", stat: "strength", bonus: 350, cost: 50000, materials: [{name: "創世源藥劑", qty: 1}, {name: "古龍心鋼", qty: 5}]},
-    {level: 12, name: "世界源神杖", stat: "wisdom", bonus: 350, cost: 50000, materials: [{name: "世界源神藥", qty: 1}, {name: "光神器晶", qty: 5}]},
-    {level: 12, name: "終焉神弓", stat: "dexterity", bonus: 350, cost: 50000, materials: [{name: "創世魔力藥", qty: 1}, {name: "神聖遺晶", qty: 5}]},
-    {level: 12, name: "源石幸運神器", stat: "luck", bonus: 350, cost: 50000, materials: [{name: "世界源神藥", qty: 1}, {name: "滅亡深淵晶", qty: 5}]}
+    // === 手套 ===
+    {level: 2, name: "工作手套", stat: "strength", bonus: 12, enhancement: 6, category: "Gloves", cost: 800, materials: [{name: "獸皮精華", qty: 2}]},
+    {level: 5, name: "魔法手套", stat: "wisdom", bonus: 30, enhancement: 10, category: "Gloves", cost: 4000, materials: [{name: "魔法結晶", qty: 3}]},
+    {level: 8, name: "龍鋼手甲", stat: "strength", bonus: 65, enhancement: 14, category: "Gloves", cost: 11000, materials: [{name: "龍鋼裝甲材", qty: 2}, {name: "牙鋼錠", qty: 2}]},
+
+    // === 披風 ===
+    {level: 3, name: "旅人披風", stat: "luck", bonus: 15, enhancement: 7, category: "Cape", cost: 1200, materials: [{name: "稀有活力粉末", qty: 2}]},
+    {level: 6, name: "神秘披風", stat: "wisdom", bonus: 45, enhancement: 12, category: "Cape", cost: 6800, materials: [{name: "以太魔晶", qty: 2}, {name: "聖魔導結晶", qty: 2}]},
+    {level: 10, name: "神聖披風", stat: "luck", bonus: 110, enhancement: 20, category: "Cape", cost: 22000, materials: [{name: "神聖遺晶", qty: 3}, {name: "天使羽毛", qty: 2}]},
+
+    // === 飾品 ===
+    {level: 1, name: "幸運硬幣", stat: "luck", bonus: 10, enhancement: 5, category: "Accessory", cost: 400, materials: []},
+    {level: 4, name: "四葉幸運草", stat: "luck", bonus: 35, enhancement: 10, category: "Accessory", cost: 3000, materials: [{name: "稀有活力粉末", qty: 3}]},
+    {level: 9, name: "神淚項鍊", stat: "luck", bonus: 100, enhancement: 18, category: "Accessory", cost: 15000, materials: [{name: "神之淚", qty: 2}, {name: "星之碎片", qty: 3}]},
+
+    // === 單手武器 ===
+    {level: 1, name: "上級之劍", stat: "strength", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "鋼鐵之劍", stat: "strength", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "鋼錠", qty: 3}]},
+    {level: 4, name: "屠龍劍", stat: "strength", bonus: 45, enhancement: 12, category: "One Hand", cost: 3000, materials: [{name: "魔法結晶", qty: 2}, {name: "鋼錠", qty: 5}]},
+    {level: 1, name: "賢者之杖", stat: "wisdom", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: []},
+    {level: 2, name: "神秘之杖", stat: "wisdom", bonus: 25, enhancement: 8, category: "One Hand", cost: 1200, materials: [{name: "魔法結晶", qty: 2}]},
+    {level: 1, name: "獸皮短劍", stat: "dexterity", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "獸皮精華", qty: 2}]},
+    {level: 5, name: "獨角獸匕首", stat: "dexterity", bonus: 65, enhancement: 14, category: "One Hand", cost: 4800, materials: [{name: "獨角獸角", qty: 2}, {name: "獸皮精華", qty: 3}]},
+    {level: 1, name: "稀有香料短棍", stat: "luck", bonus: 12, enhancement: 5, category: "One Hand", cost: 400, materials: [{name: "稀有活力粉末", qty: 2}]},
+
+    // === 雙手武器 ===
+    {level: 3, name: "精鐵大劍", stat: "strength", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "精鐵錠", qty: 4}]},
+    {level: 5, name: "牙鋼雙手斧", stat: "strength", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "牙鋼錠", qty: 3}, {name: "獸人獠牙", qty: 2}]},
+    {level: 7, name: "龍鋼滅殺劍", stat: "strength", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "龍鋼裝甲材", qty: 4}, {name: "古代龍鱗", qty: 2}]},
+    {level: 9, name: "泰坦戰斧", stat: "strength", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "泰坦骨鋼", qty: 3}, {name: "泰坦骨頭", qty: 3}]},
+    {level: 11, name: "古龍心滅劍", stat: "strength", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "古龍心鋼", qty: 4}, {name: "長老龍之心", qty: 1}]},
+    {level: 3, name: "聖魔導之杖", stat: "wisdom", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "聖魔導結晶", qty: 3}]},
+    {level: 5, name: "禁斷魔導魔棒", stat: "wisdom", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "禁斷魔導晶", qty: 3}, {name: "禁斷魔導書頁", qty: 2}]},
+    {level: 7, name: "以太魔晶杖", stat: "wisdom", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "以太魔晶", qty: 4}, {name: "以太結晶", qty: 2}]},
+    {level: 9, name: "深淵魔導杖", stat: "wisdom", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "深淵以太晶", qty: 3}, {name: "深淵核心", qty: 2}]},
+    {level: 11, name: "光神器神杖", stat: "wisdom", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "光神器晶", qty: 4}, {name: "光之神器碎片", qty: 1}]},
+    {level: 3, name: "風翼之弓", stat: "dexterity", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "風翼結晶", qty: 3}, {name: "獅鷲羽毛", qty: 2}]},
+    {level: 7, name: "天使迅弓", stat: "dexterity", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "天使羽毛", qty: 3}, {name: "風翼結晶", qty: 2}]},
+    {level: 9, name: "神聖迅擊短劍", stat: "dexterity", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "神聖遺晶", qty: 3}, {name: "神聖遺物", qty: 2}]},
+    {level: 11, name: "創世神弓", stat: "dexterity", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "創世碎片", qty: 2}, {name: "風翼結晶", qty: 4}]},
+    {level: 3, name: "星星幸運棍", stat: "luck", bonus: 38, enhancement: 10, category: "Both Hands", cost: 2200, materials: [{name: "星之碎片", qty: 2}]},
+    {level: 5, name: "不死鳥幸運斧", stat: "luck", bonus: 65, enhancement: 14, category: "Both Hands", cost: 4800, materials: [{name: "不死鳥炎粉", qty: 3}, {name: "鳳凰灰燼", qty: 2}]},
+    {level: 7, name: "神淚福運杖", stat: "luck", bonus: 95, enhancement: 18, category: "Both Hands", cost: 8500, materials: [{name: "神之淚", qty: 2}, {name: "永劫炎粉", qty: 2}]},
+    {level: 9, name: "終焉幸運劍", stat: "luck", bonus: 140, enhancement: 22, category: "Both Hands", cost: 14500, materials: [{name: "終焉破壞粉", qty: 3}, {name: "滅亡結晶", qty: 2}]},
+    {level: 11, name: "深淵神器棍", stat: "luck", bonus: 220, enhancement: 28, category: "Both Hands", cost: 28500, materials: [{name: "滅亡深淵晶", qty: 4}, {name: "世界源石", qty: 1}]},
+
+    // === 終極裝備 ===
+    {level: 12, name: "創世源神劍", stat: "strength", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "創世源藥劑", qty: 1}, {name: "古龍心鋼", qty: 5}]},
+    {level: 12, name: "世界源神杖", stat: "wisdom", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "世界源神藥", qty: 1}, {name: "光神器晶", qty: 5}]},
+    {level: 12, name: "終焉神弓", stat: "dexterity", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "創世魔力藥", qty: 1}, {name: "神聖遺晶", qty: 5}]},
+    {level: 12, name: "源石幸運神器", stat: "luck", bonus: 350, enhancement: 35, category: "Both Hands", cost: 50000, materials: [{name: "世界源神藥", qty: 1}, {name: "滅亡深淵晶", qty: 5}]}
   ]
 };
-
 const alchemyRecipes = {
   ja: [
     // === 既存 + F/F+ (レベル1: 序盤基本合成) ===
