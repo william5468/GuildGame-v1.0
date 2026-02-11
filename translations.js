@@ -3976,9 +3976,9 @@ const facilityUpgradeDialogues = {
         tavern: [
             { speaker: '酒場主人', text: 'おお、{PLAYER}！ また投資してくれたんだな！' },
             { speaker: '酒場主人', text: 'これで冒険者たちがもっと快適に休めるぜ。使用料もギルドに還元されるから、投資した甲斐があるだろ？' },
-            { speaker: '酒場主人', text: 'あと、冒険者たちが食事注文すると、その代金の10%がギルドに入るんだ。' },
-            { speaker: '酒場主人', text: 'ただよ、たまにギャンブルに熱くなって大損することもあるから、気をつけて見ててくれよな…。' },
-            { speaker: 'ナレーター', text: '酒場がレベルアップ！ 冒険者たちは休息でき、使用料がギルド収入に。食事注文で追加10%収入、ギャンブル発生（損失リスクあり）。' }
+            { speaker: '酒場主人', text: 'あと、作った料理は酒場に置いて、冒険者たちがそれを食事注文すると、その代金がギルドに入るんだ。' },
+            { speaker: '酒場主人', text: 'ギルトが酒場でギャンブルの場を設けることができるよ、けどそれに夢中過ぎるする冒険者もあるから、気をつけて見ててくれよな…。' },
+            { speaker: 'ナレーター', text: '酒場がレベルアップ！ 冒険者たちは休息でき、使用料がギルド収入に。食事注文で追加収入、ギャンブル発生（損失リスクあり）。' }
         ],
         alchemy: [
             { speaker: '錬金術師', text: 'ふふ、{PLAYER}の投資ありがとう。これで工房がさらに充実するわ。' },
@@ -3993,40 +3993,40 @@ const facilityUpgradeDialogues = {
     },
     en: {
         tavern: [
-            { speaker: 'Tavern Owner', text: 'Hey, {PLAYER}! Another investment!' },
-            { speaker: 'Tavern Owner', text: 'Adventurers can rest better now. Usage fees come back to the guild too!' },
-            { speaker: 'Tavern Owner', text: 'When they order food, the guild gets 10% of the price.' },
-            { speaker: 'Tavern Owner', text: 'But sometimes they gamble and lose big — keep an eye on them!' },
-            { speaker: 'Narrator', text: 'Tavern upgraded! Adventurers rest, fees return to guild. 10% from food orders, gambling possible (risk of loss).' }
+            { speaker: 'Tavern Owner', text: 'Hey, {PLAYER}! You invested again!' },
+            { speaker: 'Tavern Owner', text: 'Now the adventurers can rest more comfortably. The usage fees go back to the guild too, so it was worth the investment, right?' },
+            { speaker: 'Tavern Owner', text: 'Also, any cooked dishes you place in the tavern — when adventurers order them as meals, the payment goes straight to the guild.' },
+            { speaker: 'Tavern Owner', text: 'The guild can set up gambling here now, but some adventurers might get too hooked, so keep an eye on them, okay...?' },
+            { speaker: 'Narrator', text: 'Tavern upgraded! Adventurers can rest here, usage fees contribute to guild income. Additional income from meal orders, gambling enabled (with risk of losses).' }
         ],
         alchemy: [
-            { speaker: 'Alchemist', text: 'Thanks for the investment, {PLAYER}.' },
-            { speaker: 'Alchemist', text: 'Adventurers can now synthesize potions from gathered materials. This is crucial — potions save lives!' },
-            { speaker: 'Narrator', text: 'Alchemy workshop upgraded! Adventurers auto-synthesize potions from ingredients. Survival rate improved!' }
+            { speaker: 'Alchemist', text: 'Hehe, thank you for the investment, {PLAYER}. This will make the workshop even better equipped.' },
+            { speaker: 'Alchemist', text: 'Adventurers can now synthesize potions using the materials they\'ve gathered. This is really important — potions let them overcome dangerous situations.' },
+            { speaker: 'Narrator', text: 'Alchemy workshop upgraded! Adventurers can automatically synthesize potions from materials. Adventurer survival rate improved!' }
         ],
         blacksmith: [
-            { speaker: 'Blacksmith', text: '{PLAYER}, more investment! Thanks!' },
-            { speaker: 'Blacksmith', text: 'Adventurers can enhance equipment (50% success). Fees fully return to guild.' },
-            { speaker: 'Narrator', text: 'Blacksmith upgraded! Equipment enhancement available. Fees fully to guild.' }
+            { speaker: 'Blacksmith', text: '{PLAYER}, you threw in more money again! Thanks!' },
+            { speaker: 'Blacksmith', text: 'Now adventurers can reinforce their equipment. Success depends on luck, but all usage fees go fully back to the guild — definitely worth the investment.' },
+            { speaker: 'Narrator', text: 'Blacksmith upgraded! Adventurers can reinforce equipment (50% success rate). All usage fees go to guild income.' }
         ]
     },
     zh: {
         tavern: [
             { speaker: '酒場主人', text: '哦，{PLAYER}！又投資了啊！' },
-            { speaker: '酒場主人', text: '冒險者們可以更好地休息了。使用費也會返還給公會！' },
-            { speaker: '酒場主人', text: '他們點餐時，公會能拿到10%的收入。' },
-            { speaker: '酒場主人', text: '不過有時他們會賭博輸大錢，要注意看著點啊…' },
-            { speaker: 'Narrator', text: '酒館升級！冒險者休息，使用費返還公會。點餐收入10%，賭博可能（有損失風險）。' }
+            { speaker: '酒場主人', text: '這樣冒險者們就能更舒服地休息了。使用費也會返還給公會，投資很值得吧？' },
+            { speaker: '酒場主人', text: '另外，做好的料理可以放在酒館裡，冒險者點餐時，那筆錢會直接進公會。' },
+            { speaker: '酒場主人', text: '公會現在可以在酒館開設賭博場，不過有些冒險者可能會太沉迷，要留意看著點哦…' },
+            { speaker: 'Narrator', text: '酒館升級！冒險者可休息，使用費成為公會收入。餐點訂購帶來追加收入，賭博啟用（有損失風險）。' }
         ],
         alchemy: [
-            { speaker: '煉金術師', text: '呵呵，謝謝{PLAYER}的投資。' },
-            { speaker: '煉金術師', text: '冒險者們可以用收集的素材合成藥水。這很重要 — 藥水能救命！' },
-            { speaker: 'Narrator', text: '煉金工房升級！冒險者自動用素材合成藥水。生存率提升！' }
+            { speaker: '煉金術師', text: '呵呵，謝謝{PLAYER}的投資。這樣工房就能更加完善了。' },
+            { speaker: '煉金術師', text: '冒險者們可以用收集到的素材合成藥水。這很重要——有藥水的話，冒險者就能度過危機了。' },
+            { speaker: 'Narrator', text: '煉金工房升級！冒險者可用素材自動合成藥水。冒險者生存率提升！' }
         ],
         blacksmith: [
-            { speaker: '鐵匠', text: '{PLAYER}，又投資了！謝了！' },
-            { speaker: '鐵匠', text: '冒險者們可以強化裝備了（成功率看運）。使用費全額返還公會。' },
-            { speaker: 'Narrator', text: '鐵匠鋪升級！裝備強化可用。使用費全額公會收入。' }
+            { speaker: '鐵匠', text: '{PLAYER}，又投錢進來了！謝啦！' },
+            { speaker: '鐵匠', text: '這樣冒險者們就能強化裝備了。成功率看運氣，但使用費全額返還公會，投資很有價值啊。' },
+            { speaker: 'Narrator', text: '鐵匠鋪升級！冒險者可強化裝備（成功率50%）。使用費全額成為公會收入。' }
         ]
     }
 };

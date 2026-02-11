@@ -4825,7 +4825,183 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
         let repGain = q.difficulty * 0.2;
         gameState.reputation += repGain;
+      if (q.defense) {
+            const rep = Math.floor(gameState.reputation);
+            const effectiveRep = Math.max(0, rep);
 
+            let orbQty = 1;
+            const extraChance = Math.min(1, effectiveRep / 100);
+            for (let i = 0; i < 2; i++) {
+                if (Math.random() < extraChance) {
+                    orbQty++;
+                }
+            }
+
+            for (let i = 0; i < orbQty; i++) {
+                addToInventory({
+                    name: 'EXPオーブ (小)',
+                    type: 'consumable',
+                    effect: 'level_up',
+                    amount: 1,
+                    id: gameState.nextId++
+                }, 1);
+            }
+
+            extraMsg += `<br><strong>Reputation Bonus:</strong> ${orbQty} × EXPオーブ (小)${orbQty > 1 ? 's' : ''} を獲得!`;
+        }
+        if (q.type === 6) {
+            // 完了前の mainProgress を基準にボーナス計算（0-basedインデックス）
+            const currentProgress = gameState.mainProgress;  // 例: 最初のクエストなら 0、2番目なら 1
+            const storyRepBonus = 30 * Math.pow(3, currentProgress);  // 30, 90, 270, 810...
+
+            gameState.reputation += storyRepBonus;
+            repGain +=storyRepBonus;
+
+
+            gameState.mainProgress++;
+        } else if (q.type === 7) {
+    let treasureGold = q.floor * 300;
+    gameState.gold += treasureGold;
+    extraMsg += `<br>${t('dungeon_treasure_gold', {floor: q.floor, gold: treasureGold})}`;
+    
+    let roll = Math.random();
+    
+    if (roll < 0.9) { // 90% chance - high chance for enhancement crystals
+        let crystalQty = 2 + Math.floor(q.floor / 2);
+        let crystalName = t('enhancement_crystal');
+        addToInventory(
+            {name: crystalName, id: gameState.nextId++, consumable: true},
+            crystalQty
+        );
+        let crystalMsg = crystalQty > 1 
+            ? t('item_found_qty', {name: crystalName, qty: crystalQty})
+            : t('item_found', {name: crystalName});
+        extraMsg += `<br>${crystalMsg}`;
+    } else { // 10% chance - low chance for the original rare ring
+        let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
+        let rareStatFull = t(`stat_${rareStat}`);
+        let rareBonus = 5 + q.floor * 5;
+        let rareItemName = t('dungeon_ring', {floor: q.floor, stat: rareStatFull});
+        addToInventory(
+            {name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: 0, id: gameState.nextId++},
+            1
+        );
+        extraMsg += `<br>${t('item_found', {name: rareItemName})}${t('rare_indicator')}`;
+    }
+
+    // 追加: レベル1ダンジョン（floor === 1）の場合のみ、独立した60%の確率で呪われた魔力の石片をドロップ
+    if (q.floor === 1) {
+        let cursedRoll = Math.random();
+        if (cursedRoll < 0.6) { // 60% chance
+            const cursedItemName = "呪われた魔力の石片";
+            addToInventory(
+                {name: cursedItemName, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: cursedItemName})} (コレクションアイテム)`;
+        }
+    }
+    if (q.floor === 2) {
+        let Roll = Math.random();
+        if (Roll < 0.4) { // 60% chance
+            const floor2Item1 = "呪われたゴブリンの守り";
+            addToInventory(
+                {name: floor2Item1, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: floor2Item1})} (コレクションアイテム)`;
+        }
+
+        Roll = Math.random();
+        if (Roll < 0.4) { // 60% chance
+            const floor2Item2 = "食肉花の歯";
+            addToInventory(
+                {name: floor2Item2, id: gameState.nextId++}, // 機能なしのコレクションアイテム
+                1
+            );
+            extraMsg += `<br>${t('item_found', {name: floor2Item2})} (コレクションアイテム)`;
+        }
+    }
+
+        }else // === 貿易クエスト完了処理（日終了時のクエスト完了ループ内に追加） ===
+ if (q.type === 2) {
+            const repChance = Math.min(0.8, 0.15 + q.difficulty * 0.0065);
+            if (Math.random() < repChance) {
+                const extraRep = q.difficulty * 0.6;
+                gameState.reputation += extraRep;
+                extraMsg += `<br>感謝のクライアントが言葉を広め、+${extraRep.toFixed(1)} Reputation！`;
+            }
+        }
+        if (q.type === 1) {
+            if (Math.random() < 1 && q.npcIdx !== null && !gameState.discoveredNPCs.includes(q.npcIdx)) {
+                gameState.discoveredNPCs.push(q.npcIdx);
+                const npcName = discoveryNPCs[q.npcIdx];
+                extraMsg += `<br>${npcName}を発見！ NPCでサイドクエストを確認。`;
+            }
+        }
+        if (q.side) {
+            const expOrb = {
+                name: 'EXPオーブ',
+                type: 'consumable',
+                effect: 'level_up',
+                amount: 10,
+                id: gameState.nextId++
+            };
+            addToInventory(expOrb, 1);
+            extraMsg += `<br>EXPオーブを受け取りました！（使用で冒険者のレベル+10）`;
+        }
+        if (q.type === 3 && q.item) {
+            const quantity = Math.floor(Math.random() * 5) + 1;
+            for (let k = 0; k < quantity; k++) {
+                addToInventory({...q.item, id: gameState.nextId++}, 1);
+            }
+            additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">+${quantity} ${q.item.name}</div>`;
+        }
+        /*if (q.type === 0 && Math.random() < 0.8) {
+            const numPerms = gameState.adventurers.filter(a => !a.temp).length;
+            if (numPerms >= gameState.maxPermanentSlots) {
+                extraMsg += `<br>感銘を受けた冒険者が加わりたがったが、ギルドは満杯です。`;
+            } else {
+                const newAdv = generateKillRecruit(q.difficulty);
+                gameState.adventurers.push(newAdv);
+                extraMsg += `<br>感銘を受けた冒険者${newAdv.name}があなたのギルドに加わることを決めました！`;
+            }
+        }*/
+
+        // 完了ダイアログ処理（questStoryindex をすべてのクエストタイプで統一使用）
+        // ※ fetchクエストも生成時にquestStoryindex（配列のインデックス）を設定している前提
+        //   設定されていない場合、別途q.itemNameなどで判定する拡張が必要ですが、ここでは統一
+        if (q.side) {
+            if (sideQuestCompletionDialogue[q.npcIdx]) {
+                const key = `side-${q.npcIdx}`;
+                if (!gameState.seenCompletionDialogues.has(key)) {
+                    const dialogue = sideQuestCompletionDialogue[q.npcIdx];
+                    queueQuestCompletionDialogue(dialogue);
+                    gameState.seenCompletionDialogues.add(key);
+                }
+            }
+        } else if (currentQuestCompletionDialogue[q.questType]?.[q.rank]?.[q.questStoryindex]) {
+            const key = `${q.questType}-${q.rank}-${q.questStoryindex}`;
+            if (!gameState.seenCompletionDialogues.has(key)) {
+                const dialogue = currentQuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
+                queueQuestCompletionDialogue(dialogue);
+
+                gameState.seenCompletionDialogues.add(key);
+
+                // === 新方式：マップからNPCアンロックを参照（すべてのタイプでquestStoryindex使用） ===
+                const unlockKey = `${q.questType}-${q.rank}-${q.questStoryindex}`;
+                const npcToUnlock = questCompletionNPCUnlocks[unlockKey];
+               
+                if (npcToUnlock) {
+                    // 文字列の場合（単体）→配列に変換
+                    const npcs = Array.isArray(npcToUnlock) ? npcToUnlock : [npcToUnlock];
+                    for (const npcKey of npcs) {
+                        unlockQuestNPC(npcKey);
+                    }
+                }
+                // === ここまで ===
+            }
+        }
         // ... (rest of success handling unchanged - defense, main quest, dungeon drops, etc.) ...
 
         // Unified success message (unchanged structure)
