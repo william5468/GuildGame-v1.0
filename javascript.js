@@ -4501,8 +4501,9 @@ function playTutorialDialogue(){
 }
 
 function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride = null) {
+    const isSmallScreen = window.innerWidth < 1200;
+
     if (q.type === 8 || q.type === 'trade') {
-        // Existing failure handling (unchanged)
         if (q.tradeRemainingDays > 0) {
             const repLoss = 15 + Math.floor(q.difficulty * 0.3);
             gameState.reputation -= repLoss;
@@ -4512,30 +4513,38 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 if (adv) adv.busy = false;
             });
 
-            const failMessage = `
+            const failTitle = t("quest_trade_failure_title");
+            const failDesc = `${q.desc}<br><br>${t("quest_trade_failure_desc1")}<br>${t("quest_trade_failure_desc2")}<br>${t("quest_trade_failure_desc3")}`;
+
+            const failMessageHTML = `
             <div class="quest-scroll quest-scroll-fail">
                 <div class="scroll-content">
                     <br><br>
                     <div style="text-align: center;">
-                        <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">貿易クエスト失敗！</div>
+                        <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">${failTitle}</div>
                         <div style="font-size: 15px; color: darkred;">
-                            Reputation -${repLoss}
+                            ${t("reputation_loss", {repLoss})}
                         </div>
                         <div style="font-size: 12px; margin: 40px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%;">
-                            ${q.desc}<br><br>
-                            貿易キャラバンが期限内に目的地に到達できませんでした。<br>
-                            冒険者の割り当てが不足または遅れたため、計画は失敗しました。<br>
-                            事前に支払った購入コストは失われました。
+                            ${failDesc}
                         </div>
                     </div>
                 </div>
             </div>`;
 
-            gameState.eventHistory.unshift({day: eventDay, message: failMessage});
+            const failTextPlain = `${failTitle}\n${t("reputation_loss", {repLoss})}\n\n${q.desc}\n\n${t("quest_trade_failure_desc1")}\n${t("quest_trade_failure_desc2")}\n${t("quest_trade_failure_desc3")}`;
+
+            if (isSmallScreen) {
+                better_alert(failTextPlain, "failure");
+                const historyMsg = failTextPlain.replace(/\n/g, '<br>');
+                gameState.eventHistory.unshift({day: eventDay, message: `<div style="padding:20px; text-align:center; color:#fff;">${historyMsg}</div>`});
+            } else {
+                gameState.eventHistory.unshift({day: eventDay, message: failMessageHTML});
+            }
             return;
         }
 
-        // === SUCCESS + BANDIT ENCOUNTER LOGIC (NEW ABSOLUTE REDUCTION) ===
+        // === SUCCESS + BANDIT ENCOUNTER LOGIC ===
         let survivingAdvs = [];
         const expGain = q.difficulty * 20;
         q.assigned.forEach(id => {
@@ -4548,11 +4557,10 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             }
         });
 
-        // Reputation gain (base)
         let repGain = q.difficulty * 0.5;
         gameState.reputation += repGain;
 
-        // === Bandit/Thief Encounter (updated to absolute reduction) ===
+        // === Bandit/Thief Encounter ===
         let encounterMsg = '';
         let extraRepLoss = 0;
 
@@ -4560,15 +4568,10 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
         const teamLuk = q.assigned.reduce((sum, id) => sum + getEffectiveStat(findAdv(id), 'luck'), 0);
         const teamDex = q.assigned.reduce((sum, id) => sum + getEffectiveStat(findAdv(id), 'dexterity'), 0);
 
-        let encounterChancePercent = 0;
-        let lukReductionPercent = 0;
         let lossPercent = 0;
 
         if (q.assigned.length === 0) {
-            // No team: automatic major loss
-            encounterChancePercent = 100;
-            lukReductionPercent = 0;
-            lossPercent = 0.8; // 80% fixed loss
+            lossPercent = 0.8;
             extraRepLoss = 10;
             gameState.reputation -= extraRepLoss;
 
@@ -4579,20 +4582,17 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 });
             }
 
-            encounterMsg = `護衛なしのため大規模な盗賊襲撃！
-                            ほとんどの荷物と収益を失った…（損失率80%）`;
+            encounterMsg = t("trade_no_guard_bandit");
         } else {
-            // Normal calculation with absolute reductions
             let baseChance = 0.1 + (totalValue / 30000);
             baseChance = Math.min(0.7, baseChance);
             const baseChancePercent = Math.round(baseChance * 100);
 
-            lukReductionPercent = Math.round(teamLuk * 0.01);
-            encounterChancePercent = Math.max(0, baseChancePercent - lukReductionPercent);
+            const lukReductionPercent = Math.round(teamLuk * 0.01);
+            const encounterChancePercent = Math.max(0, baseChancePercent - lukReductionPercent);
 
             if (Math.random() * 100 < encounterChancePercent) {
-                // Encounter occurred
-                const baseLoss = 0.3 + Math.random() * 0.5; // 30-80%
+                const baseLoss = 0.3 + Math.random() * 0.5;
                 const dexReductionPercent = Math.round(teamDex * 0.01);
                 lossPercent = Math.max(0, baseLoss - (dexReductionPercent / 100));
 
@@ -4610,66 +4610,93 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     });
                 }
 
-                encounterMsg = `盗賊の襲撃に遭った！
-                                失われた売却収益: ${lostGold}G
-                                `;
+                encounterMsg = t("trade_bandit_attack") + "\n" +
+                               t("trade_bandit_lost_gold", {lostGold}) + "\n";
                 if (lostItemsDetails.length > 0) {
-                    encounterMsg += `失われた購入品: ${lostItemsDetails.join(', ')}
-                    `;
+                    encounterMsg += t("trade_bandit_lost_items", {items: lostItemsDetails.join(', ')}) + "\n";
                 }
-                encounterMsg += ` 損失率${Math.round(lossPercent * 100)}%`;
-
+                encounterMsg += t("trade_bandit_loss_rate", {rate: Math.round(lossPercent * 100)});
             }
+        }
+
+        if (encounterMsg !== "") {
+            better_alert(encounterMsg, "failure");
         }
 
         // Add bought items (possibly reduced)
         if (q.buy) {
-            const fixedResourceNames = ["鉄鉱石", "薬草", "スパイス", "宝石"];
-            resources.forEach((currentDisplayedName, index) => {
-                const qty = q.buy[currentDisplayedName] || 0;
-                if (qty > 0) {
-                    const fixedName = fixedResourceNames[index];
-                    let item = gameState.inventory.find(it => it.name === fixedName && it.type === 'material');
-                    if (!item) {
-                        item = { name: fixedName, qty: 0, type: 'material' };
-                        gameState.inventory.push(item);
-                    }
-                    item.qty += qty;
+            // リソースの内部キー（言語非依存）
+            const resourceKeys = ['iron_ore', 'medicinal_herb', 'spice', 'gem'];
 
-                    const oldItem = gameState.inventory.find(it => it.name === currentDisplayedName && it.type === 'material' && it !== item);
-                    if (oldItem) {
-                        item.qty += oldItem.qty;
-                        gameState.inventory = gameState.inventory.filter(it => it !== oldItem);
-                    }
+            resourceKeys.forEach(key => {
+                // 現在の言語での表示名（エラー表示用やキーマッチ用）
+                const currentName = translations[currentLang][`resource_${key}`] || key;
+
+                // q.buy のキーは投稿時の言語での名前なので、現在の言語名でqtyを取得
+                const qty = q.buy[currentName] || 0;
+                if (qty === 0) return;
+
+                // 言語変更後もマッチさせるため、全言語の可能名称を集める
+                const possibleNames = [];
+                Object.keys(translations).forEach(lang => {
+                    const name = translations[lang][`resource_${key}`];
+                    if (name) possibleNames.push(name);
+                });
+
+                // インベントリからマッチするアイテムを探す
+                let item = gameState.inventory.find(i => 
+                    possibleNames.includes(i.name) && i.type === 'material'
+                );
+
+                if (!item) {
+                    // 存在しない場合は現在の言語名で新規作成
+                    item = { name: currentName, qty: 0, type: 'material' };
+                    gameState.inventory.push(item);
                 }
+
+                item.qty += qty;
+
+                // 古い言語名のアイテムが残っていたら統合（安全策）
+                const oldItems = gameState.inventory.filter(i => 
+                    i !== item && possibleNames.includes(i.name) && i.type === 'material'
+                );
+                oldItems.forEach(old => {
+                    item.qty += old.qty;
+                    gameState.inventory = gameState.inventory.filter(it => it !== old);
+                });
             });
         }
 
-        // Add (possibly reduced) gold reward
         gameState.gold += q.reward;
 
-        // Additional item HTML for bought items
-        let additionalItemHTML = '';
+        // 購入素材テキスト
+        let boughtText = '';
         if (q.buy) {
             const boughtItems = Object.keys(q.buy).filter(r => (q.buy[r] || 0) > 0);
             if (boughtItems.length > 0) {
-                additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
-                                        購入素材: ${boughtItems.map(r => `${r} ×${q.buy[r]}`).join(', ')}
-                                      </div>`;
+                boughtText = boughtItems.map(r => `${r} ×${q.buy[r]}`).join(', ');
             }
         }
 
-        let extraMsg = `所要日数: ${q.totalDaysRecorded || '複数'} 日`;
+        const daysText = t("days_taken", {days: q.totalDaysRecorded || t("multiple_days")});
+
+        // 大画面用HTML
+        let additionalItemHTML = '';
+        if (boughtText) {
+            additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
+                                    ${t("trade_purchased_materials", {materials: boughtText})}
+                                  </div>`;
+        }
 
         let leftHTML = `
             <div style="text-align: center;">
                 <div style="font-size: 15px; margin-bottom: 40px;">
-                    Reputation +${repGain}
+                    ${t("reputation_gain", {repGain})}
                 </div>
                 <div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
-                    +${q.reward} Gold（売却収益）
+                    ${t("trade_gold_reward", {reward: q.reward})}
                 </div>
-                ${additionalItemHTML}          
+                ${additionalItemHTML}
             </div>`;
 
         let rightHTML = survivingAdvs.length > 0 ? `
@@ -4680,17 +4707,17 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     <div style="text-align: center;">
                         <img class="adventurer-img" src="Images/${adv.image}" alt="${adv.name}">
                         <div style="margin-top: 0px; font-size: 15px;">${adv.name}</div>
-                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${expGain} Exp</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${expGain} ${t("exp_short")}</div>
                     </div>
                     `).join('')}
                 </div>
                 <div style="font-size: 12px; font-weight: bold; margin: 0px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">
-                    ${extraMsg}
-                </div>                                
+                    ${daysText}
+                </div>
             </div>` : `
-            <div style="font-size: 50px; color: darkred;">誰も帰還しませんでした…</div>`;
+            <div style="font-size: 50px; color: darkred;">${t("no_one_returned")}</div>`;
 
-        let messageHTML = `
+        const messageHTML = `
         <div class="quest-scroll quest-scroll-success">
             <div class="scroll-content">
                 <br><br>
@@ -4700,15 +4727,37 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 </div>
             </div>
         </div>`;
-        if (encounterMsg!=""){
-        better_alert(`${encounterMsg}`,"failure");
+
+        // 小画面用プレーンテキスト
+        const survivorsPlain = survivingAdvs.length > 0
+            ? survivingAdvs.map(adv => `${adv.name} (+${expGain} ${t("exp_short")})`).join('\n')
+            : t("no_one_returned");
+
+        const tradeSuccessPlain = `${t("quest_trade_success_title")}\n\n${q.desc}\n\n${t("reputation_gain", {repGain})}\n${t("trade_gold_reward", {reward: q.reward})}\n${boughtText ? t("trade_purchased_materials", {materials: boughtText}) : ''}\n\n${survivorsPlain}\n\n${daysText}`;
+
+        if (isSmallScreen) {
+            better_alert(tradeSuccessPlain, "success");
+
+            let historyMsg = `<strong>${t("quest_trade_success_title")}</strong><br><br>`
+                + `${q.desc.replace(/\n/g, '<br>')}<br><br>`
+                + `${t("reputation_gain", {repGain})}<br>`
+                + `${t("trade_gold_reward", {reward: q.reward})}<br>`
+                + (boughtText ? `${t("trade_purchased_materials", {materials: boughtText})}<br>` : '')
+                + `<br>`
+                + (survivingAdvs.length > 0 
+                    ? survivingAdvs.map(adv => `${adv.name} (+${expGain} ${t("exp_short")})<br>`).join('') 
+                    : `${t("no_one_returned")}<br>`)
+                + `${daysText}`;
+
+            gameState.eventHistory.unshift({day: eventDay, message: `<div style="padding:20px; text-align:left; color:#000000;">${historyMsg}</div>`});
+        } else {
+            gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
         }
-        gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
 
         return;
     }
 
-    // === Rest of the function unchanged (non-trade quests) ===
+    // === 通常クエスト（非貿易）===
     if (q.training) {
         if (q.assigned.length === 0) return;
         let assignedAdvs = q.assigned.map(id => findAdv(id)).filter(a => a);
@@ -4729,8 +4778,8 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             adv.busy = true;
         });
 
-        let trainingMessage = `${assignedAdvs.map(adv => `${adv.name}(+${expGains[adv.id]}EXP) `).join('')}`;
-        better_alert(trainingMessage,"training");
+        let trainingMessage = `${assignedAdvs.map(adv => `${adv.name}(+${expGains[adv.id]}${t("exp_short")}) `).join('')}`;
+        better_alert(trainingMessage, "training");
         return;
     }
 
@@ -4781,8 +4830,13 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             if (isPerm) {
                 gameState.reputation = Math.max(-100, gameState.reputation - 10);
             }
-            let deathMsg = `${adventurer.name} が "${q.desc}" で${isPerm ? '死亡しました' : '失われました'}！${isPerm ? ' Reputation -10。' : ''}`;
-            better_alert(deathMsg,"death");
+            const deathMsg = t("adventurer_death", {
+                name: adventurer.name,
+                quest: q.desc,
+                repPenalty: isPerm ? ` ${t("reputation_loss", {repLoss: 10})}` : ""
+            });
+            better_alert(deathMsg, "death");
+
             const mainIdx = gameState.adventurers.findIndex(a => a.id === adventurerId);
             if (mainIdx > -1) gameState.adventurers.splice(mainIdx, 1);
             const pendingIdx = gameState.recruitPending.findIndex(a => a.id === adventurerId);
@@ -4812,6 +4866,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
     let extraMsg = '';
     let additionalItemHTML = '';
+    let extraTextPlain = '';
 
     if (success) {
         let payout = permanentCount * 0.2 * q.reward;
@@ -4825,10 +4880,10 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
 
         let repGain = q.difficulty * 0.2;
         gameState.reputation += repGain;
-      if (q.defense) {
+
+        if (q.defense) {
             const rep = Math.floor(gameState.reputation);
             const effectiveRep = Math.max(0, rep);
-
             let orbQty = 1;
             const extraChance = Math.min(1, effectiveRep / 100);
             for (let i = 0; i < 2; i++) {
@@ -4836,141 +4891,101 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     orbQty++;
                 }
             }
-
             for (let i = 0; i < orbQty; i++) {
-                addToInventory({
-                    name: 'EXPオーブ (小)',
-                    type: 'consumable',
-                    effect: 'level_up',
-                    amount: 1,
-                    id: gameState.nextId++
-                }, 1);
+                addToInventory({ name: t("exp_orb_small"), type: 'consumable', effect: 'level_up', amount: 1, id: gameState.nextId++ }, 1);
             }
-
-            extraMsg += `<br><strong>Reputation Bonus:</strong> ${orbQty} × EXPオーブ (小)${orbQty > 1 ? 's' : ''} を獲得!`;
+            extraMsg += `<br>${t("defense_orb_bonus", {qty: orbQty})}`;
+            extraTextPlain += `\n${t("defense_orb_bonus", {qty: orbQty})}`;
         }
+
         if (q.type === 6) {
-            // 完了前の mainProgress を基準にボーナス計算（0-basedインデックス）
-            const currentProgress = gameState.mainProgress;  // 例: 最初のクエストなら 0、2番目なら 1
-            const storyRepBonus = 30 * Math.pow(3, currentProgress);  // 30, 90, 270, 810...
-
+            const currentProgress = gameState.mainProgress;
+            const storyRepBonus = 30 * Math.pow(3, currentProgress);
             gameState.reputation += storyRepBonus;
-            repGain +=storyRepBonus;
-
-
+            repGain += storyRepBonus;
             gameState.mainProgress++;
         } else if (q.type === 7) {
-    let treasureGold = q.floor * 300;
-    gameState.gold += treasureGold;
-    extraMsg += `<br>${t('dungeon_treasure_gold', {floor: q.floor, gold: treasureGold})}`;
-    
-    let roll = Math.random();
-    
-    if (roll < 0.9) { // 90% chance - high chance for enhancement crystals
-        let crystalQty = 2 + Math.floor(q.floor / 2);
-        let crystalName = t('enhancement_crystal');
-        addToInventory(
-            {name: crystalName, id: gameState.nextId++, consumable: true},
-            crystalQty
-        );
-        let crystalMsg = crystalQty > 1 
-            ? t('item_found_qty', {name: crystalName, qty: crystalQty})
-            : t('item_found', {name: crystalName});
-        extraMsg += `<br>${crystalMsg}`;
-    } else { // 10% chance - low chance for the original rare ring
-        let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
-        let rareStatFull = t(`stat_${rareStat}`);
-        let rareBonus = 5 + q.floor * 5;
-        let rareItemName = t('dungeon_ring', {floor: q.floor, stat: rareStatFull});
-        addToInventory(
-            {name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: 0, id: gameState.nextId++},
-            1
-        );
-        extraMsg += `<br>${t('item_found', {name: rareItemName})}${t('rare_indicator')}`;
-    }
+            let treasureGold = q.floor * 300;
+            gameState.gold += treasureGold;
+            extraMsg += `<br>${t("dungeon_treasure_gold", {floor: q.floor, gold: treasureGold})}`;
+            extraTextPlain += `\n${t("dungeon_treasure_gold", {floor: q.floor, gold: treasureGold})}`;
 
-    // 追加: レベル1ダンジョン（floor === 1）の場合のみ、独立した60%の確率で呪われた魔力の石片をドロップ
-    if (q.floor === 1) {
-        let cursedRoll = Math.random();
-        if (cursedRoll < 0.6) { // 60% chance
-            const cursedItemName = "呪われた魔力の石片";
-            addToInventory(
-                {name: cursedItemName, id: gameState.nextId++}, // 機能なしのコレクションアイテム
-                1
-            );
-            extraMsg += `<br>${t('item_found', {name: cursedItemName})} (コレクションアイテム)`;
-        }
-    }
-    if (q.floor === 2) {
-        let Roll = Math.random();
-        if (Roll < 0.4) { // 60% chance
-            const floor2Item1 = "呪われたゴブリンの守り";
-            addToInventory(
-                {name: floor2Item1, id: gameState.nextId++}, // 機能なしのコレクションアイテム
-                1
-            );
-            extraMsg += `<br>${t('item_found', {name: floor2Item1})} (コレクションアイテム)`;
-        }
+            let roll = Math.random();
+            if (roll < 0.9) {
+                let crystalQty = 2 + Math.floor(q.floor / 2);
+                let crystalName = t("enhancement_crystal");
+                addToInventory({name: crystalName, id: gameState.nextId++, consumable: true}, crystalQty);
+                const crystalMsg = crystalQty > 1 ? t("item_found_qty", {name: crystalName, qty: crystalQty}) : t("item_found", {name: crystalName});
+                extraMsg += `<br>${crystalMsg}`;
+                extraTextPlain += `\n${crystalMsg}`;
+            } else {
+                let rareStat = ['strength','wisdom','dexterity','luck'][Math.floor(Math.random()*4)];
+                let rareStatFull = t(`stat_${rareStat}`);
+                let rareBonus = 5 + q.floor * 5;
+                let rareItemName = t("dungeon_ring", {floor: q.floor, stat: rareStatFull});
+                addToInventory({name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: 0, id: gameState.nextId++}, 1);
+                extraMsg += `<br>${t("item_found", {name: rareItemName})}${t("rare_indicator")}`;
+                extraTextPlain += `\n${t("item_found", {name: rareItemName})}${t("rare_indicator")}`;
+            }
 
-        Roll = Math.random();
-        if (Roll < 0.4) { // 60% chance
-            const floor2Item2 = "食肉花の歯";
-            addToInventory(
-                {name: floor2Item2, id: gameState.nextId++}, // 機能なしのコレクションアイテム
-                1
-            );
-            extraMsg += `<br>${t('item_found', {name: floor2Item2})} (コレクションアイテム)`;
-        }
-    }
-
-        }else // === 貿易クエスト完了処理（日終了時のクエスト完了ループ内に追加） ===
- if (q.type === 2) {
+            if (q.floor === 1) {
+                let cursedRoll = Math.random();
+                if (cursedRoll < 0.6) {
+                    const cursedItemName = t("cursed_mana_fragment");
+                    addToInventory({name: cursedItemName, id: gameState.nextId++}, 1);
+                    extraMsg += `<br>${t("item_found", {name: cursedItemName})} ${t("collection_item")}`;
+                    extraTextPlain += `\n${t("item_found", {name: cursedItemName})} ${t("collection_item")}`;
+                }
+            }
+            if (q.floor === 2) {
+                let Roll = Math.random();
+                if (Roll < 0.4) {
+                    const floor2Item1 = t("cursed_goblin_guard");
+                    addToInventory({name: floor2Item1, id: gameState.nextId++}, 1);
+                    extraMsg += `<br>${t("item_found", {name: floor2Item1})} ${t("collection_item")}`;
+                    extraTextPlain += `\n${t("item_found", {name: floor2Item1})} ${t("collection_item")}`;
+                }
+                Roll = Math.random();
+                if (Roll < 0.4) {
+                    const floor2Item2 = t("carnivorous_flower_tooth");
+                    addToInventory({name: floor2Item2, id: gameState.nextId++}, 1);
+                    extraMsg += `<br>${t("item_found", {name: floor2Item2})} ${t("collection_item")}`;
+                    extraTextPlain += `\n${t("item_found", {name: floor2Item2})} ${t("collection_item")}`;
+                }
+            }
+        } else if (q.type === 2) {
             const repChance = Math.min(0.8, 0.15 + q.difficulty * 0.0065);
             if (Math.random() < repChance) {
                 const extraRep = q.difficulty * 0.6;
                 gameState.reputation += extraRep;
-                extraMsg += `<br>感謝のクライアントが言葉を広め、+${extraRep.toFixed(1)} Reputation！`;
+                extraMsg += `<br>${t("grateful_client_rep", {extraRep: extraRep.toFixed(1)})}`;
+                extraTextPlain += `\n${t("grateful_client_rep", {extraRep: extraRep.toFixed(1)})}`;
             }
         }
         if (q.type === 1) {
             if (Math.random() < 1 && q.npcIdx !== null && !gameState.discoveredNPCs.includes(q.npcIdx)) {
                 gameState.discoveredNPCs.push(q.npcIdx);
                 const npcName = discoveryNPCs[q.npcIdx];
-                extraMsg += `<br>${npcName}を発見！ NPCでサイドクエストを確認。`;
+                extraMsg += `<br>${t("npc_discovered", {npc: npcName})}`;
+                extraTextPlain += `\n${t("npc_discovered", {npc: npcName})}`;
             }
         }
         if (q.side) {
-            const expOrb = {
-                name: 'EXPオーブ',
-                type: 'consumable',
-                effect: 'level_up',
-                amount: 10,
-                id: gameState.nextId++
-            };
+            const expOrb = { name: t("exp_orb"), type: 'consumable', effect: 'level_up', amount: 10, id: gameState.nextId++ };
             addToInventory(expOrb, 1);
-            extraMsg += `<br>EXPオーブを受け取りました！（使用で冒険者のレベル+10）`;
+            extraMsg += `<br>${t("side_quest_exp_orb")}`;
+            extraTextPlain += `\n${t("side_quest_exp_orb")}`;
         }
         if (q.type === 3 && q.item) {
             const quantity = Math.floor(Math.random() * 5) + 1;
             for (let k = 0; k < quantity; k++) {
                 addToInventory({...q.item, id: gameState.nextId++}, 1);
             }
-            additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">+${quantity} ${q.item.name}</div>`;
+            additionalItemHTML = `<div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">${t("fetch_item_reward", {qty: quantity, name: q.item.name})}</div>`;
+            extraTextPlain += `\n${t("fetch_item_reward", {qty: quantity, name: q.item.name})}`;
         }
-        /*if (q.type === 0 && Math.random() < 0.8) {
-            const numPerms = gameState.adventurers.filter(a => !a.temp).length;
-            if (numPerms >= gameState.maxPermanentSlots) {
-                extraMsg += `<br>感銘を受けた冒険者が加わりたがったが、ギルドは満杯です。`;
-            } else {
-                const newAdv = generateKillRecruit(q.difficulty);
-                gameState.adventurers.push(newAdv);
-                extraMsg += `<br>感銘を受けた冒険者${newAdv.name}があなたのギルドに加わることを決めました！`;
-            }
-        }*/
 
-        // 完了ダイアログ処理（questStoryindex をすべてのクエストタイプで統一使用）
-        // ※ fetchクエストも生成時にquestStoryindex（配列のインデックス）を設定している前提
-        //   設定されていない場合、別途q.itemNameなどで判定する拡張が必要ですが、ここでは統一
+        // 完了ダイアログ処理（元のコード通り、変更なし）
         if (q.side) {
             if (sideQuestCompletionDialogue[q.npcIdx]) {
                 const key = `side-${q.npcIdx}`;
@@ -4985,33 +5000,36 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             if (!gameState.seenCompletionDialogues.has(key)) {
                 const dialogue = currentQuestCompletionDialogue[q.questType][q.rank][q.questStoryindex];
                 queueQuestCompletionDialogue(dialogue);
-
                 gameState.seenCompletionDialogues.add(key);
 
-                // === 新方式：マップからNPCアンロックを参照（すべてのタイプでquestStoryindex使用） ===
                 const unlockKey = `${q.questType}-${q.rank}-${q.questStoryindex}`;
                 const npcToUnlock = questCompletionNPCUnlocks[unlockKey];
-               
                 if (npcToUnlock) {
-                    // 文字列の場合（単体）→配列に変換
                     const npcs = Array.isArray(npcToUnlock) ? npcToUnlock : [npcToUnlock];
                     for (const npcKey of npcs) {
                         unlockQuestNPC(npcKey);
                     }
                 }
-                // === ここまで ===
             }
         }
-        // ... (rest of success handling unchanged - defense, main quest, dungeon drops, etc.) ...
 
-        // Unified success message (unchanged structure)
+        // 成功メッセージ構築
+        const expPerAdv = (q.type === 7) ? q.floor * 500 : q.difficulty * 20;
+
+        const survivorsPlain = survivingAdvs.length > 0
+            ? survivingAdvs.map(adv => `${adv.name} (+${expPerAdv} ${t("exp_short")})`).join('\n')
+            : t("no_one_returned");
+
+        const successPlain = `${t("quest_success_title")}\n\n${q.desc}\n\n${t("reputation_gain", {repGain: repGain.toFixed(1)})}\n${t("gold_reward", {gold: netGold.toFixed(0)})}${payout > 0 ? t("adventurer_payout", {payout: payout.toFixed(0)}) : ''}\n${extraTextPlain}\n\n${survivorsPlain}`;
+
+        // 大画面HTML（元の構造を維持しつつ翻訳キー使用）
         let leftHTML = `
             <div style="text-align: center;">
-                <div style="font-size: 15px; margin-bottom: 40px;">Reputation +${repGain.toFixed(1)}</div>
+                <div style="font-size: 15px; margin-bottom: 40px;">${t("reputation_gain", {repGain: repGain.toFixed(1)})}</div>
                 <div style="font-size: 15px; font-weight: bold; margin-bottom: 20px;">
-                    +${netGold.toFixed(0)} Gold${payout > 0 ? ` <br><span style="font-size: 10px;">[${payout.toFixed(0)} Goldは冒険者に分けた]</span>` : ''}
+                    ${t("gold_reward", {gold: netGold.toFixed(0)})}${payout > 0 ? ` <br><span style="font-size: 10px;">[${t("adventurer_payout_note", {payout: payout.toFixed(0)})}]</span>` : ''}
                 </div>
-                ${additionalItemHTML}          
+                ${additionalItemHTML}
             </div>`;
 
         let rightHTML = survivingAdvs.length > 0 ? `
@@ -5022,17 +5040,17 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     <div style="text-align: center;">
                         <img class="adventurer-img" src="Images/${adv.image}" alt="${adv.name}">
                         <div style="margin-top: 10px; font-size: 15px;">${adv.name}</div>
-                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${(q.type === 7) ? q.floor * 500 : q.difficulty * 20} Exp</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #2e5c2e;">+${expPerAdv} ${t("exp_short")}</div>
                     </div>
                     `).join('')}
                 </div>
                 <div style="font-size: 12px; font-weight: bold; margin: 20px 0; word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; max-width: 100%; width: 100%; line-height: 1.6; box-sizing: border-box;">
-                    ${extraMsg.replace(/<br>/g, '<br>')}
-                </div>                                
+                    ${extraMsg}
+                </div>
             </div>` : `
-            <div style="font-size: 50px; color: darkred;">誰も帰還しませんでした…</div>`;
+            <div style="font-size: 50px; color: darkred;">${t("no_one_returned")}</div>`;
 
-        let messageHTML = `
+        const messageHTML = `
         <div class="quest-scroll quest-scroll-success">
             <div class="scroll-content">
                 <br><br>
@@ -5043,16 +5061,39 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             </div>
         </div>`;
 
-        gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
+        if (isSmallScreen) {
+            better_alert(successPlain, "success");
+
+            let historyMsg = `<strong>${t("quest_success_title")}</strong><br><br>`
+                + `${q.desc.replace(/\n/g, '<br>')}<br><br>`
+                + `${t("reputation_gain", {repGain: repGain.toFixed(1)})}<br>`
+                + `${t("gold_reward", {gold: netGold.toFixed(0)})}${payout > 0 ? ` (${t("adventurer_payout", {payout: payout.toFixed(0)})})` : ''}<br>`
+                + (additionalItemHTML ? additionalItemHTML.replace(/<[^>]*>/g, '').trim() + '<br>' : '')
+                + `<br>`
+                + (survivingAdvs.length > 0 
+                    ? survivingAdvs.map(adv => `${adv.name} (+${expPerAdv} ${t("exp_short")})<br>`).join('')
+                    : `${t("no_one_returned")}<br>`)
+                + (extraTextPlain ? extraTextPlain.replace(/\n/g, '<br>') : '');
+
+            gameState.eventHistory.unshift({day: eventDay, message: `<div style="padding:20px; text-align:left; color:#000000;">${historyMsg}</div>`});
+        } else {
+            gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
+        }
     } else {
-        // Failure handling unchanged
+        // Failure handling
         const repLoss = q.difficulty * 2;
         gameState.reputation -= repLoss;
 
+        const survivorsPlain = survivingAdvs.length > 0
+            ? survivingAdvs.map(adv => adv.name).join('\n')
+            : t("no_one_returned");
+
+        const failurePlain = `${t("quest_failure_title")}\n\n${t("reputation_loss", {repLoss})}\n\n${q.desc}\n\n${survivorsPlain}`;
+
         let leftHTML = `
             <div style="text-align: center;">
-                <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">失敗！</div>
-                <div style="font-size: 15px; color: darkred;">Reputation -${repLoss}</div>
+                <div style="font-size: 20px; color: darkred; margin-bottom: 40px;">${t("quest_failure_title")}</div>
+                <div style="font-size: 15px; color: darkred;">${t("reputation_loss", {repLoss})}</div>
             </div>`;
 
         let rightHTML = survivingAdvs.length > 0 ? `
@@ -5067,9 +5108,9 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                     `).join('')}
                 </div>
             </div>` : `
-            <div style="font-size: 20px; color: darkred;">誰も帰還しませんでした…</div>`;
+            <div style="font-size: 20px; color: darkred;">${t("no_one_returned")}</div>`;
 
-        let messageHTML = `
+        const messageHTML = `
         <div class="quest-scroll quest-scroll-fail">
             <div class="scroll-content">
                 <br><br>
@@ -5080,7 +5121,20 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             </div>
         </div>`;
 
-        gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
+        if (isSmallScreen) {
+            better_alert(failurePlain, "failure");
+
+            let historyMsg = `<strong style="color:darkred;">${t("quest_failure_title")}</strong><br><br>`
+                + `${t("reputation_loss", {repLoss})}<br><br>`
+                + `${q.desc.replace(/\n/g, '<br>')}<br><br>`
+                + (survivingAdvs.length > 0 
+                    ? survivingAdvs.map(adv => `${adv.name}<br>`).join('')
+                    : t("no_one_returned"));
+
+            gameState.eventHistory.unshift({day: eventDay, message: `<div style="padding:20px; text-align:left; color:#000000;">${historyMsg}</div>`});
+        } else {
+            gameState.eventHistory.unshift({day: eventDay, message: messageHTML});
+        }
     }
 }
 
@@ -11184,6 +11238,15 @@ function startIntroDialogue() {
     if (!isPlayingDialogue) {
         crossfadeTo('introBgm', 2000);
         playNextQuestDialogue();
+
+        // Wait until the entire dialogue sequence (including any queued sequences) is fully completed
+        const waitForDialogueEnd = setInterval(() => {
+            if (!isPlayingDialogue && completionQueue.length === 0) {
+                clearInterval(waitForDialogueEnd);
+                // Small extra delay to ensure UI is fully settled after the last line
+                setTimeout(startTutorial, 800);
+            }
+        }, 300);
     }
 }
 
@@ -12790,4 +12853,226 @@ function openGuildCard(advId) {
 function closeGuildCard() {
     const modal = document.getElementById('guildCardModal');
     if (modal) modal.style.display = 'none';
+}
+
+
+/* === TUTORIAL SYSTEM (RELATIVE ARROW - PERFECTLY ATTACHED) === */
+let currentTutorialStep = 0;
+let currentTarget = null; // To restore original style later
+
+const tutorialSteps = [
+    {
+        description: {
+            en: "Use the « Previous and Next » buttons to browse and select a quest you want to assign adventurers to.",
+            ja: "« 前のクエスト » と « 次のクエスト » ボタンを使って、冒険者に割り当てたいクエストを選択してください。",
+            zh: "使用 « 上一個 » 和 « 下一個 » 按鈕來瀏覽並選擇您要指派冒險者的任務。"
+        },
+        targetSelectors: ['button[onclick="prevQuest()"]', 'button[onclick="nextQuest()"]'],
+        highlightSelector: 'button[onclick="nextQuest()"]',
+        multiple: false
+    },
+    {
+        description: {
+            en: "Click on any adventurer card to assign that adventurer to the currently selected quest. You can assign multiple adventurers if needed.",
+            ja: "任意の冒険者カードをクリックして、現在選択中のクエストにその冒険者を割り当ててください。複数人割り当ても可能です。",
+            zh: "點擊任何冒險者卡片，將該冒險者指派到目前選中的任務。您可以指派多位冒險者。"
+        },
+        targetSelectors: ['.adventurer-card'],
+        highlightSelector: '.adventurer-card',
+        multiple: true
+    },
+    {
+        description: {
+            en: "When the quest success rate looks good, click this button to end the day and resolve all quests.",
+            ja: "クエストの成功率が十分に高くなったと思ったら、このボタンをクリックして1日を終了し、クエストを解決してください。",
+            zh: "當任務成功率看起來足夠高時，點擊此按鈕結束一天並解決所有任務。"
+        },
+        targetSelectors: ['button[onclick="playDay()"]'],
+        highlightSelector: 'button[onclick="playDay()"]',
+        multiple: false
+    },
+    {
+        description: {
+            en: "Click this button to open the Guild Facilities menu.",
+            ja: "ギルド施設メニューを開くためにこのボタンをクリックしてください。",
+            zh: "點擊此按鈕開啟公會設施選單。"
+        },
+        targetSelectors: ['button[onclick="toggleFacilities()"]'],
+        highlightSelector: 'button[onclick="toggleFacilities()"]',
+        multiple: false
+    },
+    {
+        description: {
+            en: "Inside the facilities menu, click the Tavern button to manage it.",
+            ja: "施設メニュー内で、酒場ボタンをクリックして酒場を管理してください。",
+            zh: "在設施選單內，點擊酒館按鈕來管理它。"
+        },
+        targetSelectors: ['button[onclick="selectFacility(\'tavern\')"]'],
+        highlightSelector: 'button[onclick="selectFacility(\'tavern\')"]',
+        multiple: false
+    },
+    {
+        description: {
+            en: "Click the Upgrade button to improve the tavern (it may be disabled until you have enough gold/reputation). Upgraded taverns let idle adventurers rest and recover better.",
+            ja: "アップグレードボタンをクリックして酒場を強化してください（金や評判が不足していると無効です）。強化された酒場ではクエストに出ていない冒険者がより良く休息・回復できます。",
+            zh: "點擊升級按鈕來改善酒館（如果金幣或聲望不足可能會禁用）。升級後的酒館能讓閒置的冒險者更好地休息和恢復。"
+        },
+        targetSelectors: ['button[onclick="upgradeFacility(\'tavern\')"]'],
+        highlightSelector: 'button[onclick="upgradeFacility(\'tavern\')"]',
+        multiple: false
+    },
+    {
+        description: {
+            en: "Click 'Produce and Stock' to make food. Stocked food lets adventurers eat at the tavern and prevents hunger penalties.",
+            ja: "「生産して在庫に追加」ボタンをクリックして食べ物を作成してください。在庫がある食べ物は冒険者が酒場で注文・消費でき、空腹ペナルティを防ぎます。",
+            zh: "點擊「生產並入庫」來製作食物。有庫存的食物能讓冒險者在酒館訂購並食用，防止飢餓懲罰。"
+        },
+        targetSelectors: ['button[onclick="produceAndStock(0)"]'],
+        highlightSelector: 'button[onclick="produceAndStock(0)"]',
+        multiple: false
+    }
+];
+
+function startTutorial() {
+    if (gameState.tutorialCompleted) return;
+    injectTutorialStyles();  // ← Add this line
+    currentTutorialStep = 0;
+    showTutorialStep();
+}
+
+function showTutorialStep() {
+    removeTutorialElements();
+
+    if (currentTutorialStep >= tutorialSteps.length) {
+        endTutorial();
+        return;
+    }
+
+    const step = tutorialSteps[currentTutorialStep];
+
+    // Show description box
+    createTutorialDescription(step);
+
+    // Highlight target
+    let highlightElem = null;
+    if (step.highlightSelector) {
+        highlightElem = document.querySelector(step.highlightSelector);
+    }
+    if (highlightElem) {
+        highlightTarget(highlightElem);
+        currentTarget = highlightElem; // remember for cleanup
+    }
+
+    // Click-to-advance logic
+    let targetElems = [];
+    step.targetSelectors.forEach(sel => {
+        if (step.multiple) {
+            document.querySelectorAll(sel).forEach(el => targetElems.push(el));
+        } else {
+            const el = document.querySelector(sel);
+            if (el) targetElems.push(el);
+        }
+    });
+
+    if (targetElems.length > 0) {
+        targetElems.forEach(el => {
+            el.addEventListener('click', advanceTutorial, { once: true });
+        });
+    } else {
+        setTimeout(advanceTutorial, 3000);
+    }
+}
+
+function advanceTutorial() {
+    currentTutorialStep++;
+    showTutorialStep();
+}
+
+function removeTutorialElements() {
+    // Remove highlight
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+
+    // Remove and clean up arrow
+
+    // Restore original position style if we modified it
+    if (currentTarget) {
+        const saved = currentTarget.dataset.originalPosition;
+        if (saved !== undefined) {
+            currentTarget.style.position = saved === 'none' ? '' : saved;
+            delete currentTarget.dataset.originalPosition;
+        }
+        currentTarget = null;
+    }
+
+    // Remove description
+    const desc = document.getElementById('tutorialDescription');
+    if (desc) desc.remove();
+}
+
+function highlightTarget(elem) {
+    elem.classList.add('tutorial-highlight');
+}
+
+function createTutorialDescription(step) {
+    // Select the correct language text with safe fallback
+    const descText = step.description[currentLang] 
+        || step.description.en 
+        || step.description.ja 
+        || step.description.zh 
+        || "Tutorial step description missing";
+
+    let desc = document.getElementById('tutorialDescription');
+    if (!desc) {
+        desc = document.createElement('div');
+        desc.id = 'tutorialDescription';
+        document.body.appendChild(desc);
+    }
+    desc.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 100%;
+        padding: 10px;
+        background: rgba(0,0,0,0.85);
+        color: #ffd700;
+        font-size: 1em;
+        font-weight: bold;
+        text-align: center;
+        border: 4px solid #ffd700;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        z-index: 10001;
+        pointer-events: none;
+        line-height: 1.5;
+        white-space: pre-wrap; /* Preserves line breaks if needed in translations */
+    `;
+    desc.innerHTML = descText;
+}
+
+
+
+function endTutorial() {
+    removeTutorialElements();
+    better_alert("Tutorial complete! Now explore the game and manage your guild on your own. Good luck!", "success");
+    gameState.tutorialCompleted = true;
+}
+
+function injectTutorialStyles() {
+    if (document.getElementById('tutorialAnimStyle')) return; // Already injected
+
+    const style = document.createElement('style');
+    style.id = 'tutorialAnimStyle';
+    style.innerHTML = `
+        .tutorial-highlight {
+            box-shadow: 0 0 30px 8px gold !important;
+            animation: tutorialGlow 2s infinite alternate;
+            z-index: 9999 !important;
+        }
+        @keyframes tutorialGlow {
+            from { box-shadow: 0 0 20px 5px gold; }
+            to { box-shadow: 0 0 40px 15px orange; }
+        }
+    `;
+    document.head.appendChild(style);
 }
