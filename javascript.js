@@ -10,6 +10,14 @@ let playerName = "";
 let audioPlayed = false;
 
 
+// プレイヤー（ギルドマスター）の画像を性別に応じて切り替え
+function getPlayerImage() {
+    if (!gameState.playerGender) return 'Images/main_char_M.png'; // フォールバック
+    return gameState.playerGender === 'F' 
+        ? 'Images/main_char_F.png' 
+        : 'Images/main_char_M.png';
+}
+
 // === 拡張された特性リスト（表示名付き、多様な好み対応）===
 // 各特性に displayName を追加（キャラクターシートで表示用）
 // type で分類:
@@ -9162,7 +9170,7 @@ function playNextStoryPostDialogue() {
 
         dialogueTextEl.innerHTML = '';
 
-        let imageSrc = 'Images/main_char.png';
+        let imageSrc = getPlayerImage();
         const speakerKey = current.speaker;
         console.log("current.speaker is:"+speakerKey);
 
@@ -11214,12 +11222,24 @@ let dialogueIndex = 0;
 // startIntroDialogue 関数を以下のように修正
 // startIntroDialogue() を更新（魅力的な新しいダイアログを言語対応で定義）
 function startIntroDialogue() {
+    // === 名前取得（空チェック）===
     let playerName = document.getElementById('playerNameInput').value.trim();
     if (playerName === "") {
         better_alert(t('enter_player_name'), "warning");
         return;
     }
+
+    // === 性別取得（ラジオボタン）===
+    const genderEl = document.querySelector('input[name="playerGender"]:checked');
+    const playerGender = genderEl ? genderEl.value : 'M'; // デフォルトは男性
+
+    // === gameState に保存 ===
     gameState.playerName = playerName;
+    gameState.playerGender = playerGender;
+
+    // === ステップ1 を非表示にして対話シーンへ ===
+    document.getElementById('stepName').style.display = 'none';
+    document.getElementById('stepDialogue').style.display = 'block';
 
     // 言語対応のイントロダイアログを取得
     const currentIntro = introDialogues[currentLang] || introDialogues.ja;
@@ -11237,19 +11257,26 @@ function startIntroDialogue() {
     // 再生中でなければ即開始（イントロ専用BGMにクロスフェード）
     if (!isPlayingDialogue) {
         crossfadeTo('introBgm', 2000);
+        setDialogueBackground('Images/intro_bg.jpg'); // 背景を明示的に設定（必要に応じて）
         playNextQuestDialogue();
 
-        // Wait until the entire dialogue sequence (including any queued sequences) is fully completed
+        // イントロダイアログが完全に終了したらチュートリアル開始
         const waitForDialogueEnd = setInterval(() => {
             if (!isPlayingDialogue && completionQueue.length === 0) {
                 clearInterval(waitForDialogueEnd);
-                // Small extra delay to ensure UI is fully settled after the last line
-                setTimeout(startTutorial, 800);
+                setTimeout(() => {
+                    // イントロモーダルを完全に閉じる
+                    const introModal = document.getElementById('introModal');
+                    if (introModal) introModal.style.display = 'none';
+                    // チュートリアル開始（初回のみ）
+                    if (!gameState.tutorialCompleted) {
+                        startTutorial();
+                    }
+                }, 800);
             }
         }, 300);
     }
 }
-
 let currentTypedText = '';
 
 // renderCurrentDialogue() 更新（継続インジケーターにパルスアニメーション追加 + ログ追加でデバッグしやすく）
@@ -11671,7 +11698,7 @@ function playNextQuestDialogue() {
         dialogueTextEl.innerHTML = '';
 
         // キャラクター画像パス計算（キャッシュ付き）
-        let imageSrc = 'Images/main_char.png';
+        let imageSrc = getPlayerImage();
         const speakerKey = current.speaker; // 元のspeakerKey（置換前）でキャッシュ（一貫性確保）
         if (current.image) {
             // カスタム画像（表情差分など）はキャッシュせず優先
