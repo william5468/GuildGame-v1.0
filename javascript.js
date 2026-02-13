@@ -4229,7 +4229,7 @@ function getRecruitsHtml(){
         const equipWis = effWis - baseWis;
         const equipDex = effDex - baseDex;
         const equipLuk = effLuk - baseLuk;
-        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> LUC ${effLuk} (${baseLuk}+${equipLuk})`;
         const expNeeded = adv.level * 100;
         const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
         const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
@@ -4262,10 +4262,10 @@ function getAvailableHtml(){
         const equipLuk = effLuk - baseLuk;
 
         const stats=`Lv ${adv.level} | 
-                     <img src="Images/STR.png" class="stat-icon" title="筋力"> 筋力 ${effStr} (${baseStr}+${equipStr}) 
-                     <img src="Images/WIS.png" class="stat-icon" title="知恵"> 知恵 ${effWis} (${baseWis}+${equipWis}) 
-                     <img src="Images/DEX.png" class="stat-icon" title="敏捷"> 敏捷 ${effDex} (${baseDex}+${equipDex}) 
-                     <img src="Images/LUC.png" class="stat-icon" title="運"> 運 ${effLuk} (${baseLuk}+${equipLuk})`;
+                     <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) 
+                     <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) 
+                     <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) 
+                     <img src="Images/LUC.png" class="stat-icon" title="運"> LUC ${effLuk} (${baseLuk}+${equipLuk})`;
 
         const expNeeded = adv.level * 100;
         const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
