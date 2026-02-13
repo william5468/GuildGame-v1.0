@@ -164,41 +164,57 @@
 <div style="margin:0px 0; font-size:1em; background: transparent">
     <div style="display:flex; justify-content:center; gap:30px; align-items:center; background: transparent">
         <!-- 男性選択 -->
-        <label class="gender-label" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:8px; border-radius:10px; background:rgba(0,50,100,0.4); transition:all 0.3s; border:3px solid transparent;"
-               onmouseover="this.style.borderColor='#4a90e2'; this.style.background='rgba(0,80,150,0.6)'"
-               onmouseout="this.style.borderColor=(this.querySelector('input').checked?'#4a90e2':'transparent'); this.style.background=(this.querySelector('input').checked?'rgba(0,80,150,0.6)':'rgba(0,50,100,0.4)')">
-            <input type="radio" name="playerGender" value="M" checked style="display:none;">
-            <div style="font-size:1.5em; margin-bottom:6px; color:#4a90e2; text-shadow:0 0 10px #4a90e2;">♂</div>
+        <label class="gender-label gender-male">
+            <input type="radio" name="playerGender" value="M" style="display:none;">
+            <div class="gender-icon" style="font-size:1.5em; margin-bottom:6px; color:#4a90e2; text-shadow:0 0 10px #4a90e2;">♂</div>
         </label>
 
         <!-- 女性選択 -->
-        <label class="gender-label" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:8px; border-radius:10px; background:rgba(100,0,50,0.4); transition:all 0.3s; border:3px solid transparent;"
-               onmouseover="this.style.borderColor='#e91e63'; this.style.background='rgba(150,0,80,0.6)'"
-               onmouseout="this.style.borderColor=(this.querySelector('input').checked?'#e91e63':'transparent'); this.style.background=(this.querySelector('input').checked?'rgba(150,0,80,0.6)':'rgba(100,0,50,0.4)')">
+        <label class="gender-label gender-female">
             <input type="radio" name="playerGender" value="F" style="display:none;">
-            <div style="font-size:1.5em; margin-bottom:6px; color:#e91e63; text-shadow:0 0 10px #e91e63;">♀</div>
+            <div class="gender-icon" style="font-size:1.5em; margin-bottom:6px; color:#e91e63; text-shadow:0 0 10px #e91e63;">♀</div>
         </label>
     </div>
 </div>
 
-<!-- 追加CSS（ページの<style>タグ内か、別途JSで挿入） -->
+<!-- 新しい純CSS実装（これ1つだけでOK。古い2つの<style>ブロックは完全に削除してください） -->
 <style>
-    /* 選択されたラベルはホバー状態を維持（ボーダー＋背景濃いめ） */
-    .gender-label input:checked ~ * {
-        filter: brightness(1.3); /* アイコンとテキストを少し明るく */
+    .gender-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        border: 3px solid transparent;
     }
-</style>
 
-<!-- 追加CSS（ページの<style>タグ内か、別途JSで挿入） -->
-<style>
-    /* 選択されたラジオボタンのラベルにチェックマークを表示 + ホバー状態を維持 */
-    input[name="playerGender"]:checked ~ .gender-checkmark {
-        opacity: 1 !important;
+    .gender-male {
+        background: rgba(0,50,100,0.4);
     }
-    input[name="playerGender"]:checked + div + span,
-    input[name="playerGender"]:checked ~ div,
-    input[name="playerGender"]:checked ~ span {
-        filter: brightness(1.3); /* 選択中は少し明るく */
+
+    .gender-female {
+        background: rgba(100,0,50,0.4);
+    }
+
+    /* ホバー OR 選択中 → 強調スタイル適用 */
+    .gender-male:hover,
+    .gender-male:has(input:checked) {
+        border-color: #4a90e2;
+        background: rgba(0,80,150,0.6);
+    }
+
+    .gender-female:hover,
+    .gender-female:has(input:checked) {
+        border-color: #e91e63;
+        background: rgba(150,0,80,0.6);
+    }
+
+    /* アイコンをホバーまたは選択中で明るくする */
+    .gender-label:hover .gender-icon,
+    .gender-label:has(input:checked) .gender-icon {
+        filter: brightness(1.3);
     }
 </style>
             

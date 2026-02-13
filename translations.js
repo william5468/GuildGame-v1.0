@@ -3,6 +3,8 @@
 const translations = {
   ja: {
     // === クエスト結果共通 ===
+    "corrupt_insufficient_rep": "Reputationが不足しています（最低10必要）",
+    "corrupt_success:": `商人から{gold}G貰ったけど、Reputationは{rep}まで下がりました`,
     "quest_trade_failure_title": "貿易クエスト失敗！",
     "quest_trade_failure_desc1": "貿易キャラバンが期限内に目的地に到達できませんでした。",
     "quest_trade_failure_desc2": "冒険者の割り当てが不足または遅れたため、計画は失敗しました。",
@@ -804,7 +806,7 @@ relationship_title: "{name} の関係性",
     guild_expansion_button: "拡張購入",
     guild_max_expanded: "ギルドは最大まで拡張されています。",
 
-    corrupt_description: "10 Reputationを消費して 100g を得る",
+    corrupt_description: "Reputation 5～15を消費して100～300Gを得る（ランダム）",
     corrupt_button: "商人を脅す",
     borrow_input_note: '(100G単位、最大 {available}G)',
     talk_to_ai_button: "{name}と話す (AI)",
@@ -880,6 +882,8 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "corrupt_insufficient_rep": "Not enough Reputation (requires at least 10)",
+    "corrupt_success": `Received {gold}G from the merchant, but Reputation dropped to {rep}`,
     // === Quest Results Common ===
     "quest_trade_failure_title": "Trade Quest Failed!",
     "quest_trade_failure_desc1": "The trade caravan failed to reach its destination within the time limit.",
@@ -1683,7 +1687,7 @@ relationship_title: "{name}'s Relationships",
     guild_expansion_button: "Purchase Expansion",
     guild_max_expanded: "The guild is fully expanded.",
 
-    corrupt_description: "Spend 10 Reputation to gain 100g",
+    corrupt_description: "Spend 5~15 Reputation to gain 100~300 Gold (random amounts)",
     corrupt_button: "Intimidate Merchant",
     borrow_input_note: '(in 100G increments, max {available}G)',
     talk_to_ai_button: "Talk to {name} (AI)",
@@ -1733,6 +1737,8 @@ relationship_title: "{name}'s Relationships",
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
+    "corrupt_insufficient_rep": "聲望不足（至少需要10）",
+    "corrupt_success":`從商人那獲得{gold}金幣，但聲望下降至{rep}`,
     "quest_trade_failure_title": "貿易任務失敗！",
     "quest_trade_failure_desc1": "貿易商隊未能在期限內到達目的地。",
     "quest_trade_failure_desc2": "因冒險者分配不足或延遲，計劃失敗。",
@@ -2555,7 +2561,7 @@ relationship_title: "{name} 的關係性",
     guild_expansion_button: "購買擴建",
     guild_max_expanded: "公會已擴建至最大。",
 
-    corrupt_description: "消耗10聲望獲得100g",
+    corrupt_description: "消耗5～15聲望獲得100～300金幣（隨機金額）",
     corrupt_button: "威脅商人",
     borrow_input_note: '(100G單位、最大 {available}G)',
     talk_to_ai_button: "與{name}對話 (AI)",

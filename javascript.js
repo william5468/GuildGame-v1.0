@@ -2021,16 +2021,23 @@ function addBattleLog(msg) {
 
 function corrupt() {
     if (gameState.reputation < 10) {
-        better_alert("Reputationが不足しています","error");
+        better_alert(t("corrupt_insufficient_rep"),"error");
         return;
     }
-    gameState.reputation -= 10;
-    gameState.gold += 100;
-    better_alert("商人から100G貰ったけど、Reputationは"+gameState.reputation+"まで下がりました","success");
+
+    const repLoss = Math.floor(Math.random() * 11) + 5;     // 5 ~ 15
+    const goldGain = Math.floor(Math.random() * 201) + 100; // 100 ~ 300
+
+    gameState.reputation -= repLoss;
+    if (gameState.reputation < 0) gameState.reputation = 0;
+
+    gameState.gold += goldGain;
+
+    better_alert(t('corrupt_success', {gold: goldGain, rep: gameState.reputation}), "success");
+
     checkGameOver();
     updateDisplays();
 }
-
 function checkGameOver() {
     if (gameState.gameOver || gameState.pendingGameOver) return true;
 
@@ -2503,12 +2510,9 @@ function generateTempAdventurer(){
     const name = randomName(gender);
     const statAbbr = ['STR','WIS','DEX','LUC'][primary];
     
-    let image;
-    if (gameState.reputation <= 1000) {
-        image = `${statAbbr}_RankF_${gender}.png`;
-    } else {
-        image = `${statAbbr}_${gender}.png`;
-    }
+    // 新しい画像命名規則に合わせて、ランダムにバリアント（1または2）を選択
+    const variant = Math.floor(Math.random() * 2) + 1; // 1 または 2
+    const image = `${statAbbr}_${gender}${variant}.png`;
     
     let adv = {
         id: gameState.nextId++,
@@ -4469,9 +4473,16 @@ function startDay(){
     // Quest limit: max 4 non-training quests
     let nonTrainingCount = gameState.quests.filter(q => !q.training).length;
     let availableSlots = 4 - nonTrainingCount;
-    if ((availableSlots > 0) && (Math.random() < 0.8)) {
-            let q=generateQuest(); 
-            gameState.quests.push(q);
+
+    // On day 1, guarantee at least 1 non-training quest if none exist yet
+    let generateProb = 0.8;
+    if (gameState.day === 1 && nonTrainingCount === 0) {
+        generateProb = 1.0; // 100% chance → always add the first one on day 1
+    }
+
+    if (availableSlots > 0 && Math.random() < generateProb) {
+        let q = generateQuest(); 
+        gameState.quests.push(q);
     }
 
     if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
@@ -10396,18 +10407,28 @@ function renderCurrentCharacter() {
         html += `</ul>`;
     }
 
-    const expOrbs = gameState.inventory.filter(it => 
-        (it.name === 'EXPオーブ' || it.name === 'EXPオーブ (小)') && (it.qty || 1) > 0
-    );
-    if (expOrbs.length > 0) {
-        html += `<p style="margin:15px 0 10px;"><strong>${t('level_up_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
-        expOrbs.forEach(it => {
-            const levels = it.name === 'EXPオーブ (小)' ? 1 : 10;
-            html += `<li>${it.name} x${it.qty || 1} ${t('level_up_amount', {levels: levels})} 
-                     <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
-        });
-        html += `</ul>`;
-    }
+const levelUpItems = gameState.inventory.filter(it => 
+    (it.name === t('exp_orb_small') || it.name === t('exp_orb') || 
+     it.name === 'EXPオーブ (小)' || it.name === 'EXPオーブ') && (it.qty || 1) > 0
+);
+
+if (levelUpItems.length > 0) {
+    html += `<p style="margin:15px 0 10px;"><strong>${t('level_up_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
+    levelUpItems.forEach(it => {
+        let levels = 10; // default to large orb
+        if (it.name === t('exp_orb_small') || it.name === 'EXPオーブ (小)') {
+            levels = 1;
+        }
+        // Optional: support explicit amount if you add large orbs with amount later
+        if (it.amount !== undefined) {
+            levels = it.amount;
+        }
+
+        html += `<li>${it.name} x${it.qty || 1} ${t('level_up_amount', {levels: levels})} 
+                 <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
+    });
+    html += `</ul>`;
+}
 
     const consumables = gameState.inventory.filter(it => 
         it.type === 'consumable' && 
