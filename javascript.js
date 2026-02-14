@@ -8,6 +8,7 @@ let currentAlchemyRecipes = alchemyRecipes[currentLang] || alchemyRecipes.ja;
 let currentQuestCompletionDialogue = QuestCompletionDialogue[currentLang] || QuestCompletionDialogue.ja;
 let playerName = "";
 let audioPlayed = false;
+let currentQuestAdventurers = [];
 
 
 // プレイヤー（ギルドマスター）の画像を性別に応じて切り替え
@@ -4519,6 +4520,8 @@ function playTutorialDialogue(){
     queueQuestCompletionDialogue(currentTutorial);
 }
 
+
+let currentQuestParticipants = [];
 function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride = null) {
     const isSmallScreen = window.innerWidth < 1200;
 
@@ -4575,7 +4578,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 survivingAdvs.push(adv);
             }
         });
-
+        currentQuestAdventurers = survivingAdvs;
         let repGain = q.difficulty * 0.5;
         gameState.reputation += repGain;
 
@@ -4887,6 +4890,9 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
     let additionalItemHTML = '';
     let extraTextPlain = '';
 
+    // Set current quest participants to surviving adventurers (the actual ones that returned)
+    currentQuestAdventurers = survivingAdvs;
+
     if (success) {
         let payout = permanentCount * 0.2 * q.reward;
         let rewardGold = q.reward;
@@ -5004,7 +5010,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
             extraTextPlain += `\n${t("fetch_item_reward", {qty: quantity, name: q.item.name})}`;
         }
 
-        // 完了ダイアログ処理（元のコード通り、変更なし）
+        // 完了ダイアログ処理
         if (q.side) {
             if (sideQuestCompletionDialogue[q.npcIdx]) {
                 const key = `side-${q.npcIdx}`;
@@ -11266,10 +11272,16 @@ function startIntroDialogue() {
     const currentIntro = introDialogues[currentLang] || introDialogues.ja;
 
     // クエスト/ゲームオーバー/誕生日と同じ形式に統一処理（{PLAYER}置換 + image対応）
-    const processedSequence = currentIntro.map(line => ({
-        speaker: line.speaker.replace('{PLAYER}', playerName),
-        text: line.text.replace(/{PLAYER}/g, playerName),
-        image: line.image || null
+const processedSequence = currentIntro.map(line => ({
+        speaker: line.speaker.replace(/\{PLAYER\}/gi, playerName),
+        text: line.text.replace(/\{PLAYER\}/gi, playerName),
+        image: line.image || null,
+        jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
+        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
+            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
+            reward: choice.reward ? { ...choice.reward } : undefined,
+            jumptoline: choice.jumptoline
+        })) : undefined
     }));
 
     // キューに追加（他のダイアログと同じqueueシステムを使用）
@@ -11483,10 +11495,16 @@ function queueQuestCompletionDialogue(rawSequence) {
 
     const playerName = gameState.playerName || defaultName;
 
-    const processedSequence = rawSequence.map(line => ({
-        speaker: line.speaker.replace('{PLAYER}', playerName),
-        text: line.text.replace(/{PLAYER}/g, playerName),
-        image: line.image || null  // 必要に応じてimageフィールド追加可能
+const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker.replace(/\{PLAYER\}/gi, playerName),
+        text: line.text.replace(/\{PLAYER\}/gi, playerName),
+        image: line.image || null,
+        jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
+        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
+            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
+            reward: choice.reward ? { ...choice.reward } : undefined,
+            jumptoline: choice.jumptoline
+        })) : undefined
     }));
 
     completionQueue.push(processedSequence);
@@ -11580,16 +11598,11 @@ function playNextQuestDialogue() {
     if (completionQueue.length === 0) {
         isPlayingDialogue = false;
 
-        // ===== GAME OVER 専用処理（最後のダイアログ終了時のみ）=====
         if (gameState.isFinalGameOver) {
-            // BGM 全停止（GameoverBgm も含めて静かにする）
-
-            // dayTransitionOverlay を再利用して GAME OVER 表示
             const overlay = document.getElementById('dayTransitionOverlay');
             const message = document.getElementById('transitionMessage');
             const info = document.getElementById('transitionDayInfo');
 
-            // 多言語対応 GAME OVER テキスト
             const gameOverText = currentLang === 'ja' ? 'ゲームオーバー' :
                                  currentLang === 'zh' ? 'GAME OVER' :
                                  'GAME OVER';
@@ -11604,7 +11617,6 @@ function playNextQuestDialogue() {
             overlay.style.opacity = '0';
             requestAnimationFrame(() => { overlay.style.opacity = '1'; });
 
-            // ここで関数終了（通常のモーダル非表示などはスキップ）
             return;
         }
 
@@ -11612,7 +11624,6 @@ function playNextQuestDialogue() {
         const modal = document.getElementById('introModal');
         modal.style.display = 'none';
 
-        // モーダルを非表示にする際に内容をクリア（次回表示時の残骸防止）
         const dialogueTextEl = document.getElementById('dialogueText');
         if (dialogueTextEl) dialogueTextEl.innerHTML = '';
         const speakerNameEl = document.getElementById('speakerName');
@@ -11620,16 +11631,17 @@ function playNextQuestDialogue() {
         const continueIndicator = document.getElementById('continueIndicator');
         if (continueIndicator) continueIndicator.style.opacity = '0';
 
-        // 画像をクリアして次回のダイアログが確実にフェードインから開始
         const charImg = document.getElementById('introCharacterImg');
         if (charImg) {
             charImg.src = '';
             charImg.style.opacity = '0';
         }
 
-        // Skipボタンを非表示（ダイアログ終了時）
         const skipBtn = document.getElementById('dialogueSkipBtn');
         if (skipBtn) skipBtn.style.display = 'none';
+
+        const choicesDiv = document.getElementById('dialogueChoices');
+        if (choicesDiv) choicesDiv.style.display = 'none';
 
         return;
     }
@@ -11637,15 +11649,11 @@ function playNextQuestDialogue() {
     isPlayingDialogue = true;
     const sequence = completionQueue.shift();
 
-    // introModalを再利用
     const modal = document.getElementById('introModal');
     const stepDialogue = document.getElementById('stepDialogue');
     modal.style.display = 'flex';
-
-    // stepDialogueをrelativeに（Skipボタンのabsolute位置基準にする）
     stepDialogue.style.position = 'relative';
 
-    // 表示直後に確実にクリア
     const dialogueTextEl = document.getElementById('dialogueText');
     dialogueTextEl.innerHTML = '';
     document.getElementById('speakerName').textContent = '';
@@ -11655,23 +11663,20 @@ function playNextQuestDialogue() {
 
     const charImg = document.getElementById('introCharacterImg');
 
-    // このシーケンス内で話者ごとの画像をキャッシュ（一貫性確保、特にランダム画像の場合）
     const speakerImageCache = {};
-
-    // プレイヤー名（デフォルト付き）を取得（プレースホルダー置換用）
     const playerName = gameState.playerName || defaultName;
 
     let localIndex = 0;
+    let typingInterval = null;
 
-    // Skipボタン（ダイアログ開始時に表示・設定）
     let skipBtn = document.getElementById('dialogueSkipBtn');
     if (!skipBtn) {
         skipBtn = document.createElement('button');
         skipBtn.id = 'dialogueSkipBtn';
         skipBtn.style.cssText = `
             position: absolute;
-            top: 15px;          /* stepDialogueの上部 */
-            left:30px;        /* stepDialogueの右寄せ */
+            top: 15px;
+            left:30px;
             padding: 10px 20px;
             background: rgba(255, 255, 255, 0.28);
             color: white;
@@ -11686,79 +11691,340 @@ function playNextQuestDialogue() {
         `;
         skipBtn.onmouseover = () => skipBtn.style.background = 'rgba(255, 80, 120, 1)';
         skipBtn.onmouseout = () => skipBtn.style.background = 'rgba(255, 255, 255, 0.28)';
-        // stepDialogueの子要素として追加（top-right配置）
         stepDialogue.appendChild(skipBtn);
     }
-    skipBtn.textContent = t('dialogue_skip'); // 多言語対応
+    skipBtn.textContent = t('dialogue_skip');
     skipBtn.style.display = 'block';
 
-    // Skipボタンクリック：現在のシーケンスを即終了 → 次シーケンスへ
     skipBtn.onclick = () => {
         clearInterval(typingInterval);
         typingInterval = null;
-        localIndex = sequence.length; // 強制的にシーケンス終了
+        localIndex = sequence.length;
         document.getElementById('continueIndicator').style.opacity = '0';
-        dialogueTextEl.innerHTML = ''; // テキストクリア（スキップ感演出）
-        playNextQuestDialogue(); // 即次へ
+        dialogueTextEl.innerHTML = '';
+        const choicesDiv = document.getElementById('dialogueChoices');
+        if (choicesDiv) choicesDiv.style.display = 'none';
+        playNextQuestDialogue();
     };
 
+    let choicesDiv = document.getElementById('dialogueChoices');
+    if (!choicesDiv) {
+        choicesDiv = document.createElement('div');
+        choicesDiv.id = 'dialogueChoices';
+        choicesDiv.style.cssText = `
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto 20px auto;
+            padding: 20px;
+            background: rgba(20, 20, 40, 0.85);
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+            pointer-events: auto;
+            align-items: center;
+            position: relative;
+            z-index: 99999;
+        `;
+        stepDialogue.appendChild(choicesDiv);
+    }
+
+    function showDialogueChoices(choices) {
+        choicesDiv.innerHTML = '';
+        choices.forEach((choice) => {
+            const btn = document.createElement('button');
+            btn.textContent = choice.text;
+            btn.style.cssText = `
+                width: 100%;
+                max-width: 600px;
+                padding: 18px 30px;
+                background: #2c5282;
+                color: #ffd700;
+                border: 4px solid #ffd700;
+                border-radius: 15px;
+                font-size: 1.4em;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+                transition: all 0.3s ease;
+                text-shadow: 2px 2px 4px black;
+                position: relative;
+                z-index: 99999;
+            `;
+            btn.onmouseover = () => {
+                btn.style.background = '#4299e1';
+                btn.style.transform = 'translateY(-5px)';
+                btn.style.boxShadow = '0 12px 35px rgba(0,0,0,0.8)';
+            };
+            btn.onmouseout = () => {
+                btn.style.background = '#2c5282';
+                btn.style.transform = 'translateY(0)';
+                btn.style.boxShadow = '0 8px 25px rgba(0,0,0,0.7)';
+            };
+            btn.onclick = (e) => {
+                e.stopPropagation();
+
+                let alertMessages = [];
+
+                if (choice.reward) {
+                    let rewards = [];
+
+                    if (Array.isArray(choice.reward)) {
+                        rewards = choice.reward;
+                    } else if (typeof choice.reward === 'object' && choice.reward !== null) {
+                        rewards = Object.values(choice.reward);
+                    }
+
+                    console.log('Normalized rewards:', rewards);
+
+                    rewards.forEach(r => {
+                        if (r && r.type) {
+                            console.log('Applying reward:', r.type, r.amount || r.qty || 'no amount');
+
+                            if (r.type === 'gold') {
+                                gameState.gold += r.amount || 0;
+                                alertMessages.push(r.amount > 0 ? `+${r.amount}G` : `${r.amount}G`);
+                            } else if (r.type === 'reputation') {
+                                gameState.reputation += r.amount || 0;
+                                alertMessages.push(r.amount > 0 ? `+${r.amount} Reputation` : `${r.amount} Reputation`);
+                            } else if (r.type === 'item') {
+    let template = shopItems.find(item => item.name === r.name);
+
+    // If not found in shopItems, fallback to fetchQuestsByRank (gathering/material items)
+    if (!template) {
+        const lang = currentLang || 'ja';  // Assume currentLanguage is in scope (e.g., 'ja', 'en', 'zh')
+        const fetchData = fetchQuestsByRank[lang] || fetchQuestsByRank.ja;  // Fallback to ja if language missing
+
+        // Flatten all fetch quests across ranks to search for the itemName
+        const allFetchQuests = Object.values(fetchData).flat();
+        const fetchQuest = allFetchQuests.find(q => q.itemName === r.name);
+
+        if (fetchQuest) {
+            // Directly use the fetchQuest object as the template, just rename itemName to name for consistency
+            template = {
+                ...fetchQuest,
+                name: fetchQuest.itemName
+            };
+            // No additional fields added - we just use what exists in fetchQuestsByRank
+        }
+    }
+
+    if (template) {
+        addToInventory(template, r.qty || 1);
+        alertMessages.push(`+${r.qty || 1} ${r.name}`);
+    } else {
+        // Final fallback if item still not found
+        console.warn(`Item template not found for: ${r.name}`);
+        // Minimal placeholder to avoid breaking inventory
+        addToInventory({
+            name: r.name,
+            type: 'unknown',
+            description: 'Unknown gathered item',
+            minPrice: 0,
+            maxPrice: 0
+        }, r.qty || 1);
+        alertMessages.push(`+${r.qty || 1} ${r.name} (unknown)`);
+    }
+} else if (r.type === 'friendliness') {
+    const amount = r.amount || 0;
+    
+    // Determine targets based on reward target
+    let targets = gameState.adventurers;  // default: all adventurers
+    let targetLabel = "(all)";
+    let affectedNames = [];
+    
+    if (r.target === "participants") {
+        let participants = currentQuestAdventurers;
+        if (typeof participants !== "undefined" && Array.isArray(participants) && participants.length > 0) {
+            targets = participants;
+            targetLabel = "(participants)";
+        }
+        // If participants is not available, fall back to all (safe default)
+    }
+    
+    targets.forEach(adv => {
+        const oldFriendliness = adv.Friendliness || 50;
+        const newFriendliness = Math.max(0, Math.min(100, oldFriendliness + amount));
+        adv.Friendliness = newFriendliness;
+        
+        // Collect name (assume every adventurer has a .name property; fallback to ID or generic if not)
+        const advName = adv.name || adv.id || 'Unnamed Adventurer';
+        affectedNames.push(`${advName}: ${oldFriendliness} → ${newFriendliness}`);
+    });
+    
+    // Summary alert (e.g., "+5 Friendliness (participants)")
+    alertMessages.push(amount > 0 ? `+${amount} Friendliness ${targetLabel}` : `${amount} Friendliness ${targetLabel}`);
+    
+    // Detailed per-adventurer alerts (only if there are actual changes and a reasonable number)
+    if (targets.length > 0 && targets.length <= 10) {  // avoid flooding if somehow applying to many
+        affectedNames.forEach(detail => {
+            alertMessages.push(detail);
+        });
+    } else if (targets.length > 10) {
+        alertMessages.push(`Affected ${targets.length} adventurers (details hidden)`);
+    }
+    
+    // Console logging for debugging / visibility
+    console.log(`Friendliness reward applied: ${amount} to ${targetLabel}`);
+    affectedNames.forEach(detail => console.log(detail));
+}
+                            // New: adventurer stat rewards (apply to all adventurers)
+                            else if (['exp', 'strength', 'wisdom', 'dexterity', 'luck', 'defense', 'hp', 'maxHp', 'mp', 'maxMp', 'hunger'].includes(r.type)) {
+                                const amount = r.amount || 0;
+                                const statName = r.type;
+                                gameState.adventurers.forEach(adv => {
+                                    if (adv[statName] !== undefined) {
+                                        adv[statName] += amount;
+                                        // Optional clamps
+                                        if (statName === 'hp') adv.hp = Math.min(adv.hp, adv.maxHp);
+                                        if (statName === 'mp') adv.mp = Math.min(adv.mp, adv.maxMp);
+                                        if (statName === 'hunger') adv.hunger = Math.max(0, Math.min(1, adv.hunger));
+                                    }
+                                });
+                                alertMessages.push(amount > 0 ? `+${amount} ${statName} (all adventurers)` : `${amount} ${statName} (all adventurers)`);
+                            }
+                        }
+                    });
+
+                    if (alertMessages.length > 0) {
+                        const isPositive = alertMessages.every(m => m.startsWith('+'));
+                        better_alert(alertMessages.join('\n'), isPositive ? "success" : "warning");
+                        updateDisplays();
+                        renderInventory();
+                    }
+                }
+
+                // Single jump to branch line
+                localIndex = choice.jumptoline ? choice.jumptoline - 1 : localIndex + 1;
+
+                choicesDiv.style.display = 'none';
+                document.getElementById('continueIndicator').style.opacity = '0';
+
+                // Clear any ongoing typing and text before jumping
+                clearInterval(typingInterval);
+                typingInterval = null;
+                dialogueTextEl.innerHTML = '';
+
+                if (localIndex >= sequence.length) {
+                    playNextQuestDialogue();
+                } else {
+                    renderQuestDialogue();
+                }
+            };
+            choicesDiv.appendChild(btn);
+        });
+        choicesDiv.style.display = 'flex';
+    }
+
     function renderQuestDialogue() {
+        console.log('renderQuestDialogue called - localIndex:', localIndex);
+        console.log('currentQuestAdventurers:', currentQuestAdventurers ? currentQuestAdventurers.map(adv => adv ? adv.name : 'null') : 'undefined');
+
         const current = sequence[localIndex];
 
-        // {player}（大文字小文字問わず）をプレイヤー名に置換（既に置換済みでも安全）
-        const processedSpeaker = current.speaker.replace(/\{player\}/gi, playerName);
-        const fullText = current.text.replace(/\{player\}/gi, playerName);
+        console.log('Current line speaker raw:', current.speaker);
 
-        // 話者名を即座に更新
-        document.getElementById('speakerName').textContent = processedSpeaker + ":";
+        let processedSpeaker = current.speaker.replace(/\{player\}/gi, playerName);
+        let fullText = current.text.replace(/\{player\}/gi, playerName);
 
-        // 継続インジケーター非表示
-        document.getElementById('continueIndicator').style.opacity = '0';
-
-        // テキストエリアを再度クリア
-        dialogueTextEl.innerHTML = '';
-
-        // キャラクター画像パス計算（キャッシュ付き）
-        let imageSrc = getPlayerImage();
-        const speakerKey = current.speaker; // 元のspeakerKey（置換前）でキャッシュ（一貫性確保）
-        if (current.image) {
-            // カスタム画像（表情差分など）はキャッシュせず優先
-            imageSrc = current.image;
-        } else if (speakerImageCache[speakerKey]) {
-            // キャッシュ済みなら再利用（同一話者で一貫した画像）
-            imageSrc = speakerImageCache[speakerKey];
-        } else {
-            // 初回計算
-            if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
-                imageSrc = 'Images/Kaito.png'; // 英語ファイル名対応
-            } else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
-                imageSrc = 'Images/Luna.png';
-            } else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
-                imageSrc = 'Images/narrator.png';
-            } else if (current.speaker.includes('おばあさん') || current.speaker.includes('Grandmother')) {
-                imageSrc = 'Images/Grandmother.png';
-            } else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
-                const playerImages = [
-                    'Images/STR_RankF_F.png',
-                    'Images/STR_RankF_M.png',
-                    'Images/DEX_RankF_F.png',
-                    'Images/DEX_RankF_M.png',
-                    'Images/WIS_RankF_F.png',
-                    'Images/WIS_RankF_M.png',
-                    'Images/LUC_RankF_F.png',
-                    'Images/LUC_RankF_M.png'
-                ];
-                const randomIndex = Math.floor(Math.random() * playerImages.length);
-                imageSrc = playerImages[randomIndex];
-            } else if (processedSpeaker !== playerName) {
-                const fileName = getNpcImageFile(current.speaker || processedSpeaker);
-                imageSrc = `Images/${fileName}.png`;
+        // Handle {adv1}~{adv4} in speaker
+        const speakerAdvMatch = processedSpeaker.match(/\{adv(\d+)\}/i);
+        if (speakerAdvMatch && currentQuestAdventurers && currentQuestAdventurers.length > 0) {
+            const advIndex = parseInt(speakerAdvMatch[1]) - 1;
+            if (advIndex >= 0 && advIndex < currentQuestAdventurers.length) {
+                const adv = currentQuestAdventurers[advIndex];
+                processedSpeaker = adv.name;
+            } else {
+                processedSpeaker = processedSpeaker.replace(/\{adv\d+\}/gi, '?');
             }
-            // キャッシュに保存
-            speakerImageCache[speakerKey] = imageSrc;
         }
 
-        // 画像ファイル名で同一判定
+        // Handle {adv1}~{adv4} in text (independent of speaker)
+        let textAdvMatch;
+        while ((textAdvMatch = fullText.match(/\{adv(\d+)\}/i)) !== null) {
+            const advIndex = parseInt(textAdvMatch[1]) - 1;
+            if (advIndex >= 0 && advIndex < currentQuestAdventurers.length) {
+                const adv = currentQuestAdventurers[advIndex];
+                fullText = fullText.replace(new RegExp(`\\{adv${advIndex + 1}\\}`, 'gi'), adv.name);
+            } else {
+                fullText = fullText.replace(/\{adv\d+\}/gi, '?');
+            }
+        }
+
+        document.getElementById('speakerName').textContent = processedSpeaker + ":";
+
+        document.getElementById('continueIndicator').style.opacity = '0';
+        choicesDiv.style.display = 'none';
+
+        // Always clear text before new line
+        dialogueTextEl.innerHTML = '';
+
+        let imageSrc = getPlayerImage();
+        const speakerKey = current.speaker;
+
+        // Handle dynamic adventurer placeholders {adv1}, {adv2}, {adv3}, {adv4}
+        const advMatch = current.speaker.match(/\{adv(\d+)\}/i);
+        if (advMatch) {
+            console.log('Detected {advX} placeholder:', advMatch[0], 'index:', advMatch[1]);
+            const advIndex = parseInt(advMatch[1]) - 1;
+            console.log('advIndex:', advIndex, 'currentQuestAdventurers length:', currentQuestAdventurers ? currentQuestAdventurers.length : 'undefined');
+            if (currentQuestAdventurers && advIndex >= 0 && advIndex < currentQuestAdventurers.length) {
+                const adv = currentQuestAdventurers[advIndex];
+                console.log('Found adventurer:', adv ? adv.name + ' (image: ' + adv.image + ')' : 'undefined');
+                if (adv) {
+                    processedSpeaker = adv.name;
+                    imageSrc = `Images/${adv.image || 'default_adventurer.png'}`;
+
+                    const placeholder = new RegExp(`\\{adv${advIndex + 1}\\}`, 'gi');
+                    fullText = fullText.replace(placeholder, adv.name);
+                }
+            } else {
+                console.log('Adventurer not found for index', advIndex);
+                processedSpeaker = current.speaker.replace(/\{adv\d+\}/gi, '?');
+            }
+        } else {
+            console.log('No {advX} placeholder, using normal speaker logic');
+            // Normal speaker image logic
+            if (current.image) {
+                imageSrc = current.image;
+            } else if (speakerImageCache[speakerKey]) {
+                imageSrc = speakerImageCache[speakerKey];
+            } else {
+                if (current.speaker.includes('カイト') || current.speaker.includes('Kaito')) {
+                    imageSrc = 'Images/Kaito.png';
+                } else if (current.speaker.includes('ルナ') || current.speaker.includes('Luna')) {
+                    imageSrc = 'Images/Luna.png';
+                } else if (current.speaker.includes('ナレーター') || current.speaker.includes('Narrator')) {
+                    imageSrc = 'Images/narrator.png';
+                } else if (current.speaker.includes('おばあさん') || current.speaker.includes('Grandmother')) {
+                    imageSrc = 'Images/Grandmother.png';
+                } else if (current.speaker.includes('冒険者') || current.speaker.includes('Adventurer')) {
+                    const playerImages = [
+                        'Images/STR_RankF_F.png',
+                        'Images/STR_RankF_M.png',
+                        'Images/DEX_RankF_F.png',
+                        'Images/DEX_RankF_M.png',
+                        'Images/WIS_RankF_F.png',
+                        'Images/WIS_RankF_M.png',
+                        'Images/LUC_RankF_F.png',
+                        'Images/LUC_RankF_M.png'
+                    ];
+                    const randomIndex = Math.floor(Math.random() * playerImages.length);
+                    imageSrc = playerImages[randomIndex];
+                } else if (processedSpeaker !== playerName) {
+                    const fileName = getNpcImageFile(current.speaker || processedSpeaker);
+                    imageSrc = `Images/${fileName}.png`;
+                }
+                speakerImageCache[speakerKey] = imageSrc;
+            }
+        }
+
+        console.log('Final processedSpeaker:', processedSpeaker);
+        console.log('Final imageSrc:', imageSrc);
+        console.log('Final fullText preview:', fullText.substring(0, 100));
+
         function getImageKey(src) {
             if (!src) return null;
             let filename = src.split('/').pop().split('?')[0].split('#')[0];
@@ -11768,12 +12034,11 @@ function playNextQuestDialogue() {
         const currentKey = getImageKey(charImg.src);
         const newKey = getImageKey(imageSrc);
 
-        // タイピング開始関数
         function startTyping() {
             clearInterval(typingInterval);
+            // Clear text before starting typing
+            dialogueTextEl.innerHTML = '';
             let charIndex = 0;
-
-            // 英語(en)の場合のみタイピングを速くする（20ms）、それ以外は従来の35ms
             const typingSpeed = (currentLang === 'en') ? 20 : 35;
 
             typingInterval = setInterval(() => {
@@ -11788,16 +12053,19 @@ function playNextQuestDialogue() {
                 } else {
                     clearInterval(typingInterval);
                     typingInterval = null;
-                    document.getElementById('continueIndicator').style.opacity = '1';
+
+                    if (current.choices && current.choices.length > 0) {
+                        showDialogueChoices(current.choices);
+                    } else {
+                        document.getElementById('continueIndicator').style.opacity = '1';
+                    }
                 }
             }, typingSpeed);
         }
 
         if (currentKey === newKey && currentKey !== null) {
-            // 完全に同一画像 → フェードなし、即タイピング開始
             startTyping();
         } else {
-            // 画像変更または初回 → フェードアウト → プリロード → フェードイン → タイピング
             charImg.style.opacity = '0';
 
             const onFadeOutComplete = () => {
@@ -11846,18 +12114,33 @@ function playNextQuestDialogue() {
             }, 600);
         }
 
-        // クリックで次へ（スキップ時は置換済みのfullTextを使用）
         stepDialogue.onclick = (e) => {
-            // Skipボタンクリックは別処理なのでここでは通常進みのみ
-            if (e.target === skipBtn) return; // Skipボタンクリックは無視
+            if (e.target === skipBtn) return;
 
             if (typingInterval) {
                 clearInterval(typingInterval);
                 typingInterval = null;
                 dialogueTextEl.innerHTML = fullText;
-                document.getElementById('continueIndicator').style.opacity = '1';
-            } else {
+
+                if (current.choices && current.choices.length > 0) {
+                    showDialogueChoices(current.choices);
+                } else {
+                    document.getElementById('continueIndicator').style.opacity = '1';
+                }
+            } else if (!current.choices || current.choices.length === 0) {
+                // Advance one line
                 localIndex++;
+
+                // If the line we just left had jumptoline, chain jump
+                if (localIndex - 1 >= 0 && sequence[localIndex - 1].jumptoline !== undefined) {
+                    localIndex = sequence[localIndex - 1].jumptoline - 1;
+
+                    // Chain any further jumptoline
+                    while (localIndex < sequence.length && sequence[localIndex].jumptoline !== undefined) {
+                        localIndex = sequence[localIndex].jumptoline - 1;
+                    }
+                }
+
                 if (localIndex < sequence.length) {
                     renderQuestDialogue();
                 } else {
@@ -12232,11 +12515,18 @@ function queueBirthdayParty() {
     ];
 
     // 既存のquest完了ダイアログと同じ形式に統一（imageはnullでOK）
-    const processedSequence = rawSequence.map(line => ({
-        speaker: line.speaker,
-        text: line.text,
-        image: line.image || null
+const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker.replace(/\{PLAYER\}/gi, playerName),
+        text: line.text.replace(/\{PLAYER\}/gi, playerName),
+        image: line.image || null,
+        jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
+        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
+            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
+            reward: choice.reward ? { ...choice.reward } : undefined,
+            jumptoline: choice.jumptoline
+        })) : undefined
     }));
+
 
     completionQueue.push(processedSequence);
 

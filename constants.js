@@ -296,46 +296,272 @@ const QuestCompletionDialogue = {
         'F': [
             // 0: スライム5匹討伐（依頼主: 農夫）
             [
-            {speaker: 'ルナ', text: 'ただいま戻りました。村周辺のスライム5匹、すべて討伐完了です。'},
-            {speaker: 'カイト', text: 'おお、スライム退治か！跳ねまくって面倒くさかっただろ？俺なら一瞬で潰してたぜ！'},
-            {speaker: 'ルナ', text: '確かに疲れました…体中スライム液まみれで…'},
-            {speaker: '{PLAYER}', text: 'お疲れ様、ルナ。よくやってくれた。カイトは黙ってろよ、依頼主の農夫さんが待ってるぞ。'},
-            {speaker: 'カイト', text: 'ちぇっ、俺も行きたかったなあ～。スライム汁で滑って転ぶとこ見たかったぜ！'},
-            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。農夫さんに報告に行きましょう。`},
-            {speaker: '農夫', text: 'おお、冒険者さん！スライムを全部倒してくれたんだね！作物が溶けずに済んで本当に助かったよ！'},
-            {speaker: '農夫', text: 'あのゼリーみたいなスライム…食べ物じゃないよね？怖い怖い！ありがとう！'},
-            {speaker: '{PLAYER}', text: '無事で何よりだ。こちらが報酬だよ。次はカイトを連れてったらスライムまみれになるかもな。'},
-            {speaker: 'カイト', text: 'おっ！俺の出番キター！'},
-            {speaker: 'ルナ', text: 'それは…ご勘弁を…'}
-        ],
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: 'ただいま戻りました。村周辺のスライム5匹、すべて討伐完了です！'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: 'スライム退治か…跳ねまくって厄介だったろ？あのプニプニした感触、忘れられねえな。'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: '確かに疲れました…体中スライム液まみれで、服がベトベトです…'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: 'お疲れ様。よくやってくれた。依頼主の農夫さんが待ってるぞ。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: 'へへ、俺も行きたかったな。スライム汁でみんな滑りまくる姿、面白かっただろうに！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}、ありがとうございます。さっそく農夫さんに報告に行きましょう。`},
+                // Line 7 (index 6)
+                {speaker: '農夫', text: 'おお、冒険者さん！スライムを全部倒してくれたんだね！作物が溶けずに済んで本当に助かったよ！'},
+                // Line 8 (index 7)
+                {speaker: '農夫', text: 'あのゼリーみたいなスライム…食べ物じゃないよね？怖い怖い！本当にありがとう！'},
+                // Line 9 (index 8)
+                {speaker: '農夫', text: 'これで作物が安心だよ！報酬を受け取ってくれよ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：スライム退治の後、どう対応する？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '農夫にスライム対策のアドバイスをする（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を褒めて信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'スライム液を採取して売る（+200 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加でスライムを狩らせて鍛える（参加冒険者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: 'スライムは湿った場所を好むから、畑の水はけを良くすると減るかもしれないぞ。'},
+                // Line 13 (index 12)
+                {speaker: '農夫', text: 'なるほど！早速試してみるよ！これで安心だ、ありがとう！'},
+                // Line 14 (index 13)
+                {speaker: '農夫', text: '冒険者さんみたいな人がいてくれて、本当に助かるよ！', jumptoline: 27},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。スライム液まみれで大変だったろ？本当に頼りになる。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が活躍する番だぜ！'},
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してるよ。', jumptoline: 27},
+                // Branch 3: Harvest slime gel (+200G, -5 Friendliness participants)
+                // Line 19 (index 18)
+                {speaker: '{PLAYER}', text: 'このスライム液、錬金素材として売れる。少し採取してギルド資金にしよう。'},
+                // Line 20 (index 19)
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっと汚いかも…ベトベトが取れない…'},
+                // Line 21 (index 20)
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺に洗わせろよな！'},
+                // Line 22 (index 21)
+                {speaker: '{PLAYER}', text: 'はは、任せた。', jumptoline: 27},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 23 (index 22)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少しスライムを狩って鍛えてこい。強くなれば次が楽になる。'},
+                // Line 24 (index 23)
+                {speaker: '{adv1}', text: '……まだやるんですか？疲れましたけど…わかりました。強くなりたいです。'},
+                // Line 25 (index 24)
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でも強くなるならやるか。負けねえぞ！'},
+                // Line 26 (index 25)
+                {speaker: '{PLAYER}', text: 'その意気だ。', jumptoline: 27},
+                // Convergence
+                // Line 27 (index 26)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って報酬を受け取ろう。'}
+            ],
+            // 1: 巨大ネズミ退治（依頼主: 酒場主人）
             [
-            {speaker: 'ルナ', text: '酒場の地下室にいた巨大ネズミ、すべて退治しました。'},
-            {speaker: 'カイト', text: '巨大ネズミ！？どれくらいデカかったんだ？俺の剣でぶった斬りたかったぜ！'},
-            {speaker: 'ルナ', text: 'かなり大きくて…噛まれそうで怖かったです…'},
-            {speaker: '{PLAYER}', text: 'よくやったな、ルナ。無事でよかった。カイト、お前がいると酒場が血まみれになるぞ。'},
-            {speaker: 'カイト', text: 'それがいいんじゃないか！派手でカッコいいだろ！'},
-            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。酒場主人に報告しましょう。`},
-            {speaker: '酒場主人', text: 'おお！巨大ネズミを全部片付けてくれたのか！これで地下室がまた使えるよ！'},
-            {speaker: '酒場主人', text: '一杯おごるぜ…って、血の海は遠慮したいがな！本当に助かった、ありがとう！'},
-            {speaker: '{PLAYER}', text: 'よかったな。これが報酬だ。カイト、次はネズミ狩りお前に任せてやるよ。'},
-            {speaker: 'カイト', text: 'マジか！？楽しみだぜ！'},
-            {speaker: 'ルナ', text: '酒場が…大変なことになりそうです…'}
-        ],
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: '酒場の地下室にいた巨大ネズミ、すべて退治しました。'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: '巨大ネズミ！？どれくらいデカかったんだ？もっとぶった斬りたかったぜ！'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: 'かなり大きくて…噛まれそうで本当に怖かったです…'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: 'よくやったな。無事でよかった。お前がいると酒場が血まみれになるぞ。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: 'それがいいんじゃないか！派手でカッコいいだろ！みんなビビるぜ！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}、ありがとうございます。酒場主人に報告しましょう。`},
+                // Line 7 (index 6)
+                {speaker: '酒場主人', text: 'おお！巨大ネズミを全部片付けてくれたのか！これで地下室がまた使えるよ！'},
+                // Line 8 (index 7)
+                {speaker: '酒場主人', text: '一杯おごるぜ…って、血の海は遠慮したいがな！本当に助かった、ありがとう！'},
+                // Line 9 (index 8)
+                {speaker: '酒場主人', text: 'よかったぜ！報酬を受け取ってくれ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：ネズミ退治の後、どう対応する？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '酒場主人にネズミ対策を提案する（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を褒めて信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'ネズミの尾を採取して売る（+200 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加でネズミを狩らせて鍛える（参加冒険者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: 'ネズミは食べ物を狙うから、地下室の食料管理を厳しくすると減るかもしれないぞ。'},
+                // Line 13 (index 12)
+                {speaker: '酒場主人', text: 'なるほど！早速やってみるよ！これで安心して商売できる！ありがとう！'},
+                // Line 14 (index 13)
+                {speaker: '酒場主人', text: 'また何かあったら頼むぜ！一杯サービスだ！', jumptoline: 24},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: 'みんな、巨大ネズミ相手に怖かったろ？本当にありがとう。頼りになるよ。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が主役だぜ！', jumptoline: 24},
+                // Branch 3: Harvest rat tails (+200G, -5 Friendliness participants)
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: 'このネズミの尾、素材として売れる。少し採取してギルド資金にしよう。'},
+                // Line 19 (index 18)
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっと気持ち悪いかも…'},
+                // Line 20 (index 19)
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺にやらせろよ！', jumptoline: 24},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 21 (index 20)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少しネズミを狩って鍛えてこい。強くなれば次が楽になる。'},
+                // Line 22 (index 21)
+                {speaker: '{adv1}', text: '……まだやるんですか？怖かったですけど…わかりました。'},
+                // Line 23 (index 22)
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でも強くなるならやるか。負けねえぞ！', jumptoline: 24},
+                // Convergence
+                // Line 27 (index 26)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って報酬を受け取ろう。'}
+            ],
             // 2: 野犬3匹討伐（依頼主: 農夫）
             [
-            {speaker: 'ルナ', text: '農場を襲っていた野犬3匹、すべて倒してきました。家畜は無事です。'},
-            {speaker: 'カイト', text: '野犬か！追いかけっこして斬りまくりたかったぜ！'},
-            {speaker: 'ルナ', text: '速くて…本当に危なかったです…'},
-            {speaker: '{PLAYER}', text: 'お疲れ、ルナ。家畜が無事でよかったな。カイト、お前が行ったら家畜まで追いかけそうだ。'},
-            {speaker: 'カイト', text: 'ははっ！それも楽しそうだろ！犬も家畜も大運動会だ！'},
-            {speaker: 'ルナ', text: `{PLAYER}、ありがとうございます。農夫さんに報告に行きましょう。`},
-            {speaker: '農夫', text: '野犬を全部倒してくれたんだね！家畜が無事でみんな安心だよ！'},
-            {speaker: '農夫', text: '追いかけっこって…遊びじゃないよね？怖いなあ、本当にありがとう！'},
-            {speaker: '{PLAYER}', text: '安心してくれて何よりだ。これが報酬だ。カイトは次回お留守番な。'},
-            {speaker: 'カイト', text: 'えー！俺も行きたいのにー！'},
-            {speaker: 'ルナ', text: 'それが…一番安全かもしれません…'}
-        ]
-    ],
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: '農場を襲っていた野犬3匹、すべて倒してきました。家畜は無事です。'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: '野犬か！追いかけっこして斬りまくりたかったぜ！もっと派手にやりたかったな！'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: '速くて…本当に危なかったです…'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: 'お疲れ。家畜が無事でよかったな。お前がいると家畜まで追いかけそうだ。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: 'ははっ！それも楽しそうだろ！犬も家畜も大運動会だ！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}、ありがとうございます。農夫さんに報告に行きましょう。`},
+                // Line 7 (index 6)
+                {speaker: '農夫', text: '野犬を全部倒してくれたんだね！家畜が無事でみんな安心だよ！'},
+                // Line 8 (index 7)
+                {speaker: '農夫', text: '追いかけっこって…遊びじゃないよね？怖いなあ、本当にありがとう！'},
+                // Line 9 (index 8)
+                {speaker: '農夫', text: 'これで家畜が安心だよ！報酬を受け取ってくれよ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：野犬退治の後、どう対応する？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '農夫に野犬対策を提案する（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を褒めて信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '野犬の牙を採取して売る（+200 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加で野犬を狩らせて鍛える（参加冒険者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: '野犬は群れで来るから、柵を強化するか犬除けの薬草を植えるといいかもしれないぞ。'},
+                // Line 13 (index 12)
+                {speaker: '農夫', text: 'なるほど！早速やってみるよ！これで安心して家畜を育てられる！ありがとう！'},
+                // Line 14 (index 13)
+                {speaker: '農夫', text: '冒険者さんみたいな人がいてくれて、本当に助かるよ！', jumptoline: 24},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: 'みんな、速い野犬相手に大変だったろ？本当にありがとう。頼りになるよ。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が活躍する番だぜ！', jumptoline: 24},
+                // Branch 3: Harvest dog fangs (+200G, -5 Friendliness participants)
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: 'この野犬の牙、武器素材として売れる。少し採取してギルド資金にしよう。'},
+                // Line 19 (index 18)
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっと怖いかも…'},
+                // Line 20 (index 19)
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺にやらせろよ！', jumptoline: 24},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 21 (index 20)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少し野犬を狩って鍛えてこい。強くなれば次が楽になる。'},
+                // Line 22 (index 21)
+                {speaker: '{adv1}', text: '……まだやるんですか？怖かったですけど…わかりました。'},
+                // Line 23 (index 22)
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でも強くなるならやるか。負けねえぞ！', jumptoline: 24},
+                // Convergence
+                // Line 27 (index 26)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って報酬を受け取ろう。'}
+            ]
+        ],
         
         'F+': [
             // 0: ゴブリン8匹討伐（依頼主: 街道の衛兵）
@@ -610,55 +836,219 @@ const QuestCompletionDialogue = {
     // 1: WIS - discovery quests
     {
         'F': [
-            // 0: ペンダント探索
-[
-            {speaker: 'ルナ', text: '町で失くされたおばあさんのペンダント、無事に見つけました！路地裏の石の下に落ちてました。'},
-            {speaker: '{PLAYER}', text: 'よく見つけたな、ルナ。細かいところまで探すのが上手いよ。'},
-            {speaker: 'カイト', text: 'へっ、そんな小さいもん俺なら一瞬で嗅ぎつけてたぜ！ルナ、ただの運だろ？'},
-            {speaker: 'ルナ', text: 'ふふ、カイトさんには無理ですよ。ちゃんと推理しないと♪'},
-            {speaker: 'カイト', text: 'なんだと！？…って、この彫刻…なんか見たことあるな。昔のギルドマスターの…'},
-            {speaker: 'ルナ', text: `カ、カイトさん！今はダメです！{PLAYER}、早くおばあさんに返しましょう。`},
-            {speaker: '{PLAYER}', text: '…ギルドマスターの？まあいい、後で聞く。おばあさん、ペンダントです。'},
-            {speaker: 'おばあさん', text: 'ああ、私の大事なペンダント…！この彫刻は昔の収穫祭でもらったものなの。戦争の噂がない平和な頃の思い出よ…'},
-            {speaker: 'おばあさん', text: '最近また国境で兵が動いてるって聞いて心配だったわ。本当にありがとう、涙が出ちゃう…'},
-            {speaker: '{PLAYER}', text: '無事でよかった。これが報酬だよ。祭りの思い出、大事にしてください。'},
-            {speaker: 'カイト', text: '国境の話か…旅人から聞いたぜ、王国軍が強化されてるらしいな。'},
-            {speaker: 'ルナ', text: '{PLAYER}、私たちも気を引き締めないとですね…'},
-            {speaker: '{PLAYER}', text: 'ああ、そうだな。少しずつ、昔のことが気になり始めてるよ。'}
-        ],
-            // 1: 隠し宝箱発見
+            // 0: ペンダント探索（依頼主: おばあさん）
             [
-            {speaker: 'カイト', text: '森の隠し宝箱、見つけたぜ！木の根元に埋まってた…って、中身金貨3枚だけかよ！？'},
-            {speaker: '{PLAYER}', text: '見つけただけで大したもんだ、カイト。小さくても価値はあるさ。'},
-            {speaker: 'ルナ', text: 'カイトさん、期待しすぎです。この古銭、昔の王政時代のものですね。珍しいですよ。'},
-            {speaker: 'カイト', text: `ちっ、もっと山盛り想像してたのに…あれ？この場所、前のギルドマスターが{PLAYER}を連れて隠れんぼしてた…`},
-            {speaker: 'ルナ', text: 'カイトさん！余計なこと言わないで！村人に報告しましょう。'},
-            {speaker: '{PLAYER}', text: '隠れんぼ…？子供の頃ここで遊んでたのか？'},
-            {speaker: 'カイト', text: 'お、おっと！忘れてくれ！村人待ってるぜ！'},
-            {speaker: '村人', text: '本当に隠し宝箱を見つけてくれたのか！子供の頃聞いた伝説が本当だったんだ。中身は報酬として受け取ってくれ！'},
-            {speaker: '村人', text: 'この古銭、王政時代のだ。最近王族の血筋がどうのって噂があって、みんなざわついてるよ。'},
-            {speaker: '{PLAYER}', text: '伝説が本当でよかった。これで報酬だ。王政の話、気になりますね。'},
-            {speaker: 'ルナ', text: `{PLAYER}、この場所で何か思い出せそうですか？懐かしい感じしませんか？`},
-            {speaker: 'カイト', text: 'ゆっくりでいいさ。俺たちはずっと一緒にいるぜ。'},
-            {speaker: '{PLAYER}', text: '…うん、少し温かい気持ちになるな。ありがとう。'}
-        ],
-            // 2: 井戸の秘密
-[
-            {speaker: 'ルナ', text: '古い井戸の底の秘密、発見しました！苔の下に古代の魔法陣が光ってました。'},
-            {speaker: '{PLAYER}', text: '危なかったろ？無事でよかった、ルナ。よく潜れたな。'},
-            {speaker: 'カイト', text: '魔法陣！？すげえ！俺も飛び込みたかったぜ、井戸の底って冒険っぽいだろ！'},
-            {speaker: 'ルナ', text: 'カイトさん、落ちたら死にますよ…あ、{PLAYER}も昔ここで…'},
-            {speaker: 'カイト', text: `ああ！前のギルドマスターが{PLAYER}を助けに飛び込んだんだよな！…って、言っちゃった！`},
-            {speaker: '{PLAYER}', text: '俺が井戸に落ちた…？それで記憶が…？'},
-            {speaker: 'ルナ', text: '今は学者さんに報告を優先しましょう！魔法陣、最近すごく輝いてるんです。'},
-            {speaker: '学者', text: '井戸の魔法陣を暴いてくれたのか！素晴らしい！古代の封印陣だよ、興奮する！'},
-            {speaker: '学者', text: '最近首都でも似た陣が反応してるって報告があってね。魔力の大きな異変が起きているのかもしれない…大発見だ！'},
-            {speaker: '{PLAYER}', text: '魔力異変か…気になるな。これが報酬だ。研究を続けてください。'},
-            {speaker: 'カイト', text: '異変のせいで魔物も強くなってんのか？冒険が熱くなりそうぜ！'},
-            {speaker: 'ルナ', text: `{PLAYER}、昔の井戸の話…いつかちゃんと話しますね。`},
-            {speaker: '{PLAYER}', text: 'ああ、頼む。少しずつ、思い出が戻ってきそうな気がする。'},
-            {speaker: 'カイト', text: `俺たちがいれば大丈夫だぜ、{PLAYER}！`}
-        ]
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '町で失くされたおばあさんのペンダント、無事に見つけました！路地裏の石の下に落ちてました。'},
+                {speaker: '{adv2}', text: 'へっ、そんな小さいもん俺なら一瞬で見つけてたぜ！ただの運だろ？'},
+                {speaker: '{adv1}', text: 'ちゃんと探さないと見つかりませんよ…ふふ。'},
+                {speaker: '{adv2}', text: 'この彫刻…なんか見たことあるな。昔のギルドマスターのものに似てる気が…'},
+                {speaker: '{adv1}', text: 'しっ！今はダメです！{PLAYER}、早くおばあさんに返しましょう。'},
+                {speaker: '{PLAYER}', text: 'ギルドマスターの…？まあいい、後で聞くよ。'},
+                // Line 7-8 (index 6-7)
+                {speaker: 'おばあさん', text: 'ああ、私の大事なペンダント…！この彫刻は昔の収穫祭でもらったものなの。平和な頃の思い出よ…'},
+                {speaker: 'おばあさん', text: '最近また国境で兵が動いてるって聞いて心配だったわ。本当にありがとう、涙が出ちゃう…'},
+                // Line 9 (index 8) - Reward line by quest giver
+                {speaker: 'おばあさん', text: '無事で見つかってよかった。これが報酬だよ。大事にしてくださいね。'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：発見後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'ペンダントについてさらに洞察を与える（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '発見情報を酒場主人に売って追加金を得る（+150 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'マナを使ってさらに調査させ賢さを鍛える（参加冒険者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: 'この彫刻、昔の収穫祭のシンボルに似てますね。平和な時代のものだ。大事に保管した方がいいかも。'},
+                {speaker: 'おばあさん', text: 'そうね…教えてくれてありがとう。少し安心したわ。'},
+                {speaker: 'おばあさん', text: '冒険者さんみたいな人がいてくれて本当に助かるよ！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。小さなペンダントをしっかり見つけてくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'このペンダントの詳細、酒場主人に話せば情報料もらえるぞ。ギルド資金にしよう。'},
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっとずるいかも…'},
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺にやらせろよな！'},
+                {speaker: '{PLAYER}', text: 'はは、任せた。', jumptoline: 27},
+                // Branch 4: Mana investigation (elaborated discovery)
+                {speaker: '{PLAYER}', text: 'せっかくだからマナを使ってさらに調べてみろ。賢くなるいい鍛錬だ。'},
+                {speaker: '{adv1}', text: '…マナを消費してペンダントを調べました。微弱な保護魔力が反応して…昔の平和を祈る呪いがかけられていたようです。今はほとんど力が残ってないけど…'},
+                {speaker: '{adv2}', text: '平和の呪いかよ…国境が騒がしい今じゃ、なんか胸にくるな！'},
+                {speaker: '{PLAYER}', text: '確かに興味深い。その調子だ。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ],
+            // 1: 隠し宝箱発見（依頼主: 村人）
+            [
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '森の隠し宝箱、見つけてきました！木の根元に埋まってました。'},
+                {speaker: '{adv2}', text: '隠し宝箱だぜ！…って、中身金貨3枚だけかよ！？期待してたのに！'},
+                {speaker: '{adv1}', text: '見つけただけで十分ですよ。この古銭、昔の王政時代のものですね。珍しいです。'},
+                {speaker: '{adv2}', text: 'この場所…なんか見たことあるな。昔のギルドマスターが{PLAYER}と遊んでた場所に似てる…'},
+                {speaker: '{adv1}', text: 'しっ！余計なこと言わないで！{PLAYER}、村人に報告しましょう。'},
+                {speaker: '{PLAYER}', text: '昔のギルドマスターと…？まあいい、後で聞くよ。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '村人', text: '本当に隠し宝箱を見つけてくれたのか！子供の頃聞いた伝説が本当だったんだ。'},
+                {speaker: '村人', text: 'この古銭、王政時代のだ。最近王族の血筋がどうのって噂があって、みんなざわついてるよ。'},
+                // Line 9 (index 8)
+                {speaker: '村人', text: '中身は報酬として受け取ってくれ！本当に助かった、ありがとう！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：発見後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '宝箱についてさらに洞察を与える（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '発見情報を酒場主人に売って追加金を得る（+150 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'マナを使ってさらに調査させ賢さを鍛える（参加冒険者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: 'この古銭、王政時代の珍しいものだ。場所を記録しておけば他にも見つかるかもしれないぞ。'},
+                {speaker: '村人', text: 'なるほど！早速やってみるよ！これで安心だ、ありがとう！'},
+                {speaker: '村人', text: '冒険者さんみたいな人がいてくれて、本当に助かるよ！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。伝説の宝箱を見つけるなんてすごいぞ。頼りになる。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'この宝箱の詳細、酒場主人に話せば情報料もらえるぞ。ギルド資金にしよう。'},
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっとずるいかも…'},
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺にやらせろよな！'},
+                {speaker: '{PLAYER}', text: 'はは、任せた。', jumptoline: 27},
+                // Branch 4: Mana investigation (elaborated discovery)
+                {speaker: '{PLAYER}', text: 'せっかくだからマナを使ってさらに調べてみろ。賢くなるいい鍛錬だ。'},
+                {speaker: '{adv1}', text: 'マナを流してみました…この場所の土に隠された魔法の印が浮かび上がりました。他の隠し場所を示すネットワークみたいです。王政時代の秘密がまだ残ってる…'},
+                {speaker: '{adv2}', text: 'おお！もっと宝が眠ってるってことか！？冒険が広がるぜ！'},
+                {speaker: '{PLAYER}', text: '面白い発見だ。その調子だ。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ],
+            // 2: 井戸の秘密（依頼主: 学者）
+            [
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '古い井戸の底の秘密、発見しました！苔の下に古代の魔法陣が光ってました。'},
+                {speaker: '{adv2}', text: '魔法陣！？すげえ！俺も飛び込んでみたかったぜ、冒険っぽいだろ！'},
+                {speaker: '{adv1}', text: '落ちたら死にますよ…しっかり調査しないと。'},
+                {speaker: '{adv2}', text: 'この魔法陣…なんか見たことある感じがする。昔のギルドマスターが{PLAYER}と関係あるような…'},
+                {speaker: '{adv1}', text: 'しっ！今はダメです！{PLAYER}、学者さんに報告しましょう。'},
+                {speaker: '{PLAYER}', text: 'ギルドマスターと…？まあいい、後で聞くよ。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '学者', text: '井戸の魔法陣を暴いてくれたのか！素晴らしい！古代の封印陣だよ、大発見だ！'},
+                {speaker: '学者', text: '最近首都でも似た陣が反応してるって報告があってね。魔力の大きな異変が起きているのかもしれない…'},
+                // Line 9 (index 8)
+                {speaker: '学者', text: '本当に助かった！これが報酬だ。研究を続けさせてくれ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：発見後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '魔法陣についてさらに洞察を与える（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '発見情報を酒場主人に売って追加金を得る（+150 Gold、参加冒険者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'マナを使ってさらに調査させ賢さを鍛える（参加冒険者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: 'この魔法陣、古代の封印ですね。定期的に魔力をチェックすると異変に気づきやすいかも。'},
+                {speaker: '学者', text: 'その通り！早速やってみるよ！これで安心だ、ありがとう！'},
+                {speaker: '学者', text: '冒険者さんみたいな人がいてくれて、本当に助かるよ！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。古代の魔法陣を見つけるなんてすごいぞ。頼りになる。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'この魔法陣の詳細、酒場主人に話せば情報料もらえるぞ。ギルド資金にしよう。'},
+                {speaker: '{adv1}', text: '……確かに価値はあるけど、ちょっとずるいかも…'},
+                {speaker: '{adv2}', text: '金のためなら我慢だぜ！でも次は俺にやらせろよな！'},
+                {speaker: '{PLAYER}', text: 'はは、任せた。', jumptoline: 27},
+                // Branch 4: Mana investigation (elaborated discovery)
+                {speaker: '{PLAYER}', text: 'せっかくだからマナを使ってさらに調べてみろ。賢くなるいい鍛錬だ。'},
+                {speaker: '{adv1}', text: '魔法陣にマナを注いでみました…陣が共鳴して、首都の方角に弱い反応が…この異変、複数の封印陣で連鎖してる可能性があります。'},
+                {speaker: '{adv2}', text: 'やばいなそれ！大きな魔力の波が来てるってことか！？熱いぜ！'},
+                {speaker: '{PLAYER}', text: '注意が必要だ。その調子だ。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ]
         ],
         'F+': [
             // 0: 滝の裏の洞窟発見（依頼主: 探検家）
@@ -926,56 +1316,224 @@ const QuestCompletionDialogue = {
     // 2: DEX - escort quests
     {
         'F': [
-            // 0: 農夫護衛
+            // 0: 農夫護衛（依頼主: 農夫）
             [
-            {speaker: 'カイト', text: '農夫さんを市場まで無事護衛完了！道中何も起きねえで超つまんねえ旅だったぜ！'},
-            {speaker: '{PLAYER}', text: '無事で何よりだ、カイト。平和が一番だろ。'},
-            {speaker: 'ルナ', text: 'カイトさん、事件が起きなくてよかったですよ。あなたが暴れ出したら農夫さんが可哀想ですもの。'},
-            {speaker: 'カイト', text: `おいおい、俺の活躍見たかっただろ農夫さん！…あれ？この道、昔前のギルドマスターが商隊護衛してた…`},
-            {speaker: 'ルナ', text: 'カイトさん！今は黙ってて！{PLAYER}、農夫さんに報告しましょう。'},
-            {speaker: '{PLAYER}', text: '商隊護衛…？父さんの話か？まあ後で聞くよ。農夫さん、無事着きましたね。'},
-            {speaker: '農夫', text: '本当にありがとう！最近交易路で盗賊が増えて怖くて一人じゃ行けなかったんだ。市場で高く売れたよ！'},
-            {speaker: '農夫', text: '国境で税金も上がってるって噂で、物価高騰しそう…君たちのおかげで助かった！'},
-            {speaker: '{PLAYER}', text: '盗賊増加か…危ないな。これが報酬だ。気をつけて帰ってください。'},
-            {speaker: 'カイト', text: '税金アップ？王国が金集めて戦争準備かよ。面白くなってきたぜ！'},
-            {speaker: 'ルナ', text: '{PLAYER}、昔の護衛話…少し気になりますか？'},
-            {speaker: '{PLAYER}', text: 'ああ、なんか懐かしい道だな。もっと知りたくなってきた。'},
-            {speaker: 'カイト', text: 'へへ、ゆっくり思い出せよ。俺たちがついてるぜ！'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '農夫さんを市場まで無事護衛完了！道中何も起きなくて超つまんねえ旅だったぜ！'},
+                {speaker: '{PLAYER}', text: '無事で何よりだ。平和が一番だろ。'},
+                {speaker: '{adv1}', text: '事件が起きなくてよかったですよ。{adv2}さんが暴れ出したら農夫さんが怖がりますもの。'},
+                {speaker: '{adv2}', text: 'おいおい、俺の活躍見たかっただろ農夫さん！…あれ？この道、昔前のギルドマスターが商隊護衛してた…'},
+                {speaker: '{adv1}', text: 'しっ！今は黙ってて！{PLAYER}、農夫さんに報告しましょう。'},
+                {speaker: '{PLAYER}', text: '商隊護衛…？まあ後で聞くよ。農夫さん、無事着きましたね。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '農夫', text: '本当にありがとう！最近交易路で盗賊が増えて怖くて一人じゃ行けなかったんだ。市場で高く売れたよ！'},
+                {speaker: '農夫', text: '国境で税金も上がってるって噂で、物価高騰しそう…君たちのおかげで助かった！'},
+                // Line 9 (index 8)
+                {speaker: '農夫', text: '無事でよかった。これが報酬だ。本当にありがとう！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：護衛後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '道中で何か特別なものを見なかったか聞く（+1 Lucky Coin）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '世界が危ない今、追加報酬を要求する（+300 Gold、参加冒険者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'もう少し依頼主を護衛させて敏捷性を鍛える（参加冒険者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '道中で何か特別なものを見なかったか？変わったものとか。'},
+                {speaker: '{adv1}', text: 'そういえば、道端で古びた幸運のコインを見つけました。特別な感じがしたので持ってました。'},
+                {speaker: '農夫', text: 'おお、それは幸運のコインだ！お礼に差し上げますよ。ありがとう！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。無事に護衛してくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が派手にやる番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界が危ないから、追加で報酬をいただけないか？護衛も大変だった。'},
+                {speaker: '農夫', text: '…確かに危ない時代だね。仕方ない、追加で300G出すよ。ありがとう。'},
+                {speaker: '{adv1}', text: '……ちょっと強引でしたね…'},
+                {speaker: '{adv2}', text: '金は嬉しいけどよ…次は俺に任せろよな！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少し農夫さんを護衛してこい。敏捷性のいい鍛錬になる。'},
+                {speaker: '{adv1}', text: '…まだ続けるんですか？わかりました、気を引き締めます。'},
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でもやるなら本気だぜ！'},
+                {speaker: '{adv1}', text: '…帰り道で小規模な盗賊に襲われました。軽い傷を負いましたが、素早い動きで切り抜けました！'},
+                {speaker: '{adv2}', text: 'くそ、ちょっと痛えけどよ…避ける動きが上手くなった気がするぜ！'},
+                {speaker: '{PLAYER}', text: 'その意気だ。よく耐えた。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
             ],
             // 1: 子供送迎（依頼主: 親）
-            // ユーモア: ルナの過保護母性爆発 vs カイトの剣遊び提案、過去ヒント: 父が子供時代に似た橋護衛、ニュース: 橋崩落事故と魔物接近
             [
-            {speaker: 'ルナ', text: '危険な橋を渡って子供を無事家まで送りました！途中で手つないであげましたよ～。'},
-            {speaker: '{PLAYER}', text: '優しいな、ルナ。子供も喜んでたろ。よくやった。'},
-            {speaker: 'カイト', text: '橋渡りだけかよ！俺なら子供に木剣渡して一緒に魔物退治ごっこしたのに！'},
-            {speaker: 'ルナ', text: `カイトさん、それは危ないです！子供が怖がっちゃいます…あ、この橋、{PLAYER}小さい頃に…`},
-            {speaker: 'カイト', text: `そうだよな！前のギルドマスターが{PLAYER}を抱えて渡ったんだぜ！…あ、口滑った！`},
-            {speaker: '{PLAYER}', text: '俺がこの橋で…？抱えられて渡ったのか？詳しく教えてくれ。'},
-            {speaker: 'ルナ', text: '今は親御さんに報告優先です！最近橋近くで魔物出没してるんですよ。'},
-            {speaker: '親', text: '子供が無事帰ってきた！あの崩落しそうな橋、一人じゃ怖くて…本当にありがとう！'},
-            {speaker: '親', text: '最近事故も増えてるし、魔物が近づいてきてるって村で話題だよ。君たちに頼んで正解だった！'},
-            {speaker: '{PLAYER}', text: '魔物接近か…用心しないとな。これが報酬だ。子供も元気で。'},
-            {speaker: 'カイト', text: '橋事故？魔物絡みだろ。次は俺が子供守って派手にやるぜ！'},
-            {speaker: 'ルナ', text: '{PLAYER}、あの橋の記憶…少し蘇りそうですか？'},
-            {speaker: '{PLAYER}', text: '…うん、風の感じとか、懐かしいよ。ありがとうな。'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '危険な橋を渡って子供を無事家まで送りました！途中で手をつないであげましたよ～。'},
+                {speaker: '{PLAYER}', text: '優しいな。子供も安心しただろう。よくやった。'},
+                {speaker: '{adv2}', text: '橋渡りだけかよ！俺なら子供に木剣渡して魔物退治ごっこしたのに！'},
+                {speaker: '{adv1}', text: 'それは危ないです！子供が怖がります…あ、この橋、昔前のギルドマスターが{PLAYER}を…'},
+                {speaker: '{adv2}', text: 'そうだよな！抱えて渡ったんだぜ！…あ、言っちゃった！'},
+                {speaker: '{PLAYER}', text: '俺を抱えて…？まあ後で聞くよ。親御さん、子供を無事送りました。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '親', text: '子供が無事帰ってきた！あの崩落しそうな橋、一人じゃ怖くて…本当にありがとう！'},
+                {speaker: '親', text: '最近事故も増えてるし、魔物が近づいてきてるって村で話題だよ。君たちに頼んで正解だった！'},
+                // Line 9 (index 8)
+                {speaker: '親', text: '無事でよかった。これが報酬だ。本当に助かった！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：護衛後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '道中で何か特別なものを見なかったか聞く（+1 Lucky Coin）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '世界が危ない今、追加報酬を要求する（+300 Gold、参加冒険者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'もう少し依頼主を護衛させて敏捷性を鍛える（参加冒険者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '道中で何か特別なものを見なかったか？変わったものとか。'},
+                {speaker: '{adv2}', text: '橋の近くで古びた幸運のコインが落ちてたぜ。なんか縁起良さそうだから拾っといた！'},
+                {speaker: '親', text: 'それは幸運のコインね！お礼にどうぞ。ありがとう！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。子供を優しく護衛してくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が派手にやる番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界が危ないから、追加で報酬をいただけないか？護衛も大変だった。'},
+                {speaker: '親', text: '…確かに怖い時代だね。仕方ない、追加で300G出すよ。ありがとう。'},
+                {speaker: '{adv1}', text: '……ちょっと強引でしたね…'},
+                {speaker: '{adv2}', text: '金は嬉しいけどよ…次は俺に任せろよな！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少し子供を護衛してこい。敏捷性のいい鍛錬になる。'},
+                {speaker: '{adv1}', text: '…まだ続けるんですか？わかりました、気を引き締めます。'},
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でもやるなら本気だぜ！'},
+                {speaker: '{adv2}', text: '…帰りに橋近くで小型魔物に襲われた！軽い傷負ったけど、素早い回避で守りきったぜ！'},
+                {speaker: '{adv1}', text: '痛いですけど…動きが良くなった気がします。'},
+                {speaker: '{PLAYER}', text: 'その意気だ。よく耐えた。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
             ],
             // 2: 使者護衛（依頼主: 村長）
-            // ユーモア: カイトのスパイ妄想 vs ルナの現実突き、過去ヒント: 父が重要な手紙護衛、ニュース: 村間同盟の手紙と王都政変噂
             [
-            {speaker: 'カイト', text: '使者の手紙護衛完了！スパイ一匹も出てこねえでガッカリだぜ！'},
-            {speaker: '{PLAYER}', text: '無事に届いてよかったよ、カイト。平和が一番だ。'},
-            {speaker: 'ルナ', text: 'カイトさん、妄想しすぎです。使者さんもホッとしてましたよ。'},
-            {speaker: 'カイト', text: 'スパイ出てきたら俺が一閃だろ！…この道、昔前のギルドマスターが大事な手紙運んだ…'},
-            {speaker: 'ルナ', text: `カイトさん！今言うことじゃないです！{PLAYER}、村長さんに報告を。`},
-            {speaker: '{PLAYER}', text: '大事な手紙…？父さんが？気になるな。村長、無事届きました。'},
-            {speaker: '村長', text: '使者が無事で手紙届いたよ！これで村の同盟が決まるんだ。本当に感謝だ！'},
-            {speaker: '村長', text: '王都で政変の噂もある中、こんな重要な書状を守ってくれて…君たちのギルドは頼りになる！'},
-            {speaker: '{PLAYER}', text: '同盟と政変か…世の中変わりそうだな。これが報酬だ。お役に立ててよかった。'},
-            {speaker: 'カイト', text: '政変！？王様交代か？冒険の予感しかしねえぜ！'},
-            {speaker: 'ルナ', text: `{PLAYER}、手紙護衛の昔話…いつか聞きたいですか？`},
-            {speaker: 'カイト', text: `そうだぜ、{PLAYER}。俺たちが全部知ってるからな！`},
-            {speaker: '{PLAYER}', text: 'ああ、頼むよ。少しずつ、俺の過去が見えてきそうで…楽しみだ。'},
-            {speaker: 'ルナ', text: 'ふふ、私たちも嬉しいです。一緒に思い出しましょう♪'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '使者の手紙護衛完了！スパイ一匹も出てこねえでガッカリだぜ！'},
+                {speaker: '{PLAYER}', text: '無事に届いてよかった。平和が一番だ。'},
+                {speaker: '{adv1}', text: '{adv2}さん、妄想しすぎです。使者さんもホッとしてましたよ。'},
+                {speaker: '{adv2}', text: 'スパイ出てきたら俺が一閃だろ！…この道、昔前のギルドマスターが大事な手紙運んだ…'},
+                {speaker: '{adv1}', text: 'しっ！今言うことじゃないです！{PLAYER}、村長さんに報告を。'},
+                {speaker: '{PLAYER}', text: '大事な手紙…？まあ後で聞くよ。村長、無事届きました。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '村長', text: '使者が無事で手紙届いたよ！これで村の同盟が決まるんだ。本当に感謝だ！'},
+                {speaker: '村長', text: '王都で政変の噂もある中、こんな重要な書状を守ってくれて…君たちのギルドは頼りになる！'},
+                // Line 9 (index 8)
+                {speaker: '村長', text: '無事でよかった。これが報酬だ。お疲れ様！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：護衛後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '道中で何か特別なものを見なかったか聞く（+1 Lucky Coin）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '世界が危ない今、追加報酬を要求する（+300 Gold、参加冒険者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'もう少し依頼主を護衛させて敏捷性を鍛える（参加冒険者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '道中で何か特別なものを見なかったか？変わったものとか。'},
+                {speaker: '{adv2}', text: '道端で古びた幸運のコインが落ちてたぜ。なんかいい感じだったから拾っといた！'},
+                {speaker: '村長', text: 'それは幸運のコインだ！お礼に差し上げよう。ありがとう！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。重要な手紙を無事護衛してくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が派手にやる番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界が危ないから、追加で報酬をいただけないか？護衛も大変だった。'},
+                {speaker: '村長', text: '…確かに不安定な情勢だ。仕方ない、追加で300G出すよ。ありがとう。'},
+                {speaker: '{adv1}', text: '……ちょっと強引でしたね…'},
+                {speaker: '{adv2}', text: '金は嬉しいけどよ…次は俺に任せろよな！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'せっかくだからもう少し使者を護衛してこい。敏捷性のいい鍛錬になる。'},
+                {speaker: '{adv1}', text: '…まだ続けるんですか？わかりました、気を引き締めます。'},
+                {speaker: '{adv2}', text: 'おいおい、休ませてくれよ…でもやるなら本気だぜ！'},
+                {speaker: '{adv2}', text: '…帰り道で怪しい盗賊に襲われた！軽い傷負ったけど、素早い動きで守りきったぜ！'},
+                {speaker: '{adv1}', text: '痛いですけど…回避が上手くなった気がします。'},
+                {speaker: '{PLAYER}', text: 'その意気だ。よく耐えた。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
             ]
         ],
         'F+': [
@@ -1255,56 +1813,228 @@ const QuestCompletionDialogue = {
     // 3: LUC - fetch quests
     {
         'F': [
-            // 0: 薬草集め
-[
-        {speaker: 'ルナ', text: '錬金術師さん依頼の薬草、指定通り全部集めてきました！新鮮ですよ～。'},
-        {speaker: '{PLAYER}', text: 'よくやった、ルナ。森の奥まで行ったんだろ？お疲れ。'},
-        {speaker: 'カイト', text: '薬草かあ。俺なら踏み潰してたかもな！でもポーション作れるなら悪くねえぜ。'},
-        {speaker: 'ルナ', text: 'カイトさん、これで強力な回復ポーションが作れます！最近魔力が薄れてるから、貴重なんですよ。'},
-        {speaker: '{PLAYER}', text: '魔力薄い？最近魔物も弱ってるって話は聞いてたけど…。'},
-        {speaker: 'カイト', text: 'じゃあこの薬草で魔力増幅ポーションとか作れねえかな？俺の剣に塗ったら最強だろ！'},
-        {speaker: 'ルナ', text: '面白いアイデアですね！でも爆発しそうで怖いです…錬金術師さんに聞いてみましょう。'},
-        {speaker: '錬金術師', text: 'おお、完璧な薬草だ！これで通常の回復ポーションが20個は作れるよ。最近魔力枯渇で材料が高騰しててね…助かる！'},
-        {speaker: '錬金術師', text: '魔力増幅剤？いいアイデアだね！失敗したら大爆発だけど、成功したら武器強化に革命だよ。実験してみる価値ありだ！'},
-        {speaker: '{PLAYER}', text: '実験成功したらギルドにも分けてくれよ。これが報酬だ。楽しみだな。'},
-        {speaker: 'カイト', text: 'やったぜ！俺の剣が無敵になる日が来るかも！'},
-        {speaker: 'ルナ', text: '{PLAYER}、私たちは回復ポーション優先でお願いしますね♪'},
-        {speaker: '{PLAYER}', text: 'はは、わかったよ。世界が変わりそうな予感がするな。'}
-    ],
-    // 1: 料理人のためのキノコ集め
-    // 焦点: キノコの料理用途、新たなレシピアイデア（スタミナ料理）、世界: 豊作の年で祭り準備、キノコで保存食増加
-    [
-        {speaker: 'カイト', text: '料理人依頼の新鮮キノコ、大量に集めてきたぜ！今夜はキノコ祭りだろ！？'},
-        {speaker: '{PLAYER}', text: '大量すぎるだろ、カイト。よくそんなに採れたな。お疲れ。'},
-        {speaker: 'ルナ', text: 'このキノコ、香りが最高です！普通のスープがごちそうになりますよ～。'},
-        {speaker: 'カイト', text: '俺は焼きキノコがいいぜ！冒険者のHPを250も回復できるやつ！'},
-        {speaker: 'ルナ', text: '焼きキノコ？いいですね！この年の豊作でキノコがいっぱいだから、保存食にも最適です。'},
-        {speaker: '{PLAYER}', text: '豊作の年か。最近村が賑わってるのはそれか…祭りの準備も進んでるみたいだな。'},
-        {speaker: 'カイト', text: '祭り！？キノコ料理コンテストとかやったら俺が優勝だぜ！新レシピ考えとくか！'},
-        {speaker: '料理人', text: '素晴らしいキノコだ！今夜の宴会メニューが決まったよ。この豊作でみんな腹いっぱい食える！'},
-        {speaker: '料理人', text: 'スタミナ料理のアイデア？冒険者向けに開発してみるか！キノコの乾燥粉末で長期保存もできるし、交易品にもなるよ。'},
-        {speaker: '{PLAYER}', text: '交易品か…村がもっと栄えそうだな。これが報酬だ。宴会楽しみにしてるよ。'},
-        {speaker: 'ルナ', text: '{PLAYER}、私たちも新レシピ試食会しましょう♪'},
-        {speaker: 'カイト', text: 'もちろん俺が一番食うぜ！腹減ったー！'},
-        {speaker: '{PLAYER}', text: 'はは、みんなで楽しもう。いい年になりそうだ。'}
-    ],
-    // 2: 村人のための花集め
-    // 焦点: 花の装飾・染料用途、新たなアイデア（香り袋や癒し茶）、世界: 花の季節で結婚式増加、花粉症対策の需要
-    [
-        {speaker: 'ルナ', text: '村人さん依頼のきれいな花、たくさん集めてきました！香りが素晴らしいです～。'},
-        {speaker: '{PLAYER}', text: 'いい匂いだな、ルナ。ギルドに飾ったら癒されそうだ。よく採れたな。'},
-        {speaker: 'カイト', text: '花かあ…俺なら踏んづけてたかも。って、ルナに殺されるから黙っとく！'},
-        {speaker: 'ルナ', text: 'この花、染料にもなるんですよ！服が鮮やかになってみんな喜びます。'},
-        {speaker: '{PLAYER}', text: '染料か。最近結婚式が多いって聞いたけど、花の季節だからか？'},
-        {speaker: 'カイト', text: '結婚式！？花束投げで俺がキャッチしたら次は俺の番だぜ！…って冗談だよ。'},
-        {speaker: 'ルナ', text: '面白いアイデアですけど…この花で香り袋作ったら？部屋がずっと良い匂いで癒されますよ！'},
-        {speaker: '村人', text: '美しい花をありがとう！村の広場が花畑みたいになるよ。最近結婚ラッシュでちょうど欲しかったんだ！'},
-        {speaker: '村人', text: '香り袋や癒しのお茶にも使えるね。花粉症の薬草と混ぜたら今年の需要に応えられるよ。みんな助かる！'},
-        {speaker: '{PLAYER}', text: '癒し茶か…冒険者の疲れも取れそうだな。これが報酬だ。村が華やかになるな。'},
-        {speaker: 'ルナ', text: '{PLAYER}、ギルドにも香り袋作りましょう！私、手伝います♪'},
-        {speaker: 'カイト', text: '俺は…匂い嗅ぐだけにするぜ。花粉症になんねえよう祈っとく！'},
-        {speaker: '{PLAYER}', text: 'はは、みんなで作ろう。村もギルドも明るくなりそうだ。'}
-    ]
+            // 0: 薬草集め（依頼主: 錬金術師）
+            [
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '錬金術師さん依頼の薬草、指定通り全部集めてきました！新鮮ですよ～。'},
+                {speaker: '{PLAYER}', text: 'よくやった。森の奥まで行ったんだろ？お疲れ。'},
+                {speaker: '{adv2}', text: '薬草かあ。俺なら踏み潰してたかもな！でもポーション作れるなら悪くねえぜ。'},
+                {speaker: '{adv1}', text: 'これで強力な回復ポーションが作れます！最近魔力が薄れてるから、貴重なんですよ。'},
+                {speaker: '{PLAYER}', text: '魔力薄い？最近魔物も弱ってるって話は聞いてたけど…。'},
+                {speaker: '{adv2}', text: 'じゃあこの薬草で魔力増幅ポーションとか作れねえかな？俺の剣に塗ったら最強だろ！'},
+                // Line 7-8 (index 6-7)
+                {speaker: '錬金術師', text: 'おお、完璧な薬草だ！これで通常の回復ポーションが20個は作れるよ。最近魔力枯渇で材料が高騰しててね…助かる！'},
+                {speaker: '錬金術師', text: '魔力増幅剤？いいアイデアだね！失敗したら大爆発だけど、成功したら武器強化に革命だよ。実験してみる価値ありだ！'},
+                // Line 9 (index 8)
+                {speaker: '錬金術師', text: '本当に助かった。これが報酬だ。楽しみにしててくれよ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：集め後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '依頼主に集めた薬草を少し分けてもらう（+1 薬草）',
+                            reward: [{type: "item", name: "薬草", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '冒険者に依頼主を脅させて追加金を要求する（+400 Gold、参加冒険者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '報酬の一部を依頼主に返す（-200 Gold、参加冒険者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '薬草がたくさんあるなら、少し分けてもらえないか？ギルドでも使えそうだ。'},
+                {speaker: '{adv1}', text: '確かに余裕がありそうですね。お願いしてみましょう。'},
+                {speaker: '錬金術師', text: 'いいよ！お礼に1つあげる。これからもよろしくな！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。新鮮な薬草をしっかり集めてくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '世界が危ない今、もっと報酬をいただけないか？少し脅してみてくれ。'},
+                {speaker: '{adv2}', text: 'おいおい、マジかよ…仕方ねえ、やってやるぜ！'},
+                {speaker: '錬金術師', text: 'ひ、ひどいよ…わかった、追加で400G出すからこれで許して…。'},
+                {speaker: '{adv1}', text: '……やりすぎでした…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '報酬の一部を返そう。200Gでいいか？親切にしてもらったし。'},
+                {speaker: '{adv1}', text: '優しいですね…きっと運が良くなりますよ。'},
+                {speaker: '{adv2}', text: 'おいおい、金減るのかよ…でもまあ、いいことした気分だぜ。'},
+                {speaker: '錬金術師', text: 'そんな…ありがとう！本当にいい人たちだね。'},
+                {speaker: '{adv1}', text: '心が温かくなりました。きっと良いことがありますよ。'},
+                {speaker: '{PLAYER}', text: 'そうだと良いな。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ],
+            // 1: キノコ集め（依頼主: 料理人）
+            [
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '料理人依頼の新鮮キノコ、大量に集めてきたぜ！今夜はキノコ祭りだろ！？'},
+                {speaker: '{PLAYER}', text: '大量すぎるだろ。よくそんなに採れたな。お疲れ。'},
+                {speaker: '{adv1}', text: 'このキノコ、香りが最高です！普通のスープがごちそうになりますよ～。'},
+                {speaker: '{adv2}', text: '俺は焼きキノコがいいぜ！冒険者のHPを250も回復できるやつ！'},
+                {speaker: '{adv1}', text: 'この年の豊作でキノコがいっぱいだから、保存食にも最適です。'},
+                {speaker: '{PLAYER}', text: '豊作の年か。最近村が賑わってるのはそれか…祭りの準備も進んでるみたいだな。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '料理人', text: '素晴らしいキノコだ！今夜の宴会メニューが決まったよ。この豊作でみんな腹いっぱい食える！'},
+                {speaker: '料理人', text: 'スタミナ料理のアイデア？冒険者向けに開発してみるか！キノコの乾燥粉末で長期保存もできるし、交易品にもなるよ。'},
+                // Line 9 (index 8)
+                {speaker: '料理人', text: '本当に助かった。これが報酬だ。宴会楽しみにしててくれ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：集め後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '依頼主に集めたキノコを少し分けてもらう（+1 キノコ）',
+                            reward: [{type: "item", name: "キノコ", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '冒険者に依頼主を脅させて追加金を要求する（+400 Gold、参加冒険者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '報酬の一部を依頼主に返す（-200 Gold、参加冒険者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'キノコがたくさんあるなら、少し分けてもらえないか？ギルドでも使えそうだ。'},
+                {speaker: '{adv1}', text: '確かに余裕がありそうですね。お願いしてみましょう。'},
+                {speaker: '料理人', text: 'いいよ！お礼に1つあげる。これからもよろしくな！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。新鮮なキノコをしっかり集めてくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '世界が危ない今、もっと報酬をいただけないか？少し脅してみてくれ。'},
+                {speaker: '{adv2}', text: 'おいおい、マジかよ…仕方ねえ、やってやるぜ！'},
+                {speaker: '料理人', text: 'ひ、ひどいよ…わかった、追加で400G出すからこれで許して…。'},
+                {speaker: '{adv1}', text: '……やりすぎでした…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '報酬の一部を返そう。200Gでいいか？親切にしてもらったし。'},
+                {speaker: '{adv1}', text: '優しいですね…きっと運が良くなりますよ。'},
+                {speaker: '{adv2}', text: 'おいおい、金減るのかよ…でもまあ、いいことした気分だぜ。'},
+                {speaker: '料理人', text: 'そんな…ありがとう！本当にいい人たちだね。'},
+                {speaker: '{adv1}', text: '心が温かくなりました。きっと良いことがありますよ。'},
+                {speaker: '{PLAYER}', text: 'そうだと良いな。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ],
+            // 2: 花集め（依頼主: 村人）
+            [
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '村人さん依頼のきれいな花、たくさん集めてきました！香りが素晴らしいです～。'},
+                {speaker: '{PLAYER}', text: 'いい匂いだな。ギルドに飾ったら癒されそうだ。よく採れたな。'},
+                {speaker: '{adv2}', text: '花かあ…俺なら踏んづけてたかも。って、{adv1}に殺されるから黙っとく！'},
+                {speaker: '{adv1}', text: 'この花、染料にもなるんですよ！服が鮮やかになってみんな喜びます。'},
+                {speaker: '{PLAYER}', text: '染料か。最近結婚式が多いって聞いたけど、花の季節だからか？'},
+                {speaker: '{adv2}', text: '結婚式！？花束投げで俺がキャッチしたら次は俺の番だぜ！…って冗談だよ。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '村人', text: '美しい花をありがとう！村の広場が花畑みたいになるよ。最近結婚ラッシュでちょうど欲しかったんだ！'},
+                {speaker: '村人', text: '香り袋や癒しのお茶にも使えるね。花粉症の薬草と混ぜたら今年の需要に応えられるよ。みんな助かる！'},
+                // Line 9 (index 8)
+                {speaker: '村人', text: '本当に助かった。これが報酬だ。村が華やかになるよ！'},
+                // Line 10 (index 9)
+                {speaker: 'ナレーター', text: '（選択肢：集め後、どう対応する？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'ナレーター',
+                    text: '',
+                    choices: [
+                        {
+                            text: '依頼主に集めた花を少し分けてもらう（+1 花）',
+                            reward: [{type: "item", name: "花", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '冒険者を称賛して信頼を深める（参加冒険者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '冒険者に依頼主を脅させて追加金を要求する（+400 Gold、参加冒険者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '報酬の一部を依頼主に返す（-200 Gold、参加冒険者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '花がたくさんあるなら、少し分けてもらえないか？ギルドでも使えそうだ。'},
+                {speaker: '{adv1}', text: '確かに余裕がありそうですね。お願いしてみましょう。'},
+                {speaker: '村人', text: 'いいよ！お礼に1つあげる。これからもよろしくな！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'みんな、よくやったな。きれいな花をしっかり集めてくれて頼りになるよ。'},
+                {speaker: '{adv1}', text: '{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！'},
+                {speaker: '{adv2}', text: 'へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！'},
+                {speaker: '{PLAYER}', text: 'ああ、次も期待してる。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '世界が危ない今、もっと報酬をいただけないか？少し脅してみてくれ。'},
+                {speaker: '{adv2}', text: 'おいおい、マジかよ…仕方ねえ、やってやるぜ！'},
+                {speaker: '村人', text: 'ひ、ひどいよ…わかった、追加で400G出すからこれで許して…。'},
+                {speaker: '{adv1}', text: '……やりすぎでした…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '報酬の一部を返そう。200Gでいいか？親切にしてもらったし。'},
+                {speaker: '{adv1}', text: '優しいですね…きっと運が良くなりますよ。'},
+                {speaker: '{adv2}', text: 'おいおい、金減るのかよ…でもまあ、いいことした気分だぜ。'},
+                {speaker: '村人', text: 'そんな…ありがとう！本当にいい人たちだね。'},
+                {speaker: '{adv1}', text: '心が温かくなりました。きっと良いことがありますよ。'},
+                {speaker: '{PLAYER}', text: 'そうだと良いな。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
+            ]
         ],
         'F+': [
             // 0: 鉄の欠片集め（依頼主: 鍛冶屋）
@@ -1586,49 +2316,119 @@ const QuestCompletionDialogue = {
     en: [
 
         {
-      'F': [
-        // 0: Kill 5 Slimes (Client: Farmer)
-        [
-            {speaker: 'Luna', text: 'We\'re back. All five slimes around the village have been defeated.'},
-            {speaker: 'Kaito', text: 'Oh, slime hunting! Must\'ve been annoying with all that bouncing, huh? I\'d have squashed \'em in one hit!'},
-            {speaker: 'Luna', text: 'It was exhausting... I\'m covered in slime goo...'},
-            {speaker: '{PLAYER}', text: 'Good work, Luna. You did great. Kaito, be quiet—the farmer client is waiting.'},
-            {speaker: 'Kaito', text: 'Tch, I wanted to go too~ Would\'ve loved seeing someone slip in slime juice!'},
-            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s go report to the farmer.`},
-            {speaker: 'Farmer', text: 'Oh, adventurers! You took care of all the slimes? My crops are safe—thank you so much!'},
-            {speaker: 'Farmer', text: 'Those jelly-like slimes... they\'re not food, right? Scary! Thanks again!'},
-            {speaker: '{PLAYER}', text: 'Glad everything\'s okay. Here\'s your reward. If I send Kaito next time, you might get covered in slime.'},
-            {speaker: 'Kaito', text: 'Yes! My turn next!'},
-            {speaker: 'Luna', text: 'Please... spare me that...'}
+        'F': [
+            // 0: Slime Extermination (Client: Farmer)
+            [
+                {speaker: '{adv1}', text: 'We\'re back. We exterminated all 5 slimes around the village!' },
+                {speaker: '{adv2}', text: 'Slime hunting, huh… Must\'ve been tough with them bouncing everywhere? That squishy feeling is unforgettable.' },
+                {speaker: '{adv1}', text: 'It was exhausting… My whole body is covered in slime gel, and my clothes are sticky…' },
+                {speaker: '{PLAYER}', text: 'Good work. Well done. The client, the farmer, is waiting.' },
+                {speaker: '{adv2}', text: 'Hehe, I wanted to go too. Everyone slipping on slime juice would\'ve been hilarious!' },
+                {speaker: '{adv1}', text: '{PLAYER}, thank you. Let\'s report to the farmer right away.' },
+                {speaker: 'Farmer', text: 'Oh, adventurers! You took care of all the slimes! The crops are saved from dissolving—I\'m truly grateful!' },
+                {speaker: 'Farmer', text: 'Those jelly-like slimes… they\'re not food, right? Scary, scary! Thank you so much!' },
+                {speaker: 'Farmer', text: 'Now the crops are safe! Please take the reward!' },
+                {speaker: 'Narrator', text: '(Choices: How to handle the situation after the slime quest?)' },
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        { text: 'Give the farmer advice on preventing slimes (+2 Reputation)', reward: [{type: "reputation", amount: 2}], jumptoline: 12 },
+                        { text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)', reward: [{type: "friendliness", amount: 5, target: "participants"}], jumptoline: 15 },
+                        { text: 'Collect slime gel to sell (+200 Gold, participating adventurers friendliness -5)', reward: [{type: "gold", amount: 200}, {type: "friendliness", amount: -5, target: "participants"}], jumptoline: 19 },
+                        { text: 'Have them hunt extra slimes for training (Participating adventurers STR +3, friendliness -10)', reward: [{type: "strength", amount: 3, target: "participants"}, {type: "friendliness", amount: -10, target: "participants"}], jumptoline: 23 }
+                    ]
+                },
+                {speaker: '{PLAYER}', text: 'Slimes like damp places, so improving drainage in the fields might reduce them.' },
+                {speaker: 'Farmer', text: 'I see! I\'ll try it right away! Now I can rest easy—thank you!' },
+                {speaker: 'Farmer', text: 'I\'m truly grateful for adventurers like you!', jumptoline: 27 },
+                {speaker: '{PLAYER}', text: 'Everyone, you did great. Getting covered in slime gel must\'ve been rough. You\'re really reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work even harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time it\'s my turn to shine!' },
+                {speaker: '{PLAYER}', text: 'Yeah, I\'m counting on it.', jumptoline: 27 },
+                {speaker: '{PLAYER}', text: 'This slime gel sells as alchemy material. Let\'s collect some for guild funds.' },
+                {speaker: '{adv1}', text: '…It\'s valuable, but kind of gross… The stickiness won\'t come off…' },
+                {speaker: '{adv2}', text: 'For money, I can tough it out! But next time let me handle the washing!' },
+                {speaker: '{PLAYER}', text: 'Haha, I\'ll leave it to you.', jumptoline: 27 },
+                {speaker: '{PLAYER}', text: 'Since we\'re here, hunt a few more slimes for training. Getting stronger will make the next quest easier.' },
+                {speaker: '{adv1}', text: '…We\'re doing more? I\'m tired, but… okay. I want to get stronger.' },
+                {speaker: '{adv2}', text: 'Hey, give us a break… But if it makes us stronger, I\'ll do it. I won\'t lose!' },
+                {speaker: '{PLAYER}', text: 'That\'s the spirit.', jumptoline: 27 },
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and receive the reward.' }
+            ],
+            // 1: Giant Rat Extermination (Client: Tavern Owner)
+            [
+                {speaker: '{adv1}', text: 'We exterminated all the giant rats in the tavern basement.' },
+                {speaker: '{adv2}', text: 'Giant rats!? How big were they? I wanted to slash more!' },
+                {speaker: '{adv1}', text: 'They were pretty big… It was terrifying—I almost got bitten…' },
+                {speaker: '{PLAYER}', text: 'Good work. Glad you\'re safe. If you\'d been there, the tavern would\'ve been a bloodbath.' },
+                {speaker: '{adv2}', text: 'That would\'ve been awesome! Flashy and cool—everyone would freak out!' },
+                {speaker: '{adv1}', text: '{PLAYER}, thank you. Let\'s report to the tavern owner.' },
+                {speaker: 'Tavern Owner', text: 'Oh! You cleared out all the giant rats! I can use the basement again!' },
+                {speaker: 'Tavern Owner', text: 'I\'ll treat you to a drink… but no sea of blood, please! Really saved me—thank you!' },
+                {speaker: 'Tavern Owner', text: 'Great! Please take the reward!' },
+                {speaker: 'Narrator', text: '(Choices: How to handle the situation after the rat quest?)' },
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        { text: 'Suggest rat prevention to the tavern owner (+2 Reputation)', reward: [{type: "reputation", amount: 2}], jumptoline: 12 },
+                        { text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)', reward: [{type: "friendliness", amount: 5, target: "participants"}], jumptoline: 15 },
+                        { text: 'Collect rat tails to sell (+200 Gold, participating adventurers friendliness -5)', reward: [{type: "gold", amount: 200}, {type: "friendliness", amount: -5, target: "participants"}], jumptoline: 19 },
+                        { text: 'Have them hunt extra rats for training (Participating adventurers STR +3, friendliness -10)', reward: [{type: "strength", amount: 3, target: "participants"}, {type: "friendliness", amount: -10, target: "participants"}], jumptoline: 23 }
+                    ]
+                },
+                {speaker: '{PLAYER}', text: 'Rats go for food, so strict food storage in the basement might reduce them.' },
+                {speaker: 'Tavern Owner', text: 'Got it! I\'ll do it right away! Now I can run the place in peace—thank you!' },
+                {speaker: 'Tavern Owner', text: 'Come back anytime—drinks on the house!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Everyone, giant rats must\'ve been scary. Thank you—you\'re reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll be the star!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'These rat tails sell as material. Let\'s collect some for guild funds.' },
+                {speaker: '{adv1}', text: '…Valuable, but kind of gross…' },
+                {speaker: '{adv2}', text: 'For money, I can handle it! But next time let me do it!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Since we\'re here, hunt a few more rats for training. Strength makes the next quest easier.' },
+                {speaker: '{adv1}', text: '…More? It was scary, but… okay.' },
+                {speaker: '{adv2}', text: 'Hey, give us a break… But if it makes us stronger, I\'ll do it. I won\'t lose!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and receive the reward.' }
+            ],
+            // 2: Wild Dog Extermination (Client: Farmer)
+            [
+                {speaker: '{adv1}', text: 'We defeated all 3 wild dogs attacking the farm. The livestock is safe.' },
+                {speaker: '{adv2}', text: 'Wild dogs! I wanted to chase and slash them—wanted to be flashier!' },
+                {speaker: '{adv1}', text: 'They were fast… It was really dangerous…' },
+                {speaker: '{PLAYER}', text: 'Good work. Livestock safe is the best outcome. If you\'d been there, the livestock would\'ve been chased too.' },
+                {speaker: '{adv2}', text: 'Haha! That would\'ve been fun! A big race for dogs and livestock!' },
+                {speaker: '{adv1}', text: '{PLAYER}, thank you. Let\'s report to the farmer.' },
+                {speaker: 'Farmer', text: 'You took care of all the wild dogs! Everyone\'s relieved the livestock is safe!' },
+                {speaker: 'Farmer', text: 'All that chasing… it\'s not a game, right? Scary—really thank you!' },
+                {speaker: 'Farmer', text: 'Now the livestock is safe! Please take the reward!' },
+                {speaker: 'Narrator', text: '(Choices: How to handle the situation after the wild dog quest?)' },
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        { text: 'Give the farmer advice on preventing wild dogs (+2 Reputation)', reward: [{type: "reputation", amount: 2}], jumptoline: 12 },
+                        { text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)', reward: [{type: "friendliness", amount: 5, target: "participants"}], jumptoline: 15 },
+                        { text: 'Collect wild dog fangs to sell (+200 Gold, participating adventurers friendliness -5)', reward: [{type: "gold", amount: 200}, {type: "friendliness", amount: -5, target: "participants"}], jumptoline: 19 },
+                        { text: 'Have them hunt extra wild dogs for training (Participating adventurers STR +3, friendliness -10)', reward: [{type: "strength", amount: 3, target: "participants"}, {type: "friendliness", amount: -10, target: "participants"}], jumptoline: 23 }
+                    ]
+                },
+                {speaker: '{PLAYER}', text: 'Wild dogs travel in packs, so reinforcing fences or planting repellent herbs might help.' },
+                {speaker: 'Farmer', text: 'I see! I\'ll try it right away! Now I can raise livestock in peace—thank you!' },
+                {speaker: 'Farmer', text: 'I\'m truly grateful for adventurers like you!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Everyone, fast wild dogs must\'ve been tough. Thank you—you\'re reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time it\'s my turn to shine!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'These wild dog fangs sell as weapon material. Let\'s collect some for guild funds.' },
+                {speaker: '{adv1}', text: '…Valuable, but a bit scary…' },
+                {speaker: '{adv2}', text: 'For money, I can handle it! But next time let me do it!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Since we\'re here, hunt a few more wild dogs for training. Strength makes the next quest easier.' },
+                {speaker: '{adv1}', text: '…More? It was scary, but… okay.' },
+                {speaker: '{adv2}', text: 'Hey, give us a break… But if it makes us stronger, I\'ll do it. I won\'t lose!', jumptoline: 24 },
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and receive the reward.' }
+            ]
         ],
-        // 1: Exterminate Giant Rats (Client: Tavern Owner)
-[
-            {speaker: 'Luna', text: 'All the giant rats in the tavern basement have been exterminated.'},
-            {speaker: 'Kaito', text: 'Giant rats!? How big were they? I wanted to slice \'em up with my sword!'},
-            {speaker: 'Luna', text: 'Pretty big... I was scared of getting bitten...'},
-            {speaker: '{PLAYER}', text: 'Nice job, Luna. Glad you\'re safe. Kaito, if you went, the tavern would be a bloodbath.'},
-            {speaker: 'Kaito', text: 'That\'s what makes it cool! Flashy and awesome!'},
-            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s report to the tavern owner.`},
-            {speaker: 'Tavern Owner', text: 'Oh! You got rid of all the giant rats? Now I can use the basement again!'},
-            {speaker: 'Tavern Owner', text: 'Drinks on the house... but no bloodbaths, please! Really, thank you!'},
-            {speaker: '{PLAYER}', text: 'Good to hear. Here\'s the reward. Kaito, next rat hunt is all yours.'},
-            {speaker: 'Kaito', text: 'For real!? Can\'t wait!'},
-            {speaker: 'Luna', text: 'The tavern... is going to be a mess...'}
-        ],
-[
-            {speaker: 'Luna', text: 'The three wild dogs attacking the farm have all been taken down. The livestock is safe.'},
-            {speaker: 'Kaito', text: 'Wild dogs! I wanted to chase \'em down and slash away!'},
-            {speaker: 'Luna', text: 'They were fast... it was really dangerous...'},
-            {speaker: '{PLAYER}', text: 'Good work, Luna. Glad the livestock is unharmed. Kaito, if you went, you\'d chase the livestock too.'},
-            {speaker: 'Kaito', text: 'Haha! That\'d be fun too! Dogs and livestock in a big race!'},
-            {speaker: 'Luna', text: `{PLAYER}, thank you. Let\'s go report to the farmer.`},
-            {speaker: 'Farmer', text: 'You defeated all the wild dogs? Everyone\'s relieved the livestock is safe!'},
-            {speaker: 'Farmer', text: 'Chasing games... that\'s not playing, right? Scary! Thank you so much!'},
-            {speaker: '{PLAYER}', text: 'Good to hear. Here\'s the reward. Kaito, you\'re staying home next time.'},
-            {speaker: 'Kaito', text: 'Aww! I wanna go too!'},
-            {speaker: 'Luna', text: 'That... might be the safest option...'}
-        ],
-      ],
       'F+': [
         // 0: Kill 8 Goblins (Client: Road Guard)
         [
@@ -1686,54 +2486,218 @@ const QuestCompletionDialogue = {
         ]
       ]},{
         'F': [
-            // 0: Pendant Search
+            // 0: Pendant Search (Client: Old Lady)
             [
-                {speaker: 'Luna', text: 'We safely found the old lady\'s lost pendant in town! It had fallen under a stone in the back alley.'},
-                {speaker: '{PLAYER}', text: 'Nice job finding it, Luna. You\'re really good at searching the details.'},
-                {speaker: 'Kaito', text: 'Heh, if it were me, I\'d have sniffed it out in a second! Luna, that was just luck, right?'},
-                {speaker: 'Luna', text: 'Hehe, Kaito couldn\'t do it. You have to think carefully♪'},
-                {speaker: 'Kaito', text: 'What!? ...Hey, this carving... I feel like I\'ve seen it before. It\'s from the old guild master...'},
-                {speaker: 'Luna', text: `K-Kaito! Not now! {PLAYER}, let\'s hurry and return it to the old lady.`},
-                {speaker: '{PLAYER}', text: '...From the guild master? Whatever, I\'ll ask later. Here\'s your pendant, ma\'am.'},
-                {speaker: 'Grandmother', text: 'Oh, my precious pendant...! This carving is from the harvest festival long ago. A memory from peaceful times with no war rumors...'},
-                {speaker: 'Grandmother', text: 'I\'ve been worried hearing soldiers are moving at the border again lately. Thank you so much—I\'m tearing up...'},
-                {speaker: '{PLAYER}', text: 'I\'m glad it\'s safe. Here\'s your reward. Please treasure those festival memories.'},
-                {speaker: 'Kaito', text: 'Border talk, huh... I heard from travelers that the kingdom\'s army is being reinforced.'},
-                {speaker: 'Luna', text: '{PLAYER}, we need to stay on our guard too...'},
-                {speaker: '{PLAYER}', text: 'Yeah, you\'re right. I\'m starting to get curious about the past little by little.'}
+                // Lines 0-5
+                {speaker: '{adv1}', text: 'We found the old lady\'s lost pendant! It was under a stone in the alley.'},
+                {speaker: '{adv2}', text: 'Heh, something that small? I would\'ve sniffed it out in a second! Just luck, right?'},
+                {speaker: '{adv1}', text: 'You have to search carefully to find it… hehe.'},
+                {speaker: '{adv2}', text: 'This engraving… feels familiar. Looks like something the old guild master had…'},
+                {speaker: '{adv1}', text: 'Shh! Not now! {PLAYER}, let\'s return it to the old lady quickly.'},
+                {speaker: '{PLAYER}', text: 'The old guild master\'s…? Never mind, I\'ll ask later.'},
+                // Lines 6-7
+                {speaker: 'Old Lady', text: 'Oh, my precious pendant…! This engraving is from a harvest festival long ago. A memory from peaceful times…'},
+                {speaker: 'Old Lady', text: 'I\'ve been worried hearing soldiers are moving at the border again. Thank you so much—I\'m tearing up…'},
+                // Line 8 - Reward by quest giver
+                {speaker: 'Old Lady', text: 'I\'m so glad it was found safe. Here\'s your reward. Please treasure it.'},
+                // Line 9
+                {speaker: 'Narrator', text: '(Choices: What to do after the discovery?)'},
+                // Line 10 - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Give further insight about the pendant (+2 Reputation)',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Sell the discovery details to the tavern owner for extra gold (+150 Gold, participating adventurers friendliness -5)',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them use mana to investigate further and train wisdom (Participating adventurers MP -50, WIS +3)',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: 'This engraving resembles harvest festival symbols from peaceful times. It might be best to keep it stored safely.'},
+                {speaker: 'Old Lady', text: 'You\'re right… Thank you for telling me. That puts my mind at ease.'},
+                {speaker: 'Old Lady', text: 'I\'m truly grateful for adventurers like you!', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'Good work, everyone. Finding such a small pendant shows you\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work even harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll be the star!'},
+                {speaker: '{PLAYER}', text: 'Yeah, I\'m counting on it.', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'We can get information money by telling the tavern owner about the pendant details. Let\'s add it to guild funds.'},
+                {speaker: '{adv1}', text: '…It does have value, but it feels a bit shady…'},
+                {speaker: '{adv2}', text: 'For gold, I can deal! But next time let me do it!'},
+                {speaker: '{PLAYER}', text: 'Haha, sure thing.', jumptoline: 27},
+                // Branch 4: Mana investigation (elaborated)
+                {speaker: '{PLAYER}', text: 'Since we\'re here, use mana to investigate further. It\'s good wisdom training.'},
+                {speaker: '{adv1}', text: '…I channeled mana into the pendant. A faint protective magic reacted—it seems an old spell praying for peace was cast on it. Almost no power left now…'},
+                {speaker: '{adv2}', text: 'A peace spell, huh… Hits hard with the border getting noisy again!'},
+                {speaker: '{PLAYER}', text: 'Interesting find. Keep it up.', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ],
-            // 1: Hidden Treasure Chest Discovery
+            // 1: Hidden Treasure Chest Discovery (Client: Villager)
             [
-                {speaker: 'Kaito', text: 'Found the hidden treasure chest in the forest! It was buried under tree roots... but only 3 gold coins inside!?'},
-                {speaker: '{PLAYER}', text: 'Finding it at all is impressive, Kaito. Even small things have value.'},
-                {speaker: 'Luna', text: 'Kaito, you expected too much. These old coins are from the royal era—they\'re rare.'},
-                {speaker: 'Kaito', text: `Tch, I imagined a mountain of treasure... Hey? This spot is where the old guild master used to play hide-and-seek with {PLAYER}...`},
-                {speaker: 'Luna', text: 'Kaito! Don\'t say unnecessary things! Let\'s report to the villager.'},
-                {speaker: '{PLAYER}', text: 'Hide-and-seek...? Did I play here as a kid?'},
-                {speaker: 'Kaito', text: 'O-Oops! Forget I said that! The villager\'s waiting!'},
-                {speaker: 'Villager', text: 'You really found the hidden treasure chest! The legend I heard as a kid was true. Keep the contents as your reward!'},
-                {speaker: 'Villager', text: 'These old coins are from the royal era. Lately there\'s talk about royal bloodlines, and everyone\'s buzzing about it.'},
-                {speaker: '{PLAYER}', text: 'Glad the legend was real. Here\'s your reward. The royal talk is interesting.'},
-                {speaker: 'Luna', text: `{PLAYER}, does this place feel familiar? Like something you might remember?`},
-                {speaker: 'Kaito', text: 'Take your time. We\'re always with you.'},
-                {speaker: '{PLAYER}', text: '...Yeah, it gives me a warm feeling. Thanks.'}
+                // Lines 0-5
+                {speaker: '{adv1}', text: 'We found the hidden treasure chest in the forest! It was buried under tree roots.'},
+                {speaker: '{adv2}', text: 'Hidden treasure chest! …Only 3 old gold coins inside!? I was expecting more!'},
+                {speaker: '{adv1}', text: 'Finding it is already impressive. These coins are from the old royal era—quite rare.'},
+                {speaker: '{adv2}', text: 'This spot… feels familiar. Like where the old guild master played with {PLAYER}…'},
+                {speaker: '{adv1}', text: 'Shh! Don\'t say unnecessary things! {PLAYER}, let\'s report to the villager.'},
+                {speaker: '{PLAYER}', text: 'Played with the old guild master…? Never mind, later.'},
+                // Lines 6-7
+                {speaker: 'Villager', text: 'You really found the hidden treasure chest! The legend I heard as a kid was true.'},
+                {speaker: 'Villager', text: 'These old coins are from the royal era. Lately there\'s been rumors about royal bloodlines, and everyone\'s buzzing.'},
+                // Line 8
+                {speaker: 'Villager', text: 'Take the contents as your reward! Really saved us—thank you!'},
+                // Line 9
+                {speaker: 'Narrator', text: '(Choices: What to do after the discovery?)'},
+                // Line 10 - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Give further insight about the treasure chest (+2 Reputation)',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Sell the discovery details to the tavern owner for extra gold (+150 Gold, participating adventurers friendliness -5)',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them use mana to investigate further and train wisdom (Participating adventurers MP -50, WIS +3)',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight
+                {speaker: '{PLAYER}', text: 'These old coins are rare from the royal era. Recording the location might lead to more finds.'},
+                {speaker: 'Villager', text: 'Good idea! I\'ll do that right away! Now I feel safer—thank you!'},
+                {speaker: 'Villager', text: 'I\'m truly grateful for adventurers like you!', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'Great job, everyone. Finding a legendary treasure chest is impressive. You\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work even harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll be the star!'},
+                {speaker: '{PLAYER}', text: 'Yeah, I\'m counting on it.', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'We can get information money by telling the tavern owner about the chest details. Let\'s add it to guild funds.'},
+                {speaker: '{adv1}', text: '…It does have value, but it feels a bit shady…'},
+                {speaker: '{adv2}', text: 'For gold, I can deal! But next time let me do it!'},
+                {speaker: '{PLAYER}', text: 'Haha, sure thing.', jumptoline: 27},
+                // Branch 4: Mana investigation
+                {speaker: '{PLAYER}', text: 'Since we\'re here, use mana to investigate further. It\'s good wisdom training.'},
+                {speaker: '{adv1}', text: 'I channeled mana… A hidden magic mark appeared in the soil. It looks like a network pointing to other hidden locations—royal era secrets still remain…'},
+                {speaker: '{adv2}', text: 'Whoa! That means more treasure!? The adventure just got bigger!'},
+                {speaker: '{PLAYER}', text: 'Interesting discovery. Keep it up.', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ],
-            // 2: Well Secret
+            // 2: Well\'s Secret (Client: Scholar)
             [
-                {speaker: 'Luna', text: 'We discovered the secret at the bottom of the old well! An ancient magic circle was glowing under the moss.'},
-                {speaker: '{PLAYER}', text: 'That was dangerous, right? I\'m glad you\'re safe, Luna. Good job diving down.'},
-                {speaker: 'Kaito', text: 'A magic circle!? Awesome! I wanted to jump in too—well bottoms feel adventurous!'},
-                {speaker: 'Luna', text: 'Kaito, you\'d die if you fell... Oh, {PLAYER} used to here too...'},
-                {speaker: 'Kaito', text: `Yeah! The old guild master jumped in to save {PLAYER}! ...Oops, I said it!`},
-                {speaker: '{PLAYER}', text: 'I fell in the well...? Is that why my memories...?'},
-                {speaker: 'Luna', text: 'Let\'s report to the scholar first! The magic circle has been glowing strongly lately.'},
-                {speaker: 'Scholar', text: 'You uncovered the well\'s magic circle! Amazing! It\'s an ancient sealing array—I\'m thrilled!'},
-                {speaker: 'Scholar', text: 'There are reports of similar arrays reacting in the capital recently. There might be a major magical disturbance... This is a huge discovery!'},
-                {speaker: '{PLAYER}', text: 'Magical disturbance, huh... That\'s concerning. Here\'s your reward. Keep researching.'},
-                {speaker: 'Kaito', text: 'Are monsters getting stronger because of the disturbance? Things are heating up!'},
-                {speaker: 'Luna', text: `{PLAYER}, about the old well story... I\'ll tell you properly someday.`},
-                {speaker: '{PLAYER}', text: 'Yeah, please do. I feel like memories are starting to come back bit by bit.'},
-                {speaker: 'Kaito', text: `We\'ve got your back, {PLAYER}!`}
+                // Lines 0-5
+                {speaker: '{adv1}', text: 'We discovered the secret at the bottom of the old well! An ancient magic circle was glowing under the moss.'},
+                {speaker: '{adv2}', text: 'Magic circle!? Awesome! I wanted to dive in too—feels adventurous!'},
+                {speaker: '{adv1}', text: 'You\'d die if you fell… We have to investigate carefully.'},
+                {speaker: '{adv2}', text: 'This magic circle… feels familiar. Like it\'s connected to the old guild master and {PLAYER}…'},
+                {speaker: '{adv1}', text: 'Shh! Not now! {PLAYER}, let\'s report to the scholar.'},
+                {speaker: '{PLAYER}', text: 'Connected to the guild master…? Never mind, later.'},
+                // Lines 6-7
+                {speaker: 'Scholar', text: 'You uncovered the well\'s magic circle! Wonderful! It\'s an ancient sealing array—a major discovery!'},
+                {speaker: 'Scholar', text: 'Recently similar arrays have been reacting in the capital too. A large magical anomaly might be occurring…'},
+                // Line 8
+                {speaker: 'Scholar', text: 'You really helped! Here\'s your reward. Let me continue the research!'},
+                // Line 9
+                {speaker: 'Narrator', text: '(Choices: What to do after the discovery?)'},
+                // Line 10 - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Give further insight about the magic circle (+2 Reputation)',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Sell the discovery details to the tavern owner for extra gold (+150 Gold, participating adventurers friendliness -5)',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them use mana to investigate further and train wisdom (Participating adventurers MP -50, WIS +3)',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight
+                {speaker: '{PLAYER}', text: 'This is an ancient sealing array. Regularly checking its mana might help detect anomalies early.'},
+                {speaker: 'Scholar', text: 'Exactly! I\'ll start right away! Now I feel safer—thank you!'},
+                {speaker: 'Scholar', text: 'I\'m truly grateful for adventurers like you!', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: 'Great job, everyone. Finding an ancient magic circle is impressive. You\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work even harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll be the star!'},
+                {speaker: '{PLAYER}', text: 'Yeah, I\'m counting on it.', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: 'We can get information money by telling the tavern owner about the circle details. Let\'s add it to guild funds.'},
+                {speaker: '{adv1}', text: '…It does have value, but it feels a bit shady…'},
+                {speaker: '{adv2}', text: 'For gold, I can deal! But next time let me do it!'},
+                {speaker: '{PLAYER}', text: 'Haha, sure thing.', jumptoline: 27},
+                // Branch 4: Mana investigation
+                {speaker: '{PLAYER}', text: 'Since we\'re here, use mana to investigate further. It\'s good wisdom training.'},
+                {speaker: '{adv1}', text: 'I infused mana into the array… It resonated, showing a weak reaction toward the capital. This anomaly might be a chain across multiple sealing arrays.'},
+                {speaker: '{adv2}', text: 'Whoa, that\'s bad! A big magical wave coming!? This is getting exciting!'},
+                {speaker: '{PLAYER}', text: 'We need to stay alert. Keep it up.', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ]
         ],
       'F+': [
@@ -1795,54 +2759,224 @@ const QuestCompletionDialogue = {
     },// 2: DEX - escort quests (English - only F, F+, D ranks)
     {
         'F': [
-            // 0: Farmer Escort
+            // 0: Farmer Escort (Client: Farmer)
             [
-                {speaker: 'Kaito', text: 'Escorted the farmer to the market safely! Nothing happened on the way—super boring trip!'},
-                {speaker: '{PLAYER}', text: 'Safe is best, Kaito. Peace is what matters.'},
-                {speaker: 'Luna', text: 'Kaito, it\'s good nothing happened. If you started fighting, the farmer would suffer.'},
-                {speaker: 'Kaito', text: `Hey, the farmer wanted to see me in action, right!? ...This road is where the old guild master used to escort caravans...`},
-                {speaker: 'Luna', text: 'Kaito! Not now! {PLAYER}, let\'s report to the farmer.'},
-                {speaker: '{PLAYER}', text: 'Caravan escort...? My father? I\'ll ask later. Farmer, we arrived safely.'},
-                {speaker: 'Farmer', text: 'Thank you so much! Bandits have increased on trade routes lately—I couldn\'t go alone. Sold high at the market!'},
-                {speaker: 'Farmer', text: 'There\'s talk of taxes rising at the border too—prices might skyrocket... You really saved me!'},
-                {speaker: '{PLAYER}', text: 'More bandits, huh... Dangerous. Here\'s your reward. Be careful going home.'},
-                {speaker: 'Kaito', text: 'Tax hike? Kingdom gathering money for war prep? Things are getting interesting!'},
-                {speaker: 'Luna', text: '{PLAYER}, are you curious about the old escort stories?'},
-                {speaker: '{PLAYER}', text: 'Yeah, this road feels nostalgic somehow. I want to know more.'},
-                {speaker: 'Kaito', text: 'Heh, take your time remembering. We\'re with you!'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: 'We safely escorted the farmer to the market! Nothing happened on the way—it was a super boring trip!'},
+                {speaker: '{PLAYER}', text: 'Safe is best. Peace is what matters most.'},
+                {speaker: '{adv1}', text: 'I\'m glad nothing happened. If {adv2} started rampaging, the farmer would\'ve been terrified.'},
+                {speaker: '{adv2}', text: 'Hey, the farmer wanted to see me in action, right!? …Wait, this road… feels like where the old guild master escorted a caravan…'},
+                {speaker: '{adv1}', text: 'Shh! Not now! {PLAYER}, let\'s report to the farmer.'},
+                {speaker: '{PLAYER}', text: 'Caravan escort…? I\'ll ask later. Farmer, we arrived safely.'},
+                // Line 7-8 (index 6-7)
+                {speaker: 'Farmer', text: 'Thank you so much! Lately bandits have increased on the trade road—I was too scared to go alone. Sold everything at a good price!'},
+                {speaker: 'Farmer', text: 'I heard taxes are rising at the border too—prices might skyrocket… You really saved me!'},
+                // Line 9 (index 8)
+                {speaker: 'Farmer', text: 'Glad we made it safe. Here\'s your reward. Thank you!'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after the escort?)'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask if they saw anything special on the way (+1 Lucky Coin)',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Demand extra reward since the world is dangerous now (+300 Gold, participating adventurers friendliness -10)',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them protect the client a bit longer to train dexterity (Participating adventurers HP -50, DEX +3)',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'Did you notice anything special on the way? Something unusual?'},
+                {speaker: '{adv1}', text: 'Now that you mention it, I found an old lucky coin on the roadside. It felt special, so I kept it.'},
+                {speaker: 'Farmer', text: 'Oh, that\'s a lucky coin! Take it as thanks. Thank you!', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. You escorted safely—you\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!'},
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous lately—could we get some extra reward? Escorting was tough.'},
+                {speaker: 'Farmer', text: '…True, times are tough. Fine, here\'s an extra 300G. Thank you.'},
+                {speaker: '{adv1}', text: '…That was a bit pushy…'},
+                {speaker: '{adv2}', text: 'Money\'s nice, but… let me handle next time!', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Since we\'re here, protect the farmer a bit longer. Good dexterity training.'},
+                {speaker: '{adv1}', text: '…Still more? Understood, I\'ll stay alert.'},
+                {speaker: '{adv2}', text: 'Hey, give us a break… but if we\'re doing it, I\'m serious!'},
+                {speaker: '{adv1}', text: '…On the way back, small-time bandits attacked. We took minor injuries but slipped through with quick moves!'},
+                {speaker: '{adv2}', text: 'Damn, it hurts a bit… but my dodging feels sharper!'},
+                {speaker: '{PLAYER}', text: 'That\'s the spirit. You held up well.', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ],
             // 1: Child Escort (Client: Parent)
             [
-                {speaker: 'Luna', text: 'Safely escorted the child across the dangerous bridge and home! I even held their hand~.'},
-                {speaker: '{PLAYER}', text: 'So kind, Luna. The kid must have been happy. Good work.'},
-                {speaker: 'Kaito', text: 'Just crossing a bridge!? I would\'ve given the kid a wooden sword and played monster hunting!'},
-                {speaker: 'Luna', text: `Kaito, that\'s dangerous! The child would be scared... Oh, this bridge is where {PLAYER} as a kid...`},
-                {speaker: 'Kaito', text: `Yeah! The old guild master carried {PLAYER} across! ...I let that slip!`},
-                {speaker: '{PLAYER}', text: 'I was on this bridge...? Carried across? Tell me more.'},
-                {speaker: 'Luna', text: 'Let\'s report to the parents first! Monsters have been appearing near the bridge lately.'},
-                {speaker: 'Parent', text: 'The child is home safe! That crumbling bridge—I was too scared to go alone... Thank you so much!'},
-                {speaker: 'Parent', text: 'Accidents have increased lately, and monsters are getting closer—everyone in the village is talking about it. You were the right choice!'},
-                {speaker: '{PLAYER}', text: 'Monsters approaching... We need to be careful. Here\'s your reward. Take care of the child.'},
-                {speaker: 'Kaito', text: 'Bridge accidents? Probably monster-related. Next time I\'ll protect the kid in style!'},
-                {speaker: 'Luna', text: '{PLAYER}, does the bridge memory feel like it might come back?'},
-                {speaker: '{PLAYER}', text: '...Yeah, the wind and everything feels nostalgic. Thanks.'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: 'We safely escorted the child across the dangerous bridge and home! I even held their hand~.'},
+                {speaker: '{PLAYER}', text: 'That\'s kind. The child must\'ve felt safe. Good work.'},
+                {speaker: '{adv2}', text: 'Just crossing a bridge!? I would\'ve given the kid a wooden sword for monster-slaying pretend play!'},
+                {speaker: '{adv1}', text: 'That\'s dangerous! The child would be scared… Wait, this bridge—the old guild master carried {PLAYER} across…'},
+                {speaker: '{adv2}', text: 'Yeah! Carried you over! …Oops, slipped out!'},
+                {speaker: '{PLAYER}', text: 'Carried me…? I\'ll ask later. Parent, we delivered the child safely.'},
+                // Line 7-8 (index 6-7)
+                {speaker: 'Parent', text: 'The child is home safe! That crumbling bridge—I was too scared to cross alone… Thank you so much!'},
+                {speaker: 'Parent', text: 'Accidents have increased lately, and monsters are getting closer—everyone\'s talking about it. Good thing I asked you!'},
+                // Line 9 (index 8)
+                {speaker: 'Parent', text: 'Glad we made it safe. Here\'s your reward. Really helped!'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after the escort?)'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask if they saw anything special on the way (+1 Lucky Coin)',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Demand extra reward since the world is dangerous now (+300 Gold, participating adventurers friendliness -10)',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them protect the client a bit longer to train dexterity (Participating adventurers HP -50, DEX +3)',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'Did you notice anything special on the way? Something unusual?'},
+                {speaker: '{adv2}', text: 'Found an old lucky coin near the bridge. Felt lucky, so I picked it up!'},
+                {speaker: 'Parent', text: 'That\'s a lucky coin! Take it as thanks. Thank you!', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. You protected the child gently—you\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!'},
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous lately—could we get some extra reward? Escorting was tough.'},
+                {speaker: 'Parent', text: '…True, scary times. Fine, here\'s an extra 300G. Thank you.'},
+                {speaker: '{adv1}', text: '…That was a bit pushy…'},
+                {speaker: '{adv2}', text: 'Money\'s nice, but… let me handle next time!', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Since we\'re here, protect the child a bit longer. Good dexterity training.'},
+                {speaker: '{adv1}', text: '…Still more? Understood, I\'ll stay alert.'},
+                {speaker: '{adv2}', text: 'Hey, give us a break… but if we\'re doing it, I\'m serious!'},
+                {speaker: '{adv2}', text: '…On the way back, small monsters attacked near the bridge! Took minor injuries but dodged and protected perfectly!'},
+                {speaker: '{adv1}', text: 'It hurts, but… my movement feels better.'},
+                {speaker: '{PLAYER}', text: 'That\'s the spirit. You held up well.', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ],
             // 2: Messenger Escort (Client: Village Chief)
             [
-                {speaker: 'Kaito', text: 'Messenger escort complete! Not even one spy showed up—total letdown!'},
-                {speaker: '{PLAYER}', text: 'Good that it arrived safely, Kaito. Peace is best.'},
-                {speaker: 'Luna', text: 'Kaito, you imagine too much. The messenger was relieved too.'},
-                {speaker: 'Kaito', text: 'If a spy appeared I\'d cut them down in one slash! ...This road is where the old guild master carried important letters...'},
-                {speaker: 'Luna', text: `Kaito! Wrong timing! {PLAYER}, let\'s report to the village chief.`},
-                {speaker: '{PLAYER}', text: 'Important letters...? My father? Interesting. Chief, it arrived safely.'},
-                {speaker: 'Village Chief', text: 'The messenger and letter arrived safely! This seals our village alliance. Truly grateful!'},
-                {speaker: 'Village Chief', text: 'With political upheaval rumors in the capital, protecting such an important document... Your guild is reliable!'},
-                {speaker: '{PLAYER}', text: 'Alliance and upheaval... The world might change. Here\'s your reward. Glad we could help.'},
-                {speaker: 'Kaito', text: 'Upheaval!? King changing? I can feel adventure coming!'},
-                {speaker: 'Luna', text: `{PLAYER}, do you want to hear the old letter escort stories someday?`},
-                {speaker: 'Kaito', text: `Yeah, {PLAYER}. We know everything!`},
-                {speaker: '{PLAYER}', text: 'Yeah, please. My past is starting to come into view... I\'m looking forward to it.'},
-                {speaker: 'Luna', text: 'Hehe, we\'re happy too. Let\'s remember together♪'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: 'Messenger letter escort complete! No spies showed up—total letdown!'},
+                {speaker: '{PLAYER}', text: 'Delivered safely. Peace is best.'},
+                {speaker: '{adv1}', text: '{adv2}, too much imagination. The messenger looked relieved.'},
+                {speaker: '{adv2}', text: 'If a spy appeared, I\'d cut them down in one slash! …This road—the old guild master carried important letters…'},
+                {speaker: '{adv1}', text: 'Shh! Wrong timing! {PLAYER}, let\'s report to the village chief.'},
+                {speaker: '{PLAYER}', text: 'Important letters…? I\'ll ask later. Village chief, delivered safely.'},
+                // Line 7-8 (index 6-7)
+                {speaker: 'Village Chief', text: 'The messenger arrived safe and the letter too! This seals the village alliance. Truly grateful!'},
+                {speaker: 'Village Chief', text: 'Amid rumors of political change in the capital, protecting such an important letter… Your guild is reliable!'},
+                // Line 9 (index 8)
+                {speaker: 'Village Chief', text: 'Glad we made it safe. Here\'s your reward. Good work!'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after the escort?)'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask if they saw anything special on the way (+1 Lucky Coin)',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Demand extra reward since the world is dangerous now (+300 Gold, participating adventurers friendliness -10)',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Have them protect the client a bit longer to train dexterity (Participating adventurers HP -50, DEX +3)',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'Did you notice anything special on the way? Something unusual?'},
+                {speaker: '{adv2}', text: 'Found an old lucky coin on the roadside. Felt good, so I picked it up!'},
+                {speaker: 'Village Chief', text: 'That\'s a lucky coin! Take it as thanks. Thank you!', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. You protected an important letter safely—you\'re reliable.'},
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!'},
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!'},
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous lately—could we get some extra reward? Escorting was tough.'},
+                {speaker: 'Village Chief', text: '…True, unstable times. Fine, here\'s an extra 300G. Thank you.'},
+                {speaker: '{adv1}', text: '…That was a bit pushy…'},
+                {speaker: '{adv2}', text: 'Money\'s nice, but… let me handle next time!', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Since we\'re here, protect the messenger a bit longer. Good dexterity training.'},
+                {speaker: '{adv1}', text: '…Still more? Understood, I\'ll stay alert.'},
+                {speaker: '{adv2}', text: 'Hey, give us a break… but if we\'re doing it, I\'m serious!'},
+                {speaker: '{adv2}', text: '…On the way back, suspicious bandits attacked! Took minor injuries but guarded with quick moves!'},
+                {speaker: '{adv1}', text: 'It hurts, but… my evasion feels better.'},
+                {speaker: '{PLAYER}', text: 'That\'s the spirit. You held up well.', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.'}
             ]
         ],
       'F+': [
@@ -1907,53 +3041,227 @@ const QuestCompletionDialogue = {
     },// 3: LUC - fetch quests (English - only F, F+, D ranks)
     {
         'F': [
-            // 0: Herb Gathering
+            // 0: Medicinal Herb Gathering (Client: Alchemist)
             [
-                {speaker: 'Luna', text: 'We gathered all the herbs the alchemist requested! They\'re super fresh~.'},
-                {speaker: '{PLAYER}', text: 'Good work, Luna. You went deep into the forest, right? Thanks for the effort.'},
-                {speaker: 'Kaito', text: 'Herbs, huh. I might\'ve trampled them! But if they make potions, not bad.'},
-                {speaker: 'Luna', text: 'Kaito, with these we can make powerful healing potions! They\'re precious lately with magic thinning out.'},
-                {speaker: '{PLAYER}', text: 'Magic thinning? I heard monsters have been weaker lately...'},
-                {speaker: 'Kaito', text: 'Then can\'t we make a magic amplification potion? If I coat my sword it\'d be invincible!'},
-                {speaker: 'Luna', text: 'Interesting idea! But it might explode and scare me... Let\'s ask the alchemist.'},
-                {speaker: 'Alchemist', text: 'Perfect herbs! I can make 20 regular healing potions with these. Materials have skyrocketed lately with magic depletion... You saved me!'},
-                {speaker: 'Alchemist', text: 'Magic amplifier? Great idea! It might explode if it fails, but if successful it could revolutionize weapon enhancement. Worth experimenting!'},
-                {speaker: '{PLAYER}', text: 'If the experiment works, share some with the guild. Here\'s your reward. Looking forward to it.'},
-                {speaker: 'Kaito', text: 'Yes! The day my sword becomes invincible might come!'},
-                {speaker: 'Luna', text: '{PLAYER}, let\'s prioritize healing potions please♪'},
-                {speaker: '{PLAYER}', text: 'Haha, got it. Feels like the world might change.'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: 'We gathered all the medicinal herbs the alchemist requested! They\'re fresh!' },
+                {speaker: '{PLAYER}', text: 'Good work. You went deep into the forest, right? Well done.' },
+                {speaker: '{adv2}', text: 'Herbs, huh. I might\'ve trampled them! But if they make potions, not bad.' },
+                {speaker: '{adv1}', text: 'These can make powerful healing potions! With magic thinning lately, they\'re precious.' },
+                {speaker: '{PLAYER}', text: 'Magic thinning? I\'ve heard monsters are weaker lately too…' },
+                {speaker: '{adv2}', text: 'Then can we make a magic amplification potion? Coat my sword and I\'d be unstoppable!' },
+                // Line 7-8 (index 6-7)
+                {speaker: 'Alchemist', text: 'Perfect herbs! I can make at least 20 regular healing potions. With magic depletion lately, materials are expensive—really helped!' },
+                {speaker: 'Alchemist', text: 'Magic amplifier? Great idea! Could explode if it fails, but success would revolutionize weapon enhancement. Worth experimenting!' },
+                // Line 9 (index 8)
+                {speaker: 'Alchemist', text: 'You really saved me. Here\'s your reward. Looking forward to the results!' },
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after gathering?)' },
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask the client to share some gathered herbs (+1 Medicinal Herb)',
+                            reward: [{type: "item", name: "Medicinal Herb", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Have adventurers threaten the client for more gold (+400 Gold, participating adventurers friendliness -15, LUC -3)',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Return some reward gold to the client (-200 Gold, participating adventurers LUC +3)',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'You have plenty of herbs—could we have one? Useful for the guild too.' },
+                {speaker: '{adv1}', text: 'Looks like there\'s extra. Let\'s ask.' },
+                {speaker: 'Alchemist', text: 'Sure! Take one as thanks. Hope we work together again!', jumptoline: 29 },
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. Gathering fresh herbs—you\'re reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!' },
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29 },
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous—could we get more reward? Intimidate a bit.' },
+                {speaker: '{adv2}', text: 'Hey, seriously…? Fine, I\'ll do it.' },
+                {speaker: 'Alchemist', text: 'T-that\'s awful… Fine, extra 400G—just let it go…' },
+                {speaker: '{adv1}', text: '…That was too much…', jumptoline: 29 },
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Let\'s return some reward. 200G okay? They were kind.' },
+                {speaker: '{adv1}', text: 'So kind… This will bring good luck.' },
+                {speaker: '{adv2}', text: 'Hey, less money…? Well, feels good doing something nice.' },
+                {speaker: 'Alchemist', text: 'Really…? Thank you! You\'re good people.' },
+                {speaker: '{adv1}', text: 'My heart feels warm. Good things will happen.' },
+                {speaker: '{PLAYER}', text: 'Hope so.', jumptoline: 29 },
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.' }
             ],
-            // 1: Mushroom Gathering for Cook
+            // 1: Mushroom Gathering (Client: Cook)
             [
-                {speaker: 'Kaito', text: 'Gathered tons of fresh mushrooms for the cook! Tonight\'s a mushroom festival, right!?'},
-                {speaker: '{PLAYER}', text: 'That\'s way too many, Kaito. How did you gather so much? Good work.'},
-                {speaker: 'Luna', text: 'These mushrooms smell amazing! Regular soup will become a feast~.'},
-                {speaker: 'Kaito', text: 'I want grilled mushrooms! The kind that recovers 250 HP for adventurers!'},
-                {speaker: 'Luna', text: 'Grilled mushrooms? Great idea! With this year\'s bumper crop, they\'re perfect for preserved food too.'},
-                {speaker: '{PLAYER}', text: 'Bumper crop year, huh. That\'s why the village has been lively... Festival prep is advancing too.'},
-                {speaker: 'Kaito', text: 'Festival!? If there\'s a mushroom cooking contest I\'d win! Gotta think of new recipes!'},
-                {speaker: 'Cook', text: 'Wonderful mushrooms! Tonight\'s banquet menu is decided. With this harvest everyone can eat their fill!'},
-                {speaker: 'Cook', text: 'Stamina dish idea? I\'ll develop one for adventurers! Mushroom drying powder would work for long-term storage and trade goods too.'},
-                {speaker: '{PLAYER}', text: 'Trade goods... The village might prosper more. Here\'s your reward. Looking forward to the banquet.'},
-                {speaker: 'Luna', text: '{PLAYER}, let\'s have a new recipe tasting party♪'},
-                {speaker: 'Kaito', text: 'Of course I\'ll eat the most! I\'m starving!'},
-                {speaker: '{PLAYER}', text: 'Haha, let\'s all enjoy it. Looks like a good year ahead.'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: 'Gathered tons of fresh mushrooms for the cook! Mushroom festival tonight!?' },
+                {speaker: '{PLAYER}', text: 'Way too many. How\'d you gather so much? Good work.' },
+                {speaker: '{adv1}', text: 'These mushrooms smell amazing! Turn ordinary soup into a feast~.' },
+                {speaker: '{adv2}', text: 'I want grilled mushrooms! The kind that heal adventurer HP by 250!' },
+                {speaker: '{adv1}', text: 'With this year\'s bumper crop, perfect for preserved food too.' },
+                {speaker: '{PLAYER}', text: 'Bumper crop year? That explains the lively village… Festival prep too.' },
+                // Line 7-8 (index 6-7)
+                {speaker: 'Cook', text: 'Wonderful mushrooms! Tonight\'s banquet menu is set. With this harvest, everyone eats well!' },
+                {speaker: 'Cook', text: 'Stamina dishes? I\'ll develop adventurer versions! Dried mushroom powder for long storage—and trade goods.' },
+                // Line 9 (index 8)
+                {speaker: 'Cook', text: 'Really helped. Here\'s your reward. Looking forward to the banquet!' },
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after gathering?)' },
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask the client to share some gathered mushrooms (+1 Mushroom)',
+                            reward: [{type: "item", name: "Mushroom", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Have adventurers threaten the client for more gold (+400 Gold, participating adventurers friendliness -15, LUC -3)',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Return some reward gold to the client (-200 Gold, participating adventurers LUC +3)',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'You have plenty of mushrooms—could we have one? Useful for the guild too.' },
+                {speaker: '{adv1}', text: 'Looks like there\'s extra. Let\'s ask.' },
+                {speaker: 'Cook', text: 'Sure! Take one as thanks. Hope we work together again!', jumptoline: 29 },
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. Gathering fresh mushrooms—you\'re reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!' },
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29 },
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous—could we get more reward? Intimidate a bit.' },
+                {speaker: '{adv2}', text: 'Hey, seriously…? Fine, I\'ll do it.' },
+                {speaker: 'Cook', text: 'T-that\'s awful… Fine, extra 400G—just let it go…' },
+                {speaker: '{adv1}', text: '…That was too much…', jumptoline: 29 },
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Let\'s return some reward. 200G okay? They were kind.' },
+                {speaker: '{adv1}', text: 'So kind… This will bring good luck.' },
+                {speaker: '{adv2}', text: 'Hey, less money…? Well, feels good doing something nice.' },
+                {speaker: 'Cook', text: 'Really…? Thank you! You\'re good people.' },
+                {speaker: '{adv1}', text: 'My heart feels warm. Good things will happen.' },
+                {speaker: '{PLAYER}', text: 'Hope so.', jumptoline: 29 },
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.' }
             ],
-            // 2: Flower Gathering for Villager
+            // 2: Flower Gathering (Client: Villager)
             [
-                {speaker: 'Luna', text: 'Gathered lots of beautiful flowers for the villager! The fragrance is wonderful~.'},
-                {speaker: '{PLAYER}', text: 'Smells nice, Luna. It\'d be healing to decorate the guild. Good gathering.'},
-                {speaker: 'Kaito', text: 'Flowers... I might\'ve stepped on them. But I\'ll stay quiet before Luna kills me!'},
-                {speaker: 'Luna', text: 'These flowers can be used as dye too! Clothes will be vibrant and everyone will be happy.'},
-                {speaker: '{PLAYER}', text: 'Dye, huh. I heard there are many weddings lately—is it flower season?'},
-                {speaker: 'Kaito', text: 'Weddings!? If I catch the bouquet next it\'s my turn! ...Just kidding.'},
-                {speaker: 'Luna', text: 'Interesting idea... How about making scented sachets? The room would smell nice and be healing!'},
-                {speaker: 'Villager', text: 'Thank you for the beautiful flowers! The village square will look like a flower field. With the recent wedding rush, we needed them!'},
-                {speaker: 'Villager', text: 'They can be used for scented sachets or healing tea too. Mixing with anti-pollen herbs would meet this year\'s demand. Everyone will be helped!'},
-                {speaker: '{PLAYER}', text: 'Healing tea... Would relieve adventurer fatigue too. Here\'s your reward. The village will be colorful.'},
-                {speaker: 'Luna', text: '{PLAYER}, let\'s make scented sachets for the guild too! I\'ll help♪'},
-                {speaker: 'Kaito', text: 'I\'ll... just smell them. Praying I don\'t get hay fever!'},
-                {speaker: '{PLAYER}', text: 'Haha, let\'s all make them. The village and guild will brighten up.'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: 'Gathered lots of beautiful flowers for the villager! The scent is wonderful~.' },
+                {speaker: '{PLAYER}', text: 'Nice smell. Would heal just decorating the guild. Good work.' },
+                {speaker: '{adv2}', text: 'Flowers…? I might\'ve stepped on them. Staying quiet before {adv1} kills me!' },
+                {speaker: '{adv1}', text: 'These flowers make dye too! Bright clothes make everyone happy.' },
+                {speaker: '{PLAYER}', text: 'Dye? Heard lots of weddings lately—flower season?' },
+                {speaker: '{adv2}', text: 'Weddings!? If I catch the bouquet, I\'m next! …Kidding.' },
+                // Line 7-8 (index 6-7)
+                {speaker: 'Villager', text: 'Thank you for the beautiful flowers! The village square will be like a flower field. Perfect with the wedding rush!' },
+                {speaker: 'Villager', text: 'Good for scent bags or healing tea. Mix with anti-allergy herbs and meet this year\'s demand. Everyone\'s saved!' },
+                // Line 9 (index 8)
+                {speaker: 'Villager', text: 'Really helped. Here\'s your reward. The village will be bright!' },
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '(Choices: What to do after gathering?)' },
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: 'Ask the client to share some gathered flowers (+1 Flower)',
+                            reward: [{type: "item", name: "Flower", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: 'Praise the adventurers to build trust (Participating adventurers friendliness +5)',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: 'Have adventurers threaten the client for more gold (+400 Gold, participating adventurers friendliness -15, LUC -3)',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: 'Return some reward gold to the client (-200 Gold, participating adventurers LUC +3)',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: 'You have plenty of flowers—could we have one? Useful for the guild too.' },
+                {speaker: '{adv1}', text: 'Looks like there\'s extra. Let\'s ask.' },
+                {speaker: 'Villager', text: 'Sure! Take one as thanks. Hope we work together again!', jumptoline: 29 },
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: 'Good work, everyone. Gathering beautiful flowers—you\'re reliable.' },
+                {speaker: '{adv1}', text: 'Hearing that from {PLAYER} makes me happy! I\'ll work harder!' },
+                {speaker: '{adv2}', text: 'Hehe, praise me more! Next time I\'ll shine big!' },
+                {speaker: '{PLAYER}', text: 'Yeah, counting on it.', jumptoline: 29 },
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: 'The world is dangerous—could we get more reward? Intimidate a bit.' },
+                {speaker: '{adv2}', text: 'Hey, seriously…? Fine, I\'ll do it.' },
+                {speaker: 'Villager', text: 'T-that\'s awful… Fine, extra 400G—just let it go…' },
+                {speaker: '{adv1}', text: '…That was too much…', jumptoline: 29 },
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: 'Let\'s return some reward. 200G okay? They were kind.' },
+                {speaker: '{adv1}', text: 'So kind… This will bring good luck.' },
+                {speaker: '{adv2}', text: 'Hey, less money…? Well, feels good doing something nice.' },
+                {speaker: 'Villager', text: 'Really…? Thank you! You\'re good people.' },
+                {speaker: '{adv1}', text: 'My heart feels warm. Good things will happen.' },
+                {speaker: '{PLAYER}', text: 'Hope so.', jumptoline: 29 },
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: 'Quest complete. Let\'s return to the guild and rest.' }
             ]
         ],
       'F+': [
@@ -2021,210 +3329,942 @@ const QuestCompletionDialogue = {
     // 0: STR - kill quests
     {
         'F': [
-            // 0: スライム5匹討伐（依頼主: 農夫）
+            // 0: 史萊姆5隻討伐（委託人：農夫）
             [
-                {speaker: 'Luna', text: '我回來了。村莊周邊的史萊姆5隻，全都討伐完了。'},
-                {speaker: 'Kaito', text: '哇，史萊姆退治啊！跳來跳去的超麻煩對吧？我一瞬間就碾平啦！'},
-                {speaker: 'Luna', text: '真的好累……全身都是史萊姆黏液……'},
-                {speaker: '{PLAYER}', text: '辛苦了，Luna。幹得漂亮。Kaito閉嘴，依頼的農夫還在等呢。'},
-                {speaker: 'Kaito', text: '嘖，我也想去啊～。超想看有人滑倒在史萊姆汁裡的樣子！'},
-                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向農夫報告吧。'},
-                {speaker: '農夫', text: '哇，冒險者！你們把史萊姆全部打倒了啊！作物沒被溶掉，真是太好了！'},
-                {speaker: '農夫', text: '那些果凍一樣的史萊姆……應該不是食物吧？好可怕！真的謝謝！'},
-                {speaker: '{PLAYER}', text: '平安就好。這是報酬。下次帶Kaito去的話，可能會變成史萊姆滿身哦。'},
-                {speaker: 'Kaito', text: '來啦！輪到我出場了！'},
-                {speaker: 'Luna', text: '那個……請饒了我吧……'}
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: '我們回來了。村莊周邊的5隻史萊姆，全都討伐完了！'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: '史萊姆退治啊……到處亂跳很麻煩吧？那種普尼普尼的觸感，忘不了呢。'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: '確實很累……全身都是史萊姆液，衣服黏黏的……'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: '辛苦了。幹得很好。委託人農夫在等著喔。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: '嘿嘿，我也想去啊。大家在史萊姆汁上滑來滑去的樣子，一定超好笑！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}，謝謝。馬上向農夫報告吧。`},
+                // Line 7 (index 6)
+                {speaker: '農夫', text: '哦，冒險者們！把史萊姆全部消滅了啊！作物沒被溶解，真是太感謝了！'},
+                // Line 8 (index 7)
+                {speaker: '農夫', text: '那些果凍般的史萊姆……不是食物吧？好可怕好可怕！真的謝謝！'},
+                // Line 9 (index 8) - Reward line (now spoken by quest giver)
+                {speaker: '農夫', text: '現在作物安全了！請收下報酬吧！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：史萊姆退治後，如何應對？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '給農夫史萊姆對策的建議（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '收集史萊姆液出售（+200 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加狩獵史萊姆進行鍛鍊（參加冒險者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: '史萊姆喜歡潮濕的地方，改善田地的排水可能會減少它們。'},
+                // Line 13 (index 12)
+                {speaker: '農夫', text: '原來如此！馬上試試看！這樣就安心了，謝謝！'},
+                // Line 14 (index 13)
+                {speaker: '農夫', text: '有像你們這樣的冒險者，真是幫大忙了！', jumptoline: 27},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: '大家，幹得很好。全身史萊姆液一定很辛苦吧？真的很可靠。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我活躍了！'},
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: '嗯，下次也期待哦。', jumptoline: 27},
+                // Branch 3: Harvest slime gel (+200G, -5 Friendliness participants)
+                // Line 19 (index 18)
+                {speaker: '{PLAYER}', text: '這史萊姆液可以作為煉金材料賣掉。收集一點作為公會資金吧。'},
+                // Line 20 (index 19)
+                {speaker: '{adv1}', text: '……雖然有價值，但有點髒……黏黏的洗不掉……'},
+                // Line 21 (index 20)
+                {speaker: '{adv2}', text: '為了錢就忍了！但下次讓我來洗哦！'},
+                // Line 22 (index 21)
+                {speaker: '{PLAYER}', text: '哈哈，交給你了。', jumptoline: 27},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 23 (index 22)
+                {speaker: '{PLAYER}', text: '趁現在，多狩獵一些史萊姆來鍛鍊吧。變強了下次就輕鬆了。'},
+                // Line 24 (index 23)
+                {speaker: '{adv1}', text: '……還要繼續嗎？雖然累了……明白了。想變強。'},
+                // Line 25 (index 24)
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧……但為了變強就做吧。不會輸的！'},
+                // Line 26 (index 25)
+                {speaker: '{PLAYER}', text: '就是這股氣勢。', jumptoline: 27},
+                // Convergence
+                // Line 27 (index 26)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會領取報酬吧。'}
             ],
-            // 1: 巨大ネズミ退治（依頼主: 酒場主人）
+            // 1: 巨大老鼠退治（委託人：酒場主人）
             [
-                {speaker: 'Luna', text: '酒館地下室的巨大老鼠，全都退治完了。'},
-                {speaker: 'Kaito', text: '巨大老鼠！？到底有多大啊？我超想用劍砍個痛快！'},
-                {speaker: 'Luna', text: '相當大……差點被咬到，好可怕……'},
-                {speaker: '{PLAYER}', text: '幹得好，Luna。平安就好。Kaito，你去的话酒館會變成血海。'},
-                {speaker: 'Kaito', text: '那才帥啊！超華麗超酷吧！'},
-                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向酒場主人報告吧。'},
-                {speaker: '酒場主人', text: '哇！巨大老鼠全部收拾掉了啊！這下地下室又能用了！'},
-                {speaker: '酒場主人', text: '請你們喝一杯……不過血海就免了！真的幫了大忙，謝謝！'},
-                {speaker: '{PLAYER}', text: '太好了。這是報酬。Kaito，下次老鼠狩獵就交給你了。'},
-                {speaker: 'Kaito', text: '真的！？超期待啦！'},
-                {speaker: 'Luna', text: '酒館……好像會變得很慘……'}
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: '酒場地下室裡的巨大老鼠，全都退治完了。'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: '巨大老鼠！？到底有多大啊？真想多砍幾刀！'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: '真的很大……差點被咬到，好可怕……'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: '幹得很好。沒事就好。你要是去了，酒場會變成血海的。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: '那樣才帥啊！華麗又酷，大家都會嚇一跳！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}，謝謝。向酒場主人報告吧。`},
+                // Line 7 (index 6)
+                {speaker: '酒場主人', text: '哦！你們把巨大老鼠全部解決了啊！地下室又能用了！'},
+                // Line 8 (index 7)
+                {speaker: '酒場主人', text: '請你們喝一杯……不過別搞成血海啊！真的幫大忙了，謝謝！'},
+                // Line 9 (index 8) - Reward line (now spoken by quest giver)
+                {speaker: '酒場主人', text: '太好了！請收下報酬吧！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：老鼠退治後，如何應對？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '向酒場主人建議老鼠防治措施（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '收集老鼠尾巴出售（+200 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加狩獵老鼠進行鍛鍊（參加冒險者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: '老鼠會被食物吸引，嚴格管理地下室的食物可能會減少它們。'},
+                // Line 13 (index 12)
+                {speaker: '酒場主人', text: '原來如此！馬上試試看！這樣就能安心做生意了！謝謝！'},
+                // Line 14 (index 13)
+                {speaker: '酒場主人', text: '有事再拜託你們！請你們喝一杯！', jumptoline: 24},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: '大家，面對巨大老鼠一定很可怕吧？謝謝你們，真的很可靠。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次我當主角！', jumptoline: 24},
+                // Branch 3: Harvest rat tails (+200G, -5 Friendliness participants)
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: '這些老鼠尾巴可以當材料賣掉。收集一點作為公會資金吧。'},
+                // Line 19 (index 18)
+                {speaker: '{adv1}', text: '……雖然有價值，但有點噁心……'},
+                // Line 20 (index 19)
+                {speaker: '{adv2}', text: '為了錢就忍了！下次讓我來做！', jumptoline: 24},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 21 (index 20)
+                {speaker: '{PLAYER}', text: '趁現在，多狩獵一些老鼠來鍛鍊吧。變強了下次就輕鬆了。'},
+                // Line 22 (index 21)
+                {speaker: '{adv1}', text: '……還要繼續嗎？雖然很可怕……明白了。'},
+                // Line 23 (index 22)
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧……但為了變強就做吧。不會輸的！', jumptoline: 24},
+                // Convergence
+                // Line 24 (index 23, but labeled as 27 in original comment - structure matches)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會領取報酬吧。'}
             ],
-            // 2: 野犬3匹討伐（依頼主: 農夫）
+            // 2: 野犬3隻討伐（委託人：農夫）
             [
-                {speaker: 'Luna', text: '襲擊農場的野犬3隻，全都打倒了。家畜平安無事。'},
-                {speaker: 'Kaito', text: '野犬啊！我超想追著它們砍個痛快！'},
-                {speaker: 'Luna', text: '跑得超快……真的好危險……'},
-                {speaker: '{PLAYER}', text: '辛苦了，Luna。家畜平安太好了。Kaito，你去的话連家畜都會被追著跑。'},
-                {speaker: 'Kaito', text: '哈哈！那也挺有趣的吧！狗跟家畜來場大賽跑！'},
-                {speaker: 'Luna', text: '{PLAYER}，謝謝。我們去向農夫報告吧。'},
+                // Line 1 (index 0)
+                {speaker: '{adv1}', text: '襲擊農場的3隻野犬，全都打倒了。家畜平安無事。'},
+                // Line 2 (index 1)
+                {speaker: '{adv2}', text: '野犬啊！真想追著砍個痛快！想更華麗地幹啊！'},
+                // Line 3 (index 2)
+                {speaker: '{adv1}', text: '速度很快……真的很危險……'},
+                // Line 4 (index 3)
+                {speaker: '{PLAYER}', text: '辛苦了。家畜平安真是太好了。你要是去了，家畜也會被追著跑。'},
+                // Line 5 (index 4)
+                {speaker: '{adv2}', text: '哈哈！那樣也很歡樂啊！犬跟家畜的大運動會！'},
+                // Line 6 (index 5)
+                {speaker: '{adv1}', text: `{PLAYER}，謝謝。向農夫報告吧。`},
+                // Line 7 (index 6)
                 {speaker: '農夫', text: '野犬全部打倒了啊！家畜平安，大家都安心了！'},
-                {speaker: '農夫', text: '追逐賽……不是在玩吧？好可怕，真的謝謝！'},
-                {speaker: '{PLAYER}', text: '安心就好。這是報酬。Kaito，下次你就留守吧。'},
-                {speaker: 'Kaito', text: '诶～！我也想去啦～！'},
-                {speaker: 'Luna', text: '那個……或許這樣最安全……'}
+                // Line 8 (index 7)
+                {speaker: '農夫', text: '追來追去……不是在玩吧？好可怕，真的謝謝！'},
+                // Line 9 (index 8) - Reward line (now spoken by quest giver)
+                {speaker: '農夫', text: '現在家畜安全了！請收下報酬吧！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：野犬退治後，如何應對？）'},
+                // Line 11 (index 10) - Choices object
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '給農夫野犬防治建議（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '收集野犬牙齒出售（+200 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 200},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '追加狩獵野犬進行鍛鍊（參加冒險者STR +3、好感度 -10）',
+                            reward: [
+                                {type: "strength", amount: 3, target: "participants"},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Advice (+2 Reputation)
+                // Line 12 (index 11)
+                {speaker: '{PLAYER}', text: '野犬是成群行動的，強化柵欄或種驅犬藥草可能會有幫助。'},
+                // Line 13 (index 12)
+                {speaker: '農夫', text: '原來如此！馬上試試看！這樣就能安心養家畜了！謝謝！'},
+                // Line 14 (index 13)
+                {speaker: '農夫', text: '有像你們這樣的冒險者，真是幫大忙了！', jumptoline: 24},
+                // Branch 2: Praise (+5 Friendliness participants)
+                // Line 15 (index 14)
+                {speaker: '{PLAYER}', text: '大家，面對速度很快的野犬一定很辛苦吧？謝謝你們，真的很可靠。'},
+                // Line 16 (index 15)
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                // Line 17 (index 16)
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我活躍了！', jumptoline: 24},
+                // Branch 3: Harvest dog fangs (+200G, -5 Friendliness participants)
+                // Line 18 (index 17)
+                {speaker: '{PLAYER}', text: '這些野犬的牙齒可以當武器材料賣掉。收集一點作為公會資金吧。'},
+                // Line 19 (index 18)
+                {speaker: '{adv1}', text: '……雖然有價值，但有點可怕……'},
+                // Line 20 (index 19)
+                {speaker: '{adv2}', text: '為了錢就忍了！下次讓我來做！', jumptoline: 24},
+                // Branch 4: Extra hunting (STR +3, -10 Friendliness participants)
+                // Line 21 (index 20)
+                {speaker: '{PLAYER}', text: '趁現在，多狩獵一些野犬來鍛鍊吧。變強了下次就輕鬆了。'},
+                // Line 22 (index 21)
+                {speaker: '{adv1}', text: '……還要繼續嗎？雖然很可怕……明白了。'},
+                // Line 23 (index 22)
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧……但為了變強就做吧。不會輸的！', jumptoline: 24},
+                // Convergence
+                {speaker: '{PLAYER}', text: '任務完成了。回公會領取報酬吧。'}
             ]
-        ]
+        ],
     },
     // 1: WIS - discovery quests
     {
         'F': [
-            // 0: ペンダント探索
+            // 0: 吊墜探索（委託人：老奶奶）
             [
-                {speaker: 'Luna', text: '鎮上老奶奶丟失的項鍊，平安找到了！掉在巷子裡的石頭下面。'},
-                {speaker: '{PLAYER}', text: '找得好，Luna。連細微的地方都搜得很仔細。'},
-                {speaker: 'Kaito', text: '哼，那種小東西我一下就聞出來了！Luna，你只是運氣好吧？'},
-                {speaker: 'Luna', text: '呵呵，Kaito先生才不可能呢。得好好推理才行♪'},
-                {speaker: 'Kaito', text: '什麼啦！？……這雕刻……好像在哪見過。以前公會長的……'},
-                {speaker: 'Luna', text: '凱、Kaito先生！現在不行！{PLAYER}，快去還給老奶奶吧。'},
-                {speaker: '{PLAYER}', text: '……公會長的？算了，之後再問。老奶奶，這是您的項鍊。'},
-                {speaker: '老奶奶', text: '啊啊，我的寶貝項鍊……！這雕刻是以前豐收節拿到的。那是沒有戰爭傳聞的和平時代的回憶……'},
-                {speaker: '老奶奶', text: '最近又聽說國境有士兵在動，很擔心。真的謝謝，眼淚都快掉下來了……'},
-                {speaker: '{PLAYER}', text: '平安就好。這是報酬。請好好珍惜節日的回憶。'},
-                {speaker: 'Kaito', text: '國境的事啊……旅人說，王國軍好像在強化呢。'},
-                {speaker: 'Luna', text: '{PLAYER}，我們也要打起精神來了呢……'},
-                {speaker: '{PLAYER}', text: '嗯，是啊。漸漸開始在意過去的事了。'}
+                // Line 0-5
+                {speaker: '{adv1}', text: '城鎮裡丟失的老奶奶的吊墜，順利找到了！掉在巷子裡的石頭下面。'},
+                {speaker: '{adv2}', text: '嘿，這麼小的東西？我一下子就能找到！只是運氣吧？'},
+                {speaker: '{adv1}', text: '要好好找才找得到哦…呵呵。'},
+                {speaker: '{adv2}', text: '這個雕刻…感覺見過。好像跟以前的公會會長的東西很像…'},
+                {speaker: '{adv1}', text: '噓！現在不行！{PLAYER}，快點還給老奶奶吧。'},
+                {speaker: '{PLAYER}', text: '公會會長的…？算了，之後再問。'},
+                // Line 6-7
+                {speaker: '老奶奶', text: '啊啊，我的重要吊墜…！這個雕刻是很久以前豐收祭拿到的東西。和平時代的回憶啊…'},
+                {speaker: '老奶奶', text: '最近又聽說邊境有士兵在動，我很擔心。真的謝謝你們，我都要哭了…'},
+                // Line 8 - 報酬由委託人說
+                {speaker: '老奶奶', text: '平安找回來真是太好了。這是報酬，請收下。要好好珍惜哦。'},
+                // Line 9
+                {speaker: 'Narrator', text: '（選擇肢：發現後，如何應對？）'},
+                // Line 10 - 選擇肢
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '提供吊墜的進一步洞察（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '把發現情報賣給酒館老闆賺取額外金幣（+150 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '使用魔力進一步調查來鍛鍊智慧（參加冒險者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: '這個雕刻很像和平時代的豐收祭符號。最好好好保管。'},
+                {speaker: '老奶奶', text: '是呢…謝謝你告訴我。我安心多了。'},
+                {speaker: '老奶奶', text: '有你們這樣的冒險者真的幫大忙了！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: '大家幹得很好。這麼小的吊墜都能確實找到，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，下次也期待哦。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: '把吊墜的詳細情報告訴酒館老闆就能拿到情報費。作為公會資金吧。'},
+                {speaker: '{adv1}', text: '……雖然有價值，但有點狡猾的感覺…'},
+                {speaker: '{adv2}', text: '為了錢就忍了！下次讓我來做！'},
+                {speaker: '{PLAYER}', text: '哈哈，交給你了。', jumptoline: 27},
+                // Branch 4: Mana investigation (詳細化)
+                {speaker: '{PLAYER}', text: '趁現在，用魔力再調查一下吧。是很好的智慧鍛鍊。'},
+                {speaker: '{adv1}', text: '…我注入魔力調查吊墜。微弱的保護魔力有反應…好像以前施加了祈求和平的咒語。現在幾乎沒剩什麼力量了…'},
+                {speaker: '{adv2}', text: '祈求和平的咒語啊…現在邊境又鬧騰起來，感覺真沉重！'},
+                {speaker: '{PLAYER}', text: '很有意思的發現。繼續加油。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 1: 隠し宝箱発見
+            // 1: 隱藏寶箱發現（委託人：村民）
             [
-                {speaker: 'Kaito', text: '森林的隱藏寶箱，找到了啦！埋在樹根下面……裡面居然只有3枚金幣！？'},
-                {speaker: '{PLAYER}', text: '能找到就很厲害了，Kaito。就算小也有價值。'},
-                {speaker: 'Luna', text: 'Kaito先生，期待太高了。這古幣是舊王政時代的，很稀有哦。'},
-                {speaker: 'Kaito', text: '嘖，本來想像堆成山的……咦？这地方，以前公會長帶{PLAYER}玩捉迷藏的……'},
-                {speaker: 'Luna', text: 'Kaito先生！多餘的話別說！快去向村人報告吧。'},
-                {speaker: '{PLAYER}', text: '捉迷藏……？我小時候在這裡玩過嗎？'},
-                {speaker: 'Kaito', text: '哎呀，說溜嘴了！快忘掉啦！村人在等呢！'},
-                {speaker: '村人', text: '真的找到隱藏寶箱了啊！小時候聽的傳說居然是真的。裡面的東西就當報酬拿去吧！'},
-                {speaker: '村人', text: '這古幣是王政時代的。最近王族血統的傳聞鬧得沸沸揚揚。'},
-                {speaker: '{PLAYER}', text: '傳說成真太好了。這是報酬。王政的事……好在意啊。'},
-                {speaker: 'Luna', text: '{PLAYER}，在這地方有沒有想起什麼？感覺很懷念嗎？'},
-                {speaker: 'Kaito', text: '慢慢來就好。我們一直都在你身邊啦。'},
-                {speaker: '{PLAYER}', text: '……嗯，有點溫暖的感覺。謝謝。'}
+                // Line 0-5
+                {speaker: '{adv1}', text: '森林裡的隱藏寶箱，找到了！埋在樹根下面。'},
+                {speaker: '{adv2}', text: '隱藏寶箱啊！…裡面只有3枚古金幣！？我期待更多啊！'},
+                {speaker: '{adv1}', text: '能找到就很厲害了。這些古幣是王政時代的東西，很稀有哦。'},
+                {speaker: '{adv2}', text: '這個地方…感覺見過。好像以前公會會長跟{PLAYER}玩耍的地方…'},
+                {speaker: '{adv1}', text: '噓！別說多餘的話！{PLAYER}，向村民報告吧。'},
+                {speaker: '{PLAYER}', text: '以前公會會長跟…？算了，之後再問。'},
+                // Line 6-7
+                {speaker: '村民', text: '真的找到隱藏寶箱了！小時候聽的傳說是真的啊。'},
+                {speaker: '村民', text: '這些古幣是王政時代的。最近有關王族血脈的傳言，大家都很躁動。'},
+                // Line 8
+                {speaker: '村民', text: '裡面的東西就當報酬收下吧！真的幫大忙了，謝謝！'},
+                // Line 9
+                {speaker: 'Narrator', text: '（選擇肢：發現後，如何應對？）'},
+                // Line 10 - 選擇肢
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '提供寶箱的進一步洞察（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '把發現情報賣給酒館老闆賺取額外金幣（+150 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '使用魔力進一步調查來鍛鍊智慧（參加冒險者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: '這些古幣是王政時代的稀有物品。記錄位置的話，也許能找到更多。'},
+                {speaker: '村民', text: '原來如此！馬上試試看！這樣就安心了，謝謝！'},
+                {speaker: '村民', text: '有你們這樣的冒險者真的幫大忙了！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: '大家幹得很好。找到傳說中的寶箱真是厲害。真可靠。587'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，下次也期待哦。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: '把寶箱的詳細情報告訴酒館老闆就能拿到情報費。作為公會資金吧。'},
+                {speaker: '{adv1}', text: '……雖然有價值，但有點狡猾的感覺…'},
+                {speaker: '{adv2}', text: '為了錢就忍了！下次讓我來做！'},
+                {speaker: '{PLAYER}', text: '哈哈，交給你了。', jumptoline: 27},
+                // Branch 4: Mana investigation (詳細化)
+                {speaker: '{PLAYER}', text: '趁現在，用魔力再調查一下吧。是很好的智慧鍛鍊。'},
+                {speaker: '{adv1}', text: '我注入魔力…土壤裡浮現隱藏的魔法印記。像是指向其他隱藏地點的網絡…王政時代的秘密還殘留著…'},
+                {speaker: '{adv2}', text: '哇！意思是還有更多寶藏！？冒險越來越大了！'},
+                {speaker: '{PLAYER}', text: '有趣的發現。繼續加油。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 2: 井戸の秘密
+            // 2: 井戶的秘密（委託人：學者）
             [
-                {speaker: 'Luna', text: '古老井底的秘密發現了！苔蘚下面有古代魔法陣在發光。'},
-                {speaker: '{PLAYER}', text: '很危險吧？平安就好，Luna。能潛下去真厲害。'},
-                {speaker: 'Kaito', text: '魔法陣！？超讚！我也想跳下去，井底感覺超有冒險感吧！'},
-                {speaker: 'Luna', text: 'Kaito先生，掉下去會死的哦……啊，{PLAYER}以前在這裡……'},
-                {speaker: 'Kaito', text: '對啊！以前公會長跳下去救{PLAYER}的啊！……哎呀，說出來了！'},
-                {speaker: '{PLAYER}', text: '我掉進井裡……？所以記憶才……？'},
-                {speaker: 'Luna', text: '現在先向學者報告優先！魔法陣最近發光特別強。'},
-                {speaker: '學者', text: '井的魔法陣被揭開了啊！太棒了！這是古代封印陣，好興奮！'},
-                {speaker: '學者', text: '最近首都也有類似陣發生反應的報告。魔力可能出現巨大異變……這是大發現！'},
-                {speaker: '{PLAYER}', text: '魔力異變啊……好在意。這是報酬。請繼續研究。'},
-                {speaker: 'Kaito', text: '異變會讓魔物變強嗎？冒險要熱血起來啦！'},
-                {speaker: 'Luna', text: '{PLAYER}，以前井的事……總有一天會好好告訴你的。'},
-                {speaker: '{PLAYER}', text: '嗯，拜託了。感覺回憶好像要回來了。'},
-                {speaker: 'Kaito', text: '有我們在，絕對沒問題啦，{PLAYER}！'}
+                // Line 0-5
+                {speaker: '{adv1}', text: '古老井戶底部的秘密，發現了！苔蘚下面有古代魔法陣在發光。'},
+                {speaker: '{adv2}', text: '魔法陣！？超讚！我也想跳下去啊，超有冒險感！'},
+                {speaker: '{adv1}', text: '掉下去會死的…要好好調查才行。'},
+                {speaker: '{adv2}', text: '這個魔法陣…感覺見過。好像跟以前的公會會長和{PLAYER}有關…'},
+                {speaker: '{adv1}', text: '噓！現在不行！{PLAYER}，向學者報告吧。'},
+                {speaker: '{PLAYER}', text: '跟公會會長有關…？算了，之後再問。'},
+                // Line 6-7
+                {speaker: '學者', text: '你們揭開了井戶的魔法陣！太棒了！是古代封印陣，大發現啊！'},
+                {speaker: '學者', text: '最近首都也有類似陣在反應。可能正在發生大規模魔力異變…'},
+                // Line 8
+                {speaker: '學者', text: '真的幫大忙了！這是報酬。讓我繼續研究吧！'},
+                // Line 9
+                {speaker: 'Narrator', text: '（選擇肢：發現後，如何應對？）'},
+                // Line 10 - 選擇肢
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '提供魔法陣的進一步洞察（+2 Reputation）',
+                            reward: [{type: "reputation", amount: 2}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '把發現情報賣給酒館老闆賺取額外金幣（+150 Gold、參加冒險者好感度 -5）',
+                            reward: [
+                                {type: "gold", amount: 150},
+                                {type: "friendliness", amount: -5, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '使用魔力進一步調查來鍛鍊智慧（參加冒險者 MP -50、WIS +3）',
+                            reward: [
+                                {type: "mp", amount: -50, target: "participants"},
+                                {type: "wisdom", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Insight (+2 Reputation)
+                {speaker: '{PLAYER}', text: '這是古代封印陣。定期檢查魔力的話，也許能早點發現異變。'},
+                {speaker: '學者', text: '沒錯！馬上開始做！這樣就安心了，謝謝！'},
+                {speaker: '學者', text: '有你們這樣的冒險者真的幫大忙了！', jumptoline: 27},
+                // Branch 2: Praise
+                {speaker: '{PLAYER}', text: '大家幹得很好。找到古代魔法陣真是厲害。真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，下次也期待哦。', jumptoline: 27},
+                // Branch 3: Sell info
+                {speaker: '{PLAYER}', text: '把魔法陣的詳細情報告訴酒館老闆就能拿到情報費。作為公會資金吧。'},
+                {speaker: '{adv1}', text: '……雖然有價值，但有點狡猾的感覺…'},
+                {speaker: '{adv2}', text: '為了錢就忍了！下次讓我來做！'},
+                {speaker: '{PLAYER}', text: '哈哈，交給你了。', jumptoline: 27},
+                // Branch 4: Mana investigation (詳細化)
+                {speaker: '{PLAYER}', text: '趁現在，用魔力再調查一下吧。是很好的智慧鍛鍊。'},
+                {speaker: '{adv1}', text: '我向魔法陣注入魔力…陣產生共鳴，朝首都方向有微弱反應…這個異變，可能在多個封印陣之間連鎖…'},
+                {speaker: '{adv2}', text: '糟糕啊！意思是有大規模魔力波要來了！？超熱血！'},
+                {speaker: '{PLAYER}', text: '要小心了。繼續加油。', jumptoline: 27},
+                // Convergence
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ]
-        ]
+        ],
     },
     // 2: DEX - escort quests
     {
         'F': [
-            // 0: 農夫護衛
+            // 0: 農夫護衛（委託人：農夫）
             [
-                {speaker: 'Kaito', text: '農夫安全護送到市場完成了！途中什麼事都沒發生，超無聊的旅程啦！'},
-                {speaker: '{PLAYER}', text: '平安就好，Kaito。和平才是最好的。'},
-                {speaker: 'Luna', text: 'Kaito先生，沒發生事件才是最好的。你亂來農夫會很可憐的。'},
-                {speaker: 'Kaito', text: '喂喂，農夫也想看我大顯身手吧！……咦？这條路，以前公會長護衛商隊走過的……'},
-                {speaker: 'Luna', text: 'Kaito先生！現在別說這個！{PLAYER}，去向農夫報告吧。'},
-                {speaker: '{PLAYER}', text: '商隊護衛……？是我爸的事嗎？之後再問。農夫，平安到了。'},
-                {speaker: '農夫', text: '真的謝謝！最近交易路上盜賊變多，一個人去好可怕。在市場賣了好價錢！'},
-                {speaker: '農夫', text: '聽說國境稅金也要漲，物價可能要上漲……託你們的福幫了大忙！'},
-                {speaker: '{PLAYER}', text: '盜賊增多啊……很危險。這是報酬。請小心回去。'},
-                {speaker: 'Kaito', text: '稅金漲？王國在集錢準備打仗嗎？感覺要變有趣了啦！'},
-                {speaker: 'Luna', text: '{PLAYER}，以前的護衛故事……有點在意嗎？'},
-                {speaker: '{PLAYER}', text: '嗯，這條路感覺好懷念。越來越想知道了。'},
-                {speaker: 'Kaito', text: '嘿嘿，慢慢回憶就好。我們一直陪著你啦！'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '順利護衛農夫到市場！路上什麼事都沒發生，超無聊的旅程啊！'},
+                {speaker: '{PLAYER}', text: '平安就好。和平才是最重要的。'},
+                {speaker: '{adv1}', text: '沒發生事件真是太好了。如果{adv2}亂來，農夫會害怕的。'},
+                {speaker: '{adv2}', text: '喂喂，農夫一定想看我活躍吧！…等等，這條路，感覺以前舊公會會長護衛商隊走過…'},
+                {speaker: '{adv1}', text: '噓！現在別說！{PLAYER}，向農夫報告吧。'},
+                {speaker: '{PLAYER}', text: '護衛商隊…？之後再問。農夫，我們平安到了。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '農夫', text: '真的謝謝！最近交易路上盜賊增加，我一個人不敢去。東西賣了好價錢！'},
+                {speaker: '農夫', text: '聽說邊境稅金也上漲了，物價可能要暴漲…多虧你們幫大忙！'},
+                // Line 9 (index 8)
+                {speaker: '農夫', text: '平安就好。這是報酬。真的謝謝！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：護衛後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '問路上有沒有看到特別的東西（+1 幸運硬幣）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '現在世界危險，要求追加報酬（+300 Gold、參加冒險者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '讓他們再護衛委託人一陣子鍛鍊敏捷（參加冒險者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '路上有沒有看到什麼特別的東西？不尋常的之類。'},
+                {speaker: '{adv1}', text: '說起來，路邊撿到一枚古舊的幸運硬幣。感覺很特別，就留著了。'},
+                {speaker: '農夫', text: '哦，那是幸運硬幣！當作謝禮送你們吧。謝謝！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。平安護衛，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界很危險，能不能追加報酬？護衛也很辛苦。'},
+                {speaker: '農夫', text: '…確實是危險的時代。沒辦法，追加300G吧。謝謝。'},
+                {speaker: '{adv1}', text: '……有點強人所難呢…'},
+                {speaker: '{adv2}', text: '錢是開心，但…下次讓我來！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '趁現在，再護衛農夫一陣子吧。是很好的敏捷鍛鍊。'},
+                {speaker: '{adv1}', text: '…還要繼續嗎？明白了，會提高警戒。'},
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧…但要做就認真啊！'},
+                {speaker: '{adv1}', text: '…回去路上被小規模盜賊襲擊了。受了輕傷，但用敏捷動作脫險了！'},
+                {speaker: '{adv2}', text: '可惡，有點痛啊…但閃避動作變熟練了！'},
+                {speaker: '{PLAYER}', text: '就是這股氣勢。撐得很好。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 1: 子供送迎
+            // 1: 孩子護送（委託人：父母）
             [
-                {speaker: 'Luna', text: '危險的橋安全渡過，把孩子送到家了！途中還牽著手哦～。'},
-                {speaker: '{PLAYER}', text: '真溫柔，Luna。小孩一定很高興。幹得好。'},
-                {speaker: 'Kaito', text: '只是過橋而已啊！我會給小孩木劍，一起玩魔物退治遊戲！'},
-                {speaker: 'Luna', text: 'Kaito先生，那太危險了！小孩會害怕的……啊，這座橋，{PLAYER}小時候……'},
-                {speaker: 'Kaito', text: '對啊！以前公會長抱著{PLAYER}渡過的啊！……哎呀，說溜嘴了！'},
-                {speaker: '{PLAYER}', text: '我在這橋上……？被抱著渡過？詳細告訴我。'},
-                {speaker: 'Luna', text: '現在先向親報告優先！最近橋附近有魔物出沒哦。'},
-                {speaker: '親', text: '孩子平安回來了！那座快塌的橋，一個人真的好可怕……真的謝謝！'},
-                {speaker: '親', text: '最近事故變多，魔物也靠近村子了。大家都在討論。託你們真是正確選擇！'},
-                {speaker: '{PLAYER}', text: '魔物靠近啊……要小心。這是報酬。小孩也很精神。'},
-                {speaker: 'Kaito', text: '橋事故？一定是魔物幹的吧。下次我守小孩，保證華麗演出！'},
-                {speaker: 'Luna', text: '{PLAYER}，那座橋的記憶……有稍微回來一點嗎？'},
-                {speaker: '{PLAYER}', text: '……嗯，風的感覺好懷念。謝謝。'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '順利護送孩子穿過危險的橋到家了！途中還牽手了哦～。'},
+                {speaker: '{PLAYER}', text: '真溫柔。孩子一定很安心。幹得很好。'},
+                {speaker: '{adv2}', text: '只是過橋而已嗎！我要給孩子木劍一起玩魔物討伐遊戲！'},
+                {speaker: '{adv1}', text: '那太危險了！孩子會害怕的…啊，這座橋，以前舊公會會長抱著{PLAYER}…'},
+                {speaker: '{adv2}', text: '對啊！抱著過橋的！…啊，說溜嘴了！'},
+                {speaker: '{PLAYER}', text: '抱著我…？之後再問。父母，孩子平安送到了。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '父母', text: '孩子平安回家了！那座快塌的橋，我一個人不敢過…真的謝謝！'},
+                {speaker: '父母', text: '最近事故增加，魔物也靠近了，大家都在討論。多虧找你們才對！'},
+                // Line 9 (index 8)
+                {speaker: '父母', text: '平安就好。這是報酬。真的幫大忙了！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：護衛後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '問路上有沒有看到特別的東西（+1 幸運硬幣）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '現在世界危險，要求追加報酬（+300 Gold、參加冒險者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '讓他們再護衛委託人一陣子鍛鍊敏捷（參加冒險者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '路上有沒有看到什麼特別的東西？不尋常的之類。'},
+                {speaker: '{adv2}', text: '橋附近撿到一枚古舊的幸運硬幣。感覺運氣好就撿起來了！'},
+                {speaker: '父母', text: '那是幸運硬幣呢！當作謝禮送你們吧。謝謝！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。溫柔護衛孩子，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界很危險，能不能追加報酬？護衛也很辛苦。'},
+                {speaker: '父母', text: '…確實是可怕的時代。沒辦法，追加300G吧。謝謝。'},
+                {speaker: '{adv1}', text: '……有點強人所難呢…'},
+                {speaker: '{adv2}', text: '錢是開心，但…下次讓我來！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '趁現在，再護衛孩子一陣子吧。是很好的敏捷鍛鍊。'},
+                {speaker: '{adv1}', text: '…還要繼續嗎？明白了，會提高警戒。'},
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧…但要做就認真啊！'},
+                {speaker: '{adv2}', text: '…回去路上橋附近被小型魔物襲擊！受了輕傷，但用敏捷閃避守住了！'},
+                {speaker: '{adv1}', text: '痛痛的…但動作變好了感覺。'},
+                {speaker: '{PLAYER}', text: '就是這股氣勢。撐得很好。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 2: 使者護衛
+            // 2: 使者護衛（委託人：村長）
             [
-                {speaker: 'Kaito', text: '使者的信護衛完成了！一個間諜都沒出現，超失望的啦！'},
-                {speaker: '{PLAYER}', text: '平安送到就好，Kaito。和平才是最好的。'},
-                {speaker: 'Luna', text: 'Kaito先生，想太多了。使者也鬆了一口氣哦。'},
-                {speaker: 'Kaito', text: '要是間諜出現，我一刀解決！……這條路，以前公會長運送重要信件的……'},
-                {speaker: 'Luna', text: 'Kaito先生！現在不是說這個的時候！{PLAYER}，去向村長報告吧。'},
-                {speaker: '{PLAYER}', text: '重要信件……？是我爸嗎？好在意。村長，平安送到了。'},
-                {speaker: '村長', text: '使者平安，信也送到了！這下村子的同盟就定了。真的感謝！'},
-                {speaker: '村長', text: '王都政變傳聞不斷，這麼重要的書狀能守住……你們公會真可靠！'},
-                {speaker: '{PLAYER}', text: '同盟跟政變啊……世道要變了呢。這是報酬。能幫上忙太好了。'},
-                {speaker: 'Kaito', text: '政變！？國王要換人了嗎？冒險的預感來了！'},
-                {speaker: 'Luna', text: '{PLAYER}，信件護衛的舊事……想聽嗎？'},
-                {speaker: 'Kaito', text: '對啊，{PLAYER}。我們全都知道哦！'},
-                {speaker: '{PLAYER}', text: '嗯，拜託了。我的過去漸漸清晰，好期待。'},
-                {speaker: 'Luna', text: '呵呵，我們也很開心。一起回憶吧♪'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '使者信件護衛完成！連一個間諜都沒出現，太失望了！'},
+                {speaker: '{PLAYER}', text: '平安送到就好。和平才是最好的。'},
+                {speaker: '{adv1}', text: '{adv2}，想像力太豐富了。使者看起來很放心哦。'},
+                {speaker: '{adv2}', text: '間諜出現我就一刀解決！…這條路，以前舊公會會長運送重要信件…'},
+                {speaker: '{adv1}', text: '噓！現在不是說的時候！{PLAYER}，向村長報告吧。'},
+                {speaker: '{PLAYER}', text: '重要信件…？之後再問。村長，平安送到了。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '村長', text: '使者平安，信件也到了！這樣村子的聯盟就定了。真的感謝！'},
+                {speaker: '村長', text: '王都政變傳聞中，守護這麼重要的書信…你們公會真可靠！'},
+                // Line 9 (index 8)
+                {speaker: '村長', text: '平安就好。這是報酬。辛苦了！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：護衛後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '問路上有沒有看到特別的東西（+1 幸運硬幣）',
+                            reward: [{type: "item", name: "Lucky Coin", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '現在世界危險，要求追加報酬（+300 Gold、參加冒險者好感度 -10）',
+                            reward: [
+                                {type: "gold", amount: 300},
+                                {type: "friendliness", amount: -10, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '讓他們再護衛委託人一陣子鍛鍊敏捷（參加冒險者 HP -50、DEX +3）',
+                            reward: [
+                                {type: "hp", amount: -50, target: "participants"},
+                                {type: "dexterity", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask about special find - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '路上有沒有看到什麼特別的東西？不尋常的之類。'},
+                {speaker: '{adv2}', text: '路邊撿到一枚古舊的幸運硬幣。感覺不錯就撿起來了！'},
+                {speaker: '村長', text: '那是幸運硬幣！當作謝禮送你們吧。謝謝！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。平安護衛重要信件，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Demand more reward - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '最近世界很危險，能不能追加報酬？護衛也很辛苦。'},
+                {speaker: '村長', text: '…確實局勢不穩。沒辦法，追加300G吧。謝謝。'},
+                {speaker: '{adv1}', text: '……有點強人所難呢…'},
+                {speaker: '{adv2}', text: '錢是開心，但…下次讓我來！', jumptoline: 29},
+                // Branch 4: Extra protection - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '趁現在，再護衛使者一陣子吧。是很好的敏捷鍛鍊。'},
+                {speaker: '{adv1}', text: '…還要繼續嗎？明白了，會提高警戒。'},
+                {speaker: '{adv2}', text: '喂喂，讓我們休息吧…但要做就認真啊！'},
+                {speaker: '{adv2}', text: '…回去路上被可疑盜賊襲擊！受了輕傷，但用敏捷動作守住了！'},
+                {speaker: '{adv1}', text: '痛痛的…但閃避變好了感覺。'},
+                {speaker: '{PLAYER}', text: '就是這股氣勢。撐得很好。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ]
-        ]
+        ],
     },
     // 3: LUC - fetch quests
     {
         'F': [
-            // 0: 薬草集め
+            // 0: 藥草採集（委託人：錬金術師）
             [
-                {speaker: 'Luna', text: '錬金術師依頼的藥草，按照指定全收集來了！很新鮮哦～。'},
-                {speaker: '{PLAYER}', text: '幹得好，Luna。跑到森林深處了吧？辛苦了。'},
-                {speaker: 'Kaito', text: '藥草啊。我可能直接踩壞了！不過能做藥水還不錯啦。'},
-                {speaker: 'Luna', text: 'Kaito先生，這能做強力回復藥水！最近魔力變薄，很珍貴哦。'},
-                {speaker: '{PLAYER}', text: '魔力變薄？最近聽說魔物也變弱了……'},
-                {speaker: 'Kaito', text: '那這藥草能不能做魔力增幅藥水？塗在我劍上就最強了吧！'},
-                {speaker: 'Luna', text: '好有趣的主意！不過感覺會爆炸好可怕……問問錬金術師吧。'},
-                {speaker: '錬金術師', text: '哇，完美的藥草！這能做20個普通回復藥水。最近魔力枯竭，材料價格暴漲……幫大忙了！'},
-                {speaker: '錬金術師', text: '魔力增幅劑？好主意！失敗會大爆炸，但成功就能革命性強化武器。值得一試！'},
-                {speaker: '{PLAYER}', text: '成功了請分一點給公會。這是報酬。好期待啊。'},
-                {speaker: 'Kaito', text: '成了！我劍要變無敵啦！'},
-                {speaker: 'Luna', text: '{PLAYER}，我們優先回復藥水哦♪'},
-                {speaker: '{PLAYER}', text: '哈哈，知道了。感覺世界要變了的預感呢。'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '錬金術師委託的藥草，按照指定全部採集完成了！很新鮮哦～。'},
+                {speaker: '{PLAYER}', text: '幹得很好。去了森林深處吧？辛苦了。'},
+                {speaker: '{adv2}', text: '藥草啊。我可能會踩爛吧！但能做藥水也不錯。'},
+                {speaker: '{adv1}', text: '這些能做強力回復藥水！最近魔力變薄，很珍貴哦。'},
+                {speaker: '{PLAYER}', text: '魔力變薄？最近聽說魔物也變弱了…。'},
+                {speaker: '{adv2}', text: '那用這些藥草做魔力增幅藥水怎麼樣？塗在我的劍上就無敵了吧！'},
+                // Line 7-8 (index 6-7)
+                {speaker: '錬金術師', text: '哦，完美的藥草！能做至少20個普通回復藥水。最近魔力枯渇材料漲價…真的幫大忙！'},
+                {speaker: '錬金術師', text: '魔力增幅劑？好主意！失敗會大爆炸，但成功就能革新武器強化。值得試試！'},
+                // Line 9 (index 8)
+                {speaker: '錬金術師', text: '真的幫大忙了。這是報酬。期待結果哦！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：採集後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '請委託人分一些採集的藥草（+1 藥草）',
+                            reward: [{type: "item", name: "藥草", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '讓冒險者威脅委託人要求追加金錢（+400 Gold、參加冒險者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '把一部分報酬金還給委託人（-200 Gold、參加冒險者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '藥草很多，能不能分一個？公會也能用。'},
+                {speaker: '{adv1}', text: '看起來有多餘呢。來問問吧。'},
+                {speaker: '錬金術師', text: '好啊！當作謝禮送一個。以後也多多關照！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。新鮮藥草確實採集，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '現在世界危險，能不能多給報酬？稍微威脅一下。'},
+                {speaker: '{adv2}', text: '喂喂，真的嗎…沒辦法，做吧！'},
+                {speaker: '錬金術師', text: '太、太過分了…明白了，追加400G，這次饒了我…。'},
+                {speaker: '{adv1}', text: '……做得太過了…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '把一部分報酬還回去吧。200G可以吧？對方很親切。'},
+                {speaker: '{adv1}', text: '真溫柔…一定會有好運的哦。'},
+                {speaker: '{adv2}', text: '喂喂，金錢減少啊…但做好事感覺不錯。'},
+                {speaker: '錬金術師', text: '怎麼這樣…謝謝！真的是好人呢。'},
+                {speaker: '{adv1}', text: '心裡暖暖的。一定會有好事發生哦。'},
+                {speaker: '{PLAYER}', text: '希望如此。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 1: キノコ集め
+            // 1: 蘑菇採集（委託人：料理人）
             [
-                {speaker: 'Kaito', text: '料理人依頼的新鮮蘑菇，大量收集來了啦！今晚來場蘑菇祭吧！？'},
-                {speaker: '{PLAYER}', text: '也太多了吧，Kaito。怎麼採這麼多。辛苦了。'},
-                {speaker: 'Luna', text: '這蘑菇香氣超棒！普通湯都能變成大餐哦～。'},
-                {speaker: 'Kaito', text: '我要烤蘑菇！冒險者HP能回復250的那種！'},
-                {speaker: 'Luna', text: '烤蘑菇？好主意！今年豐收，蘑菇超多，正適合做保存食。'},
-                {speaker: '{PLAYER}', text: '豐收年啊。最近村子熱鬧起來就是因為這個……祭典準備也進行中呢。'},
-                {speaker: 'Kaito', text: '祭典！？蘑菇料理大賽我一定拿冠軍！新菜譜已經想好了！'},
-                {speaker: '料理人', text: '超棒的蘑菇！今晚宴會菜單定了。這豐收年大家都能吃飽！'},
-                {speaker: '料理人', text: '耐力料理主意？可以針對冒險者開發！乾燥成粉能長期保存，還能當交易品。'},
-                {speaker: '{PLAYER}', text: '交易品啊……村子會更繁榮呢。這是報酬。很期待宴會。'},
-                {speaker: 'Luna', text: '{PLAYER}，我們也來開新菜譜試吃會吧♪'},
-                {speaker: 'Kaito', text: '當然我吃最多！肚子餓扁啦－！'},
-                {speaker: '{PLAYER}', text: '哈哈，大家一起享受吧。感覺會是好年呢。'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv2}', text: '料理人委託的新鮮蘑菇，大量採集來了！今晚是蘑菇祭嗎！？'},
+                {speaker: '{PLAYER}', text: '太多了吧。怎麼採這麼多。辛苦了。'},
+                {speaker: '{adv1}', text: '這些蘑菇香氣超棒！普通湯變成大餐哦～。'},
+                {speaker: '{adv2}', text: '我要烤蘑菇！冒險者HP回復250的那種！'},
+                {speaker: '{adv1}', text: '今年豐收蘑菇超多，很適合做保存食。'},
+                {speaker: '{PLAYER}', text: '豐收年啊。最近村子熱鬧是因為這個…祭典準備也進行中呢。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '料理人', text: '超棒的蘑菇！今晚宴會菜單定了。今年豐收大家都能吃飽！'},
+                {speaker: '料理人', text: '耐力料理？來開發冒險者專用吧！乾燥蘑菇粉能長期保存，還能當交易品。'},
+                // Line 9 (index 8)
+                {speaker: '料理人', text: '真的幫大忙了。這是報酬。宴會期待哦！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：採集後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '請委託人分一些採集的蘑菇（+1 蘑菇）',
+                            reward: [{type: "item", name: "蘑菇", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '讓冒險者威脅委託人要求追加金錢（+400 Gold、參加冒險者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '把一部分報酬金還給委託人（-200 Gold、參加冒險者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '蘑菇很多，能不能分一個？公會也能用。'},
+                {speaker: '{adv1}', text: '看起來有多餘呢。來問問吧。'},
+                {speaker: '料理人', text: '好啊！當作謝禮送一個。以後也多多關照！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。新鮮蘑菇確實採集，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '現在世界危險，能不能多給報酬？稍微威脅一下。'},
+                {speaker: '{adv2}', text: '喂喂，真的嗎…沒辦法，做吧！'},
+                {speaker: '料理人', text: '太、太過分了…明白了，追加400G，這次饒了我…。'},
+                {speaker: '{adv1}', text: '……做得太過了…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '把一部分報酬還回去吧。200G可以吧？對方很親切。'},
+                {speaker: '{adv1}', text: '真溫柔…一定會有好運的哦。'},
+                {speaker: '{adv2}', text: '喂喂，金錢減少啊…但做好事感覺不錯。'},
+                {speaker: '料理人', text: '怎麼這樣…謝謝！真的是好人呢。'},
+                {speaker: '{adv1}', text: '心裡暖暖的。一定會有好事發生哦。'},
+                {speaker: '{PLAYER}', text: '希望如此。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ],
-            // 2: 花集め
+            // 2: 花朵採集（委託人：村人）
             [
-                {speaker: 'Luna', text: '村人依頼的漂亮花，很多都收集來了！香氣超棒～。'},
-                {speaker: '{PLAYER}', text: '好香啊，Luna。拿來裝飾公會一定很療癒。採得好。'},
-                {speaker: 'Kaito', text: '花啊……我可能直接踩壞了。被Luna瞪所以閉嘴！'},
-                {speaker: 'Luna', text: '這花還能做染料哦！衣服會變得很鮮豔，大家一定很高興。'},
-                {speaker: '{PLAYER}', text: '染料啊。最近結婚典禮變多，應該是因為花季吧？'},
-                {speaker: 'Kaito', text: '結婚典禮！？花束拋接我接到的话下次就輪到我啦！……開玩笑的。'},
-                {speaker: 'Luna', text: '有趣的主意……用這花做香袋如何？房間會一直充滿好香味，超療癒哦！'},
-                {speaker: '村人', text: '漂亮的花謝謝！廣場會變成花海一樣。最近結婚熱潮，正好需要！'},
-                {speaker: '村人', text: '香袋或療癒茶也行。混入花粉症藥草就能應付今年的需求。大家都幫了大忙！'},
-                {speaker: '{PLAYER}', text: '療癒茶啊……冒險者的疲勞應該也能消除。這是報酬。村子會變得很華麗呢。'},
-                {speaker: 'Luna', text: '{PLAYER}，公會也來做香袋吧！我幫忙♪'},
-                {speaker: 'Kaito', text: '我……就負責聞香味。祈禱別得花粉症！'},
-                {speaker: '{PLAYER}', text: '哈哈，大家一起做吧。村子和公會都會變得更明亮。'}
+                // Line 1-6 (index 0-5)
+                {speaker: '{adv1}', text: '村人委託的漂亮花朵，大量採集來了！香氣超棒～。'},
+                {speaker: '{PLAYER}', text: '好香啊。放在公會就能療癒。幹得很好。'},
+                {speaker: '{adv2}', text: '花啊…我可能會踩爛。{adv1}會殺了我所以閉嘴！'},
+                {speaker: '{adv1}', text: '這些花能做染料哦！衣服變鮮豔大家會開心。'},
+                {speaker: '{PLAYER}', text: '染料啊。最近聽說結婚典禮很多，是花季嗎？'},
+                {speaker: '{adv2}', text: '結婚典禮！？接住花束就輪到我了！…開玩笑的。'},
+                // Line 7-8 (index 6-7)
+                {speaker: '村人', text: '謝謝漂亮的花！村子廣場會變成花田。最近結婚熱潮，正好需要！'},
+                {speaker: '村人', text: '能做香袋或療癒茶。混花粉症藥草就能應付今年需求。大家都得救了！'},
+                // Line 9 (index 8)
+                {speaker: '村人', text: '真的幫大忙了。這是報酬。村子會變華麗哦！'},
+                // Line 10 (index 9)
+                {speaker: 'Narrator', text: '（選擇肢：採集後，如何應對？）'},
+                // Line 11 (index 10) - Choices
+                {
+                    speaker: 'Narrator',
+                    text: '',
+                    choices: [
+                        {
+                            text: '請委託人分一些採集的花朵（+1 花）',
+                            reward: [{type: "item", name: "花", qty: 1}],
+                            jumptoline: 12
+                        },
+                        {
+                            text: '稱讚冒險者加深信任（參加冒險者好感度 +5）',
+                            reward: [{type: "friendliness", amount: 5, target: "participants"}],
+                            jumptoline: 15
+                        },
+                        {
+                            text: '讓冒險者威脅委託人要求追加金錢（+400 Gold、參加冒險者好感度 -15、LUC -3）',
+                            reward: [
+                                {type: "gold", amount: 400},
+                                {type: "friendliness", amount: -15, target: "participants"},
+                                {type: "luck", amount: -3, target: "participants"}
+                            ],
+                            jumptoline: 19
+                        },
+                        {
+                            text: '把一部分報酬金還給委託人（-200 Gold、參加冒險者 LUC +3）',
+                            reward: [
+                                {type: "gold", amount: -200},
+                                {type: "luck", amount: 3, target: "participants"}
+                            ],
+                            jumptoline: 23
+                        }
+                    ]
+                },
+                // Branch 1: Ask for some item back - Line 12-14 (index 11-13)
+                {speaker: '{PLAYER}', text: '花很多，能不能分一個？公會也能用。'},
+                {speaker: '{adv1}', text: '看起來有多餘呢。來問問吧。'},
+                {speaker: '村人', text: '好啊！當作謝禮送一個。以後也多多關照！', jumptoline: 29},
+                // Branch 2: Praise - Line 15-18 (index 14-17)
+                {speaker: '{PLAYER}', text: '大家幹得很好。漂亮花朵確實採集，真可靠。'},
+                {speaker: '{adv1}', text: '被{PLAYER}這麼說很高興！會更努力的！'},
+                {speaker: '{adv2}', text: '嘿嘿，多讚美我啊！下次輪到我大活躍了！'},
+                {speaker: '{PLAYER}', text: '嗯，期待哦。', jumptoline: 29},
+                // Branch 3: Threaten for more gold - Line 19-22 (index 18-21)
+                {speaker: '{PLAYER}', text: '現在世界危險，能不能多給報酬？稍微威脅一下。'},
+                {speaker: '{adv2}', text: '喂喂，真的嗎…沒辦法，做吧！'},
+                {speaker: '村人', text: '太、太過分了…明白了，追加400G，這次饒了我…。'},
+                {speaker: '{adv1}', text: '……做得太過了…', jumptoline: 29},
+                // Branch 4: Give back some gold - Line 23-28 (index 22-27)
+                {speaker: '{PLAYER}', text: '把一部分報酬還回去吧。200G可以吧？對方很親切。'},
+                {speaker: '{adv1}', text: '真溫柔…一定會有好運的哦。'},
+                {speaker: '{adv2}', text: '喂喂，金錢減少啊…但做好事感覺不錯。'},
+                {speaker: '村人', text: '怎麼這樣…謝謝！真的是好人呢。'},
+                {speaker: '{adv1}', text: '心裡暖暖的。一定會有好事發生哦。'},
+                {speaker: '{PLAYER}', text: '希望如此。', jumptoline: 29},
+                // Convergence - Line 29 (index 28)
+                {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ]
-        ]
+        ],
     }
 ]
 }

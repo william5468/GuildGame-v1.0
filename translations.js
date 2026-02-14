@@ -50,7 +50,7 @@ const translations = {
     "fetch_item_reward": "+{qty} {name}",
 
     // === 死亡メッセージ ===
-    "adventurer_death": "{name} が \"{quest}\" で{perm}！{repPenalty}",
+    "adventurer_death": "{name} が \"{quest}\" で死亡！{repPenalty}",
     "permanent": "死亡しました",
     "temporary": "失われました",
     "temp_cannot_join_trade": "{name} は一時冒険者なので貿易クエストに参加できません",
@@ -930,7 +930,7 @@ relationship_title: "{name} の関係性",
     "fetch_item_reward": "+{qty} {name}",
 
     // === Death Message ===
-    "adventurer_death": "{name} {perm} in \"{quest}\"!{repPenalty}",
+    "adventurer_death": "{name} died in \"{quest}\"!{repPenalty}",
     "permanent": "died",
     "temporary": "was lost",
     "temp_cannot_join_trade":"{name} is a temporary adventurer and cannot join trade quests",
@@ -1784,7 +1784,7 @@ relationship_title: "{name}'s Relationships",
     "fetch_item_reward": "+{qty} {name}",
 
     // === 死亡訊息 ===
-    "adventurer_death": "{name} 在「{quest}」中{perm}！{repPenalty}",
+    "adventurer_death": "{name} 在「{quest}」中死亡！{repPenalty}",
     "permanent": "死亡",
     "temporary": "失蹤",
     "temp_cannot_join_trade":"{name} 是臨時冒險者，無法參加貿易任務",
@@ -4051,6 +4051,33 @@ const tutorialDialogues = {
     {speaker: "ナレーター", text: "「出售物品」ページでは、\nインベントリのアイテムを商人に売却できる。\nただ、買取価格はかなり安いから、\n本当に必要な時だけにしておこう。"},
     {speaker: "ナレーター", text: "Goldが足りない時は「商人から借金」ページで借金できる。\nReputationに応じた金額まで借りられて、\n7日ごとに10%利息、28日後に全額返済が必要。\n返せないと破産でゲームオーバーだから慎重にね。"},
     {speaker: "ナレーター", text: "最後に「商人を脅す」ページは……危険な選択肢よ。\n商人を脅してGoldを手に入れられるけど、\nReputationが大きく下がるリスクがある。\n本当に困った時の最終手段として考えて。"},
+
+    // === 自然な選択肢統合 ===
+    {speaker: "ナレーター", text: "GoldとReputationのバランスはとても大事。\nリスクを取ればすぐにGoldが増えるけど、\nReputationが下がると信頼を失ってしまうわ。\n実際にどんな感じか、ちょっと体験してみる？"},
+    {
+      speaker: "ナレーター",
+      text: "匿名のお金持ちから「スタートダッシュ用に10Goldあげるよ」と言われたわ。\n受け取る？それとも、ちゃんと自分で稼ぐ方がいいかしら？",
+      choices: [
+        { 
+          text: "受け取る（+10 Gold）", 
+          reward: [{type: "gold", amount: 10}], 
+          jumptoline: 20  // 受け取り専用メッセージへ
+        },
+        { 
+          text: "断る（+1 Reputation）", 
+          reward: [{type: "reputation", amount: 1}], 
+          jumptoline: 21  // 断り専用メッセージへ
+        }
+      ]
+    },
+    // 受け取り専用メッセージ（自動で合流点へジャンプ）
+    {speaker: "ナレーター", text: "受け取ったのね！スタートダッシュに役立つわ。\nでも、こんな簡単に手に入るお金は、\n本当のゲームではリスク付きの場合が多いから気をつけてね。", jumptoline: 22},
+    // 断り専用メッセージ（自動で合流点へジャンプ）
+    {speaker: "ナレーター", text: "正直に断ったのね。世の中には怪しい話も多いから、慎重なのは良いことよ。\nReputationが少し上がったわ。", jumptoline: 22},
+    // 合流点
+    {speaker: "ナレーター", text: "さて、説明を続けましょう。"},
+    // === 選択肢統合終了 ===
+
     {speaker: "ナレーター", text: "右上は利用可能な冒険者一覧。\n横にスクロールして確認し、ドラッグ＆ドロップまたはクリックでクエストに配置しよう。"},
     {speaker: "ナレーター", text: "配置が終わったら「日終了 & 冒険者派遣」ボタンを押すか、\nEnterキーを押して1日を進めよう。\n翌日に結果が返ってくるよ。"},
     {speaker: "ナレーター", text: "その他の便利な操作：\n・A / Dキー：クエスト、キャラクター、店のページ切り替え\n・スペースキー：店、キャラクター、イベントログを閉じる"},
@@ -4080,6 +4107,33 @@ const tutorialDialogues = {
     {speaker: "Narrator", text: "\"Sell Items\" page:\nSell inventory items to the merchant.\nBuyback prices are quite low,\nso use only when necessary."},
     {speaker: "Narrator", text: "When short on gold, use \"Borrow from Merchant\" page.\nBorrow up to Reputation × 100G.\n10% interest every 7 days, full repayment on day 28.\nFailure causes bankruptcy and game over—be careful!"},
     {speaker: "Narrator", text: "\"Intimidate Merchant\" page is a risky option.\nIntimidate to get gold quickly,\nbut Reputation may drop significantly depending on success.\nLast resort when desperate."},
+
+    // === Natural choice integration ===
+    {speaker: "Narrator", text: "Balancing Gold and Reputation is very important.\nTaking risks can earn gold quickly, but losing reputation damages trust.\nWould you like to experience what that feels like?"},
+    {
+      speaker: "Narrator",
+      text: "An anonymous wealthy person offers: \"Here's 10 Gold to help you get started.\"\nWill you accept it, or earn everything through honest effort?",
+      choices: [
+        { 
+          text: "Accept (+10 Gold)", 
+          reward: [{type: "gold", amount: 10}], 
+          jumptoline: 20
+        },
+        { 
+          text: "Refuse (+1 Reputation)", 
+          reward: [{type: "reputation", amount: 1}], 
+          jumptoline: 21
+        }
+      ]
+    },
+    // Accept-specific (auto-jump to convergence)
+    {speaker: "Narrator", text: "You accepted! Great for an early boost.\nBut remember—in the real game, easy money often comes with hidden risks.", jumptoline: 22},
+    // Refuse-specific (auto-jump to convergence)
+    {speaker: "Narrator", text: "You refused politely. In a world full of suspicious offers, caution is a virtue.\nYour Reputation increased slightly.", jumptoline: 22},
+    // Convergence
+    {speaker: "Narrator", text: "Now, let's continue the explanation."},
+    // === End of choice ===
+
     {speaker: "Narrator", text: "Top-right is the list of available adventurers.\nScroll horizontally, then drag & drop or click to assign them to quests."},
     {speaker: "Narrator", text: "When assignments are done, press the \"End Day & Dispatch Adventurers\" button\nor hit Enter to advance the day.\nResults will return the next day."},
     {speaker: "Narrator", text: "Other useful controls:\n・A / D keys: Switch pages in quests, characters, and shop\n・Space key: Close shop, characters, or event log"},
@@ -4109,6 +4163,33 @@ const tutorialDialogues = {
     {speaker: "Narrator", text: "「出售物品」頁面：\n將庫存物品賣給商人。\n不過回收價格很低，\n建議只在必要時使用。"},
     {speaker: "Narrator", text: "Gold不足時，用「從商人借錢」頁面借錢。\n最多聲望×100G。7天利息10%，第28天全額歸還。\n還不出來會破產遊戲結束，要小心！"},
     {speaker: "Narrator", text: "「威脅商人」頁面是危險選擇。\n威脅商人快速獲得Gold，\n但聲望可能大幅下降。\n真的缺錢時的最後手段。"},
+
+    // === 自然な選択肢統合 ===
+    {speaker: "Narrator", text: "Gold與聲望的平衡非常重要。\n冒險有時能快速賺錢，但損害聲望會失去信任。\n要不要實際體驗一下這種感覺？"},
+    {
+      speaker: "Narrator",
+      text: "一位匿名富豪說：「為了讓你順利起步，送你10 Gold吧。」\n你要接受嗎？還是選擇靠自己誠實賺取？",
+      choices: [
+        { 
+          text: "接受（+10 Gold）", 
+          reward: [{type: "gold", amount: 10}], 
+          jumptoline: 20
+        },
+        { 
+          text: "拒絕（+1 聲望）", 
+          reward: [{type: "reputation", amount: 1}], 
+          jumptoline: 21
+        }
+      ]
+    },
+    // 受け取り専用メッセージ（自動で合流点へジャンプ）
+    {speaker: "Narrator", text: "你接受了！對初期很有幫助。\n不過記住，在真正的遊戲中，輕易到手錢往往伴隨隱藏風險哦。", jumptoline: 22},
+    // 断り専用メッセージ（自動で合流点へジャンプ）
+    {speaker: "Narrator", text: "你禮貌地拒絕了。這世界充滿可疑的提議，謹慎是美德。\n你的聲望稍微上升了。", jumptoline: 22},
+    // 合流点
+    {speaker: "Narrator", text: "好了，繼續說明吧。"},
+    // === 選択肢統合終了 ===
+
     {speaker: "Narrator", text: "右上是可以使用的冒險者列表。\n水平滾動確認後，用拖曳或點擊分配到任務。"},
     {speaker: "Narrator", text: "分配完成後，按「結束一天 & 派遣冒險者」按鈕，\n或按Enter鍵前進一天。\n隔天就會回報結果。"},
     {speaker: "Narrator", text: "其他便利操作：\n・A / D鍵：切換任務、角色、商店頁面\n・空白鍵：關閉商店、角色、事件記錄"},
@@ -4121,7 +4202,6 @@ const tutorialDialogues = {
     {speaker: "Narrator", text: "呵呵……總有一天你會想起我的。\n但現在還不是時候。\n來吧，{player}。開始你的冒險吧。"}
   ]
 };
-
 
 // facilityUpgradeDialogues.js または javascript.js のどこかに追加
 const facilityUpgradeDialogues = {
@@ -4236,17 +4316,43 @@ const introDialogues = {
     {
         speaker: "ルナ",
         image: "Images/ルナ.png",
-        text: "大丈夫よ、{player}。<br>記憶は少しずつ戻ってくるって医者も言ってた。<br>今は私たちが支えるから……一緒に、ギルドを昔のように偉大にしましょう。"
-    },
-    {
-        speaker: "カイト",
-        image: "Images/カイト.png",
-        text: "決まりだな、{player}。<br>お前が新しいギルドマスターだ。<br>俺たちで、このギルドをもう一度盛り上げようぜ。"
+        text: "記憶がなくても……あなたはあなたよ。<br>私たちは信じてる。どうする？ 今、ここでギルドマスターを引き受ける？"
     },
     {
         speaker: "ナレーター",
-        text: "あなたはまだ記憶を失ったまま、戸惑いを抱えていた。<br>（本当に自分が彼らの言う「{player}」なのか……？）<br>それでも、今は前に進むしかない。父の遺志を継ぎ、ギルドを再興する道を選ぶことにした。"
+        text: "（選択肢：ギルドマスターになる決意をどう示すか）",
+        choices: [
+            {
+                text: "すぐに引き受けて二人を安心させる（ルナ＆カイト好感度 +10）",
+                reward: [{type: "friendliness", amount: 10}],
+                jumptoline: 12
+            },
+            {
+                text: "資金援助を頼む（+1000 Gold、ルナ＆カイト好感度 -10）",
+                reward: [
+                    {type: "gold", amount: 1000},
+                    {type: "friendliness", amount: -10}
+                ],
+                jumptoline: 14
+            },
+            {
+                text: "村にチラシを配ってもらう（+5 Reputation）",
+                reward: [{type: "reputation", amount: 5}],
+                jumptoline: 16
+            }
+        ]
     },
+    // 1. 積極的に引き受ける
+    {speaker: "ルナ", image: "Images/ルナ.png", text: "……{player}、ありがとう。記憶を失っても、あなたは本当に頼りになるわ。<br>私たちも全力で支えるから、一緒にギルドを強くしましょう！"},
+    {speaker: "カイト", image: "Images/カイト.png", text: "へへ、さすがだぜ。心配いらないって言ってくれるなんて、記憶がなくてもお前は変わらねえな。<br>俺たちも本気出すぜ。絶対にギルドを立て直そう！", jumptoline: 18},
+    // 2. 資金援助を頼む
+    {speaker: "ルナ", image: "Images/ルナ.png", text: "……うん、わかった。でも私たちも生活は苦しいのよ。<br>でも本当に必要な時は助けるわ。1000Gold、持っていって。"},
+    {speaker: "カイト", image: "Images/カイト.png", text: "ったく、仕方ねえな……まあ、昔からお前はそういうところあったよな。<br>これで少しは楽になるだろ。", jumptoline: 18},
+    // 3. チラシ配り
+    {speaker: "ルナ", image: "Images/ルナ.png", text: "チラシね、わかった！ 村の人たちにギルドが再開したことを伝えましょう。<br>少しずつでも、評判が戻ってくるはずよ。"},
+    {speaker: "カイト", image: "Images/カイト.png", text: "よし、俺も手伝うぜ。みんなに「ギルドがまた動き出した」って広めてくる。<br>少しずつ人が集まるはずだ。", jumptoline: 18},
+    // 合流点
+    {speaker: "ナレーター", text: "あなたはまだ記憶を失ったまま、戸惑いを抱えていた。<br>それでも、二人の支えを感じ、前に進む決意をした。<br>父の遺志を継ぎ、ギルドを再興する道を選ぶことにした。"},
     {
         speaker: "ナレーター",
         text: "こうして、あなたはルナとカイトの助けを借り、<br>衰退した冒険者ギルドの再建に乗り出した。<br><br>父の死の真相を探りながら、ギルドを再び偉大にするために——"
@@ -4302,17 +4408,43 @@ const introDialogues = {
     {
         speaker: "Luna",
         image: "Images/ルナ.png",
-        text: "It’s okay, {player}.<br>The doctor said your memories will come back little by little.<br>We’ll support you now… so let’s make this guild great again, together."
-    },
-    {
-        speaker: "Kaito",
-        image: "Images/カイト.png",
-        text: "It’s settled, {player}.<br>You’re the new Guild Master.<br>Let’s bring this guild back to life—together."
+        text: "Even without memories… you’re still you.<br>We believe in you. So—what will you do? Will you take on the role of Guild Master now?"
     },
     {
         speaker: "Narrator",
-        text: "You still had no memories and felt deep uncertainty.<br>(Am I really the “{player}” they describe…?) <br>Even so, there was no choice but to move forward. You chose to inherit your father’s will and revive the guild."
+        text: "(Choice: How will you respond to becoming Guild Master?)",
+        choices: [
+            {
+                text: "Take the role immediately and reassure them (+10 Friendliness with Luna & Kaito)",
+                reward: [{type: "friendliness", amount: 10}],
+                jumptoline: 12
+            },
+            {
+                text: "Ask for financial help (+1000 Gold, -10 Friendliness with Luna & Kaito)",
+                reward: [
+                    {type: "gold", amount: 1000},
+                    {type: "friendliness", amount: -10}
+                ],
+                jumptoline: 14
+            },
+            {
+                text: "Ask them to distribute flyers (+5 Reputation)",
+                reward: [{type: "reputation", amount: 5}],
+                jumptoline: 16
+            }
+        ]
     },
+    // 1. Take role immediately
+    {speaker: "Luna", image: "Images/ルナ.png", text: "{player}... thank you. Even after losing your memories, you're still so reliable.<br>We'll do everything we can to make the guild strong again!"},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "Heh, that's our {player}. Don't worry, things will get better—you're still the same at heart.<br>We'll help make the guild stronger, no question!", jumptoline: 18},
+    // 2. Financial help
+    {speaker: "Luna", image: "Images/ルナ.png", text: "...Okay. We're having a hard time too, but if you really need it, we'll help.<br>Here's 1000 Gold. Use it well."},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "Tch, can't be helped... We've always been like this, huh?<br>Take it. It'll give you a head start.", jumptoline: 18},
+    // 3. Flyers
+    {speaker: "Luna", image: "Images/ルナ.png", text: "Flyers? Got it! We'll tell the villagers the guild is open again.<br>Word will spread, and reputation will recover bit by bit."},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "Yeah, I'll help too. We'll get the word out that the guild's back in business.<br>People should start coming back gradually.", jumptoline: 18},
+    // Convergence
+    {speaker: "Narrator", text: "Despite your lost memories and lingering doubts,<br>you felt their support and resolved to move forward.<br>You chose to inherit your father's will and revive the guild."},
     {
         speaker: "Narrator",
         text: "And so, with Luna and Kaito’s help,<br>you set out to rebuild the fallen Adventurer’s Guild.<br><br>Seeking the truth of your father’s death, while striving to make the guild great once more—"
@@ -4322,7 +4454,7 @@ const introDialogues = {
         text: "Your new adventure begins now…"
     }
   ],
-  zh: [  // Traditional Chinese
+  zh: [
     {
         speaker: "Narrator",
         text: "……在昏暗的房間裡，你緩緩睜開眼睛。<br>頭部沉重，隱隱作痛。你什麼也……什麼也想不起來。<br>連自己的名字都只模糊地浮現。"
@@ -4368,17 +4500,43 @@ const introDialogues = {
     {
         speaker: "Luna",
         image: "Images/ルナ.png",
-        text: "沒事的，{player}。<br>醫生說記憶會一點一點回來。<br>現在有我們支持你……一起讓公會恢復昔日的榮光吧。"
-    },
-    {
-        speaker: "Kaito",
-        image: "Images/カイト.png",
-        text: "就這麼定了，{player}。<br>你是新的公會會長。<br>我們一起把這個公會重新振興起來吧。"
+        text: "就算沒有記憶……你還是你哦。<br>我們相信你。所以——你怎麼辦？現在就要接下公會會長的職位嗎？"
     },
     {
         speaker: "Narrator",
-        text: "你仍舊失憶，心中充滿困惑。<br>（我真的是他們所說的「{player}」嗎……？）<br>即便如此，現在只能向前邁進。你選擇繼承父親的遺志，復興公會。"
+        text: "（選擇：如何回應成為公會會長）",
+        choices: [
+            {
+                text: "立刻承擔會長職位，安慰他們（Luna＆Kaito好感度 +10）",
+                reward: [{type: "friendliness", amount: 10}],
+                jumptoline: 12
+            },
+            {
+                text: "請求經濟援助（+1000 Gold，Luna＆Kaito好感度 -10）",
+                reward: [
+                    {type: "gold", amount: 1000},
+                    {type: "friendliness", amount: -10}
+                ],
+                jumptoline: 14
+            },
+            {
+                text: "讓他們去村裡散發傳單（+5 聲望）",
+                reward: [{type: "reputation", amount: 5}],
+                jumptoline: 16
+            }
+        ]
     },
+    // 1. 積極承擔
+    {speaker: "Luna", image: "Images/ルナ.png", text: "……{player}，謝謝。即便失去記憶，你還是那麼可靠。<br>我們也會全力支持，一起讓公會變得更強吧！"},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "嘿嘿，不愧是你。不要擔心，事情會變好的——記憶沒了，你的本質還是沒變。<br>我們會認真起來。一定要把公會重建起來！", jumptoline: 18},
+    // 2. 經濟援助
+    {speaker: "Luna", image: "Images/ルナ.png", text: "……明白了。我們生活也很艱難，但如果真的需要，我們會幫忙。<br>這是1000Gold，拿去用吧。"},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "嘖，沒辦法啊……你還是老樣子嘛。<br>拿去吧，應該能幫上點忙。", jumptoline: 18},
+    // 3. 傳單
+    {speaker: "Luna", image: "Images/ルナ.png", text: "傳單嗎？知道了！我們去告訴村裡人公會重新開張了。<br>慢慢地，聲望應該會回來。"},
+    {speaker: "Kaito", image: "Images/カイト.png", text: "好，我也去幫忙。我們去宣傳「公會又開始運作了」。<br>人應該會一點一點聚集起來。", jumptoline: 18},
+    // 合流
+    {speaker: "Narrator", text: "你仍舊失憶，心中充滿困惑。<br>即便如此，感受到兩人的支持，你下定了前進的決心。<br>選擇繼承父親的遺志，復興公會。"},
     {
         speaker: "Narrator",
         text: "就這樣，在Luna與Kaito的幫助下，<br>你開始重建沒落的冒險者公會。<br><br>一邊追查父親之死的真相，一邊讓公會再次偉大——"
@@ -4389,7 +4547,6 @@ const introDialogues = {
     }
   ]
 };
-
 let currentLang = localStorage.getItem('gameLang') || 'ja';
 
 
