@@ -9525,31 +9525,56 @@ function getNameHtml(adv) {
 
 function useExpOrbOnChar(charIndex, itemId) {
     const perms = gameState.adventurers.filter(a => !a.temp);
+    if (charIndex < 0 || charIndex >= perms.length) return;
     const adv = perms[charIndex];
-    if (!adv) return;
 
-    // IDだけで検索（名前チェック削除 → 大・小両対応）
     const itemIdx = gameState.inventory.findIndex(it => it.id === itemId);
     if (itemIdx === -1) return;
 
     const orb = gameState.inventory[itemIdx];
 
-    // 大は+10、小は+1（amountがあっても名前で判定 → 確実）
-    const levelsToAdd = orb.name === 'EXPオーブ (小)' ? 1 : 10;
+    // Must be a level-up item
+    if (orb.effect !== 'level_up') {
+        console.warn("useExpOrbOnChar called on non-exp-orb item", orb);
+        return;
+    }
 
-    // EXP無視で直接レベルアップ（ステータス成長・HP/MP最大値増加・フルヒール）
+    // Determine how many levels this orb gives
+    let levelsToAdd = 1;  // default = small
+
+    // Priority 1: use explicit .amount field (recommended)
+    if (typeof orb.amount === 'number' && orb.amount > 0) {
+        levelsToAdd = orb.amount;
+    }
+    // Priority 2: fallback name check (only if .amount not set)
+    else if (orb.name === t('exp_orb_small') || orb.name === 'EXPオーブ (小)') {
+        levelsToAdd = 1;
+    }
+    else {
+        // large orb or unknown → 10
+        levelsToAdd = 10;
+    }
+
+    // Prevent absurd values
+    levelsToAdd = Math.max(1, Math.min(50, Math.floor(levelsToAdd)));
+
+    // Apply level up
     levelUp(adv, levelsToAdd);
 
-    // オーブ消費（スタック対応）
+    // Consume one orb
     if ((orb.qty || 1) > 1) {
         orb.qty -= 1;
     } else {
         gameState.inventory.splice(itemIdx, 1);
     }
 
-    better_alert(`${adv.name} が${orb.name}を使用！レベルが${levelsToAdd}アップしました！`,"success");
+    // Feedback
+    better_alert(
+        `${adv.name} が ${orb.name} を使用！ レベルが ${levelsToAdd} 上がりました！`,
+        "success"
+    );
 
-    renderCurrentCharacter();  // 即時反映
+    renderCurrentCharacter();
     updateDisplays();
 }
 
@@ -10238,9 +10263,10 @@ function renderCurrentCharacter() {
     if (adv.buffs && adv.buffs.length > 0) {
         html += `<p style="margin:10px 0;"><strong>${t('active_buffs_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         adv.buffs.forEach(b => {
-            const bonus = b.percent ? `${b.bonus}%` : `+${b.bonus}`;
-            const target = b.stat ? t(`stat_${b.stat}`) : b.type;
-            html += `<li>${t('buff_line', {bonus: bonus, target: target, daysLeft: b.daysLeft})}</li>`;
+            const isPercent = !!b.percent;
+            const bonus = isPercent ? `${b.bonus}%` : `+${b.bonus}`;
+            const target = b.stat ? t(`stat_${b.stat}`) : (b.type || '?');
+            html += `<li>${t('buff_line', {bonus: bonus, target: target, daysLeft: b.daysLeft ?? '?'})}</li>`;
         });
         html += `</ul>`;
     }
@@ -10260,9 +10286,6 @@ function renderCurrentCharacter() {
     ">`;
 
     // 新規追加スロット対応 + 列配置最適化（3x3 = 9スロット）
-    // Column 1: Left Hand, Right Hand, Gloves
-    // Column 2: Head, Body, Legs
-    // Column 3: Cape, Feet, Accessory
     const slotConfig = [
         { key: 'leftHand', label: 'Left Hand' },
         { key: 'head', label: 'Head' },
@@ -10289,7 +10312,7 @@ function renderCurrentCharacter() {
 
         const hasItem = slotItem && !slotItem.locked;
 
-        const iconSize = 32; // 可裝備物品と同じサイズ感に統一
+        const iconSize = 32;
         const iconHtml = hasItem || (slotItem && isLocked)
             ? getItemIconHtml(slotItem.name, iconSize)
             : `<div style="width:${iconSize}px; height:${iconSize}px; background:rgba(60,60,60,0.5); border:2px dashed #555; border-radius:8px; margin:0 auto;"></div>`;
@@ -10400,7 +10423,7 @@ function renderCurrentCharacter() {
         html += `</ul>`;
     }
 
-    // ポーション・EXPオーブ・消耗品（変更なし）
+    // ポーション
     const potions = gameState.inventory.filter(it => it.type === 'potion' && (it.qty || 1) > 0);
     if (potions.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>${t('potions_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
@@ -10413,38 +10436,46 @@ function renderCurrentCharacter() {
         html += `</ul>`;
     }
 
-const levelUpItems = gameState.inventory.filter(it => 
-    (it.name === t('exp_orb_small') || it.name === t('exp_orb') || 
-     it.name === 'EXPオーブ (小)' || it.name === 'EXPオーブ') && (it.qty || 1) > 0
-);
+    // EXPオーブ（effect優先 + 名前フォールバック）
+    const levelUpItems = gameState.inventory.filter(it => 
+        (it.effect === 'level_up' ||
+         it.name === t('exp_orb_small') || it.name === t('exp_orb') || 
+         it.name === 'EXPオーブ (小)' || it.name === 'EXPオーブ') && (it.qty || 1) > 0
+    );
 
-if (levelUpItems.length > 0) {
-    html += `<p style="margin:15px 0 10px;"><strong>${t('level_up_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
-    levelUpItems.forEach(it => {
-        let levels = 10; // default to large orb
-        if (it.name === t('exp_orb_small') || it.name === 'EXPオーブ (小)') {
-            levels = 1;
-        }
-        // Optional: support explicit amount if you add large orbs with amount later
-        if (it.amount !== undefined) {
-            levels = it.amount;
-        }
+    if (levelUpItems.length > 0) {
+        html += `<p style="margin:15px 0 10px;"><strong>${t('level_up_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
+        levelUpItems.forEach(it => {
+            let levels = 10; // default to large orb
+            if (it.name === t('exp_orb_small') || it.name === 'EXPオーブ (小)') {
+                levels = 1;
+            }
+            if (it.amount !== undefined) {
+                levels = it.amount;
+            }
 
-        html += `<li>${it.name} x${it.qty || 1} ${t('level_up_amount', {levels: levels})} 
-                 <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
-    });
-    html += `</ul>`;
-}
+            const qtyText = (it.qty || 1) > 1 ? ` x${it.qty || 1}` : '';
 
+            html += `<li>${it.name}${qtyText} ${t('level_up_amount', {levels: levels})} 
+                     <button onclick="useExpOrbOnChar(${currentCharIndex}, ${it.id})">${t('use_button')}</button></li>`;
+        });
+        html += `</ul>`;
+    }
+
+    // 消耗品（EXPオーブを確実に除外）
     const consumables = gameState.inventory.filter(it => 
         it.type === 'consumable' && 
-        it.name !== 'EXPオーブ' && 
-        it.name !== 'EXPオーブ (小)' && 
-        (it.qty || 1) > 0
+        (it.qty || 1) > 0 &&
+        it.effect !== 'level_up' &&
+        it.name !== t('exp_orb_small') &&
+        it.name !== t('exp_orb') &&
+        it.name !== 'EXPオーブ (小)' &&
+        it.name !== 'EXPオーブ'
     );
     if (consumables.length > 0) {
         html += `<p style="margin:15px 0 10px;"><strong>${t('consumables_title')}</strong></p><ul style="margin:0; padding-left:20px;">`;
         consumables.forEach(it => {
+            if (!it.buff) return;
             const bonus = it.buff.percent ? `${it.buff.bonus}%` : `+${it.buff.bonus}`;
             const target = it.buff.stat ? t(`stat_${it.buff.stat}`) : it.buff.type;
             html += `<li>${it.name} (${bonus} ${target} ${it.buff.days}${t('days_suffix')})
@@ -10470,7 +10501,7 @@ if (levelUpItems.length > 0) {
     // 右側：画像・ボタン類
     html += `<div style="flex:0 0 auto; text-align:center;">`;
 
-    // 呼吸アニメーション（既存コードそのまま）
+    // 呼吸アニメーション
     const baseKey = adv.image.replace(/\.png$/i, '');
     const settings = breathingAnimationSettings[baseKey] || defaultBreathingSettings;
 
