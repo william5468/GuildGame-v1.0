@@ -2,6 +2,11 @@
 
 const translations = {
   ja: {
+    "tavern_adv_busy": "{name}は現在クエスト中のため、酒場で食事をすることはできません。",
+    "insufficient_gold": "ゴールドが足りません。",
+    "tavern_ration_dislike": "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -10）",
+    "tavern_meal_success": "{name} に {recipe} を適用しました！（{days}日間有効）",
+    "tavern_hunger_recovered": "{name}の空腹度が{percent}%回復。",
     // === クエスト結果共通 ===
     "corrupt_insufficient_rep": "Reputationが不足しています（最低10必要）",
     "corrupt_success:": `商人から{gold}G貰ったけど、Reputationは{rep}まで下がりました`,
@@ -882,6 +887,11 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "tavern_adv_busy": "{name} is currently on a quest and cannot eat at the tavern.",
+    "insufficient_gold": "Not enough gold.",
+    "tavern_ration_dislike": "{name} ate the {recipe}, but it tasted terrible (Friendliness -10).",
+    "tavern_meal_success": "Applied {recipe} to {name}! (Valid for {days} days)",
+    "tavern_hunger_recovered": "{name}'s hunger recovered by {percent}%.",
     "corrupt_insufficient_rep": "Not enough Reputation (requires at least 10)",
     "corrupt_success": `Received {gold}G from the merchant, but Reputation dropped to {rep}`,
     // === Quest Results Common ===
@@ -1737,6 +1747,11 @@ relationship_title: "{name}'s Relationships",
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
+    "tavern_adv_busy": "{name}正在任務中，無法在酒館用餐。",
+    "insufficient_gold": "金幣不足。",
+    "tavern_ration_dislike": "{name}吃了{recipe}，但味道很差，心情變糟了（好感度 -10）。",
+    "tavern_meal_success": "已對{name}使用{recipe}！（有效期 {days} 天）",
+    "tavern_hunger_recovered": "{name}的飽食度恢復了{percent}%。",
     "corrupt_insufficient_rep": "聲望不足（至少需要10）",
     "corrupt_success":`從商人那獲得{gold}金幣，但聲望下降至{rep}`,
     "quest_trade_failure_title": "貿易任務失敗！",

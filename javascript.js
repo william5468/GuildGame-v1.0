@@ -909,7 +909,8 @@ function skipIntro() {
         loadGame(1);
         updateDisplays();
         audioPlayed = true;
-        crossfadeTo('bgm', 7000);
+        const targetBgm = getNormalBgmId();
+        crossfadeTo(targetBgm, 7000);
     const overlay = document.getElementById('loadingOverlay');
     if (!overlay) return;
 
@@ -6111,8 +6112,8 @@ function playDay(){
         if (adv.temp) return; // 一時的な冒険者は除外
         if (adv.hunger === undefined) adv.hunger = 1.0;
 
-        // 減少量：クエスト中なら6%、クエスト中でなければ3%
-        const hungerLoss = isAdventurerOnQuest(adv) ? 0.06 : 0.03;
+        // 減少量：クエスト中なら4%、クエスト中でなければ2%
+        const hungerLoss = isAdventurerOnQuest(adv) ? 0.04 : 0.02;
         adv.hunger = Math.max(0, adv.hunger - hungerLoss);
 
         // hunger が0になったら死亡リストに追加
@@ -7924,7 +7925,8 @@ function endBattle(win) {
         updateDisplays();
     }
     if (!checkGameOver()){
-    crossfadeTo('bgm', 2000);
+    const targetBgm = getNormalBgmId();
+    crossfadeTo(targetBgm, 2000);
     }
 }
 
@@ -8355,9 +8357,24 @@ function orderTavernItem(recipeIdx) {
 function applyTavernBuff(recipeIdx, advId) {
     const r = currentTavernRecipes[recipeIdx];
     const adv = findAdv(advId);
+
     if (!adv || adv.temp) return;
 
-    // 消費（レーションでも通常食事でも共通）
+    // Check if busy (using the 'busy' property found in your code)
+    if (adv.busy) {
+        const msg = (t('tavern_adv_busy') || "{name}は現在クエスト中のため、酒場で食事をすることはできません。")
+            .replace('{name}', adv.name);
+        better_alert(msg, "error");
+        return;
+    }
+
+    // Check Gold
+    if (gameState.gold < r.cost) {
+        better_alert(t('insufficient_gold') || "ゴールドが足りません。", "error");
+        return;
+    }
+
+    // Consume Gold & Materials
     gameState.gold -= r.cost;
     if (r.materials) {
         for (let m of r.materials) {
@@ -8368,25 +8385,34 @@ function applyTavernBuff(recipeIdx, advId) {
     const isRation = r.isRation === true;
 
     if (isRation) {
-        // レーション: バフなし、好感度-10
         if (adv.Friendliness !== undefined) {
             adv.Friendliness = Math.max(0, adv.Friendliness - 10);
         }
-        better_alert(`${adv.name}は${r.name}を食べたが、味が悪く不機嫌になった（Friendliness -10）`, "friendliness", {delta: -10 });
+        const msg = (t('tavern_ration_dislike') || "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -10）")
+            .replace('{name}', adv.name)
+            .replace('{recipe}', r.name);
+        better_alert(msg, "friendliness", {delta: -10 });
     } else {
-        // 通常食事: バフ適用
         const buffCopy = JSON.parse(JSON.stringify(r.buff));
         buffCopy.daysLeft = buffCopy.days;
         adv.buffs.push(buffCopy);
-        better_alert(`${adv.name} に ${r.name} を適用しました！（${buffCopy.days}日間有効）`, "success");
+        
+        const msg = (t('tavern_meal_success') || "{name} に {recipe} を適用しました！（{days}日間有効）")
+            .replace('{name}', adv.name)
+            .replace('{recipe}', r.name)
+            .replace('{days}', buffCopy.days);
+        better_alert(msg, "success");
     }
 
-
-// 空腹度回復（レーションでも回復する前提） - パーセント表示に変更
+    // Hunger recovery
     const hungerRecover = r.hunger_recover || 0.4;
     const hungerPercent = Math.round(hungerRecover * 100);
     adv.hunger = Math.min(1, adv.hunger + hungerRecover);
-    better_alert(`${adv.name}の空腹度が${hungerPercent}%回復。`, "success");
+
+    const hungerMsg = (t('tavern_hunger_recovered') || "{name}の空腹度が{percent}%回復。")
+        .replace('{name}', adv.name)
+        .replace('{percent}', hungerPercent);
+    better_alert(hungerMsg, "success");
 
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
@@ -9105,7 +9131,8 @@ function queueStoryPostDialogue(rawSequence, onComplete) {
 function playNextStoryPostDialogue() {
     if (storyPostQueue.length === 0) {
         isPlayingStoryPost = false;
-        crossfadeTo('bgm', 2000);
+        const targetBgm = getNormalBgmId();
+        crossfadeTo(targetBgm, 2000);
         const modal = document.getElementById('introModal');
         modal.style.display = 'none';
 
@@ -11033,12 +11060,22 @@ document.addEventListener('dragstart', e => {
 });
 
 
+function getNormalBgmId() {
+    // 評判が100より大きい場合は bgm_2、それ以外は bgm
+    if (gameState.reputation > 100) {
+        return 'bgm_2';
+    } else {
+        return 'bgm';
+    }
+}
+
 // 新規追加：BGMクロスフェード共通関数（再利用可能）
 function crossfadeTo(newBgmId, duration = 2000) {
     const newBgm = document.getElementById(newBgmId);
     const currentBgms = [
         document.getElementById('main_screen_bgm'),
         document.getElementById('bgm'),
+        document.getElementById('bgm_2'),
         document.getElementById('introBgm'),
         document.getElementById('battleBgm'),
         document.getElementById('battleBgm2'),
@@ -11617,7 +11654,8 @@ function playNextQuestDialogue() {
             return;
         }
 
-        crossfadeTo('bgm', 2000);
+        const targetBgm = getNormalBgmId();
+        crossfadeTo(targetBgm, 2000);
         const modal = document.getElementById('introModal');
         modal.style.display = 'none';
 
