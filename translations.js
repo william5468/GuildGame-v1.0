@@ -3363,51 +3363,51 @@ const killDescsByRank = {
         '農場を襲う野犬3匹を倒せ。家畜が危ない。'
     ],
     'F+': [
-        '街道で待ち伏せするゴブリン8匹を討伐せよ。',
+        '街道で待ちぶせするゴブリン8匹を討伐せよ。',
         '森に隠れる山賊5人を排除せよ。',
         '洞窟に潜む巨大蜘蛛1匹を殺せ。'
     ],
-    'D': [
+    'E': [
         '村を脅かすオークの群れ10体を倒せ。',
         '橋を占拠するトロル1体を討伐せよ。',
         '森の奥にいる狼王とその群れを狩れ。'
     ],
-    'D+': [
+    'E+': [
         '盗賊団の拠点を襲撃し、盗賊15人を殺せ。',
         '古代迷宮に潜むミノタウロスを倒せ。',
         '山に巣食うワイバーン1匹を討伐せよ。'
     ],
-    'C': [
+    'D': [
         'オーク部族の戦士20体を壊滅せよ。',
         '巨人のサイクロプス1体を倒せ。',
         '空を飛ぶグリフォン1匹を討伐せよ。'
     ],
-    'C+': [
+    'D+': [
         '沼地に潜むヒドラを倒せ。すべての頭を焼却せよ。',
         '呪われたバンシーを鎮めよ。',
         'ケンタウロスの軍勢12体を撃破せよ。'
     ],
-    'B': [
+    'C': [
         '下級デーモンを召喚するカルト指導者を討伐せよ。',
         '暴走した古代ゴーレムを破壊せよ。',
         'リッチの墓を守るアンデッド軍を一掃せよ。'
     ],
-    'B+': [
+    'C+': [
         'ヴァンパイア貴族を倒せ。夜の脅威を終わらせよ。',
         '再生するフェニックスを狩れ。',
         '大地を揺るがすビヒーモスを討伐せよ。'
     ],
-    'A': [
+    'B': [
         '大デーモン（アークデーモン）を地獄から引きずり出して倒せ。',
         '古代ドラゴン1体を討伐せよ。',
         'タイタンの巨人を撃破せよ。'
     ],
-    'A+': [
+    'B+': [
         'ドラゴンの王を討伐せよ。',
         'リッチキングとその不死軍を壊滅せよ。',
         '堕落した天使を倒せ。'
     ],
-    'S': [
+    'A': [
         '深淵から現れた古の悪神を討伐せよ。',
         '世界を焼き尽くすエルダードラゴンを倒せ。',
         '神話の海獣レヴィアタンを討伐せよ。'
@@ -3424,53 +3424,53 @@ const killDescsByRank = {
         'Wipe out 5 bandits hiding in the forest.',
         'Kill the giant spider lurking in the cave.'
     ],
-    'D': [
+    'E': [
         'Defeat a pack of 10 orcs threatening the village.',
         'Slay the troll occupying the bridge.',
         'Hunt the wolf king and its pack deep in the forest.'
     ],
-    'D+': [
+    'E+': [
         'Raid the bandit gang\'s hideout and kill 15 bandits.',
         'Defeat the minotaur lurking in the ancient labyrinth.',
         'Slay the wyvern nesting in the mountains.'
     ],
-    'C': [
+    'D': [
         'Annihilate 20 orc tribe warriors.',
         'Defeat the cyclops giant.',
         'Take down the griffon soaring in the skies.'
     ],
-    'C+': [
+    'D+': [
         'Slay the hydra lurking in the swamp. Burn all its heads.',
         'Put the cursed banshee to rest.',
         'Defeat 12 centaur warriors.'
     ],
-    'B': [
+    'C': [
         'Eliminate the cult leader summoning lesser demons.',
         'Destroy the rampaging ancient golem.',
         'Sweep away the undead army guarding the lich\'s tomb.'
     ],
-    'B+': [
+    'C+': [
         'Defeat the vampire noble. End the terror of the night.',
         'Hunt the regenerating phoenix.',
         'Slay the behemoth shaking the earth.'
     ],
-    'A': [
+    'B': [
         'Drag the archdemon from hell and defeat it.',
         'Slay an ancient dragon.',
         'Defeat the titan giant.'
     ],
-    'A+': [
+    'B+': [
         'Slay the dragon king.',
         'Annihilate the lich king and its undead army.',
         'Defeat the fallen angel.'
     ],
-    'S': [
+    'A': [
         'Defeat the ancient evil god emerging from the abyss.',
         'Slay the elder dragon that scorches the world.',
         'Defeat the mythical sea beast Leviathan.'
     ]
   },
-  zh: {  // Traditional Chinese
+  zh: {
     'F': [
         '討伐在村莊周圍遊蕩的5隻史萊姆。農作物正在被溶化。',
         '消滅酒館地下室所有巨大的老鼠。',
@@ -3481,47 +3481,47 @@ const killDescsByRank = {
         '消滅隱藏在森林中的5名山賊。',
         '殺死潛伏在洞窟中的巨大蜘蛛。'
     ],
-    'D': [
+    'E': [
         '擊倒威脅村莊的10隻獸人群。',
         '討伐佔據橋樑的食人妖。',
         '狩獵森林深處的狼王及其族群。'
     ],
-    'D+': [
+    'E+': [
         '突襲盜賊團據點並殺死15名盜賊。',
         '擊倒潛伏在古代迷宮中的米諾陶洛斯。',
         '討伐棲息在山中的雙足飛龍。'
     ],
-    'C': [
+    'D': [
         '殲滅20名獸人部落戰士。',
         '擊倒獨眼巨人。',
         '討伐翱翔天空的獅鷲。'
     ],
-    'C+': [
+    'D+': [
         '擊倒潛伏在沼澤中的九頭蛇。燒毀所有頭部。',
         '鎮壓被詛咒的女妖。',
         '擊破12名半人馬戰士。'
     ],
-    'B': [
+    'C': [
         '討伐召喚下級惡魔的邪教領袖。',
         '破壞失控的古代魔像。',
         '掃蕩守護巫妖墓穴的不死軍團。'
     ],
-    'B+': [
+    'C+': [
         '擊倒吸血鬼貴族。結束夜晚的恐怖。',
         '狩獵會再生的鳳凰。',
         '討伐震動大地的比希摩斯。'
     ],
-    'A': [
+    'B': [
         '從地獄拖出大惡魔並擊倒它。',
         '討伐一頭古代巨龍。',
         '擊破泰坦巨人。'
     ],
-    'A+': [
+    'B+': [
         '討伐龍王。',
         '殲滅巫妖王及其不死軍團。',
         '擊倒墮落天使。'
     ],
-    'S': [
+    'A': [
         '討伐從深淵現身的古之邪神。',
         '擊倒焚燒世界的長老龍。',
         '討伐神話中的海獸利維坦。'
@@ -3541,45 +3541,47 @@ const discoveryDescsByRank = {
         '古い家の隠し地下室を探せ。',
         '川沿いの隠された小屋を見つけよ。'
     ],
-    'D': [
+    'E': [
         '近くの丘にある小さな遺跡の入り口を発見せよ。',
         '盗賊が使う隠しキャンプを探せ。',
         '行方不明のキャラバンの残骸を見つけよ。'
     ],
-    'D+': [
+    'E+': [
         '埋もれた古代寺院の場所を発見せよ。',
         '山の隠された鉱脈を探せ。',
         '湖底に沈んだ村の痕跡を見つけよ。'
     ],
-    'C': [
+    'D': [
         '忘れられた城の秘密通路を発見せよ。',
         '魔法の泉の正確な位置をマッピングせよ。',
         '呪われた森の中心にある祠を探せ。'
     ],
-    'C+': [
+    'D+': [
         '失われた文明の遺跡を発見せよ。',
         '雲の上に浮かぶ島への道を見つけよ。',
         '不安定な次元ポータルの場所を発見せよ。'
     ],
-    'B': [
+    'C': [
         '迷宮のような峡谷の隠された道を地図化せよ。伝説の宝の噂。',
         '砂漠の砂丘の失われた星の神殿を発掘せよ。星座に一致する。',
         'アジュール湖の下の沈んだ遺跡を見つけよ。古代の水生文明。'
     ],
-    'B+': [
+    'C+': [
         'エコーケイブの秘密の間を発見せよ。ささやきが予言を明らかにする。',
         'クラウドピークの忘れられた天文台を位置づけよ。多宇宙を眺める。',
         'ウィスパリングウッドのハートツリーを探検せよ。すべての森の魔法の源。'
     ],
-    'A': [
+    'B': [
         'アッシェンウェイストの埋もれた天文台を発掘せよ。火山の異常。',
-        'エンドレスサンドのミラージュオアシスを見つけよ。幻か現実か？'
+        'エンドレスサンドのミラージュオアシスを見つけよ。幻か現実か？',
+        '凍土の奥深くに眠る永久凍土の宝物庫を発見せよ。'
     ],
-    'A+': [
+    'B+': [
         'クリスタルカーブンの輝く鉱脈をチャートせよ。アーティファクトの力源。',
-        'ソーンウォールメイズの隠されたグローブを発見せよ。永遠の若さが咲く。'
+        'ソーンウォールメイズの隠されたグローブを発見せよ。永遠の若さが咲く。',
+        '雷鳴の絶壁に隠された雷神の祭壇を特定せよ。'
     ],
-    'S': [
+    'A': [
         '宇宙の果てに存在する禁断の神殿を発見せよ。',
         '世界の起源を記した究極の図書館を見つけよ。',
         '神々が会議を行う隠された領域を発見せよ。'
@@ -3596,51 +3598,53 @@ const discoveryDescsByRank = {
         'Search for a concealed basement in an old house.',
         'Find a hidden cabin along the river.'
     ],
-    'D': [
+    'E': [
         'Discover the entrance to a small ruin on a nearby hill.',
         'Locate a bandits\' hidden camp.',
         'Find the remains of a missing caravan.'
     ],
-    'D+': [
+    'E+': [
         'Discover the location of a buried ancient temple.',
         'Search for a hidden mineral vein in the mountains.',
         'Find traces of a village sunk at the bottom of a lake.'
     ],
-    'C': [
+    'D': [
         'Discover a secret passage in a forgotten castle.',
         'Map the exact location of a magical spring.',
         'Search for a shrine in the center of a cursed forest.'
     ],
-    'C+': [
+    'D+': [
         'Discover the ruins of a lost civilization.',
         'Find the path to an island floating in the clouds.',
         'Discover the location of an unstable dimensional portal.'
     ],
-    'B': [
+    'C': [
         'Map the hidden paths of a labyrinthine canyon. Rumors of legendary treasure abound.',
         'Excavate the lost star temple buried in desert dunes. It aligns with the constellations.',
         'Discover the sunken ruins beneath Azure Lake. Remnants of an ancient aquatic civilization.'
     ],
-    'B+': [
+    'C+': [
         'Find the secret chamber in Echo Cave. Whispers reveal prophecies.',
         'Locate the forgotten observatory on Cloud Peak. It gazes into the multiverse.',
         'Explore the Heart Tree in Whispering Woods. The source of all forest magic.'
     ],
-    'A': [
+    'B': [
         'Unearth the buried observatory in Ashen Wastes. Volcanic anomalies surround it.',
-        'Find the Mirage Oasis in Endless Sands. Illusion or reality?'
+        'Find the Mirage Oasis in Endless Sands. Illusion or reality?',
+        'Discover the permafrost vault sleeping deep within the frozen wastes.'
     ],
-    'A+': [
+    'B+': [
         'Chart the glowing veins in Crystal Cavern. Power source of ancient artifacts.',
-        'Discover the hidden grove in Thornwall Maze. Eternal youth blooms there.'
+        'Discover the hidden grove in Thornwall Maze. Eternal youth blooms there.',
+        'Identify the altar of the Thunder God hidden on the Storm-Swept Cliffs.'
     ],
-    'S': [
+    'A': [
         'Discover the forbidden temple existing at the edge of the universe.',
         'Find the ultimate library recording the origin of the world.',
         'Discover the hidden realm where gods hold their councils.'
     ]
   },
-  zh: {  // Traditional Chinese
+  zh: {
     'F': [
         '在城鎮中尋找遺失的重要項鍊。',
         '發現附近森林中隱藏的小寶箱。',
@@ -3651,45 +3655,47 @@ const discoveryDescsByRank = {
         '搜尋老房子中的隱藏地下室。',
         '找到河邊隱藏的小屋。'
     ],
-    'D': [
+    'E': [
         '發現附近山丘上小型遺跡的入口。',
         '找到盜賊使用的隱藏營地。',
         '找到失蹤商隊的殘骸。'
     ],
-    'D+': [
+    'E+': [
         '發現被埋沒的古代寺院的所在位置。',
         '搜尋山中隱藏的礦脈。',
         '找到湖底沉沒村莊的痕跡。'
     ],
-    'C': [
+    'D': [
         '發現被遺忘城堡中的秘密通道。',
         '繪製魔法泉水的精確位置。',
         '搜尋被詛咒森林中心的神社。'
     ],
-    'C+': [
+    'D+': [
         '發現失落文明的遺跡。',
         '找到通往雲上浮島的道路。',
         '發現不穩定的次元傳送門的位置。'
     ],
-    'B': [
+    'C': [
         '繪製迷宮般峽谷的隱藏道路。傳說中的寶藏傳聞。',
         '發掘沙漠沙丘中失落的星之神殿。與星座一致。',
         '發現蒼藍湖底的沉沒遺跡。古代水生文明的遺跡。'
     ],
-    'B+': [
+    'C+': [
         '找到回音洞窟的秘密房間。低語會揭示預言。',
         '定位雲峰上被遺忘的天文台。可眺望多重宇宙。',
         '探索低語森林的心樹。所有森林魔法的源頭。'
     ],
-    'A': [
+    'B': [
         '發掘灰燼荒原中埋沒的天文台。周圍有火山異常。',
-        '找到無盡沙地中的幻影綠洲。幻覺還是現實？'
+        '找到無盡沙地中的幻影綠洲。幻覺還是現實？',
+        '發現深藏在凍土荒野中的永久凍土寶庫。'
     ],
-    'A+': [
+    'B+': [
         '繪製水晶洞窟中發光的礦脈。古代神器的力量來源。',
-        '發現荊棘迷牆中的隱藏林地。永恆青春在那裡綻放。'
+        '發現荊棘迷牆中的隱藏林地。永恆青春在那裡綻放。',
+        '辨識隱藏在雷鳴懸崖上的雷神祭壇。'
     ],
-    'S': [
+    'A': [
         '發現宇宙盡頭存在的禁斷神殿。',
         '找到記載世界起源的終極圖書館。',
         '發現諸神舉行會議的隱藏領域。'
@@ -3709,47 +3715,47 @@ const escortDescsByRank = {
         '旅行者のグループを森の道で守れ。',
         '荷物を運ぶキャラバンを盗賊から護衛せよ。'
     ],
-    'D': [
+    'E': [
         '貴族を隣町まで護衛せよ。暗殺者の噂がある。',
         '負傷した兵士を前線からキャンプまで送れ。',
         '学者を危険な遺跡まで護衛せよ。'
     ],
-    'D+': [
+    'E+': [
         '外交官を敵の領土を抜けて護衛せよ。',
         '難民の家族を安全地帯までガイドせよ。',
         '珍しい魔獣と調教師を闘技場まで護衛せよ。'
     ],
-    'C': [
+    'D': [
         '王子を隣国まで護衛せよ。政略結婚のためだ。',
         '聖女を聖地まで守れ。異端者が狙っている。',
         '貴重な神器を運ぶ一行を護衛せよ。'
     ],
-    'C+': [
+    'D+': [
         '将軍を戦場まで護衛せよ。敵のスパイが暗躍中。',
         '予言者を神託の場所まで送れ。',
         '最後のエルフ王女を隠れ里まで護衛せよ。'
     ],
-    'B': [
+    'C': [
         '古代の賢者を禁断の図書館まで護衛せよ。',
         'ドラゴンライダーを巣まで守れ。',
         '神の化身を神殿まで護衛せよ。'
     ],
-    'B+': [
+    'C+': [
         '堕落した英雄を裁きの場まで護衛せよ。',
-        '星の使者を天文台まで送れ。',
+        '星の使者の使者を天文台まで送れ。',
         '最後のユニコーンを聖域まで護衛せよ。'
     ],
-    'A': [
+    'B': [
         '王を亡命先まで護衛せよ。国が滅びようとしている。',
         '大魔導士を禁呪の儀式場まで守れ。',
         '神の遺児を運命の場所まで護衛せよ。'
     ],
-    'A+': [
+    'B+': [
         '光の女神の巫女を最終聖域まで護衛せよ。',
         '最後の希望である預言者を世界の中心まで送れ。',
         '滅びゆく世界の救世主を神の座まで護衛せよ。'
     ],
-    'S': [
+    'A': [
         '世界の均衡を守る存在を深淵の門まで護衛せよ。',
         '時を司る神の使者を永遠の時計塔まで守れ。',
         '全ての命の源を最終決戦の場まで護衛せよ。'
@@ -3766,53 +3772,53 @@ const escortDescsByRank = {
         'Guard a group of travelers through the forest road.',
         'Protect a caravan carrying goods from bandits.'
     ],
-    'D': [
+    'E': [
         'Escort a noble to the neighboring town. Rumors of assassins abound.',
         'Transport an injured soldier from the front lines to camp.',
         'Guard a scholar on their journey to a dangerous ruin.'
     ],
-    'D+': [
+    'E+': [
         'Escort a diplomat through enemy territory.',
         'Guide a refugee family to a safe zone.',
         'Protect a rare magical beast and its trainer to the coliseum.'
     ],
-    'C': [
+    'D': [
         'Escort a prince to a neighboring kingdom for a political marriage.',
         'Protect a saintess on her pilgrimage to the holy land. Heretics are targeting her.',
         'Guard a party transporting a precious divine artifact.'
     ],
-    'C+': [
+    'D+': [
         'Escort a general to the battlefield. Enemy spies are active.',
         'Guide a prophet to the site of divine revelation.',
         'Protect the last elf princess to her hidden sanctuary.'
     ],
-    'B': [
+    'C': [
         'Escort an ancient sage to the forbidden library.',
         'Guard a dragon rider to their nest.',
         'Protect a divine avatar on their journey to the temple.'
     ],
-    'B+': [
+    'C+': [
         'Escort a fallen hero to the place of judgment.',
         'Guide a star messenger to the observatory.',
         'Protect the last unicorn to its sacred domain.'
     ],
-    'A': [
+    'B': [
         'Escort the king to exile as the kingdom falls.',
         'Guard the archmage to the site of a forbidden ritual.',
         'Protect the divine heir to their destined location.'
     ],
-    'A+': [
+    'B+': [
         'Escort the priestess of the light goddess to the final sanctuary.',
         'Guide the prophet of last hope to the center of the world.',
         'Protect the savior of a dying world to the throne of the gods.'
     ],
-    'S': [
+    'A': [
         'Escort the guardian of world balance to the gates of the abyss.',
         'Protect the messenger of the god of time to the eternal clock tower.',
         'Guard the source of all life to the final battlefield.'
     ]
   },
-  zh: {  // Traditional Chinese
+  zh: {
     'F': [
         '安全護送農夫到附近的市場。',
         '引導孩子安全渡過危險的橋樑回家。',
@@ -3823,47 +3829,47 @@ const escortDescsByRank = {
         '守護旅行者團體穿越森林道路。',
         '保護運送貨物的商隊免遭盜賊襲擊。'
     ],
-    'D': [
+    'E': [
         '護送貴族到鄰鎮。暗殺者的傳聞四起。',
         '將負傷士兵從前線送回營地。',
         '守護學者前往危險遺跡。'
     ],
-    'D+': [
+    'E+': [
         '護送外交官穿越敵方領土。',
         '引導難民家庭到安全地帶。',
         '保護稀有魔獸與馴獸師到競技場。'
     ],
-    'C': [
+    'D': [
         '護送王子到鄰國進行政治聯姻。',
         '守護聖女前往聖地。異端者正瞄準她。',
         '護衛運送珍貴神器的隊伍。'
     ],
-    'C+': [
+    'D+': [
         '護送將軍到戰場。敵方間諜活躍中。',
         '引導預言者到神諭之地。',
         '保護最後的精靈公主到隱秘村落。'
     ],
-    'B': [
+    'C': [
         '護送古代賢者到禁斷圖書館。',
         '守護龍騎士到巢穴。',
         '護衛神之化身到神殿。'
     ],
-    'B+': [
+    'C+': [
         '護送墮落英雄到審判之地。',
         '引導星之使者到天文台。',
         '保護最後的獨角獸到聖域。'
     ],
-    'A': [
+    'B': [
         '護送國王到亡命之地。王國即將滅亡。',
         '守護大魔導士到禁咒儀式場。',
         '護衛神之遺子到命運之地。'
     ],
-    'A+': [
+    'B+': [
         '護送光之女神巫女到最終聖域。',
         '引導最後希望的預言者到世界中心。',
         '護衛瀕臨滅亡世界的救世主到神座。'
     ],
-    'S': [
+    'A': [
         '護送守護世界均衡的存在到深淵之門。',
         '守護掌管時間之神的使者到永恆鐘塔。',
         '護衛所有生命之源到最終決戰之地。'
@@ -3884,47 +3890,47 @@ const fetchQuestsByRank = {
         {desc: '漁師に川魚を{qty}匹釣ってきてほしい。', itemName: '川魚', minPrice: 20, maxPrice: 35},
         {desc: '薬師のために白い花を{qty}個持ってきて。', itemName: '白い花', minPrice: 15, maxPrice: 30}
     ],
-    'D': [
+    'E': [
         {desc: '鉱夫のために良質の鉄鉱石を{qty}個採掘してきて。', itemName: '鉄鉱石', minPrice: 30, maxPrice: 60},
         {desc: 'ハンターに狼の毛皮を{qty}枚持ってきてほしい。', itemName: '狼の毛皮', minPrice: 40, maxPrice: 70},
         {desc: '魔術師に魔力の結晶（小）を{qty}個集めてきて。', itemName: '魔力の結晶（小）', minPrice: 50, maxPrice: 80}
     ],
-    'D+': [
+    'E+': [
         {desc: '冒険者にオークの牙を{qty}個持ってきてほしい。', itemName: 'オークの牙', minPrice: 60, maxPrice: 100},
         {desc: '賢者に古代の巻物断片を{qty}個集めてきて。', itemName: '古代の巻物断片', minPrice: 80, maxPrice: 120},
         {desc: '商人に希少スパイスを{qty}個届けてきて。', itemName: '希少スパイス', minPrice: 70, maxPrice: 110}
     ],
-    'C': [
+    'D': [
         {desc: '貴族にグリフォンの羽を{qty}枚持ってきてほしい。', itemName: 'グリフォンの羽', minPrice: 150, maxPrice: 250},
         {desc: '大魔導士にヒドラの毒袋を{qty}個集めてきて。', itemName: 'ヒドラの毒袋', minPrice: 200, maxPrice: 300},
         {desc: '神殿に聖水を{qty}瓶届けてきて。', itemName: '聖水', minPrice: 180, maxPrice: 280}
     ],
-    'C+': [
+    'D+': [
         {desc: '王宮にユニコーンの角を{qty}個持ってきてほしい。', itemName: 'ユニコーンの角', minPrice: 400, maxPrice: 600},
         {desc: '禁書庫に禁断の魔導書頁を{qty}枚集めてきて。', itemName: '禁断の魔導書頁', minPrice: 500, maxPrice: 700},
         {desc: '錬金大师にフェニックスの灰を{qty}握り持ってきて。', itemName: 'フェニックスの灰', minPrice: 450, maxPrice: 650}
     ],
-    'B': [
+    'C': [
         {desc: '大賢者に星の欠片を{qty}個集めてきてほしい。', itemName: '星の欠片', minPrice: 1000, maxPrice: 1500},
         {desc: '神官に天使の羽を{qty}枚持ってきて。', itemName: '天使の羽', minPrice: 1200, maxPrice: 1800},
         {desc: '闇市場にデーモンの心臓を{qty}個届けてきて。', itemName: 'デーモンの心臓', minPrice: 1100, maxPrice: 1600}
     ],
-    'B+': [
+    'C+': [
         {desc: '王に古代ドラゴンの鱗を{qty}枚持ってきてほしい。', itemName: '古代ドラゴンの鱗', minPrice: 2000, maxPrice: 3000},
         {desc: '最高魔導士にエーテルの結晶を{qty}個集めてきて。', itemName: 'エーテルの結晶', minPrice: 2500, maxPrice: 3500},
         {desc: '神殿に神の涙を{qty}滴届けてきて。', itemName: '神の涙', minPrice: 2200, maxPrice: 3200}
     ],
-    'A': [
+    'B': [
         {desc: '伝説の英雄にタイタンの骨を{qty}本持ってきてほしい。', itemName: 'タイタンの骨', minPrice: 4000, maxPrice: 6000},
         {desc: '究極の錬金術師に永遠の炎を{qty}握り集めてきて。', itemName: '永遠の炎', minPrice: 4500, maxPrice: 6500},
         {desc: '神々に神聖な遺物を{qty}個届けてきて。', itemName: '神聖な遺物', minPrice: 4200, maxPrice: 6200}
     ],
-    'A+': [
+    'B+': [
         {desc: '世界の守護者にエルダードラゴンの心臓を{qty}個持ってきてほしい。', itemName: 'エルダードラゴンの心臓', minPrice: 8000, maxPrice: 12000},
         {desc: '禁断の研究者に深淵の核を{qty}個集めてきて。', itemName: '深淵の核', minPrice: 9000, maxPrice: 13000},
         {desc: '最後の希望に光の神器の欠片を{qty}個届けてきて。', itemName: '光の神器の欠片', minPrice: 8500, maxPrice: 12500}
     ],
-    'S': [
+    'A': [
         {desc: '運命に世界の源石を{qty}個持ってきてほしい。', itemName: '世界の源石', minPrice: 15000, maxPrice: 25000},
         {desc: '神々に創世の欠片を{qty}個集めてきて。', itemName: '創世の欠片', minPrice: 20000, maxPrice: 30000},
         {desc: '終焉の使者に滅びの結晶を{qty}個届けてきて。', itemName: '滅びの結晶', minPrice: 18000, maxPrice: 28000}
@@ -3941,47 +3947,47 @@ const fetchQuestsByRank = {
         {desc: 'Catch {qty} river fish for the fisherman.', itemName: 'River Fish', minPrice: 20, maxPrice: 35},
         {desc: 'Bring {qty} white flower to the apothecary.', itemName: 'White flower', minPrice: 15, maxPrice: 30}
     ],
-    'D': [
+    'E': [
         {desc: 'Mine {qty} quality iron ore for the miner.', itemName: 'Iron Ore', minPrice: 30, maxPrice: 60},
         {desc: 'Bring {qty} wolf pelts to the hunter.', itemName: 'Wolf Pelt', minPrice: 40, maxPrice: 70},
         {desc: 'Collect {qty} small mana crystals for the mage.', itemName: 'Small Mana Crystal', minPrice: 50, maxPrice: 80}
     ],
-    'D+': [
+    'E+': [
         {desc: 'Bring {qty} orc tusks to the adventurer.', itemName: 'Orc Tusk', minPrice: 60, maxPrice: 100},
         {desc: 'Gather {qty} ancient scroll fragments for the sage.', itemName: 'Ancient Scroll Fragment', minPrice: 80, maxPrice: 120},
         {desc: 'Deliver {qty} rare spices to the merchant.', itemName: 'Rare Spice', minPrice: 70, maxPrice: 110}
     ],
-    'C': [
+    'D': [
         {desc: 'Bring {qty} griffon feathers to the noble.', itemName: 'Griffon Feather', minPrice: 150, maxPrice: 250},
         {desc: 'Collect {qty} hydra venom sacs for the archmage.', itemName: 'Hydra Venom Sac', minPrice: 200, maxPrice: 300},
         {desc: 'Deliver {qty} bottles of holy water to the temple.', itemName: 'Holy Water', minPrice: 180, maxPrice: 280}
     ],
-    'C+': [
+    'D+': [
         {desc: 'Bring {qty} unicorn horns to the royal palace.', itemName: 'Unicorn Horn', minPrice: 400, maxPrice: 600},
         {desc: 'Gather {qty} pages of forbidden grimoires for the restricted library.', itemName: 'Forbidden Grimoire Page', minPrice: 500, maxPrice: 700},
         {desc: 'Bring {qty} handfuls of phoenix ashes to the master alchemist.', itemName: 'Phoenix Ash', minPrice: 450, maxPrice: 650}
     ],
-    'B': [
+    'C': [
         {desc: 'Collect {qty} star fragments for the great sage.', itemName: 'Star Fragment', minPrice: 1000, maxPrice: 1500},
         {desc: 'Bring {qty} angel feathers to the priest.', itemName: 'Angel Feather', minPrice: 1200, maxPrice: 1800},
         {desc: 'Deliver {qty} demon hearts to the black market.', itemName: 'Demon Heart', minPrice: 1100, maxPrice: 1600}
     ],
-    'B+': [
+    'C+': [
         {desc: 'Bring {qty} ancient dragon scales to the king.', itemName: 'Ancient Dragon Scale', minPrice: 2000, maxPrice: 3000},
         {desc: 'Collect {qty} aether crystals for the supreme archmage.', itemName: 'Aether Crystal', minPrice: 2500, maxPrice: 3500},
         {desc: 'Deliver {qty} drops of divine tears to the temple.', itemName: 'Divine Tear', minPrice: 2200, maxPrice: 3200}
     ],
-    'A': [
+    'B': [
         {desc: 'Bring {qty} titan bones to the legendary hero.', itemName: 'Titan Bone', minPrice: 4000, maxPrice: 6000},
         {desc: 'Gather {qty} handfuls of eternal flame for the ultimate alchemist.', itemName: 'Eternal Flame', minPrice: 4500, maxPrice: 6500},
         {desc: 'Deliver {qty} sacred relics to the gods.', itemName: 'Sacred Relic', minPrice: 4200, maxPrice: 6200}
     ],
-    'A+': [
+    'B+': [
         {desc: 'Bring {qty} elder dragon hearts to the world guardian.', itemName: 'Elder Dragon Heart', minPrice: 8000, maxPrice: 12000},
         {desc: 'Collect {qty} abyss cores for the forbidden researcher.', itemName: 'Abyss Core', minPrice: 9000, maxPrice: 13000},
         {desc: 'Deliver {qty} fragments of the light artifact to the last hope.', itemName: 'Light Artifact Fragment', minPrice: 8500, maxPrice: 12500}
     ],
-    'S': [
+    'A': [
         {desc: 'Bring {qty} world origin stones to fate itself.', itemName: 'World Origin Stone', minPrice: 15000, maxPrice: 25000},
         {desc: 'Collect {qty} creation fragments for the gods.', itemName: 'Creation Fragment', minPrice: 20000, maxPrice: 30000},
         {desc: 'Deliver {qty} crystals of destruction to the harbinger of the end.', itemName: 'Crystal of Destruction', minPrice: 18000, maxPrice: 28000}
@@ -3998,47 +4004,47 @@ const fetchQuestsByRank = {
         {desc: '為漁夫釣{qty}條河魚。', itemName: '河魚', minPrice: 20, maxPrice: 35},
         {desc: '為藥師帶來{qty}個白色的花。', itemName: '白色的花', minPrice: 15, maxPrice: 30}
     ],
-    'D': [
+    'E': [
         {desc: '為礦工採掘{qty}個優質鐵礦石。', itemName: '鐵礦石', minPrice: 30, maxPrice: 60},
         {desc: '為獵人帶來{qty}張狼皮。', itemName: '狼皮', minPrice: 40, maxPrice: 70},
         {desc: '為法師收集{qty}個小型魔力結晶。', itemName: '小型魔力結晶', minPrice: 50, maxPrice: 80}
     ],
-    'D+': [
+    'E+': [
         {desc: '為冒險者帶來{qty}個獸人獠牙。', itemName: '獸人獠牙', minPrice: 60, maxPrice: 100},
         {desc: '為賢者收集{qty}個古代卷軸碎片。', itemName: '古代卷軸碎片', minPrice: 80, maxPrice: 120},
         {desc: '為商人送去{qty}個稀有香料。', itemName: '稀有香料', minPrice: 70, maxPrice: 110}
     ],
-    'C': [
+    'D': [
         {desc: '為貴族帶來{qty}片獅鷲羽毛。', itemName: '獅鷲羽毛', minPrice: 150, maxPrice: 250},
         {desc: '為大魔導士收集{qty}個九頭蛇毒囊。', itemName: '九頭蛇毒囊', minPrice: 200, maxPrice: 300},
         {desc: '為神殿送去{qty}瓶聖水。', itemName: '聖水', minPrice: 180, maxPrice: 280}
     ],
-    'C+': [
+    'D+': [
         {desc: '為王宮帶來{qty}個獨角獸角。', itemName: '獨角獸角', minPrice: 400, maxPrice: 600},
         {desc: '為禁書庫收集{qty}頁禁斷魔導書。', itemName: '禁斷魔導書頁', minPrice: 500, maxPrice: 700},
         {desc: '為鍊金術師帶來{qty}把鳳凰灰燼。', itemName: '鳳凰灰燼', minPrice: 450, maxPrice: 650}
     ],
-    'B': [
+    'C': [
         {desc: '為大賢者收集{qty}個星之碎片。', itemName: '星之碎片', minPrice: 1000, maxPrice: 1500},
         {desc: '為神官帶來{qty}片天使羽毛。', itemName: '天使羽毛', minPrice: 1200, maxPrice: 1800},
         {desc: '為黑市送去{qty}個惡魔之心。', itemName: '惡魔之心', minPrice: 1100, maxPrice: 1600}
     ],
-    'B+': [
+    'C+': [
         {desc: '為國王帶來{qty}片古代龍鱗。', itemName: '古代龍鱗', minPrice: 2000, maxPrice: 3000},
         {desc: '為最高魔導士收集{qty}個以太結晶。', itemName: '以太結晶', minPrice: 2500, maxPrice: 3500},
         {desc: '為神殿送去{qty}滴神之淚。', itemName: '神之淚', minPrice: 2200, maxPrice: 3200}
     ],
-    'A': [
+    'B': [
         {desc: '為傳說英雄帶來{qty}根泰坦骨頭。', itemName: '泰坦骨頭', minPrice: 4000, maxPrice: 6000},
         {desc: '為終極鍊金術師收集{qty}把永恆之焰。', itemName: '永恆之焰', minPrice: 4500, maxPrice: 6500},
         {desc: '為諸神送去{qty}個神聖遺物。', itemName: '神聖遺物', minPrice: 4200, maxPrice: 6200}
     ],
-    'A+': [
+    'B+': [
         {desc: '為世界守護者帶來{qty}個長老龍之心。', itemName: '長老龍之心', minPrice: 8000, maxPrice: 12000},
         {desc: '為禁斷研究者收集{qty}個深淵核心。', itemName: '深淵核心', minPrice: 9000, maxPrice: 13000},
         {desc: '為最後的希望送去{qty}片光之神器碎片。', itemName: '光之神器碎片', minPrice: 8500, maxPrice: 12500}
     ],
-    'S': [
+    'A': [
         {desc: '為命運帶來{qty}個世界源石。', itemName: '世界源石', minPrice: 15000, maxPrice: 25000},
         {desc: '為諸神收集{qty}個創世碎片。', itemName: '創世碎片', minPrice: 20000, maxPrice: 30000},
         {desc: '為終結使者送去{qty}個滅亡結晶。', itemName: '滅亡結晶', minPrice: 18000, maxPrice: 28000}

@@ -1034,12 +1034,14 @@ let gameState = {
 function getQuestRank(difficulty) {
     if (difficulty <= 10) return 'F';
     if (difficulty <= 20) return 'F+';
-    if (difficulty <= 30) return 'D';
-    if (difficulty <= 40) return 'D+';
-    if (difficulty <= 50) return 'C';
-    if (difficulty <= 60) return 'C+';
-    if (difficulty <= 70) return 'B';
-    if (difficulty <= 80) return 'B+';
+    if (difficulty <= 30) return 'E';
+    if (difficulty <= 40) return 'E+';
+    if (difficulty <= 50) return 'D';
+    if (difficulty <= 60) return 'D+';
+    if (difficulty <= 70) return 'C';
+    if (difficulty <= 80) return 'C+';
+    if (difficulty <= 90) return 'B';
+    if (difficulty <= 100) return 'B+';
     if (difficulty <= 90) return 'A';
     if (difficulty <= 100) return 'A+';
     return 'S';
