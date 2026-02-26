@@ -4948,7 +4948,7 @@ function processQuestOutcome(q, eventDay, success, lowStatusFail, goldOverride =
                 let rareStatFull = t(`stat_${rareStat}`);
                 let rareBonus = 5 + q.floor * 5;
                 let rareItemName = t("dungeon_ring", {floor: q.floor, stat: rareStatFull});
-                addToInventory({name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: 0, id: gameState.nextId++}, 1);
+                addToInventory({name: rareItemName, stat: rareStat, bonus: rareBonus, enhancement: rareBonus, category: "Accessory", id: gameState.nextId++}, 1);
                 extraMsg += `<br>${t("item_found", {name: rareItemName})}${t("rare_indicator")}`;
                 extraTextPlain += `\n${t("item_found", {name: rareItemName})}${t("rare_indicator")}`;
             }
@@ -5604,10 +5604,12 @@ const interactionsByAction = {
 function processAdventurerDailyActions() {
     let totalGuildGain = 0;
 
+    // Groups adventurers by their chosen action to handle social interactions later
     const actionGroups = {};       
     const metPairs = new Set();    
 
     gameState.adventurers.forEach(adv => {
+        // --- 1. Basic Status & Safety Checks ---
         if (isAdventurerOnQuest(adv) || adv.temp) return;
 
         if (!adv.bag) {
@@ -5616,20 +5618,29 @@ function processAdventurerDailyActions() {
 
         if (!adv.actionHistory) adv.actionHistory = [];
         if (!adv.friendliness) adv.friendliness = {};   
-
-        // === 禁止行動の安全初期化 ===
-        adv.prohibitedActions = adv.prohibitedActions || [];
-
-        // Hunger が未定義の場合の安全策
+        if (!adv.prohibitedActions) adv.prohibitedActions = [];
         if (adv.hunger === undefined) adv.hunger = 1.0;
+        
+        // Ensure the new slot system is initialized for the adventurer
+        if (!adv.slots) {
+            adv.slots = {
+                weapon: null,
+                subWeapon: null,
+                head: null,
+                body: null,
+                accessory1: null,
+                accessory2: null
+            };
+        }
 
         const maxHp = adv.maxHp || 100;
         const maxMp = adv.maxMp || 100;
 
-        // ── 回復アイテムの自動使用（1日1個まで・HP優先） ──
+        // --- 2. Automated Recovery Item Usage (1 per day) ---
         let recoveryItemUsed = null;
         let recoveryDescription = '';
 
+        // Priority: HP Recovery if below 50%
         if (adv.hp / maxHp < 0.5) {
             const hpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
@@ -5648,6 +5659,7 @@ function processAdventurerDailyActions() {
             }
         }
 
+        // MP Recovery if HP wasn't needed and MP is below 50%
         if (!recoveryItemUsed && adv.mp / maxMp < 0.5) {
             const mpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
@@ -5666,11 +5678,12 @@ function processAdventurerDailyActions() {
             }
         }
 
+        // --- 3. Action Selection Logic ---
         const hpRatio = adv.hp / maxHp;
         const mpRatio = adv.mp / maxMp;
         const hungerRatio = adv.hunger;
 
-        // hunger <= 0.3 を low 状態に追加
+        // Thresholds for forced or preferred actions
         const isLow = hpRatio < 0.5 || mpRatio < 0.5 || hungerRatio <= 0.3;
         const isHigh = hpRatio > 0.6 && mpRatio > 0.6;
 
@@ -5678,17 +5691,20 @@ function processAdventurerDailyActions() {
         let success = true;
         let adventurerChange = 0;
         let guildGain = 0;
-
-        // ── 行動選択（厳密な確率配分 + 特性による行動傾向ボーナス） ──
         let action;
 
-        // 低HP/MP/空腹時、tavernが可能かつ禁止されていないなら100% tavern
+        // If resources are critically low, they MUST go to the Tavern if allowed
         if (isLow && isFacilityUsable('tavern') && !adv.prohibitedActions.includes('tavern')) {
             action = 'tavern';
         } else {
-            // 利用可能な施設リストを取得（禁止されているものは除外）
             const availableFacilities = [];
-            if (isFacilityUsable('tavern') && !adv.prohibitedActions.includes('tavern')) availableFacilities.push('tavern');
+            
+            // Tavern Check
+            if (isFacilityUsable('tavern') && !adv.prohibitedActions.includes('tavern')) {
+                availableFacilities.push('tavern');
+            }
+            
+            // Alchemy Check (Requires materials in their bag)
             if (isFacilityUsable('alchemy') && !adv.prohibitedActions.includes('alchemy')) {
                 const alchemyRecipes = [
                     { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
@@ -5699,15 +5715,16 @@ function processAdventurerDailyActions() {
                 );
                 if (canAlchemy) availableFacilities.push('alchemy');
             }
-            if (isFacilityUsable('blacksmith') && !adv.prohibitedActions.includes('blacksmith') && adv.equipment && Object.keys(adv.equipment).length > 0) {
+            
+            // Blacksmith Check (Uses the new SLOTS system)
+            const equippedItems = Object.values(adv.slots).filter(item => item && !item.locked && item.stat);
+            if (isFacilityUsable('blacksmith') && !adv.prohibitedActions.includes('blacksmith') && equippedItems.length > 0) {
                 availableFacilities.push('blacksmith');
             }
 
-            // 100スロット方式で基本確率実現（禁止行動はスロットに追加しない）
+            // Probability Weights (100 Slots Method)
             const slots = [];
-
-            // 基本確率（guild_stayは常に許可、禁止不可）
-            for (let i = 0; i < 20; i++) slots.push('guild_stay');
+            for (let i = 0; i < 20; i++) slots.push('guild_stay'); // Base rest
 
             if (!adv.prohibitedActions.includes('street_walk')) {
                 for (let i = 0; i < 20; i++) slots.push('street_walk');
@@ -5716,54 +5733,43 @@ function processAdventurerDailyActions() {
                 for (let i = 0; i < 20; i++) slots.push('gather');
             }
             if (isHigh && !adv.prohibitedActions.includes('hunting')) {
-                for (let i = 0; i < 10; i++) slots.push('hunting');
+                for (let i = 0; i < 15; i++) slots.push('hunting');
             }
 
+            // Facilities get 10 tickets each if available
             availableFacilities.forEach(fac => {
                 for (let i = 0; i < 10; i++) slots.push(fac);
             });
 
-            // === 特性による行動傾向ボーナス適用（禁止行動にはボーナス適用しない） ===
+            // Trait-based adjustments
             if (adv.traits) {
                 adv.traits.forEach(trait => {
                     if (trait.type === 'action_preference' && trait.weight_bonus > 0) {
-                        const preferredAction = trait.action;
-                        // スロットに含まれていてかつ禁止されていない場合のみボーナス
-                        if (slots.includes(preferredAction) && !adv.prohibitedActions.includes(preferredAction)) {
-                            for (let i = 0; i < trait.weight_bonus; i++) {
-                                slots.push(preferredAction);
-                            }
+                        if (slots.includes(trait.action) && !adv.prohibitedActions.includes(trait.action)) {
+                            for (let i = 0; i < trait.weight_bonus; i++) slots.push(trait.action);
                         }
                     }
                 });
             }
 
-            // スロットが空の場合の保険（すべて禁止ならguild_stayのみ）
-            if (slots.length === 0) {
-                slots.push('guild_stay');
-            }
-
-            // ランダム選択
             action = slots[Math.floor(Math.random() * slots.length)];
         }
 
-        // === 安全チェック: 万一禁止行動が選択された場合のフォールバック ===
+        // Safety: If somehow a prohibited action was picked
         if (adv.prohibitedActions.includes(action) && action !== 'guild_stay') {
             description = t('action_prohibited_general') || "禁止された行動のため、ギルドで休憩した";
             action = 'guild_stay';
         }
 
-        // === 施設使用料チェック（施設行動の場合のみ）===
+        // --- 4. Facility Fee Processing ---
         const facilityActions = ['tavern', 'blacksmith', 'alchemy'];
-        const isFacilityAction = facilityActions.includes(action);
-
-        if (isFacilityAction) {
+        if (facilityActions.includes(action)) {
             const facilityFee = gameState.facilityFees?.[action] || 0;
 
             if (facilityFee > 0 && adv.bag.gold > 0) {
-                const feePercent = (facilityFee / adv.bag.gold) * 100;
-
-                if (feePercent >= 10 || Math.random() < feePercent / 10) {
+                const feeRatio = (facilityFee / adv.bag.gold) * 100;
+                // If fee is more than 10% of their gold, they might give up
+                if (feeRatio >= 10 || Math.random() < feeRatio / 10) {
                     action = 'street_walk';
                     description = t('action_fee_give_up') || "施設の使用料が高すぎて諦め、街に出た";
                     success = false;
@@ -5773,15 +5779,19 @@ function processAdventurerDailyActions() {
                     adventurerChange -= facilityFee;
                     guildGain += facilityFee;
                 }
+            } else if (facilityFee > 0 && adv.bag.gold < facilityFee) {
+                action = 'guild_stay';
+                description = "所持金が足りず施設を利用できなかった。";
+                success = false;
             }
         }
 
-        // 行動を記録
+        // Store daily choice for social processing
         adv.dailyAction = action;
         if (!actionGroups[action]) actionGroups[action] = [];
         actionGroups[action].push(adv);
 
-        // ── メイン行動の実行 ──
+        // --- 5. Main Action Execution ---
         if (description === '') {
             switch (action) {
                 case 'gather': {
@@ -5794,34 +5804,33 @@ function processAdventurerDailyActions() {
                 }
 
                 case 'hunting': {
-                    const damagePercent = 0.1 + Math.random() * 0.4;
-                    const hpLoss = Math.floor(maxHp * damagePercent);
-                    const mpLoss = Math.floor(maxMp * damagePercent);
+                    const dmgMod = 0.1 + Math.random() * 0.4;
+                    const hpLoss = Math.floor(maxHp * dmgMod);
+                    const mpLoss = Math.floor(maxMp * dmgMod);
                     adv.hp = Math.max(1, adv.hp - hpLoss);
                     adv.mp = Math.max(0, adv.mp - mpLoss);
 
                     const expNeeded = adv.level * 100;
-                    const expGain = Math.floor(expNeeded * 0.1);
+                    const expGain = Math.floor(expNeeded * 0.15);
                     adv.exp += expGain;
 
-                    let goldGain = adv.level * 20;
-                    goldGain = Math.max(20, Math.min(5000, goldGain));
+                    let rawGold = adv.level * 25;
+                    rawGold = Math.max(20, Math.min(5000, rawGold));
+                    const guildFee = Math.floor(rawGold * 0.1);
+                    const netGold = rawGold - guildFee;
 
-                    const guildFee = Math.floor(goldGain * 0.1);
-                    const adventurerGain = goldGain - guildFee;
-
-                    adv.bag.gold += adventurerGain;
+                    adv.bag.gold += netGold;
                     gameState.gold += guildFee;
-                    adventurerChange += adventurerGain;
+                    adventurerChange += netGold;
                     guildGain += guildFee;
 
                     description = t('hunting_report', {
                         hpLoss: hpLoss,
                         mpLoss: mpLoss,
                         expGain: expGain,
-                        goldGain: adventurerGain,
+                        goldGain: netGold,
                         guildFee: guildFee
-                    }) || `狩りでHP-${hpLoss} MP-${mpLoss}、EXP+${expGain}、Gold+${adventurerGain}（ギルド手数料${guildFee}G）`;
+                    }) || `狩りでHP-${hpLoss} MP-${mpLoss}、EXP+${expGain}、Gold+${netGold}（ギルド手数料${guildFee}G）`;
 
                     if (adv.exp >= expNeeded) {
                         adv.level += 1;
@@ -5833,12 +5842,12 @@ function processAdventurerDailyActions() {
 
                 case 'guild_stay': {
                     description = t('guild_stay_idle') || "ギルドで休憩した";
+                    adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.1));
                     break;
                 }
 
                 case 'street_walk': {
                     description = t('street_walk_idle') || "街を散策した";
-
                     if (Math.random() < 0.3) {
                         const foundGold = Math.floor(Math.random() * 50) + 10;
                         adv.bag.gold += foundGold;
@@ -5849,162 +5858,82 @@ function processAdventurerDailyActions() {
                 }
 
                 case 'tavern': {
-                    const recoveryBonus = 1.5;
-                    adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.2 * recoveryBonus));
-                    adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.2 * recoveryBonus));
+                    // Base Recovery
+                    adv.hp = Math.min(maxHp, adv.hp + Math.floor(maxHp * 0.3));
+                    adv.mp = Math.min(maxMp, adv.mp + Math.floor(maxMp * 0.3));
                     description = t('tavern_rest') || "酒場で休息した";
 
                     const tavernSubRandom = Math.random();
-
-                    // 食事注文確率を hunger に応じて決定
                     const orderChance = (adv.hunger >= 1.0) ? 0 : (adv.hunger <= 0.3 ? 1.0 : 0.4);
 
                     if (tavernSubRandom < orderChance) {
-                        // 食事注文を試みる
+                        // Food Logic
                         const tavernLevel = gameState.facilities.tavern || 0;
                         if (!gameState.tavernStock) gameState.tavernStock = {};
 
                         const maxFoodSpend = Math.floor(adv.bag.gold * 0.5);
-
-                        console.log(`[Tavern Debug] Adventurer: ${adv.name} (hunger: ${(adv.hunger * 100).toFixed(0)}%, gold: ${adv.bag.gold})`);
-                        console.log(`[Tavern Debug] Tavern level: ${tavernLevel}, Max spend: ${maxFoodSpend}G`);
-
-                        let stockedFoods = [];
                         let paidAvailable = [];
-                        let rationAvailable = false;
                         let rationIdx = -1;
-                        let rationQty = 0;
 
                         currentTavernRecipes.forEach((r, idx) => {
                             if (r.level > tavernLevel) return;
-
                             const qty = gameState.tavernStock[idx] || 0;
                             if (qty <= 0) return;
 
-                            let sellPrice = r.isRation ? 0 : Math.floor((r.cost || 250) * 1.2);
-
-                            stockedFoods.push({recipe: r, idx, sellPrice, qty});
-
                             if (r.isRation) {
-                                rationAvailable = true;
                                 rationIdx = idx;
-                                rationQty = qty;
-                                return;
+                            } else {
+                                const sellPrice = Math.floor((r.cost || 250) * 1.2);
+                                if (sellPrice <= maxFoodSpend) {
+                                    paidAvailable.push({recipe: r, idx, price: sellPrice});
+                                }
                             }
-
-                            if (sellPrice <= maxFoodSpend) {
-                                paidAvailable.push({recipe: r, idx, sellPrice, qty});
-                            }
                         });
-
-                        console.log(`[Tavern Debug] Total potential recipes checked: ${currentTavernRecipes.length}`);
-                        console.log(`[Tavern Debug] Current tavernStock:`, gameState.tavernStock);
-                        console.log(`[Tavern Debug] Stocked foods (stock > 0, level OK): ${stockedFoods.length}`);
-                        stockedFoods.forEach(item => {
-                            console.log(`  [Stocked] ${item.recipe.name} (index: ${item.idx}, stock: ${item.qty}, price: ${item.sellPrice}G)`);
-                        });
-
-                        console.log(`[Tavern Debug] Paid & affordable foods: ${paidAvailable.length}`);
-                        paidAvailable.forEach(item => {
-                            console.log(`  [Paid] ${item.recipe.name} (index: ${item.idx}, stock: ${item.qty}, price: ${item.sellPrice}G)`);
-                        });
-
-                        console.log(`[Tavern Debug] Guild Ration available: ${rationAvailable} (stock: ${rationQty})`);
 
                         let foodOrdered = false;
-
                         if (paidAvailable.length > 0) {
                             const chosen = paidAvailable[Math.floor(Math.random() * paidAvailable.length)];
-                            const food = chosen.recipe;
-                            const foodIdx = chosen.idx;
-                            const foodCost = chosen.sellPrice;
+                            adv.bag.gold -= chosen.price;
+                            gameState.gold += chosen.price;
+                            adventurerChange -= chosen.price;
+                            guildGain += chosen.price;
+                            gameState.tavernStock[chosen.idx]--;
+                            if (gameState.tavernStock[chosen.idx] <= 0) delete gameState.tavernStock[chosen.idx];
 
-                            console.log(`[Tavern Debug] Ordered paid food: ${food.name} (${foodCost}G)`);
-
-                            adv.bag.gold -= foodCost;
-                            gameState.gold += foodCost;
-                            adventurerChange -= foodCost;
-                            guildGain += foodCost;
-
-                            gameState.tavernStock[foodIdx]--;
-                            if (gameState.tavernStock[foodIdx] <= 0) {
-                                console.log(`[Tavern Debug] Stock depleted for index ${foodIdx}`);
-                                delete gameState.tavernStock[foodIdx];
-                            }
-
-                            if (food.buff && Object.keys(food.buff).length > 0) {
+                            if (chosen.recipe.buff) {
                                 if (!adv.buffs) adv.buffs = [];
-                                const buffCopy = JSON.parse(JSON.stringify(food.buff));
-                                buffCopy.daysLeft = buffCopy.days;
-                                adv.buffs.push(buffCopy);
+                                const bCopy = JSON.parse(JSON.stringify(chosen.recipe.buff));
+                                bCopy.daysLeft = bCopy.days;
+                                adv.buffs.push(bCopy);
                             }
-
-                            const hungerRecover = food.hunger_recover || 0.4;
-                            adv.hunger = Math.min(1, adv.hunger + hungerRecover);
-
-                            description += t('tavern_food_order', {food: food.name, cost: foodCost}) || 
-                                           ` ${food.name}を注文した（${foodCost}G）`;
-
+                            adv.hunger = Math.min(1, adv.hunger + (chosen.recipe.hunger_recover || 0.4));
+                            description += t('tavern_food_order', {food: chosen.recipe.name, cost: chosen.price}) || ` ${chosen.recipe.name}を注文した（${chosen.price}G）`;
                             foodOrdered = true;
-                        }
-
-                        if (!foodOrdered && rationAvailable) {
-                            console.log(`[Tavern Debug] Fell back to Guild Ration (free, stock consumed)`);
-
+                        } else if (rationIdx !== -1) {
+                            // Fallback to Guild Ration
                             gameState.tavernStock[rationIdx]--;
-                            if (gameState.tavernStock[rationIdx] <= 0) {
-                                console.log(`[Tavern Debug] Ration stock depleted for index ${rationIdx}`);
-                                delete gameState.tavernStock[rationIdx];
-                            }
-
+                            if (gameState.tavernStock[rationIdx] <= 0) delete gameState.tavernStock[rationIdx];
                             adv.hunger = 1.0;
-
-                            const penalty = 10;
-                            adv.Friendliness = Math.max(0, adv.Friendliness - 10);
-
-                            const playerName = gameState.playerName || t('guild_master_default') || 'ギルドマスター';
-                            description += t('tavern_ration_message', {penalty: 10}) || 
-                                           ' 「ギルド配給食」を渋々食べた（無料）。「まずいが…生きるためだ…」（ギルドマスターへの好感度 -10）';
-
-                            better_alert(
-                                t('guild_friendliness_decrease_with_player', {
-                                    name: adv.name,
-                                    player: playerName,
-                                    penalty: penalty
-                                }),
-                                "friendliness",
-                                { delta: -penalty }
-                            );
-
-                            foodOrdered = true;
+                            adv.friendliness = adv.friendliness || {};
+                            // Decrease friendliness with Guild Master
+                            description += t('tavern_ration_message') || ' 「ギルド配給食」を渋々食べた。好感度-10';
                         }
-
-                        if (!foodOrdered) {
-                            console.log(`[Tavern Debug] No food available - even ration out of stock`);
-                            description += t('tavern_no_food_at_all') || " 何も食べられず、空腹のまま酒場を後にした…";
-                        }
-                    } else if (tavernSubRandom < orderChance + 0.1) {
-                        if (adv.bag.gold > 0 && gameState.gold > 0) {
-                            let betPercent = 0.25;
-                            let bet = Math.floor(adv.bag.gold * betPercent);
-                            bet = Math.min(bet, gameState.gold);
-
-                            if (bet > 0) {
-                                const isWin = Math.random() < 0.4;
-
-                                if (isWin) {
-                                    adv.bag.gold += bet;
-                                    gameState.gold -= bet;
-                                    adventurerChange += bet;
-                                    guildGain -= bet;
-                                    description += t('tavern_gamble_win', {amount: bet}) || ` ギャンブルで勝った！ +${bet}G`;
-                                } else {
-                                    adv.bag.gold -= bet;
-                                    gameState.gold += bet;
-                                    adventurerChange -= bet;
-                                    guildGain += bet;
-                                    description += t('tavern_gamble_loss', {amount: bet}) || ` ギャンブルで負けた… -${bet}G`;
-                                }
+                    } else if (tavernSubRandom < orderChance + 0.15) {
+                        // Gambling Logic
+                        if (adv.bag.gold > 20 && gameState.gold > 20) {
+                            const bet = Math.min(Math.floor(adv.bag.gold * 0.2), gameState.gold);
+                            if (Math.random() < 0.45) {
+                                adv.bag.gold += bet;
+                                gameState.gold -= bet;
+                                adventurerChange += bet;
+                                guildGain -= bet;
+                                description += ` ギャンブルで勝利！ +${bet}G`;
+                            } else {
+                                adv.bag.gold -= bet;
+                                gameState.gold += bet;
+                                adventurerChange -= bet;
+                                guildGain += bet;
+                                description += ` ギャンブルで負けた… -${bet}G`;
                             }
                         }
                     }
@@ -6012,17 +5941,20 @@ function processAdventurerDailyActions() {
                 }
 
                 case 'blacksmith': {
-                    if (!adv.equipment || Object.keys(adv.equipment).length === 0) {
+                    // Logic updated for Slots system
+                    const equipList = Object.values(adv.slots).filter(i => i && !i.locked && i.stat);
+                    if (equipList.length === 0) {
                         success = false;
                         description = t('blacksmith_no_equip') || "装備がなく鍛冶を利用できなかった";
-                        break;
-                    }
-                    if (Math.random() < 0.5) {
-                        const eqKeys = Object.keys(adv.equipment);
-                        const eq = adv.equipment[eqKeys[Math.floor(Math.random() * eqKeys.length)]];
-                        const oldEnh = eq.enhancement || 0;
-                        eq.enhancement = oldEnh + 1;
-                        description = t('blacksmith_success', {equip: eq.name, old: oldEnh, new: eq.enhancement}) || `${eq.name}の強化に成功！ +1 (${oldEnh} → ${eq.enhancement})`;
+                    } else if (Math.random() < 0.5) {
+                        const targetItem = equipList[Math.floor(Math.random() * equipList.length)];
+                        const oldEnh = targetItem.enhancement || 0;
+                        targetItem.enhancement = oldEnh + 1;
+                        description = t('blacksmith_success', {
+                            equip: targetItem.name, 
+                            old: oldEnh, 
+                            new: targetItem.enhancement
+                        }) || `${targetItem.name}の強化に成功！ +1 (${oldEnh} → ${targetItem.enhancement})`;
                     } else {
                         success = false;
                         description = t('blacksmith_failure') || "強化に失敗した…";
@@ -6035,18 +5967,18 @@ function processAdventurerDailyActions() {
                         { name: '花の霊薬', ingredients: [{name:'花', qty:1}, {name:'普通の薬草', qty:1}] },
                         { name: 'キノコ回復薬', ingredients: [{name:'キノコ', qty:1}, {name:'薬草', qty:1}] }
                     ];
-                    const available = recipes.filter(r => 
+                    const possible = recipes.filter(r => 
                         r.ingredients.every(ing => hasItemInBag(adv.bag, ing.name, ing.qty))
                     );
-                    if (available.length === 0) {
+                    if (possible.length === 0) {
                         success = false;
                         description = t('alchemy_no_materials') || "材料が足りず錬金できなかった";
-                        break;
+                    } else {
+                        const recipe = possible[Math.floor(Math.random() * possible.length)];
+                        recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
+                        addItemToBag(adv.bag, recipe.name, 1);
+                        description = t('alchemy_success', {recipe: recipe.name}) || `${recipe.name}を調合した`;
                     }
-                    const recipe = available[Math.floor(Math.random() * available.length)];
-                    recipe.ingredients.forEach(ing => removeItemFromBag(adv.bag, ing.name, ing.qty));
-                    addItemToBag(adv.bag, recipe.name, 1);
-                    description = t('alchemy_success', {recipe: recipe.name}) || `${recipe.name}を調合した`;
                     break;
                 }
             }
@@ -6054,26 +5986,24 @@ function processAdventurerDailyActions() {
 
         totalGuildGain += guildGain;
 
-        const fullDescription = recoveryDescription 
+        const finalDescription = recoveryDescription 
             ? (recoveryDescription + ' ' + description)
             : description;
 
         adv.actionHistory.push({
             day: gameState.day - 1,
             action: action,
-            description: fullDescription,
+            description: finalDescription,
             adventurerChange: adventurerChange,
             guildGain: guildGain,
             success: success,
             recoveryItemUsed: recoveryItemUsed
         });
 
-        if (adv.actionHistory.length > 30) {
-            adv.actionHistory.shift();
-        }
+        if (adv.actionHistory.length > 30) adv.actionHistory.shift();
     });
 
-    // === 交流処理（すべての行動で可能、2人以上なら交流）===
+    // --- 6. Interaction / Social Processing ---
     for (const actionKey in actionGroups) {
         const group = actionGroups[actionKey];
         if (group.length < 2) continue;
@@ -6083,50 +6013,51 @@ function processAdventurerDailyActions() {
             if (others.length === 0) return;
 
             const partner = others[Math.floor(Math.random() * others.length)];
-
             const pairKey = `${Math.min(adv.id, partner.id)}-${Math.max(adv.id, partner.id)}`;
+            
             if (metPairs.has(pairKey)) return;
             metPairs.add(pairKey);
 
-            const avgF = ((adv.friendliness[partner.id] ?? 50) + (partner.friendliness[adv.id] ?? 50)) / 2;
-            const positiveWeight = avgF > 50 ? 0.75 : 0.25;
+            // Calculate social affinity
+            const currentAffinity = ((adv.friendliness[partner.id] ?? 50) + (partner.friendliness[adv.id] ?? 50)) / 2;
+            const isPositiveChance = currentAffinity > 50 ? 0.8 : 0.3;
 
-            let candidates = interactionsByAction[actionKey] || interactionsByAction.default;
+            let pool = (interactionsByAction[actionKey] || interactionsByAction.default);
+            pool = pool.filter(v => Math.random() < isPositiveChance ? v.positive : !v.positive);
+            
+            if (pool.length > 0) {
+                const choice = pool[Math.floor(Math.random() * pool.length)];
 
-            candidates = candidates.filter(v => 
-                Math.random() < positiveWeight ? v.positive : !v.positive
-            );
-            if (candidates.length === 0) return;
+                // Update friendliness
+                adv.friendliness[partner.id] = Math.max(0, Math.min(100, (adv.friendliness[partner.id] ?? 50) + choice.deltaA));
+                partner.friendliness[adv.id] = Math.max(0, Math.min(100, (partner.friendliness[adv.id] ?? 50) + choice.deltaB));
 
-            const variation = candidates[Math.floor(Math.random() * candidates.length)];
+                // Update descriptions in history
+                const deltaAStr = choice.deltaA >= 0 ? `+${choice.deltaA}` : choice.deltaA;
+                const deltaBStr = choice.deltaB >= 0 ? `+${choice.deltaB}` : choice.deltaB;
 
-            adv.friendliness[partner.id] = Math.max(0, Math.min(100, (adv.friendliness[partner.id] ?? 50) + variation.deltaA));
-            partner.friendliness[adv.id] = Math.max(0, Math.min(100, (partner.friendliness[adv.id] ?? 50) + variation.deltaB));
+                const msgA = t(choice.descKeyA, {a: adv.name, b: partner.name}) + ` [${partner.name}${deltaAStr}]`;
+                const msgB = t(choice.descKeyB || choice.descKeyA, {a: partner.name, b: adv.name}) + ` [${adv.name}${deltaBStr}]`;
 
-            let descAdv = t(variation.descKeyA, {a: adv.name, b: partner.name});
-            let descPartner = t(variation.descKeyB || variation.descKeyA, {a: partner.name, b: adv.name});
+                const entryA = adv.actionHistory.find(e => e.day === gameState.day - 1);
+                if (entryA) entryA.description += ` (${msgA})`;
 
-            const deltaAdvStr = variation.deltaA > 0 ? `+${variation.deltaA}` : `${variation.deltaA}`;
-            const deltaPartnerStr = variation.deltaB > 0 ? `+${variation.deltaB}` : `${variation.deltaB}`;
-
-            descAdv += ` [${partner.name}${deltaAdvStr}]`;
-            descPartner += ` [${adv.name}${deltaPartnerStr}]`;
-
-            const todayAdv = adv.actionHistory.find(e => e.day === gameState.day - 1);
-            if (todayAdv) todayAdv.description += `（${descAdv}）`;
-
-            const todayPartner = partner.actionHistory.find(e => e.day === gameState.day - 1);
-            if (todayPartner) todayPartner.description += `（${descPartner}）`;
+                const entryB = partner.actionHistory.find(e => e.day === gameState.day - 1);
+                if (entryB) entryB.description += ` (${msgB})`;
+            }
         });
     }
 
-    // 後片付け
+    // Cleanup temporary daily data
     gameState.adventurers.forEach(adv => delete adv.dailyAction);
 
-    if (totalGuildGain > 0) {
-        better_alert(t('daily_guild_gain_positive', {amount: totalGuildGain}) || `今日のギルド収入: +${totalGuildGain}G`, "success");
-    } else if (totalGuildGain < 0) {
-        better_alert(t('daily_guild_gain_negative', {amount: totalGuildGain}) || `今日のギルド収支: ${totalGuildGain}G`, "warning");
+    // Final Report
+    if (totalGuildGain !== 0) {
+        const alertType = totalGuildGain > 0 ? "success" : "warning";
+        const alertMsg = totalGuildGain > 0 
+            ? (t('daily_guild_gain_positive', {amount: totalGuildGain}) || `今日のギルド収入: +${totalGuildGain}G`)
+            : (t('daily_guild_gain_negative', {amount: totalGuildGain}) || `今日のギルド収支: ${totalGuildGain}G`);
+        better_alert(alertMsg, alertType);
     }
 }
 // 補助関数：行動名を日本語で返す
@@ -8469,13 +8400,25 @@ function enhanceEquipment(advId, itemId) {
     // itemIdが文字列の場合、数値に変換（onclickでクォートなしなら数値のまま）
     const numericItemId = Number(itemId);
 
-    const item = adv.equipment.find(i => i.id === numericItemId);
+    // --- UPDATED: Search for the item in the new slots system first ---
+    let item = null;
+    if (adv.slots) {
+        // Extract all valid items from the slots object
+        const equippedItems = Object.values(adv.slots).filter(slot => slot !== null && slot !== undefined);
+        item = equippedItems.find(i => i.id === numericItemId || String(i.id) === String(itemId));
+    }
+
+    // --- Fallback: Check old equipment array for older save files ---
+    if (!item && adv.equipment) {
+        item = adv.equipment.find(i => i.id === numericItemId || String(i.id) === String(itemId));
+    }
+
     console.log("The item is: " + (item ? item.name + ' (ID: ' + item.id + ')' : 'Not found (searched ID: ' + numericItemId + ')'));
 
-    if (!item || !item.stat || typeof item.bonus !== 'number') {
-        console.warn("Invalid item or item not enhanceable");
-        better_alert("強化対象のアイテムが見つかりません。画面を更新してください。","error");
-        return;
+    // Safety check: Stop here if the item still isn't found to prevent crashes
+    if (!item) {
+        console.error("Item not found for enhancement! Aborting.");
+        return; 
     }
 
     const crystalName = t('enhancement_crystal');
@@ -8516,7 +8459,6 @@ function enhanceEquipment(advId, itemId) {
 
     // UI更新
     renderFacilities();
-
 }
 
 function produceBlacksmith(recipeIdx) {
@@ -8654,14 +8596,12 @@ function renderFacilities() {
         let html = `<div class="facility-panel">
             <h2>${t('facilities_level_title', {title, level})}</h2>
             
-            <!-- Current Usage Fee Display -->
             <div style="text-align:center; margin:20px 0; padding:12px; background:rgba(0,0,0,0.4); border-radius:10px;">
                 <p style="font-size:1.4em; margin:0; color:#ffd700;">
                     現在の使用料: <strong>${currentFee} G / 回</strong>
                 </p>
             </div>
 
-            <!-- Fee Setting Button (also available inside each facility) -->
             <div style="text-align:center; margin:30px 0;">
                 <button onclick="openFacilityFeeModal('${currentFacility}')" 
                         style="padding:12px 32px; font-size:1.2em; background:#9b59b6; color:white; border:none; border-radius:8px; cursor:pointer;">
@@ -8718,7 +8658,27 @@ function renderFacilities() {
                 html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top:30px;">`;
 
                 gameState.adventurers.forEach(adv => {
-                    const enhanceableItems = adv.equipment.filter(item => item.stat && typeof item.bonus === 'number');
+                    // --- UPDATED EQUIPMENT EXTRACTION LOGIC ---
+                    let enhanceableItems = [];
+                    
+                    // 1. Pull from the new slots system
+                    if (adv.slots) {
+                        Object.values(adv.slots).forEach(item => {
+                            // Ensure it's a real item, not locked (prevents 2H weapon duplicates), and is enhanceable
+                            if (item && !item.locked && item.stat && typeof item.bonus === 'number') {
+                                // Double check to avoid pushing the same item ID twice
+                                if (!enhanceableItems.some(i => i.id === item.id)) {
+                                    enhanceableItems.push(item);
+                                }
+                            }
+                        });
+                    } 
+                    
+                    // 2. Fallback for older saves that still use adv.equipment array
+                    if (enhanceableItems.length === 0 && adv.equipment) {
+                        enhanceableItems = adv.equipment.filter(item => item.stat && typeof item.bonus === 'number');
+                    }
+
                     if (enhanceableItems.length > 0) {
                         hasEnhanceable = true;
                         html += `
@@ -8728,10 +8688,13 @@ function renderFacilities() {
                         enhanceableItems.forEach(item => {
                             const statFull = t(`stat_${item.stat}`) || item.stat;
                             const currentEnh = item.enhancement || 0;
+                            // Add category to display if it exists
+                            const categoryText = item.category ? ` [${item.category}]` : '';
+
                             html += `
                                 <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.95em;">
                                     <div>
-                                        <p style="margin:0; font-weight:bold;">${item.name}</p>
+                                        <p style="margin:0; font-weight:bold;">${item.name}${categoryText}</p>
                                         <p style="margin:4px 0 0; color:#ffeb3b;">
                                             ${statFull} +${item.bonus}${t('percent_symbol')}
                                             ${currentEnh > 0 ? ` +${currentEnh}${t('absolute_symbol')}` : ''}
@@ -8791,7 +8754,7 @@ function renderFacilities() {
                     ? `${r.inputs.join(' + ')} → ${r.output.name}`
                     : r.name;
 
-                // === Enhanced effect display for blacksmith (shows pre-existing enhancement if recipe has it) ===
+                // === Enhanced effect display for blacksmith ===
                 let effectHtml = '';
                 if (currentFacility === 'blacksmith') {
                     const statFull = t(`stat_${r.stat}`) || r.stat;
@@ -10754,12 +10717,12 @@ function renderQuests() {
             baseChance = Math.min(0.7, baseChance);
             baseChancePercent = Math.round(baseChance * 100);
 
-            lukReductionPercent = Math.round(teamLuk * 0.01);
+            lukReductionPercent = Math.round(teamLuk * 0.05);
             encounterChance = Math.max(0, baseChancePercent - lukReductionPercent);
 
-            const dexReductionPercent = Math.round(teamDex * 0.01);
+            const dexReductionPercent = Math.round(teamDex * 0.05);
             const minLoss = Math.max(0, 30 - dexReductionPercent);
-            const maxLoss = Math.max(0, 80 - dexReductionPercent);
+            const maxLoss = Math.max(0, 50 - dexReductionPercent);
 
             lossInfo = `遭遇時損失: ${minLoss}-${maxLoss}% (DEXで-${dexReductionPercent}%)`;
         }
