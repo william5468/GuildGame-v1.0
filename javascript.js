@@ -3031,7 +3031,10 @@ function assign(questId, advId){
         const questIndex = ranks.indexOf(q.rank);
 
         if (advIndex !== -1 && questIndex !== -1 && advIndex < questIndex) {
-            better_alert(t('rank_too_low_for_quest') || `${adv.name} のランク(${adv.rank})がクエスト必要ランク(${q.rank})未満です`, "error");
+            // Using the variables to fill the requested phrase
+            const errorMessage = `${adv.name}的等級${adv.rank}不足以參加此任務（需要${q.rank}以上）`;
+            
+            better_alert(errorMessage, "error");
             return;
         }
     }
