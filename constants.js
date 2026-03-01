@@ -4341,7 +4341,7 @@ const mainQuests = [
     },
     {
         desc: t('main_quest_2_desc'),
-        difficulty: 120,
+        difficulty: 1,
         reward: 40000,
         minStrength: 1, minWisdom: 1, minDexterity: 1, minLuck: 1,
         focusStat: "wisdom",
