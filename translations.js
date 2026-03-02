@@ -1,7 +1,13 @@
 // translations.js
 
 const translations = {
+
   ja: {
+    'on_leave_label':'休暇中 (残り {days} 日)',
+    'leave_request': '{name}が{days}日間の休暇を希望しています。\n承認しますか？\n(承認 → 好感度 +2/日 | 拒否 → 好感度 -3/日)',
+'leave_approved': '{name}の{days}日間休暇を承認しました（好感度 +{bonus}）',
+'leave_rejected': '{name}の{days}日間休暇を拒否しました（好感度 -{penalty}）',
+    'adventurer_donation':'ギルドマスターへの好感から{amount}Gを寄付した',
     "gamble_win": "ギャンブルで勝利！ +{bet}G",
     "gamble_lose": "ギャンブルで負けた… -{bet}G",
     "tavern_adv_busy": "{name}は現在クエスト中のため、酒場で食事をすることはできません。",
@@ -889,6 +895,11 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    'on_leave_label': 'On Leave ({days} days left)',
+    'leave_request': '{name} wants {days} days of leave.\nApprove?\n(Approve: +2 Friendliness/day | Reject: -3 Friendliness/day)',
+'leave_approved': '{name}’s {days} day leave APPROVED (+{bonus} Friendliness)',
+'leave_rejected': '{name}’s {days} day leave REJECTED (-{penalty} Friendliness)',
+    'adventurer_donation':'Donated {amount}G to the Guild Master out of high friendliness',
     "gamble_win": "Won the gamble! +{bet}G",
     "gamble_lose": "Lost the gamble... -{bet}G",
     "tavern_adv_busy": "{name} is currently on a quest and cannot eat at the tavern.",
@@ -1751,6 +1762,11 @@ relationship_title: "{name}'s Relationships",
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
+    'on_leave_label':'休假中 (剩餘 {days} 天)',
+    'leave_request': '{name} 希望休假 {days} 天。\n是否批准？\n(批准 → 好感度 +2/天 | 拒絕 → 好感度 -3/天)',
+'leave_approved': '{name} 的 {days} 天休假已批准（好感度 +{bonus}）',
+'leave_rejected': '{name} 的 {days} 天休假已被拒絕（好感度 -{penalty}）',
+    'adventurer_donation':'因對公會長的好感而捐贈了{amount}G',
     "gamble_win": "賭博獲勝！ +{bet}G",
     "gamble_lose": "賭博輸了… -{bet}G",
     "tavern_adv_busy": "{name}正在任務中，無法在酒館用餐。",

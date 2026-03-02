@@ -1089,6 +1089,52 @@ function getSellPrice(cityState, resource, isHome = false) {
     return Math.round(getMarketPrice(cityState, resource, isHome) * (1 - priceSpread) / 5) * 5;
 }
 
+// === NEW FUNCTION: Generate 3~6 random quest reward items every day ===
+function generateDailySpecialItems() {
+    if (!gameState.dailySpecialItems) gameState.dailySpecialItems = [];
+
+    gameState.dailySpecialItems = []; // clear previous day
+
+    // Collect ALL fetch items from current language (or fallback to ja)
+    let allFetchItems = [];
+    const currentFetchData = fetchQuestsByRank[currentLang] || fetchQuestsByRank.ja;
+
+    Object.keys(currentFetchData).forEach(rank => {
+        allFetchItems = allFetchItems.concat(currentFetchData[rank]);
+    });
+
+    // Remove duplicates (same itemName)
+    const uniqueMap = new Map();
+    allFetchItems.forEach(item => {
+        if (!uniqueMap.has(item.itemName)) {
+            uniqueMap.set(item.itemName, item);
+        }
+    });
+    let uniqueItems = Array.from(uniqueMap.values());
+
+    // Shuffle
+    uniqueItems = uniqueItems.sort(() => Math.random() - 0.5);
+
+    // Take 3~6 items
+    const itemCount = 3 + Math.floor(Math.random() * 4); // 3 to 6
+    const selected = uniqueItems.slice(0, itemCount);
+
+    selected.forEach(baseItem => {
+        const stock = 1 + Math.floor(Math.random() * 5); // 1~5
+        const price = Math.floor(baseItem.minPrice + Math.random() * (baseItem.maxPrice - baseItem.minPrice + 1));
+
+        gameState.dailySpecialItems.push({
+            name: baseItem.itemName,
+            price: price,                    // ← current shop buy price
+            stock: stock,
+            isSpecial: true,
+            // === NEW: Preserve original min/max for future selling ===
+            minPrice: baseItem.minPrice,
+            maxPrice: baseItem.maxPrice
+        });
+    });
+}
+
 function updateDailyPrices() {
     // ホーム（ギルドショップ）価格更新
     resources.forEach(r => {
@@ -1106,6 +1152,8 @@ function updateDailyPrices() {
             city.event = getRandomEvent();
         }
     });
+
+    generateDailySpecialItems();
 }
 
 
@@ -3611,13 +3659,43 @@ function useConsumable(pIdx, itemId) {
     renderCurrentCharacter();
 }
 
-function buyMaterial(idx) {
-    if (idx >= gameState.dailyMaterials.length) return;
-    const mat = gameState.dailyMaterials[idx];
-    if (!spendGold(mat.price)) return;
-    addToInventory(mat, 1);
-    gameState.dailyMaterials.splice(idx, 1);
-    document.getElementById('shopContent').innerHTML = renderCurrentShopPage();
+function buyMaterial(idx, isSpecial = false) {
+    const itemList = isSpecial ? gameState.dailySpecialItems : gameState.dailyMaterials;
+    if (idx >= itemList.length) return;
+
+    const item = itemList[idx];
+    if ((item.stock || 999) <= 0) return;   // safety
+
+    if (!spendGold(item.price)) return;
+
+    // Add to inventory (works for both materials and quest reward items)
+    const template = {
+        name: item.name,
+        minPrice: item.minPrice || 0,
+        maxPrice: item.maxPrice || 0
+    };
+    console.log(template.minPrice);
+    addToInventory(template, 1);
+
+    // Reduce stock
+    item.stock = (item.stock || 999) - 1;
+    if (item.stock <= 0) {
+        itemList.splice(idx, 1);
+    }
+
+    // === NEW: Success notification with your requested message ===
+    better_alert(
+        t('shop_purchase_success', {
+            name: item.name,
+            qty: 1,
+            total: item.price,
+            gold: gameState.gold
+        }),
+        "success"
+    );
+
+    // Refresh shop
+    document.getElementById('shopContent').innerHTML = renderDailyMaterials();
     updateDisplays();
 }
 
@@ -3930,18 +4008,42 @@ function renderShopPurchase() {
     return html;
 }
 function renderDailyMaterials() {
+    
+
+    let html = `<ul class="shop-list">`;
+
+    let hasAnyItem = false;
+
+    // === 1. Normal Materials (language-safe, currentLang names) ===
     if (gameState.dailyMaterials && gameState.dailyMaterials.length > 0) {
-        let html = `<ul class="shop-list">`;
         gameState.dailyMaterials.forEach((mat, i) => {
-            html += `<li class="shop-item">`;
-            html += `<strong>${mat.name}</strong> - ${mat.price}G`;
-            html += ` <button class="buy-btn" onclick="buyMaterial(${i})">${t('buy_button')}</button>`;
-            html += `</li>`;
+            html += `<li class="shop-item">
+                <strong>${mat.name}</strong> - ${mat.price}G
+                <button class="buy-btn" onclick="buyMaterial(${i}, false)">${t('buy_button')}</button>
+            </li>`;
+            hasAnyItem = true;
         });
-        html += '</ul>';
-        return html;
     }
-    return `<p class="empty-msg">${t('daily_materials_empty')}</p>`;
+
+    // === 2. Special Quest Reward Items (also currentLang names) ===
+    if (gameState.dailySpecialItems && gameState.dailySpecialItems.length > 0) {
+        gameState.dailySpecialItems.forEach((item, i) => {
+            html += `<li class="shop-item">
+                <strong>${item.name}</strong> - ${item.price}G 
+                <span style="color:#88ff88;">(在庫 ${item.stock})</span>
+                <button class="buy-btn" onclick="buyMaterial(${i}, true)">${t('buy_button')}</button>
+            </li>`;
+            hasAnyItem = true;
+        });
+    }
+
+    html += `</ul>`;
+
+    if (!hasAnyItem) {
+        html += `<p class="empty-msg">${t('daily_shop_empty') || '本日ショップに商品はありません'}</p>`;
+    }
+
+    return html;
 }
 
 function renderGuildExpansion() {
@@ -4035,12 +4137,23 @@ function renderSellItems() {
         const randVariance = getDailyRandomFraction(group.name + 'var');
 
         let basePrice = 0;
-        if (group.stat) basePrice = Math.floor((shopItems.find(s => s.name === group.name)?.cost || 100) * 0.7);
-        else if (group.type === 'potion') basePrice = Math.floor((shopItems.find(s => s.name === group.name)?.cost || 30) * 0.5);
-        else if (group.type === 'consumable') basePrice = Math.floor((group.buff?.bonus || 100) * 5);
+        if (group.stat) {
+            basePrice = Math.floor((shopItems.find(s => s.name === group.name)?.cost || 100) * 0.7);
+        }
+        else if (group.type === 'potion') {
+            basePrice = Math.floor((shopItems.find(s => s.name === group.name)?.cost || 30) * 0.5);
+        }
+        else if (group.type === 'consumable') {
+            basePrice = Math.floor((group.buff?.bonus || 100) * 5);
+        }
         else if (group.minPrice !== undefined && group.maxPrice !== undefined) {
-            basePrice = Math.floor(group.minPrice + randMinMax * (group.maxPrice - group.minPrice + 1));
-        } else {
+            // Improved: Quest reward items now sell for LOWER price on average
+            // Uses min/max as reference but biases strongly toward the lower end
+            const avgPrice = (group.minPrice + group.maxPrice) / 2;
+            const sellMultiplier = 0.52 + Math.random() * 0.26; // 52% ~ 78% of average
+            basePrice = Math.floor(avgPrice * sellMultiplier);
+        }
+        else {
             basePrice = 5;
         }
 
@@ -4258,9 +4371,12 @@ function getRecruitsHtml(){
 }
 
 function getAvailableHtml(){
-    const avail=gameState.adventurers.filter(a=>!a.busy);
-    let html='';
-    avail.forEach(adv=>{
+    const avail = gameState.adventurers.filter(a => !a.busy);
+    let html = '';
+
+    avail.forEach(adv => {
+        const isOnLeave = (adv.leaveDaysLeft || 0) > 0;
+
         const baseStr = adv.strength;
         const baseWis = adv.wisdom;
         const baseDex = adv.dexterity;
@@ -4274,7 +4390,7 @@ function getAvailableHtml(){
         const equipDex = effDex - baseDex;
         const equipLuk = effLuk - baseLuk;
 
-        const stats=`Lv ${adv.level} | 
+        const stats = `Lv ${adv.level} | 
                      <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) 
                      <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) 
                      <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) 
@@ -4288,27 +4404,31 @@ function getAvailableHtml(){
         const maxHpDisplay = Number(adv.maxHp) || 0;
         const mpDisplay = Number(adv.mp) || 0;
         const maxMpDisplay = Number(adv.maxMp) || 0;
-        const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
+        const img = `<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
         const nameHtml = getNameHtml(adv);
 
-        // === 下部の表示：tempなら雇用コスト、permanentならランクを直接表示 ===
-        const bottomDisplay = adv.temp 
+        let bottomDisplay = adv.temp 
             ? t('hiring_cost_display', {cost: adv.hiringCost || 0})
             : (adv.rank 
-                ? t('guild_rank_display', {rank: adv.rank})  // 例: "Rank F+" または "F+ランク"
-                : t('permanent_member'));  // rankがないpermanentはフォールバックで従来の表示
+                ? t('guild_rank_display', {rank: adv.rank})  
+                : t('permanent_member'));
 
-        html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
+        if (isOnLeave) {
+            bottomDisplay += ` ${t('on_leave_label', {days: adv.leaveDaysLeft})}`;
+        }
+
+        html += `<div class="adventurer-card" draggable="${isOnLeave ? 'false' : 'true'}" data-adv-id="${adv.id}" 
+                     style="${isOnLeave ? 'opacity:0.48; filter:grayscale(75%); pointer-events:none;' : ''}">
             ${img}${nameHtml}<br>
             <small class="stats">${stats}</small><br>
             <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div> 経験値 ${adv.exp}/${expNeeded}<br>
             <div class="progress-bar"><div class="progress-fill hp-fill" style="width:${hpPct}%"></div></div> HP ${hpDisplay}/${maxHpDisplay}<br>
             <div class="progress-bar"><div class="progress-fill mp-fill" style="width:${mpPct}%"></div></div> MP ${mpDisplay}/${maxMpDisplay}<br>
             ${bottomDisplay}
-            
         </div>`;
     });
-    if(!avail.length) html+='<p>'+t('no_available_adventurers')+'</p>';
+
+    if (!avail.length) html += '<p>' + t('no_available_adventurers') + '</p>';
     return html;
 }
 
@@ -5652,8 +5772,8 @@ function processAdventurerDailyActions() {
         let recoveryItemUsed = null;
         let recoveryDescription = '';
 
-        // Priority: HP Recovery if below 50%
-        if (adv.hp / maxHp < 0.5) {
+        // Priority: HP Recovery if below 10%
+        if (adv.hp / maxHp < 0.1) {
             const hpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
                 (item.restore === 'hp' ||  
@@ -5671,8 +5791,8 @@ function processAdventurerDailyActions() {
             }
         }
 
-        // MP Recovery if HP wasn't needed and MP is below 50%
-        if (!recoveryItemUsed && adv.mp / maxMp < 0.5) {
+        // MP Recovery if HP wasn't needed and MP is below 10%
+        if (!recoveryItemUsed && adv.mp / maxMp < 0.1) {
             const mpRecoveryItems = adv.bag.items.filter(item => 
                 (item.qty || 1) >= 1 &&
                 (item.restore === 'mp' || 
@@ -6006,6 +6126,22 @@ function processAdventurerDailyActions() {
             }
         }
 
+        // === DONATION: ONLY when the adventurer chooses staying at guild (50% chance) ===
+        const playerFriendliness = adv.Friendliness ?? 50;
+        if (action === 'guild_stay' && playerFriendliness >= 80 && (adv.bag?.gold ?? 0) > 20 && Math.random() < 0.5) {
+            const donationPercent = 5 + Math.floor(Math.random() * 5); // 1% ~ 10%
+            let donation = Math.floor(adv.bag.gold * donationPercent / 100);
+            donation = Math.max(1, Math.min(donation, adv.bag.gold));
+
+            adv.bag.gold -= donation;
+            gameState.gold += donation;
+            guildGain += donation;
+            adventurerChange -= donation;
+
+            const donationMsg = t('adventurer_donation', { amount: donation });
+            description += ` (${donationMsg})`;
+        }
+
         totalGuildGain += guildGain;
 
         const finalDescription = recoveryDescription 
@@ -6123,55 +6259,80 @@ function playDay(){
     const evDay = gameState.day;
     gameState.day++;
 
-// === 新規追加: 常駐冒険者の hunger を日初めに減少（クエスト中か否かで差分） + 飢餓死処理 ===
+    // === NEW: Adventurer Leave Request System ===
+    // 1. Decrement existing leave days
+    gameState.adventurers.forEach(adv => {
+        if (adv.temp) return;
+        if (adv.leaveDaysLeft === undefined) adv.leaveDaysLeft = 0;
+        if (adv.leaveDaysLeft > 0) adv.leaveDaysLeft--;
+    });
+
+    // 2. New leave requests (15% chance per permanent adventurer not on leave)
+    const leaveRequests = [];
+    gameState.adventurers.forEach(adv => {
+        if (adv.temp || adv.leaveDaysLeft > 0 || isAdventurerOnQuest(adv)) return;
+        if (Math.random() < 0.15) {
+            const days = Math.floor(Math.random() * 6) + 2; // 2~7 days
+            leaveRequests.push({adv, days});
+        }
+    });
+
+    // Process each request
+    leaveRequests.forEach(req => {
+        const {adv, days} = req;
+        const approve = confirm(
+            t('leave_request', {name: adv.name, days: days})
+        );
+
+        if (approve) {
+            const bonus = 2 * days;
+            adv.Friendliness = Math.min(100, (adv.Friendliness ?? 50) + bonus);
+            adv.leaveDaysLeft = days;
+            better_alert(t('leave_approved', {name: adv.name, days: days, bonus: bonus}), "success");
+        } else {
+            const penalty = -3 * days;
+            adv.Friendliness = Math.max(0, (adv.Friendliness ?? 50) + penalty);
+            better_alert(t('leave_rejected', {name: adv.name, days: days, penalty: Math.abs(penalty)}), "warning");
+        }
+    });
+
+    // === Existing hunger processing ===
     const deadAdventurers = [];
 
     gameState.adventurers.forEach(adv => {
-        if (adv.temp) return; // 一時的な冒険者は除外
+        if (adv.temp) return;
         if (adv.hunger === undefined) adv.hunger = 1.0;
 
-        // 減少量：クエスト中なら4%、クエスト中でなければ2%
         const hungerLoss = isAdventurerOnQuest(adv) ? 0.04 : 0.02;
         adv.hunger = Math.max(0, adv.hunger - hungerLoss);
 
-        // hunger が0になったら死亡リストに追加
         if (adv.hunger <= 0) {
             deadAdventurers.push(adv);
         }
     });
 
-    // 飢餓死処理（減少後にまとめて実行）
     if (deadAdventurers.length > 0) {
         let totalRepPenalty = 0;
 
         deadAdventurers.forEach(adv => {
-            // リストから削除
             gameState.adventurers = gameState.adventurers.filter(a => a.id !== adv.id);
-
-            // 死亡メッセージ
             better_alert(t('adventurer_starved_to_death', {name: adv.name}), "error");
-
-            // Reputation ペナルティ（1人あたり -10）
             gameState.reputation = Math.max(0, gameState.reputation - 10);
             totalRepPenalty += 10;
         });
 
-        // 複数死亡時のまとめメッセージ（Reputationペナルティも表示）
         if (deadAdventurers.length > 1) {
             better_alert(t('multiple_adventurers_starved', {count: deadAdventurers.length, penalty: totalRepPenalty}), "error");
         }
     }
 
-    // === 新規追加: ギルドマスターへの好感度 < 30 の常駐冒険者の離脱処理（毎日10%確率）===
+    // === Existing low-friendliness leaving processing ===
     const leavingAdventurers = [];
     let totalLeaveRepPenalty = 0;
 
     gameState.adventurers.forEach(adv => {
-        if (adv.temp) return; // 一時冒険者は対象外
-
-        // ギルドマスターへの好感度（playerFriendliness が未定義時は50と仮定）
+        if (adv.temp) return;
         const playerFriendliness = adv.Friendliness ?? 50;
-
         if (playerFriendliness < 30 && Math.random() < 0.3) {
             leavingAdventurers.push(adv);
         }
@@ -6179,18 +6340,12 @@ function playDay(){
 
     if (leavingAdventurers.length > 0) {
         leavingAdventurers.forEach(adv => {
-            // リストから削除
             gameState.adventurers = gameState.adventurers.filter(a => a.id !== adv.id);
-
-            // 個別離脱メッセージ
             better_alert(t('adventurer_left_low_friendliness', {name: adv.name}), "warning");
-
-            // Reputation ペナルティ（1人あたり -5）
             gameState.reputation = Math.max(0, gameState.reputation - 5);
             totalLeaveRepPenalty += 5;
         });
 
-        // 複数離脱時のまとめメッセージ
         if (leavingAdventurers.length > 1) {
             better_alert(t('multiple_adventurers_left', {count: leavingAdventurers.length, penalty: totalLeaveRepPenalty}), "warning");
         }
@@ -6202,19 +6357,16 @@ function playDay(){
     if (evDay % 7 === 0) {
         const tax = Math.floor((gameState.day - 1) * 10);
 
-        // 常駐冒険者の給与計算
         const ranks = ['F', 'F+', 'E', 'E+', 'D', 'D+', 'C', 'C+', 'B', 'B+', 'A', 'A+', 'S', 'S+'];
         let totalSalary = 0;
 
         gameState.adventurers.forEach(adv => {
-            if (adv.temp) return; // 一時冒険者は給与なし
-
+            if (adv.temp) return;
             const index = ranks.indexOf(adv.rank || 'F');
             const salary = 50 + 50 * index * (index + 1) / 2;
             totalSalary += salary;
         });
 
-        // 扣除 + アラート（税金と給与は別々に表示）
         if (tax > 0) {
             gameState.gold -= tax;
             better_alert(t('tax_day', { tax }), "warning");
@@ -6228,7 +6380,7 @@ function playDay(){
         checkGameOver();
     }
 
-    // 以下は変更なし（省略せずそのまま残す）
+    // === Quest processing (original code unchanged) ===
     for (let i = gameState.quests.length - 1; i >= 0; i--) {
         const q = gameState.quests[i];
         if (q.defense || q.type === 7 || q.type === 6) continue;
@@ -10718,6 +10870,11 @@ function renderCurrentCharacter() {
 
     html += `<p id="friendliness-${adv.name}" style="font-size:1.2em; color:#ffd700; margin-bottom:8px;">
                 ${t('friendliness_label')} ${adv.Friendliness}
+            </p>`;
+
+    // === NEW: Display Adventurer's Gold (right below friendliness) ===
+    html += `<p id="gold-${adv.name}" style="font-size:1.2em; color:#ffdd88; margin-bottom:12px;">
+                ${"Gold"}: ${adv.bag?.gold ?? 0}${'G'}
             </p>`;
 
     html += `<button onclick="openNpcChat('${adv.name}')" style="margin:20px auto; display:block; padding:12px 30px; background:#8f458f; color:white; border:none; border-radius:8px; font-size:1.2em; cursor:pointer;">
