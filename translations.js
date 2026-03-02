@@ -2,6 +2,8 @@
 
 const translations = {
   ja: {
+    "gamble_win": "ギャンブルで勝利！ +{bet}G",
+    "gamble_lose": "ギャンブルで負けた… -{bet}G",
     "tavern_adv_busy": "{name}は現在クエスト中のため、酒場で食事をすることはできません。",
     "insufficient_gold": "ゴールドが足りません。",
     "tavern_ration_dislike": "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -10）",
@@ -887,6 +889,8 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "gamble_win": "Won the gamble! +{bet}G",
+    "gamble_lose": "Lost the gamble... -{bet}G",
     "tavern_adv_busy": "{name} is currently on a quest and cannot eat at the tavern.",
     "insufficient_gold": "Not enough gold.",
     "tavern_ration_dislike": "{name} ate the {recipe}, but it tasted terrible (Friendliness -10).",
@@ -1747,6 +1751,8 @@ relationship_title: "{name}'s Relationships",
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
+    "gamble_win": "賭博獲勝！ +{bet}G",
+    "gamble_lose": "賭博輸了… -{bet}G",
     "tavern_adv_busy": "{name}正在任務中，無法在酒館用餐。",
     "insufficient_gold": "金幣不足。",
     "tavern_ration_dislike": "{name}吃了{recipe}，但味道很差，心情變糟了（好感度 -10）。",

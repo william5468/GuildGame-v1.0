@@ -246,15 +246,15 @@ function better_alert(message, type = "basic", extra = {}) {
     let background = '#1a1a1a';
     let textColor = '#ffffff';
 
-    // Play levelup sound for training and levelup (feels rewarding!)
-    if ((type === "levelup" || type === "quest" || type === "training") && typeof levelupSound !== 'undefined') {
+    // Play levelup sound for training, levelup, and RECOVERY (feels rewarding!)
+    if ((type === "levelup" || type === "quest" || type === "training" || type === "recovery") && typeof levelupSound !== 'undefined') {
         levelupSound.currentTime = 0;
         levelupSound.play().catch(err => {
-            console.warn('Level up / Quest / Training sound could not play:', err);
+            console.warn('Sound could not play:', err);
         });
     }
 
-    // Type-specific designs with gradients, emojis, and better contrast
+    // Type-specific designs
     if (type === "success") {
         prefix = '✅ ';
         background = 'linear-gradient(to right, #11998e, #38ef7d)';
@@ -273,7 +273,15 @@ function better_alert(message, type = "basic", extra = {}) {
         prefix = '☠️ ';
         background = 'linear-gradient(to right, #0f0f0f, #2a2a2a)';
         textColor = '#ffffff';
-    } else if (type === "friendliness") {
+    } 
+    // === NEW: Recovery Alert (Healing/Potion Theme) ===
+    else if (type === "recovery") {
+        prefix = '✨ '; 
+        // Fresh green to emerald gradient
+        background = 'linear-gradient(to right, #00b09b, #96c93d)';
+        textColor = '#ffffff';
+    }
+    else if (type === "friendliness") {
         const delta = extra.delta || 0;
         if (delta > 0) {
             prefix = '💖 ';
@@ -291,15 +299,11 @@ function better_alert(message, type = "basic", extra = {}) {
         prefix = '📜 ';
         background = 'linear-gradient(to right, #8e44ad, #9b59b6, #bb8fce)';
         textColor = '#ffffff';
-    } 
-    // === NEW: Training Result Alert (Muscular/Strength Theme) ===
-    else if (type === "training") {
-        prefix = '💪 '; // Flexed bicep emoji – perfect for training gains
-        // Energetic orange → fiery red gradient (power, energy, growth feel)
+    } else if (type === "training") {
+        prefix = '💪 ';
         background = 'linear-gradient(to right, #ff6b35, #f7931e, #ff9d00)';
         textColor = '#ffffff';
-    } 
-    else if (type === "basic") {
+    } else if (type === "basic") {
         prefix = '';
         background = 'linear-gradient(to right, #f12711, #f5af19)';
     }
@@ -330,7 +334,15 @@ function better_alert(message, type = "basic", extra = {}) {
         escapeMarkup: true
     };
 
-    // Special enhancements for levelup
+    // --- Specific enhancements ---
+
+    if (type === "recovery") {
+        toastConfig.duration = 4500;
+        toastConfig.style.boxShadow = '0 10px 30px rgba(150, 201, 61, 0.5)';
+        toastConfig.style.border = '2px solid #ffffffaa';
+        toastConfig.style.fontSize = '17px';
+    }
+
     if (type === "levelup") {
         toastConfig.duration = 7000;
         toastConfig.style.boxShadow = '0 12px 50px rgba(255, 165, 0, 0.7)';
@@ -340,7 +352,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.padding = '20px 30px';
     }
 
-    // Special enhancements for death
     if (type === "death") {
         toastConfig.duration = 10000;
         toastConfig.gravity = "bottom";
@@ -354,7 +365,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.backdropFilter = 'blur(16px)';
     }
 
-    // Friendliness-specific enhancements
     if (type === "friendliness") {
         toastConfig.duration = 6000;
         toastConfig.style.fontSize = '18px';
@@ -363,7 +373,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
     }
 
-    // Quest-specific enhancements
     if (type === "quest") {
         toastConfig.duration = 6500;
         toastConfig.style.boxShadow = '0 12px 40px rgba(142, 68, 173, 0.6)';
@@ -374,10 +383,9 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.backdropFilter = 'blur(14px)';
     }
 
-    // === NEW: Training-specific enhancements (energetic, powerful feel) ===
     if (type === "training") {
         toastConfig.duration = 6000;
-        toastConfig.style.boxShadow = '0 10px 35px rgba(255, 107, 53, 0.6)'; // Orange glow
+        toastConfig.style.boxShadow = '0 10px 35px rgba(255, 107, 53, 0.6)';
         toastConfig.style.border = '2px solid #ff9d00';
         toastConfig.style.fontSize = '18px';
         toastConfig.style.fontWeight = '700';
@@ -385,7 +393,6 @@ function better_alert(message, type = "basic", extra = {}) {
         toastConfig.style.backdropFilter = 'blur(12px)';
     }
 
-    // === TOAST WITH FALLBACK ===
     if (typeof Toastify === 'function') {
         try {
             Toastify(toastConfig).showToast();
@@ -397,7 +404,6 @@ function better_alert(message, type = "basic", extra = {}) {
         console.warn('Toastify is not available – falling back to native alert');
     }
 
-    // === FALLBACK: Native alert() ===
     alert((prefix ? prefix + ' ' : '') + message);
 }
 function openTradeForm(cityId) {
@@ -5927,19 +5933,29 @@ function processAdventurerDailyActions() {
                     } else if (tavernSubRandom < orderChance + 0.15) {
                         // Gambling Logic
                         if (adv.bag.gold > 20 && gameState.gold > 20) {
-                            const bet = Math.min(Math.floor(adv.bag.gold * 0.2), gameState.gold);
+                            // Ensure bet is a whole number (integer)
+                            const bet = Math.floor(Math.min(adv.bag.gold * 0.2, gameState.gold));
+
                             if (Math.random() < 0.45) {
                                 adv.bag.gold += bet;
                                 gameState.gold -= bet;
                                 adventurerChange += bet;
                                 guildGain -= bet;
-                                description += ` ギャンブルで勝利！ +${bet}G`;
+                                
+                                // Get localized string and update description
+                                const winMsg = t('gamble_win', { bet: bet });
+                                description += ` ${winMsg}`;
+                                better_alert(winMsg, "success");
                             } else {
                                 adv.bag.gold -= bet;
                                 gameState.gold += bet;
                                 adventurerChange -= bet;
                                 guildGain += bet;
-                                description += ` ギャンブルで負けた… -${bet}G`;
+                                
+                                // Get localized string and update description
+                                const loseMsg = t('gamble_lose', { bet: bet });
+                                description += ` ${loseMsg}`;
+                                better_alert(loseMsg, "error");
                             }
                         }
                     }
@@ -6434,6 +6450,87 @@ function renderBattle() {
         return;
     }
 
+// Array to hold popup information so we can trigger it AFTER the DOM renders
+    const recoveryPopups = [];
+
+    // ==========================================================
+    // Automated Recovery Item Usage Logic
+    // ==========================================================
+    if (currentBattle.phase === 'executing' && currentBattle.currentActor) {
+        const actor = currentBattle.currentActor;
+        console.log("Item picking for " + actor.name);
+
+        if (actor.hp > 0 ) {
+            console.log("Now consider recovery " + actor.name);
+
+            let itemUsed = false;
+            const hpRatio = actor.hp / actor.maxHp;
+            const mpRatio = (actor.mp || 0) / (actor.maxMp || 1);
+
+            // 1. Check HP Recovery
+            if (hpRatio < 0.5) {
+                const chance = 1 - hpRatio ; 
+                if (Math.random() < chance) {
+                    console.log("HP potion picking triggered");
+                    const hpItems = (actor.bag?.items || []).filter(item => 
+                        (item.qty || 1) >= 1 &&
+                        (item.restore === 'hp' || /hp|heal|health|life|活力|回復|治癒|ヒール|ライフ|ヘルス/i.test(item.name))
+                    );
+
+                    if (hpItems.length > 0) {
+                        hpItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+                        const item = hpItems[0];
+                        const amount = item.amount || 50;
+                        actor.hp = Math.min(actor.maxHp, actor.hp + amount);
+                        removeItemFromBag(actor.bag, item.name, 1);
+                        
+                        // Queue the popup for AFTER rendering
+                        recoveryPopups.push({ actorId: actor.id, amount: amount, type: 'hp' });
+                        better_alert(actor.name+" used "+item.name, "recovery");
+                        itemUsed = true;
+                    } else {
+                        console.log("HP potion picking triggered but no item found");
+                    }
+                } else {
+                    console.log("HP potion picking triggered but chance missed");
+                }
+            } else {
+                console.log("HP potion picking not considered as hp is high");
+            }
+
+            // 2. Check MP Recovery
+            if (!itemUsed && mpRatio < 0.5) {
+                const chance = 1 - mpRatio;
+                if (Math.random() < chance) {
+                    console.log("MP potion picking triggered");
+                    const mpItems = (actor.bag?.items || []).filter(item => 
+                        (item.qty || 1) >= 1 &&
+                        (item.restore === 'mp' || /mp|mana|magic|魔力|マナ/i.test(item.name))
+                    );
+
+                    if (mpItems.length > 0) {
+                        mpItems.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+                        const item = mpItems[0];
+                        const amount = item.amount || 30;
+                        actor.mp = Math.min(actor.maxMp, actor.mp + amount);
+                        removeItemFromBag(actor.bag, item.name, 1);
+
+                        // Queue the popup for AFTER rendering
+                        recoveryPopups.push({ actorId: actor.id, amount: amount, type: 'mp' });
+                        better_alert(actor.name+" used "+item.name, "recovery");
+                    } else {
+                        console.log("MP potion picking triggered but no item found");
+                    }
+                } else {
+                    console.log("MP potion picking triggered but chance missed");
+                }
+            } else if (!itemUsed) {
+                console.log("MP potion picking not considered as mp is high");
+            }
+        }
+    }
+    // ==========================================================
+
     // ===== 背景画像を #battleModal 自体に適用（外側オーバーレイに設定）=====
     const battleModal = document.getElementById('battleModal');
     if (battleModal) {
@@ -6552,6 +6649,21 @@ function renderBattle() {
     battleContent.style.background = 'transparent';
     battleContent.style.pointerEvents = 'auto';
 
+    // ==========================================================
+    // Trigger Recovery Popups AFTER DOM is updated
+    // ==========================================================
+    if (recoveryPopups.length > 0) {
+        setTimeout(() => {
+            recoveryPopups.forEach(popupData => {
+                const div = document.getElementById(`div_${popupData.actorId}`);
+                if (div) {
+                    showDamagePopup(div, popupData.amount, false, false, true, popupData.type);
+                }
+            });
+        }, 50); // Small delay ensures browser has rendered the new DOM
+    }
+    // ==========================================================
+
     // ===== 敵ターン時のクリックハンドラー（連打防止はそのまま）=====
     if (currentBattle.phase === 'executing' && currentBattle.currentActor && currentBattle.currentActor.isEnemy) {
         battleContent.style.cursor = 'pointer';
@@ -6560,6 +6672,8 @@ function renderBattle() {
             e.stopPropagation();
             battleContent.onclick = null;
             battleContent.style.cursor = '';
+            // Reset recovery flag for current actor when turn skips/ends
+            if (currentBattle.currentActor) currentBattle.currentActor.recoveryProcessedThisTurn = false;
             skipTurn();
         };
     } else {
@@ -6613,7 +6727,7 @@ function renderBattle() {
             if (!actor) return;
 
             const getStat = (stat) => {
-                if (!actor.isEnemy && typeof getEffectiveStat === 'function') {
+                if ( typeof getEffectiveStat === 'function') {
                     return getEffectiveStat(actor, stat);
                 }
                 return actor[stat] || 0;
@@ -6628,7 +6742,7 @@ function renderBattle() {
 
             const evasion = !actor.isEnemy 
                 ? Math.min(80, Math.floor(luc / 10) + (actor.activeEvadeBonus ? 15 : 0))
-                : 'N/A';
+                : Math.min(80, Math.floor(luc / 10));
 
             let activeEffects = actor.activeEffects ? [...actor.activeEffects] : [];
 
@@ -6700,7 +6814,6 @@ function renderBattle() {
 
             tooltip.innerHTML = html;
 
-            // ===== 変更: カーソル直近に配置（右20px、上10pxオフセット）=====
             let baseX, baseY;
             if (e && e.pageX !== undefined) {
                 baseX = e.pageX;
@@ -6729,7 +6842,6 @@ function renderBattle() {
             currentHoldTarget = null;
         };
 
-        // Hover (PC) - 遅延を500msに短縮
         battleContent.addEventListener('mouseover', (e) => {
             if (e.pointerType === 'mouse' || !e.pointerType) {
                 const target = e.target.closest('.battle-ally, .battle-enemy');
@@ -6740,12 +6852,11 @@ function renderBattle() {
                         if (currentHoverTarget === target) {
                             showTooltip(e, target);
                         }
-                    }, 500);  // ← 1000ms → 500ms
+                    }, 500);
                 }
             }
         });
 
-        // マウス移動時にツールチップ追従（同じオフセット）
         battleContent.addEventListener('mousemove', (e) => {
             if ((e.pointerType === 'mouse' || !e.pointerType) && tooltip.style.display === 'block') {
                 tooltip.style.left = (e.pageX + 20) + 'px';
@@ -6762,7 +6873,6 @@ function renderBattle() {
             }
         });
 
-        // Long press (touch) - 遅延を400msに短縮 + preventDefault継続
         battleContent.addEventListener('pointerdown', (e) => {
             if (e.pointerType === 'touch') {
                 e.preventDefault();
@@ -6778,7 +6888,7 @@ function renderBattle() {
                     if (currentHoldTarget === target) {
                         showTooltip(null, target);
                     }
-                }, 400);  // ← 500ms → 400ms
+                }, 400);
             }
         });
 
@@ -6799,7 +6909,6 @@ function renderBattle() {
         battleContent.addEventListener('pointerleave', hideTooltip);
     }
 }
-
 
 function getCharType(adv) {
     // Specific character name overrides (priority: name > image prefix > stats)
@@ -7141,7 +7250,7 @@ function executeActorAction(actor, action) {
                 if (charType === 'STR') soundToPlay = strHeavySound;
                 else if (charType === 'WIS') soundToPlay = wisHeavySound;
                 else if (charType === 'DEX') soundToPlay = dexHeavySound;
-                else if (charType === 'LUC') soundToPlay = lucHeavySound;
+                else if (charType === 'LUC') soundToPlay = lucLightSound;
             } else if (action.type === 'stunning') {
                 soundToPlay = dexStunningSound;
             } else if (action.type === 'fortune') {
@@ -7518,20 +7627,28 @@ function calculateAndApplyDamage(attacker, target, opts) {
 }
 
 
-function showDamagePopup(parentElement, amount, isMiss = false, isCritical = false) {
+function showDamagePopup(parentElement, amount, isMiss = false, isCritical = false, isRecovery = false, recoveryType = 'hp') {
     if (!parentElement) return;
+    if(recoveryType==='hp'){
+        console.log("hp recovery popup triggered");
+    }
 
     const popup = document.createElement('div');
     popup.className = 'damage-popup';
 
-    if (isMiss) {
+    if (isRecovery) {
+        popup.textContent = `+${amount}`;
+        popup.style.color = (recoveryType === 'hp') ? '#44ff44' : '#4488ff'; // Green for HP, Blue for MP
+        popup.style.fontSize = '40px';
+        popup.style.textShadow = '0 0 10px rgba(255,255,255,0.5)';
+    } else if (isMiss) {
         if (amount === 'Counter!') {
             popup.textContent = 'Counter!';
-            popup.style.color = '#ff00ff'; // Magenta for counter
+            popup.style.color = '#ff00ff';
             popup.style.fontSize = '40px';
         } else if (amount === 'Evade') {
             popup.textContent = 'Evade!';
-            popup.style.color = '#00ffff'; // Cyan for evade
+            popup.style.color = '#00ffff';
             popup.style.fontSize = '40px';
         } else {
             popup.textContent = 'Miss';
@@ -7539,17 +7656,15 @@ function showDamagePopup(parentElement, amount, isMiss = false, isCritical = fal
         }
     } else {
         popup.textContent = `-${amount}`;
-
         if (isCritical) popup.style.fontSize = '80px';
     }
 
-    // Relative positioning for accurate placement
     popup.style.position = 'absolute';
     popup.style.top = '0%';
     popup.style.left = '50%';
     popup.style.transform = 'translate(-50%, -50%)';
 
-    parentElement.style.position = 'relative'; // Ensure parent can contain absolute popup
+    parentElement.style.position = 'relative';
     parentElement.appendChild(popup);
 
     setTimeout(() => {
