@@ -7676,29 +7676,99 @@ function aiChooseAndExecute(actor) {
     const alivePlayers = currentBattle.team.filter(a => a.hp > 0);
     if (alivePlayers.length === 0) return;
 
-    let actionType = 'light';
-    let cost = 1;
+    // === NEW: Assign random personality if missing ===
+    if (!actor.personality) {
+        const personalities = ['unpredictable', 'predator', 'challenger', 'defender'];
+        actor.personality = personalities[Math.floor(Math.random() * personalities.length)];
+        console.log(`Assigned personality "${actor.personality}" to ${actor.name}`);
+    }
 
     const ap = actor.currentAp || 0;
-    if (ap >= 3 && Math.random() < 0.7) {
-        actionType = 'heavy';
-        cost = 3;
-    } else if (ap >= 2 && actor.hp / actor.maxHp < 0.5 && Math.random() < 0.5) {
-        actionType = 'counter';
-        cost = 2;
-    } else if (actor.hp / actor.maxHp < 0.4) {
-        actionType = 'defense';
-        cost = -1;
+    const personality = actor.personality;
+    
+    let actionType = 'light';
+    let target = null;
+    let cost = 1;
+
+    // --- 1. PERSONALITY-BASED ACTION SELECTION ---
+    const weights = { light: 0, heavy: 0, defense: 0, counter: 0 };
+
+    switch (personality) {
+        case 'predator':
+            // High aggression, focus on finishing the job
+            weights.light = 0.7;
+            weights.heavy = (ap >= 3) ? 0.2 : 0;
+            weights.defense = 0.05;
+            weights.counter = (ap >= 2) ? 0.05 : 0;
+            break;
+
+        case 'challenger':
+            // Tactical: Uses defense to build AP, then unleashes heavy attacks
+            if (ap < 3) {
+                weights.defense = 0.8;
+                weights.light = 0.2;
+            } else {
+                weights.heavy = 0.8;
+                weights.light = 0.2;
+            }
+            break;
+
+        case 'defender':
+            // Passive-Aggressive: Extremely high chance to counter or defend
+            weights.defense = 0.4;
+            weights.counter = (ap >= 2) ? 0.4 : 0;
+            weights.light = 0.2;
+            break;
+
+        case 'unpredictable':
+        default:
+            // Equal chaos: keeps the player guessing
+            weights.light = 0.25;
+            weights.heavy = (ap >= 3) ? 0.25 : 0;
+            weights.defense = 0.25;
+            weights.counter = (ap >= 2) ? 0.25 : 0;
+            break;
     }
 
-    actor.currentAp = Math.min(5, Math.max(0, ap - cost));
+    // Weighted Random Roll to pick the action
+    const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+    let roll = Math.random() * totalWeight;
+    
+    for (const [type, weight] of Object.entries(weights)) {
+        if (roll < weight) {
+            actionType = type;
+            break;
+        }
+        roll -= weight;
+    }
 
-    const action = { type: actionType };
+    // Set AP Costs
+    const costs = { light: 1, heavy: 3, defense: -1, counter: 2 };
+    cost = costs[actionType];
+
+    // --- 2. PERSONALITY-BASED TARGET SELECTION ---
     if (actionType !== 'defense' && actionType !== 'counter') {
-        action.target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+        const sortedByHP = [...alivePlayers].sort((a, b) => a.hp - b.hp);
+        const sortedByDef = [...alivePlayers].sort((a, b) => (a.defense || 0) - (b.defense || 0));
+
+        if (personality === 'predator') {
+            // Predator targets the weakest (lowest HP or lowest Defense)
+            target = Math.random() < 0.5 ? sortedByHP[0] : sortedByDef[0];
+        } 
+        else if (personality === 'challenger') {
+            // Challenger targets the strongest (highest HP) to show off
+            target = [...alivePlayers].sort((a, b) => b.hp - a.hp)[0];
+        } 
+        else {
+            // Others pick a random target
+            target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+        }
     }
 
-    addBattleLog(`${actor.name} uses ${actionType}${action.target ? ' on ' + action.target.name : ''}!`);
+    // Update Actor AP and Execute Action
+    actor.currentAp = Math.min(5, Math.max(0, ap - cost));
+    const action = { type: actionType, target: target };
+
     executeActorAction(actor, action);
 }
 
