@@ -6047,7 +6047,9 @@ function processAdventurerDailyActions() {
                             adv.hunger = 1.0;
                             adv.friendliness = adv.friendliness || {};
                             // Decrease friendliness with Guild Master
-                            description += t('tavern_ration_message') || ' 「ギルド配給食」を渋々食べた。好感度-10';
+                            description += t('tavern_ration_message', { 
+  penalty: `-5` 
+});
                         }
                     } else if (tavernSubRandom < orderChance + 0.15) {
                         // Gambling Logic
