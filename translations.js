@@ -3,8 +3,19 @@
 const translations = {
 
   ja: {
+    "facilities_level_title": "{title} Lv.{level}",
+    "current_fee_label": "現在の使用料：",
+    "gold_unit": "G",
+    "per_use": "回",
+    "change_fee_button": "使用料を変更する",
+    "facilities_back_to_street": "街に戻る",
+
+    "fee_setting_title": "{facility} の使用料設定",
+    "save_this_facility": "この施設を保存",
+
+    "fee_updated_message": "{facility} の使用料を {amount}G に更新しました",
     'on_leave_label':'休暇中 (残り {days} 日)',
-    'leave_request': '{name}が{days}日間の休暇を希望しています。\n承認しますか？\n(承認 → 好感度 +2/日 | 拒否 → 好感度 -3/日)',
+    'leave_request': '{name}が{days}日間の休暇を希望しています。\n承認しますか？\n(承認 → 好感度 +1/日 | 拒否 → 好感度 -2/日)',
 'leave_approved': '{name}の{days}日間休暇を承認しました（好感度 +{bonus}）',
 'leave_rejected': '{name}の{days}日間休暇を拒否しました（好感度 -{penalty}）',
     'adventurer_donation':'ギルドマスターへの好感から{amount}Gを寄付した',
@@ -12,7 +23,7 @@ const translations = {
     "gamble_lose": "ギャンブルで負けた… -{bet}G",
     "tavern_adv_busy": "{name}は現在クエスト中のため、酒場で食事をすることはできません。",
     "insufficient_gold": "ゴールドが足りません。",
-    "tavern_ration_dislike": "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -10）",
+    "tavern_ration_dislike": "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -5）",
     "tavern_meal_success": "{name} に {recipe} を適用しました！（{days}日間有効）",
     "tavern_hunger_recovered": "{name}の空腹度が{percent}%回復。",
     // === クエスト結果共通 ===
@@ -895,8 +906,19 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "facilities_level_title": "{title} Lv.{level}",
+    "current_fee_label": "Current Fee:",
+    "gold_unit": "G",
+    "per_use": "use",
+    "change_fee_button": "Change Fee",
+    "facilities_back_to_street": "Back to Street",
+
+    "fee_setting_title": "{facility} Fee Settings",
+    "save_this_facility": "Save This Facility",
+
+    "fee_updated_message": "{facility} fee updated to {amount}G",
     'on_leave_label': 'On Leave ({days} days left)',
-    'leave_request': '{name} wants {days} days of leave.\nApprove?\n(Approve: +2 Friendliness/day | Reject: -3 Friendliness/day)',
+    'leave_request': '{name} wants {days} days of leave.\nApprove?\n(Approve: +1 Friendliness/day | Reject: -2 Friendliness/day)',
 'leave_approved': '{name}’s {days} day leave APPROVED (+{bonus} Friendliness)',
 'leave_rejected': '{name}’s {days} day leave REJECTED (-{penalty} Friendliness)',
     'adventurer_donation':'Donated {amount}G to the Guild Master out of high friendliness',
@@ -904,7 +926,7 @@ relationship_title: "{name} の関係性",
     "gamble_lose": "Lost the gamble... -{bet}G",
     "tavern_adv_busy": "{name} is currently on a quest and cannot eat at the tavern.",
     "insufficient_gold": "Not enough gold.",
-    "tavern_ration_dislike": "{name} ate the {recipe}, but it tasted terrible (Friendliness -10).",
+    "tavern_ration_dislike": "{name} ate the {recipe}, but it tasted terrible (Friendliness -5).",
     "tavern_meal_success": "Applied {recipe} to {name}! (Valid for {days} days)",
     "tavern_hunger_recovered": "{name}'s hunger recovered by {percent}%.",
     "corrupt_insufficient_rep": "Not enough Reputation (requires at least 10)",
@@ -1762,8 +1784,19 @@ relationship_title: "{name}'s Relationships",
     // zh 用（引用符付き）
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
+    // zh-tw (繁體中文 - 台灣/香港常用)
+
+    "facilities_level_title": "{title} Lv.{level}",
+    "current_fee_label": "目前使用費：",
+    "gold_unit": "G",
+    "per_use": "次",
+    "change_fee_button": "更改使用費",
+    "facilities_back_to_street": "返回街道",
+    "fee_setting_title": "{facility} 使用費設定",
+    "save_this_facility": "儲存此設施設定",
+    "fee_updated_message": "{facility} 的使用費已更新為 {amount}G",
     'on_leave_label':'休假中 (剩餘 {days} 天)',
-    'leave_request': '{name} 希望休假 {days} 天。\n是否批准？\n(批准 → 好感度 +2/天 | 拒絕 → 好感度 -3/天)',
+    'leave_request': '{name} 希望休假 {days} 天。\n是否批准？\n(批准 → 好感度 +1/天 | 拒絕 → 好感度 -2/天)',
 'leave_approved': '{name} 的 {days} 天休假已批准（好感度 +{bonus}）',
 'leave_rejected': '{name} 的 {days} 天休假已被拒絕（好感度 -{penalty}）',
     'adventurer_donation':'因對公會長的好感而捐贈了{amount}G',
@@ -1771,7 +1804,7 @@ relationship_title: "{name}'s Relationships",
     "gamble_lose": "賭博輸了… -{bet}G",
     "tavern_adv_busy": "{name}正在任務中，無法在酒館用餐。",
     "insufficient_gold": "金幣不足。",
-    "tavern_ration_dislike": "{name}吃了{recipe}，但味道很差，心情變糟了（好感度 -10）。",
+    "tavern_ration_dislike": "{name}吃了{recipe}，但味道很差，心情變糟了（好感度 -5）。",
     "tavern_meal_success": "已對{name}使用{recipe}！（有效期 {days} 天）",
     "tavern_hunger_recovered": "{name}的飽食度恢復了{percent}%。",
     "corrupt_insufficient_rep": "聲望不足（至少需要10）",
@@ -2672,7 +2705,7 @@ function getNpcDisplayName(internalKey) {
 const tavernRecipes = {
   ja: [
     // === 既存レシピ ===
-    {level: 1, name: "ギルド配給食", buff: {}, cost: 50, materials: [], hunger_recover: 1.0, isRation: true},
+    {level: 1, name: "ギルド配給食", buff: {}, cost: 20, materials: [], hunger_recover: 1.0, isRation: true},
     {level: 1, name: "力のスープ", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.5},
     {level: 2, name: "巨人の煮込み", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力の粉", qty: 2}], hunger_recover: 0.7},
     {level: 1, name: "知恵の茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.3},
@@ -2727,7 +2760,7 @@ const tavernRecipes = {
     {level: 12, name: "源石の永運饗宴", buff: {stat: "luck", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "世界源神薬", qty: 1}, {name: "滅び深淵晶", qty: 4}], hunger_recover: 1.0}
   ],
   en: [
-    {level: 1, name: "Guild Ration", buff: {}, cost: 50, materials: [], hunger_recover: 1.0, isRation: true},
+    {level: 1, name: "Guild Ration", buff: {}, cost: 20, materials: [], hunger_recover: 1.0, isRation: true},
     {level: 1, name: "Strength Soup", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.5},
     {level: 2, name: "Giant's Stew", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "Vitality Powder", qty: 2}], hunger_recover: 0.7},
     {level: 1, name: "Wisdom Tea", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.3},
@@ -2776,7 +2809,7 @@ const tavernRecipes = {
     {level: 12, name: "Source Stone Eternal Luck Banquet", buff: {stat: "luck", percent: true, bonus: 400, days: 60}, cost: 45000, materials: [{name: "World Source Divine Potion", qty: 1}, {name: "Destruction Abyss Crystal", qty: 4}], hunger_recover: 1.0}
   ],
   zh: [
-    {level: 1, name: "公會配給糧", buff: {}, cost: 50, materials: [], hunger_recover: 1.0, isRation: true},
+    {level: 1, name: "公會配給糧", buff: {}, cost: 25, materials: [], hunger_recover: 1.0, isRation: true},
     {level: 1, name: "力量湯", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.5},
     {level: 2, name: "巨人燉煮", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力粉末", qty: 2}], hunger_recover: 0.7},
     {level: 1, name: "智慧茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.3},

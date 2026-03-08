@@ -4479,10 +4479,10 @@ const shopItems = [
 
 ];
 const materialShop = [
-    {name: "鉄鉱石", basePrice: 30, variance: 1.5},
-    {name: "薬草", basePrice: 20, variance: 1.5},
-    {name: "スパイス", basePrice: 55, variance: 1.8},
-    {name: "宝石", basePrice: 115, variance: 2.0}
+    {name: "鉄鉱石", basePrice: 30, variance: 1.5, type: "material"},
+    {name: "薬草", basePrice: 20, variance: 1.5, type: "material"},
+    {name: "スパイス", basePrice: 55, variance: 1.8, type: "material"},
+    {name: "宝石", basePrice: 115, variance: 2.0, type: "material"}
 ];
 
 // NPC固有のサイドクエストデータ（discoveryNPCsの順番に厳密対応）

@@ -2262,14 +2262,12 @@ function generateQuest(){
     const minFocus = primary === 0 ? minStrength : primary === 1 ? minWisdom : primary === 2 ? minDexterity : minLuck;
 
     // Base gold reward (same as before)
-    let baseReward = difficulty * 50;
+    let baseReward = difficulty * 70;
 
     // Apply quest-type gold multiplier
     let goldMultiplier = 1.0;
-    if (qType === 2) {          // escort
-        goldMultiplier = 1.2;
-    } else if (qType === 3) {   // fetch
-        goldMultiplier = 0.5;
+    if (qType === 3) {   // fetch
+        goldMultiplier = 0.8;
     } 
     // kill (0) and discovery (1) keep 1.0×
 
@@ -3672,7 +3670,8 @@ function buyMaterial(idx, isSpecial = false) {
     const template = {
         name: item.name,
         minPrice: item.minPrice || 0,
-        maxPrice: item.maxPrice || 0
+        maxPrice: item.maxPrice || 0,
+        type: item.type || 0,
     };
     console.log(template.minPrice);
     addToInventory(template, 1);
@@ -4452,7 +4451,7 @@ function updateDay(){
         if (adv.temp) return;
 
         const index = ranks.indexOf(adv.rank || 'F');
-        const salary = 50 + 50 * index * (index + 1) / 2;
+        const salary = 25 + 25 * index * (index + 1) / 2;
         estimatedSalary += salary;
     });
 
@@ -4593,7 +4592,7 @@ function startDay(){
     for (let i = 0; i < numMaterialsToday; i++) {
         const mat = shuffled[i];
         const price = Math.floor(mat.basePrice * (2 + Math.random() * mat.variance));
-        gameState.dailyMaterials.push({name: mat.name, price: price});
+        gameState.dailyMaterials.push({name: mat.name, price: price, type: mat.type});
     }
     cities.forEach(c => {
         if (c.guild) return;
@@ -6065,7 +6064,6 @@ function processAdventurerDailyActions() {
                                 // Get localized string and update description
                                 const winMsg = t('gamble_win', { bet: bet });
                                 description += ` ${winMsg}`;
-                                better_alert(winMsg, "success");
                             } else {
                                 adv.bag.gold -= bet;
                                 gameState.gold += bet;
@@ -6075,7 +6073,6 @@ function processAdventurerDailyActions() {
                                 // Get localized string and update description
                                 const loseMsg = t('gamble_lose', { bet: bet });
                                 description += ` ${loseMsg}`;
-                                better_alert(loseMsg, "error");
                             }
                         }
                     }
@@ -6285,12 +6282,12 @@ function playDay(){
         );
 
         if (approve) {
-            const bonus = 2 * days;
+            const bonus = 1 * days;
             adv.Friendliness = Math.min(100, (adv.Friendliness ?? 50) + bonus);
             adv.leaveDaysLeft = days;
             better_alert(t('leave_approved', {name: adv.name, days: days, bonus: bonus}), "success");
         } else {
-            const penalty = -3 * days;
+            const penalty = -2 * days;
             adv.Friendliness = Math.max(0, (adv.Friendliness ?? 50) + penalty);
             better_alert(t('leave_rejected', {name: adv.name, days: days, penalty: Math.abs(penalty)}), "warning");
         }
@@ -6363,7 +6360,7 @@ function playDay(){
         gameState.adventurers.forEach(adv => {
             if (adv.temp) return;
             const index = ranks.indexOf(adv.rank || 'F');
-            const salary = 50 + 50 * index * (index + 1) / 2;
+            const salary = 25 + 25 * index * (index + 1) / 2;
             totalSalary += salary;
         });
 
@@ -8727,10 +8724,10 @@ function applyTavernBuff(recipeIdx, advId) {
         if (adv.Friendliness !== undefined) {
             adv.Friendliness = Math.max(0, adv.Friendliness - 10);
         }
-        const msg = (t('tavern_ration_dislike') || "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -10）")
+        const msg = (t('tavern_ration_dislike') || "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -5）")
             .replace('{name}', adv.name)
             .replace('{recipe}', r.name);
-        better_alert(msg, "friendliness", {delta: -10 });
+        better_alert(msg, "friendliness", {delta: -5 });
     } else {
         const buffCopy = JSON.parse(JSON.stringify(r.buff));
         buffCopy.daysLeft = buffCopy.days;
@@ -8962,18 +8959,18 @@ function renderFacilities() {
         const currentFee = (gameState.facilityFees && gameState.facilityFees[currentFacility]) || 0;
 
         let html = `<div class="facility-panel">
-            <h2>${t('facilities_level_title', {title, level})}</h2>
+            <h2>${t('facilities_level_title', {title: t(`facilities_${currentFacility}`), level: level})}</h2>
             
             <div style="text-align:center; margin:20px 0; padding:12px; background:rgba(0,0,0,0.4); border-radius:10px;">
                 <p style="font-size:1.4em; margin:0; color:#ffd700;">
-                    現在の使用料: <strong>${currentFee} G / 回</strong>
+                    ${t('current_fee_label')} <strong>${currentFee} ${t('gold_unit')} / ${t('per_use')}</strong>
                 </p>
             </div>
 
             <div style="text-align:center; margin:30px 0;">
                 <button onclick="openFacilityFeeModal('${currentFacility}')" 
                         style="padding:12px 32px; font-size:1.2em; background:#9b59b6; color:white; border:none; border-radius:8px; cursor:pointer;">
-                    使用料を変更する
+                    ${t('change_fee_button')}
                 </button>
             </div>
 
@@ -10309,7 +10306,7 @@ function openAdventurerCard(index) {
     // 給与計算関数
     const getSalary = (rank) => {
         const idx = ranks.indexOf(rank);
-        return 50 + 50 * idx * (idx + 1) / 2;
+        return 25 + 25 * idx * (idx + 1) / 2;
     };
 
     const currentSalary = getSalary(adv.rank);
@@ -13280,20 +13277,20 @@ function openFacilityFeeModal(facility) {
     const modal = document.getElementById('feeSettingModal');
     if (!modal) return;
 
-    // まずモーダルを閉じて完全にリセット（以前の表示状態をクリア）
+    // まずモーダルを閉じて完全にリセット
     closeFeeSettingModal();
 
-    // タイトル更新
+    // タイトル更新（翻訳対応）
     const titleEl = modal.querySelector('h2');
     if (titleEl) {
-        titleEl.textContent = `${t(`facilities_${facility}`)} の使用料設定`;
+        titleEl.textContent = t('fee_setting_title', { facility: t(`facilities_${facility}`) });
     }
 
-    // 全ての入力セクションを非表示にする（inputの親divを対象）
+    // 全ての入力セクションを非表示にする
     ['tavern', 'alchemy', 'blacksmith'].forEach(f => {
         const input = document.getElementById(`fee_${f}`);
         if (input) {
-            const section = input.parentElement; // 直接の親div（label + input + small を含むdiv）
+            const section = input.parentElement;
             if (section) {
                 section.style.display = 'none';
             }
@@ -13310,16 +13307,17 @@ function openFacilityFeeModal(facility) {
         }
     }
 
-    // 保存ボタンを専用関数に切り替え
+    // 保存ボタンのテキストを翻訳
     const saveBtn = modal.querySelector('button[onclick*="save"]');
     if (saveBtn) {
         saveBtn.setAttribute('onclick', `saveSingleFacilityFee('${facility}')`);
-        saveBtn.textContent = 'この施設を保存';
+        saveBtn.textContent = t('save_this_facility');
     }
 
     // モーダル表示
     modal.style.display = 'flex';
 }
+
 // 1施設だけ保存
 function saveSingleFacilityFee(facility) {
     const input = document.getElementById(`fee_${facility}`);
@@ -13330,7 +13328,14 @@ function saveSingleFacilityFee(facility) {
     if (!gameState.facilityFees) gameState.facilityFees = {};
     gameState.facilityFees[facility] = value;
 
-    better_alert(`${t(`facilities_${facility}`)} の使用料を ${value}G に更新しました`, "success");
+    // 保存成功メッセージ（翻訳対応）
+    better_alert(
+        t('fee_updated_message', { 
+            facility: t(`facilities_${facility}`), 
+            amount: value 
+        }), 
+        "success"
+    );
 
     closeFeeSettingModal();
     renderFacilities(); // 現在の施設画面を更新
