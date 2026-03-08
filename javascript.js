@@ -8724,7 +8724,7 @@ function applyTavernBuff(recipeIdx, advId) {
 
     if (isRation) {
         if (adv.Friendliness !== undefined) {
-            adv.Friendliness = Math.max(0, adv.Friendliness - 10);
+            adv.Friendliness = Math.max(0, adv.Friendliness - 5);
         }
         const msg = (t('tavern_ration_dislike') || "{name}は{recipe}を食べたが、味が悪く不機嫌になった（好感度 -5）")
             .replace('{name}', adv.name)
