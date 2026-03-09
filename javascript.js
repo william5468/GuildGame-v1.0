@@ -4337,35 +4337,73 @@ function getDailyRandomFraction(str) {
 }
 
 function getRecruitsHtml(){
+    console.log('DEBUG: Entering getRecruitsHtml');
+    console.log('DEBUG: gameState.recruitPending:', gameState.recruitPending);
+    
     const numPerms = gameState.adventurers.filter(a => !a.temp).length;
+    console.log('DEBUG: numPerms:', numPerms, 'maxPermanentSlots:', gameState.maxPermanentSlots);
+    
     const full = numPerms >= gameState.maxPermanentSlots;
-    if(!gameState.recruitPending.length) return '';
+    console.log('DEBUG: Guild full?', full);
+    
+    if(!gameState.recruitPending.length) {
+        console.log('DEBUG: No recruits pending - returning empty string');
+        return '';
+    }
+    
     let html='';
     gameState.recruitPending.forEach((adv,i)=>{
-        const baseStr = adv.strength;
-        const baseWis = adv.wisdom;
-        const baseDex = adv.dexterity;
-        const baseLuk = adv.luck;
-        const effStr = getEffectiveStat(adv, 'strength');
-        const effWis = getEffectiveStat(adv, 'wisdom');
-        const effDex = getEffectiveStat(adv, 'dexterity');
-        const effLuk = getEffectiveStat(adv, 'luck');
-        const equipStr = effStr - baseStr;
-        const equipWis = effWis - baseWis;
-        const equipDex = effDex - baseDex;
-        const equipLuk = effLuk - baseLuk;
-        const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> LUC ${effLuk} (${baseLuk}+${equipLuk})`;
-        const expNeeded = adv.level * 100;
-        const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
-        const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
-        const nameHtml = getNameHtml(adv);
-        const btnHtml = full ? '<button disabled>ギルド満杯</button>' : `<button onclick="recruit(${i})">募集する</button>`;
-        html+=`<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
-            ${img}${nameHtml}<br><small class="stats">${stats}</small><br>
-            <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div> 経験値 ${adv.exp}/${expNeeded}<br>
-            Cost: ${adv.recruitingCost}G ${btnHtml}
-        </div>`;
+        console.log(`DEBUG: Processing recruit ${i}:`, adv);
+        
+        try {
+            const baseStr = adv.strength;
+            const baseWis = adv.wisdom;
+            const baseDex = adv.dexterity;
+            const baseLuk = adv.luck;
+            console.log('DEBUG: Base stats:', {baseStr, baseWis, baseDex, baseLuk});
+            
+            const effStr = getEffectiveStat(adv, 'strength');
+            const effWis = getEffectiveStat(adv, 'wisdom');
+            const effDex = getEffectiveStat(adv, 'dexterity');
+            const effLuk = getEffectiveStat(adv, 'luck');
+            console.log('DEBUG: Effective stats:', {effStr, effWis, effDex, effLuk});
+            
+            const equipStr = effStr - baseStr;
+            const equipWis = effWis - baseWis;
+            const equipDex = effDex - baseDex;
+            const equipLuk = effLuk - baseLuk;
+            console.log('DEBUG: Equip bonuses:', {equipStr, equipWis, equipDex, equipLuk});
+            
+            const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> LUC ${effLuk} (${baseLuk}+${equipLuk})`;
+            console.log('DEBUG: Stats HTML:', stats);
+            
+            const expNeeded = adv.level * 100;
+            const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
+            console.log('DEBUG: Exp calc:', {exp: adv.exp, needed: expNeeded, pct: expPct});
+            
+            const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
+            console.log('DEBUG: Image HTML:', img);
+            
+            const nameHtml = getNameHtml(adv);
+            console.log('DEBUG: Name HTML:', nameHtml);
+            
+            const btnHtml = full ? '<button disabled>ギルド満杯</button>' : `<button onclick="recruit(${i})">募集する</button>`;
+            console.log('DEBUG: Button HTML:', btnHtml);
+            
+            const cardHtml = `<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
+                ${img}${nameHtml}<br><small class="stats">${stats}</small><br>
+                <div class="progress-bar"><div class="progress-fill exp-fill" style="width:${expPct}%"></div></div> 経験値 ${adv.exp}/${expNeeded}<br>
+                Cost: ${adv.recruitingCost}G ${btnHtml}
+            </div>`;
+            
+            console.log('DEBUG: Generated card HTML:', cardHtml);
+            html += cardHtml;
+        } catch (err) {
+            console.error('DEBUG: Error processing recruit:', adv, err);
+        }
     });
+    
+    console.log('DEBUG: Final generated HTML:', html);
     return html;
 }
 
@@ -11860,8 +11898,32 @@ let isPlayingDialogue = false; // 現在ダイアログ再生中フラグ
 
 let questTypingInterval = null;
 
+// 1つの関数で全部対応（テンプレートキー指定でOK）
+function generateQuestEncounterAdventurer(templateKey = null, overrides = {}) {
+    let adv;
+
+    if (templateKey && questEncounterTemplates[templateKey]) {
+        // テンプレートからコピー
+        adv = JSON.parse(JSON.stringify(questEncounterTemplates[templateKey]));
+    } else {
+        // 既存のランダム生成にフォールバック
+        adv = generateTempAdventurer();
+    }
+
+    // 上書き（クエストごとに微調整したい場合用）
+    Object.assign(adv, overrides);
+
+    adv.encounterType = 'quest_found';
+    adv.generatedDay = gameState.day;
+    adv.temp = true;
+
+    return adv;
+}
+
 
 function queueQuestCompletionDialogue(rawSequence) {
+    gameState.lastQuestEncounterAdv = null;  // Reset previous encounter to prevent persistence across quests
+
     if (!rawSequence || rawSequence.length === 0) return;
 
     const defaultName = {
@@ -11872,23 +11934,26 @@ function queueQuestCompletionDialogue(rawSequence) {
 
     const playerName = gameState.playerName || defaultName;
 
-const processedSequence = rawSequence.map(line => ({
-        speaker: line.speaker.replace(/\{PLAYER\}/gi, playerName),
-        text: line.text.replace(/\{PLAYER\}/gi, playerName),
+    const processedSequence = rawSequence.map(line => ({
+        speaker: line.speaker ? line.speaker.replace(/\{PLAYER\}/gi, playerName) : '',
+        text: line.text ? line.text.replace(/\{PLAYER\}/gi, playerName) : '',
         image: line.image || null,
-        jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
-        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
-            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
-            reward: choice.reward ? { ...choice.reward } : undefined,
-            jumptoline: choice.jumptoline
-        })) : undefined
+        jumptoline: line.jumptoline,
+        choices: line.choices ? line.choices.map(choice => ({
+            text: choice.text ? choice.text.replace(/\{PLAYER\}/gi, playerName) : '',
+            reward: choice.reward ? (Array.isArray(choice.reward) ? [...choice.reward] : { ...choice.reward }) : undefined,
+            jumptoline: choice.jumptoline,
+            // recruitAdventurer が書かれていたらそのまま残す（playNextQuestDialogueで検知）
+            recruitAdventurer: line.recruitAdventurer || choice.recruitAdventurer
+        })) : undefined,
+        recruitAdventurer: line.recruitAdventurer   // ここで名前をそのまま引き継ぐ
     }));
 
     completionQueue.push(processedSequence);
 
     if (!isPlayingDialogue) {
-        crossfadeTo('dialogueBgm', 2000); // クエスト完了もdialogueBgm使用（専用BGMがあれば変更）
-        setDialogueBackground('Images/quest_completion_bg.jpg')
+        crossfadeTo('dialogueBgm', 2000);
+        setDialogueBackground('Images/quest_completion_bg.jpg');
         playNextQuestDialogue();
     }
 }
@@ -12109,6 +12174,114 @@ function playNextQuestDialogue() {
         stepDialogue.appendChild(choicesDiv);
     }
 
+    // ====================== 【新機能】ダイアログ内に書かれた recruitAdventurer 名を自動認識 ======================
+    let encounterAdv = gameState.lastQuestEncounterAdv;
+
+    for (let line of sequence) {
+        if (line.recruitAdventurer && !encounterAdv) {
+            let recruitName = line.recruitAdventurer.trim();
+            // === リリア専用テンプレート（ここに全部収録） ===
+            if (recruitName === "Lilia") {
+            // Inside playNextQuestDialogue, in the if (line.recruitAdventurer) block:
+            let template = {
+                name: "Lilia",
+                gender: "F",
+                primary: 1,
+                level: 1,
+                exp: 0,  // Add this (required for expPct)
+                strength: 7,
+                wisdom: 23,
+                dexterity: 11,
+                luck: 14,
+                defense: 1,
+                hp: 68,
+                maxHp: 68,
+                mp: 85,
+                maxMp: 85,
+                motivation: "村が戦争で焼かれてしまったの。一人になってからずっとさまよっていた…ここで道に迷って…",
+                image: "Lilia.png",
+                hiringCost: 45,
+                recruitingCost: 280,
+                equipment: [],  // Add this (for getEffectiveStat)
+                buffs: [],  // Add this (for getEffectiveStat)
+                critChance: 10,  // Optional but safe (from generateTempAdventurer)
+                bag: {gold: 0, items: []},  // Optional
+                hunger: 0.2,  // Optional
+                prohibitedActions: [],  // Optional
+                traits: [
+                    { type: 'percent_bonus', target: 'wisdom', delta: 35, translationKey: "trait.blessing_of_wisdom" },
+                    { type: 'percent_bonus', target: 'defense', delta: -50, translationKey: "trait.curse_of_defense" },
+                    { type: 'gender', preference: 'M', delta: -20, translationKey: "trait.dislikes_men" },
+                ]
+            };
+                    encounterAdv = JSON.parse(JSON.stringify(template));
+            encounterAdv.id = gameState.nextId++;
+            encounterAdv.encounterType = 'quest_found';
+            encounterAdv.generatedDay = gameState.day;
+            encounterAdv.temp = false;
+            encounterAdv.busy = false;
+
+            gameState.lastQuestEncounterAdv = encounterAdv;
+            
+            break;
+        }
+            else if(recruitName === "Elias"){
+                let template = {
+                    name: "Elias",
+                    gender: "M",
+                    primary: 3, 
+                    level: 1,
+                    exp: 0,
+                    strength: 8,     // Slightly above average physical (travels a lot)
+                    wisdom: 18,      // High wisdom – insightful, experienced traveler, emotional depth
+                    dexterity: 18,   // High dexterity – nimble fingers for lute playing, quick reflexes
+                    luck: 30,        // Good luck – survives dangerous travels through war zones
+                    defense: 4,
+                    hp: 72,
+                    maxHp: 72,
+                    mp: 92,
+                    maxMp: 92,
+                    motivation: "I've wandered the world playing my lute, even as war darkens the lands. I want to bring light and joy through music to as many hearts as possible… no matter the danger.",
+                    image: "Elias.png",  // Assume you have/will create this asset
+                    hiringCost: 1200,    // Higher than Lilia – talented bard, experienced traveler
+                    recruitingCost: 650, // Recruitment cost reflects rarity/value
+                    equipment: [
+                    ],
+                    buffs: [],  // Can add temporary performance buffs later if desired
+                    critChance: 12,  // Slightly higher crit – artistic flair
+                    bag: {
+                        gold: 180,  // A traveling bard usually has some coin from performances
+                        items: [
+                            { name: "Simple Melody Sheet", qty: 1, type: "misc" },
+                            { name: "Travel Ration", qty: 3, restore: "hunger", amount: 0.4 },
+                        ]
+                    },
+                    hunger: 0.4,  // Slightly hungry from recent travel
+                    prohibitedActions: ["hunting"],  // Pacifist – avoids violence
+                    traits: [
+                        { type: 'percent_bonus', target: 'dexterity', delta: 15, translationKey: "trait.blessing_of_dexterity" }, // Nimble fingers
+                        { type: 'action_preference', action: 'tavern', weight_bonus: 30, translationKey: "trait.likes_tavern" },   // Loves performing in taverns
+                        { type: 'action_preference', action: 'guild_stay', weight_bonus: -15, translationKey: "trait.active" },    // Doesn't like staying still long
+                         { type: 'percent_bonus', target: 'luck', delta: 30, translationKey: "trait.blessing_of_luck" },            // Survives dangerous roads
+                    ]
+                };
+                encounterAdv = JSON.parse(JSON.stringify(template));
+                encounterAdv.id = gameState.nextId++;
+                encounterAdv.encounterType = 'quest_found';
+                encounterAdv.generatedDay = gameState.day;
+                encounterAdv.temp = false;
+                encounterAdv.busy = false;
+
+                gameState.lastQuestEncounterAdv = encounterAdv;
+                
+                break;
+            }
+
+
+        }
+    }
+    // ====================================================================================
+
     function showDialogueChoices(choices) {
         choicesDiv.innerHTML = '';
         choices.forEach((choice) => {
@@ -12144,6 +12317,50 @@ function playNextQuestDialogue() {
             btn.onclick = (e) => {
                 e.stopPropagation();
 
+                // ====================== 勧誘選択肢なら自動で recruitPending に追加 ======================
+                console.log('DEBUG: Checking recruit condition...');
+                console.log('DEBUG: encounterAdv exists?', !!encounterAdv);
+                console.log('DEBUG: choice.text:', choice.text);
+                console.log('DEBUG: Includes 勧誘?', choice.text.includes('勧誘'));
+                console.log('DEBUG: Includes ギルドで冒険者として?', choice.text.includes('ギルドで冒険者として'));
+                console.log('DEBUG: Includes うちのギルド?', choice.text.includes('うちのギルド'));
+
+                if (encounterAdv && 
+                    (choice.text.includes('Invite') )) {
+
+                    console.log('DEBUG: Recruit condition met! Adding to recruitPending...');
+                    console.log('DEBUG: encounterAdv details:', encounterAdv);
+
+                    const girl = encounterAdv;
+
+                    const newAdv = JSON.parse(JSON.stringify(girl));
+                    newAdv.hp = newAdv.maxHp;
+                    newAdv.mp = newAdv.maxMp;
+                    newAdv.busy = false;
+                    newAdv.buffs = [];
+                    newAdv.friendliness = {};
+                    newAdv.traits = newAdv.traits || [];
+                    newAdv.rank = 'F';
+                    newAdv.Friendliness = 35;
+
+                    gameState.adventurers.forEach(other => {
+                        if (!other.friendliness) other.friendliness = {};
+                        newAdv.friendliness[other.id] = 50;
+                        other.friendliness[newAdv.id] = 50;
+                    });
+
+                    gameState.recruitPending = gameState.recruitPending || [];
+                    gameState.recruitPending.push(newAdv);
+
+                    console.log('DEBUG: Added to recruitPending:', gameState.recruitPending[gameState.recruitPending.length - 1]);
+
+                    better_alert(`${girl.name} が仲間候補に加わった！（ギルドに戻って正式に迎え入れられます）`, "success");
+                    updateDisplays();
+                } else {
+                    console.log('DEBUG: Recruit condition NOT met.');
+                }
+                // ====================================================================================
+
                 let alertMessages = [];
 
                 if (choice.reward) {
@@ -12155,12 +12372,8 @@ function playNextQuestDialogue() {
                         rewards = Object.values(choice.reward);
                     }
 
-                    console.log('Normalized rewards:', rewards);
-
                     rewards.forEach(r => {
                         if (r && r.type) {
-                            console.log('Applying reward:', r.type, r.amount || r.qty || 'no amount');
-
                             if (r.type === 'gold') {
                                 gameState.gold += r.amount || 0;
                                 alertMessages.push(r.amount > 0 ? `+${r.amount}G` : `${r.amount}G`);
@@ -12168,94 +12381,42 @@ function playNextQuestDialogue() {
                                 gameState.reputation += r.amount || 0;
                                 alertMessages.push(r.amount > 0 ? `+${r.amount} Reputation` : `${r.amount} Reputation`);
                             } else if (r.type === 'item') {
-    let template = shopItems.find(item => item.name === r.name);
-
-    // If not found in shopItems, fallback to fetchQuestsByRank (gathering/material items)
-    if (!template) {
-        const lang = currentLang || 'ja';  // Assume currentLanguage is in scope (e.g., 'ja', 'en', 'zh')
-        const fetchData = fetchQuestsByRank[lang] || fetchQuestsByRank.ja;  // Fallback to ja if language missing
-
-        // Flatten all fetch quests across ranks to search for the itemName
-        const allFetchQuests = Object.values(fetchData).flat();
-        const fetchQuest = allFetchQuests.find(q => q.itemName === r.name);
-
-        if (fetchQuest) {
-            // Directly use the fetchQuest object as the template, just rename itemName to name for consistency
-            template = {
-                ...fetchQuest,
-                name: fetchQuest.itemName
-            };
-            // No additional fields added - we just use what exists in fetchQuestsByRank
-        }
-    }
-
-    if (template) {
-        addToInventory(template, r.qty || 1);
-        alertMessages.push(`+${r.qty || 1} ${r.name}`);
-    } else {
-        // Final fallback if item still not found
-        console.warn(`Item template not found for: ${r.name}`);
-        // Minimal placeholder to avoid breaking inventory
-        addToInventory({
-            name: r.name,
-            type: 'unknown',
-            description: 'Unknown gathered item',
-            minPrice: 0,
-            maxPrice: 0
-        }, r.qty || 1);
-        alertMessages.push(`+${r.qty || 1} ${r.name} (unknown)`);
-    }
-} else if (r.type === 'friendliness') {
-    const amount = r.amount || 0;
-    
-    // Determine targets based on reward target
-    let targets = gameState.adventurers;  // default: all adventurers
-    let targetLabel = "(all)";
-    let affectedNames = [];
-    
-    if (r.target === "participants") {
-        let participants = currentQuestAdventurers;
-        if (typeof participants !== "undefined" && Array.isArray(participants) && participants.length > 0) {
-            targets = participants;
-            targetLabel = "(participants)";
-        }
-        // If participants is not available, fall back to all (safe default)
-    }
-    
-    targets.forEach(adv => {
-        const oldFriendliness = adv.Friendliness || 50;
-        const newFriendliness = Math.max(0, Math.min(100, oldFriendliness + amount));
-        adv.Friendliness = newFriendliness;
-        
-        // Collect name (assume every adventurer has a .name property; fallback to ID or generic if not)
-        const advName = adv.name || adv.id || 'Unnamed Adventurer';
-        affectedNames.push(`${advName}: ${oldFriendliness} → ${newFriendliness}`);
-    });
-    
-    // Summary alert (e.g., "+5 Friendliness (participants)")
-    alertMessages.push(amount > 0 ? `+${amount} Friendliness ${targetLabel}` : `${amount} Friendliness ${targetLabel}`);
-    
-    // Detailed per-adventurer alerts (only if there are actual changes and a reasonable number)
-    if (targets.length > 0 && targets.length <= 10) {  // avoid flooding if somehow applying to many
-        affectedNames.forEach(detail => {
-            alertMessages.push(detail);
-        });
-    } else if (targets.length > 10) {
-        alertMessages.push(`Affected ${targets.length} adventurers (details hidden)`);
-    }
-    
-    // Console logging for debugging / visibility
-    console.log(`Friendliness reward applied: ${amount} to ${targetLabel}`);
-    affectedNames.forEach(detail => console.log(detail));
-}
-                            // New: adventurer stat rewards (apply to all adventurers)
-                            else if (['exp', 'strength', 'wisdom', 'dexterity', 'luck', 'defense', 'hp', 'maxHp', 'mp', 'maxMp', 'hunger'].includes(r.type)) {
+                                let template = shopItems.find(item => item.name === r.name);
+                                if (!template) {
+                                    const lang = currentLang || 'ja';
+                                    const fetchData = fetchQuestsByRank[lang] || fetchQuestsByRank.ja;
+                                    const allFetchQuests = Object.values(fetchData).flat();
+                                    const fetchQuest = allFetchQuests.find(q => q.itemName === r.name);
+                                    if (fetchQuest) {
+                                        template = { ...fetchQuest, name: fetchQuest.itemName };
+                                    }
+                                }
+                                if (template) {
+                                    addToInventory(template, r.qty || 1);
+                                    alertMessages.push(`+${r.qty || 1} ${r.name}`);
+                                } else {
+                                    console.warn(`Item template not found for: ${r.name}`);
+                                    addToInventory({ name: r.name, type: 'unknown', description: 'Unknown gathered item' }, r.qty || 1);
+                                    alertMessages.push(`+${r.qty || 1} ${r.name} (unknown)`);
+                                }
+                            } else if (r.type === 'friendliness') {
+                                const amount = r.amount || 0;
+                                let targets = gameState.adventurers;
+                                if (r.target === "participants" && typeof currentQuestAdventurers !== "undefined" && Array.isArray(currentQuestAdventurers) && currentQuestAdventurers.length > 0) {
+                                    targets = currentQuestAdventurers;
+                                }
+                                targets.forEach(adv => {
+                                    const oldFriendliness = adv.Friendliness || 50;
+                                    const newFriendliness = Math.max(0, Math.min(100, oldFriendliness + amount));
+                                    adv.Friendliness = newFriendliness;
+                                });
+                                alertMessages.push(amount > 0 ? `+${amount} Friendliness` : `${amount} Friendliness`);
+                            } else if (['exp', 'strength', 'wisdom', 'dexterity', 'luck', 'defense', 'hp', 'maxHp', 'mp', 'maxMp', 'hunger'].includes(r.type)) {
                                 const amount = r.amount || 0;
                                 const statName = r.type;
                                 gameState.adventurers.forEach(adv => {
                                     if (adv[statName] !== undefined) {
                                         adv[statName] += amount;
-                                        // Optional clamps
                                         if (statName === 'hp') adv.hp = Math.min(adv.hp, adv.maxHp);
                                         if (statName === 'mp') adv.mp = Math.min(adv.mp, adv.maxMp);
                                         if (statName === 'hunger') adv.hunger = Math.max(0, Math.min(1, adv.hunger));
@@ -12274,13 +12435,11 @@ function playNextQuestDialogue() {
                     }
                 }
 
-                // Single jump to branch line
                 localIndex = choice.jumptoline ? choice.jumptoline - 1 : localIndex + 1;
 
                 choicesDiv.style.display = 'none';
                 document.getElementById('continueIndicator').style.opacity = '0';
 
-                // Clear any ongoing typing and text before jumping
                 clearInterval(typingInterval);
                 typingInterval = null;
                 dialogueTextEl.innerHTML = '';
@@ -12306,6 +12465,17 @@ function playNextQuestDialogue() {
 
         let processedSpeaker = current.speaker.replace(/\{player\}/gi, playerName);
         let fullText = current.text.replace(/\{player\}/gi, playerName);
+
+        // ====================== 【新機能】encounterAdv の名前と画像を自動置換 ======================
+        if (encounterAdv) {
+            processedSpeaker = processedSpeaker.replace(/\{encounterName\}/g, encounterAdv.name);
+            fullText = fullText.replace(/\{encounterName\}/g, encounterAdv.name);
+
+            if (current.image === "{encounterImage}" || current.image === "encounterImage") {
+                current.image = `Images/${encounterAdv.image}`;
+            }
+        }
+        // ====================================================================================
 
         // Handle {adv1}~{adv4} in speaker
         const speakerAdvMatch = processedSpeaker.match(/\{adv(\d+)\}/i);

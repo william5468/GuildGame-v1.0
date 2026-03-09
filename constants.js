@@ -1050,16 +1050,136 @@ const QuestCompletionDialogue = {
                 {speaker: '{PLAYER}', text: 'クエスト完了だ。ギルドに戻って休もう。'}
             ]
         ],
+
         'F+': [
             // 0: 滝の裏の洞窟発見（依頼主: 探検家）
+            // 0: 滝の裏の洞窟発見（依頼主: 探検家）
             [
-                {speaker: "冒険者", text: "森の奥の滝の裏に隠された洞窟を発見しました。……水しぶきでびしょ濡れです。"},
-                {speaker: "ルナ", text: "滝の裏！？ロマンチックね～。きっと隠された遺跡よ！"},
-                {speaker: "カイト", text: "水がかかるなら俺はパスだな……濡れるの嫌いだし。"},
-                {speaker: "ギルドマスター", text: "二人とも黙ってろ。探検家に報告だ。"},
-                {speaker: "探検家", text: "滝の裏の洞窟を見つけてくれたんだ！これで新しい冒険が始められるよ。本当にありがとう！"},
-                {speaker: "ギルドマスター", text: "報酬を受け取れ。次はカイトも濡れ覚悟で連れてくか。"}
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "森の奥の滝の裏に隠された洞窟を発見しました。……水しぶきでびしょ濡れです。みんなもずぶ濡れだよ！"},
+                {speaker: "{adv2}", text: "はは、{adv1}のそのびしょ濡れ姿、笑えるぜ！でも洞窟見つけたのはグッジョブだな。"},
+                {speaker: "ルナ", text: "滝の裏！？ロマンチックね～。きっと隠された遺跡よ！宝物がいっぱいかも！"},
+                {speaker: "カイト", text: "水がかかるなら俺はパスだな……濡れるの嫌いだし。次は乾いた場所のクエスト希望！"},
+                {speaker: "{adv3}", text: "みんな楽しそうだけど、ちゃんと報告しないと。遺跡なら大発見だよ。"},
+                {speaker: "{PLAYER}", text: "おいおい、みんな黙ってろ。まずは探検家に報告だ。ふざけすぎだぞ。"},
+                {speaker: "探検家", text: "滝の裏の洞窟を見つけてくれたんだ！これで新しい冒険が始められるよ。本当にありがとう！興奮するね！"},
+                {speaker: "{adv4}", text: "報酬楽しみだな～。この水しぶきさえなければ最高のクエストだったのに。"},
+                {speaker: "探検家", text: "約束の報酬だ。受け取ってくれ！みんなの努力に感謝だよ。"},
+                {speaker: "{PLAYER}", text: "よし、報酬は受け取ったな。みんなお疲れ。"},
+
+                // Line 11 (index 10)
+                {speaker: "ナレーター", text: "（選択肢：滝の裏の洞窟発見の後、どう対応する？）"},
+
+                // Line 12 (index 11) - 空行（選択肢表示用）
+                {speaker: "ナレーター", text: ""},
+
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "ナレーター",
+                    text: "",
+                    choices: [
+                        {
+                            text: "探検家に洞窟の詳細をさらに伝える（Reputation +3）",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "一緒にいた冒険者たちを労う（参加者好感度 +6）",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 18
+                        },
+                        {
+                            text: "滝の水しぶきに混じっていた光る鉱石を採取する（Gold +250）",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "滝の裏の洞窟をさらに奥まで調査する",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "この洞窟は古代の遺跡の可能性が高いです。もっと詳しく調べて報告します。"},
+                {speaker: "探検家", text: "その通り！早速研究を進めるよ！本当に助かった！"},
+                {speaker: "探検家", text: "冒険者さんみたいな人がいてくれて嬉しいよ！", jumptoline: 43},
+
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "みんなよく頑張ったな。水しぶきまみれで大変だっただろう。"},
+                {speaker: "ルナ", text: "{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！"},
+                {speaker: "カイト", text: "へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！"},
+                {speaker: "{adv1}", text: "ありがとう、{PLAYER}。次もよろしく！"},
+                {speaker: "{PLAYER}", text: "ああ、次も期待してる。", jumptoline: 43},
+
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "この光る鉱石、売れそうだな。少し採取してギルド資金にしよう。"},
+                {speaker: "ルナ", text: "……確かに価値はあるけど、ちょっとずるいかも…"},
+                {speaker: "カイト", text: "金のためなら我慢だぜ！でも次は俺にやらせろよな！"},
+                {speaker: "{adv2}", text: "はは、これでギルドの飲み代が増えるな！"},
+                {speaker: "{PLAYER}", text: "はは、任せた。", jumptoline: 43},
+
+                // ==================== 調査ルート（index 26から連続） ====================
+                // 26-30: 調査開始 - Casual to sudden emotional shift
+                {speaker: "ナレーター", text: "あなたは滝の裏の洞窟をさらに奥へと進んだ。湿った空気と水音だけが響いている…みんなでわいわい探検気分だ。"},
+                {speaker: "{adv1}", text: "もっと奥に宝とかないかな？楽しみだぜ！"},
+                {speaker: "ナレーター", text: "奥の暗がりで、小さな影が震えているのが見えた。……ん？ あれは……人影？"},
+                {speaker: "{adv2}", text: "おい、何か動いてるぞ！ モンスターか！？ わくわくするな！"},
+                {speaker: "ナレーター", text: "近づくと、それは小さな少女だった。彼女は震え、顔は青ざめ、息も絶え絶え……まるで今にも倒れそうなほど弱っている。空気は一瞬で張りつめ、冒険の興奮が一転して深刻な心配に変わる。"},
+
+                // 31: recruitAdventurer宣言（ここで名前を指定）
+                {speaker: "ナレーター", text: "", recruitAdventurer: "Lilia"},
+
+                // 32: 少女登場 - With emotional reaction
+                {speaker: "{encounterName}", text: "…だ、誰！？ 近づかないで！ ……怖い……", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "えっ、少女！？ こんなところで……大丈夫か！？ 顔色が悪いぞ！"},
+
+                // 34: バックストーリー - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "私の村は…戦争で焼かれてしまったの。一人になってからずっとさまよっていた…ここで道に迷って…もう力が出なくて……", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "戦争で村が……なんてひどい。こんな小さな子が一人で……急がないと危ないぞ！"},
+                {speaker: "ルナ", text: "可哀想に……早く助けなきゃ！ 涙が出ちゃうわ……"},
+                {speaker: "カイト", text: "くそっ、戦争のせいかよ……俺たちで何とかするぜ！"},
+
+                // 38: 選択肢
+                {
+                    speaker: "ナレーター",
+                    text: "少女（Lilia）は凄く弱い状態で、そのままにすると命を断つのも時間の問題です。急な状況の変化に、皆の心が揺さぶられる。どうする？",
+                    choices: [
+                        {
+                            text: "「うちのギルドで冒険者として働かないか？」（Invite）",
+                            jumptoline: 40
+                        },
+                        {
+                            text: "安全な町までエスコートしてあげる",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "…何も言わずに立ち去る",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+
+                // 39-42: 勧誘成功 - With added emotion
+                {speaker: "{encounterName}", text: "……本当に？ 私みたいな役立たずでもいいの…？ ……誰も信じられなくて……", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "もちろんだよ！ ギルドでみんなで守るからな。"},
+                {speaker: "{encounterName}", text: "ありがとう…！ 私、頑張るから！ ……やっと、希望が見えた……", image: "{encounterImage}"},
+                {speaker: "ナレーター", text: "新しい仲間候補「リリア」がギルドに加わった！（ギルドに戻って正式に迎え入れられます）", jumptoline: 49},
+
+                // 43-45: エスコート
+                {speaker: "{encounterName}", text: "…ありがとう。本当に助かる。もう少しだけ生きてみようと思う。 ……優しい人がまだいるんだね……", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "よし、俺たちが守って連れてくよ。心配すんな！"},
+                {speaker: "ナレーター", text: "あなたはリリアを近くの村まで無事に連れて行った。皆の心に温かな余韻が残る。", jumptoline: 49},
+
+                // 46-47: 放置
+                {speaker: "{adv2}", text: "おい、{PLAYER}……本当に置いていくのか？ こんな弱ってる子を……"},
+                {speaker: "ナレーター", text: "あなたは何も言わず洞窟を後にした… 重い沈黙が一行を包む。", jumptoline: 49},
+
+                // 48: 共通エンディング（全ルート合流）
+                {speaker: "ナレーター", text: "滝の裏の洞窟探索はこれで終了した。"}
             ],
+        
             // 1: 古い家の隠し地下室（依頼主: 家主）
             [
                 {speaker: "冒険者", text: "古い家の隠し地下室を探し当てました。……埃まみれでくしゃみ止まりません。"},
@@ -1548,12 +1668,130 @@ const QuestCompletionDialogue = {
             ],
             // 1: 旅行者グループ護衛
             [
-                {speaker: "冒険者", text: "旅行者のグループを森の道で無事に守りました。"},
-                {speaker: "ルナ", text: "旅行者さんたち、楽しそうだった？お土産話聞きたかったわ～。"},
-                {speaker: "カイト", text: "森なら俺の守りで鉄壁だったぜ！次は絶対呼べよ！"},
-                {speaker: "ギルドマスター", text: "お前ら、護衛じゃなくて観光客だろ。旅行者に報告だ。"},
-                {speaker: "旅行者代表", text: "森の道を無事に通らせてくれてありがとう！怖かったけど君のおかげで楽しめたよ！"},
-                {speaker: "ギルドマスター", text: "報酬だ。次は観光ガイドも兼ねるか？"}
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "旅行者のグループを森の道で無事に守りました。何事もなかったよ！"},
+                {speaker: "{adv2}", text: "はは、俺たちがいるんだから盗賊どもは手も出せなかったぜ！グッジョブ、みんな。" },
+                {speaker: "Luna", text: "旅行者さんたち、すごく安心して喜んでたわ！遠い土地の話、もっと聞きたかった～。"},
+                {speaker: "Kaito", text: "森は俺の縄張りだぜ！俺の守りは鉄壁だった。次は絶対呼べよ！"},
+                {speaker: "{adv3}", text: "みんな楽しそうだったけど、ちゃんと警戒してたよ。無事に護衛完了できてよかった。" },
+                {speaker: "{PLAYER}", text: "おいおい、みんな静かにしろよ。まずは旅行者の代表に報告だ。うるさすぎるぞ。" },
+                {speaker: "旅行者代表", text: "森の道を無事に通らせてくれてありがとう！戦争の噂で不安だったけど、君たちのおかげで楽しめたよ！興奮したわ！" },
+                {speaker: "{adv4}", text: "報酬楽しみだな～。森の景色は最高だったよ、緊張さえなければ。" },
+                {speaker: "旅行者代表", text: "約束の報酬だ。受け取ってくれ！みんなの努力に感謝だよ。" },
+                {speaker: "{PLAYER}", text: "よし、報酬は受け取ったな。みんなお疲れ。" },
+
+                // Line 11 (index 10)
+                {speaker: "Narrator", text: "（選択肢：旅行者のグループを護衛した後、どう対応する？）"},
+
+                // Line 12 (index 11) - Empty line (for displaying choices)
+                {speaker: "Narrator", text: ""},
+
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "Narrator",
+                    text: "",
+                    choices: [
+                        {
+                            text: "旅行者に道の詳細をさらに伝える（Reputation +3）",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "一緒にいた冒険者たちを労う（参加者好感度 +6）",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 18
+                        },
+                        {
+                            text: "護衛中に見つけた光る薬草を採取する（Gold +250）",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "旅行者の中にいるリュートを持った男に話しかける",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "この森の道は古代の小道の跡がある。もっと調べて危険を報告するよ。" },
+                {speaker: "旅行者代表", text: "それは助かる！注意して進むよ。本当に救われた！" },
+                {speaker: "旅行者代表", text: "冒険者さんみたいな信頼できる人がいてくれて嬉しいよ！", jumptoline: 43},
+
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "みんなよくやったな。森の護衛は大変だったろう。" },
+                {speaker: "Luna", text: "{PLAYER}にそう言ってもらえると嬉しいわ！次はもっと頑張る！" },
+                {speaker: "Kaito", text: "へへ、もっと褒めてくれよ！次のクエストで俺が主役だぜ！" },
+                {speaker: "{adv1}", text: "ありがとう、{PLAYER}。次も頼むぜ！" },
+                {speaker: "{PLAYER}", text: "ああ、期待してるよ。", jumptoline: 43},
+
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "護衛中に見つけた光る薬草、価値がありそうだな。ギルド資金に採取しよう。" },
+                {speaker: "Luna", text: "……確かに価値はあるけど、ちょっと便乗っぽいかも…" },
+                {speaker: "Kaito", text: "金のためなら我慢だぜ！でも次は俺にやらせろよ！" },
+                {speaker: "{adv2}", text: "はは、これでギルドのパーティー予算が増えるな！" },
+                {speaker: "{PLAYER}", text: "はは、任せた。", jumptoline: 43},
+
+                // ==================== Special Route (index 26 from onwards) ====================
+                // 26-30: Approach start - Casual to engaging conversation
+                {speaker: "Narrator", text: "旅行者の中に、リュートを優しく弾く男がいるのに気づいた。グループが休憩している間に話しかけてみる。" },
+                {speaker: "{adv1}", text: "そのメロディー、いいね！誰だろう？" },
+                {speaker: "Narrator", text: "男は顔を上げ、弦から指を離す。疲れた様子だが、演奏者の輝きが目に宿る。" },
+                {speaker: "{adv2}", text: "おい、リュートだぜ！一曲弾いてくれよ、おっさん！" },
+                {speaker: "Narrator", text: "彼は微笑んで優しいメロディーを奏でるが、旅の重みが感じられる。空気は穏やかな音色で満たされ、戦争の噂とは対照的だ。" },
+
+                // 31: recruitAdventurer declaration (specify name here)
+                {speaker: "Narrator", text: "", recruitAdventurer: "Elias"},
+
+                // 32: Man appears - With emotional reaction
+                {speaker: "{encounterName}", text: "…こんにちは？ 冒険者さんたちだよね？ 気にしないで、ただの放浪の吟遊詩人さ…", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "こんなところで吟遊詩人？ 戦争の緊張が高まってるのに大胆だな！ 音楽は素晴らしいけど。" },
+
+                // 34: Backstory - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "僕はエリアス。戦争の危険を承知で世界を旅して音楽を届けているよ。暗い時代だからこそ、たくさんの人に喜びを届けたいんだ…", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "戦争の緊張の中で旅を… 感動的だけど危険だな。音楽への献身が素晴らしい。" },
+                {speaker: "Luna", text: "ロマンチックなのに悲しいわ… あなたの歌はきっとたくさんの人を慰めてる！ 心に響くわ…" },
+                {speaker: "Kaito", text: "くそっ、危険を押して音楽のためか？ リスペクトだぜ！ ギルドでそんな曲が必要かもな。" },
+
+                // 38: Choices
+                {
+                    speaker: "Narrator",
+                    text: "エリアスは才能があり情熱的だが、放浪の精神が強い。戦争で彼の道は危険だ。どうする？",
+                    choices: [
+                        {
+                            text: "「1000Gでギルドに雇う？」（Invite）",
+                            reward: [{type: "gold", amount: -1000}],
+                            jumptoline: 40
+                        },
+                        {
+                            text: "ギルドに滞在するよう頼む",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "…何も言わずに去る",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+
+                // 39-42: Hire success - With added emotion
+                {speaker: "{encounterName}", text: "……1000Gでギルドに加入？ 僕の音楽のために…？ ……新しい章になるかも。わかった、受け入れるよ。", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "最高！ ギルドに吟遊詩人がいれば盛り上がるぜ！" },
+                {speaker: "{encounterName}", text: "ありがとう…！ 君たちの冒険を歌に作曲するよ！ ……ようやく、弦を休められる場所ができた…", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "新しい仲間候補「エリアス」がギルドに加わった！（ギルドに戻って正式に迎え入れられます）", jumptoline: 49},
+
+                // 43-45: Ask to stay (decline)
+                {speaker: "{encounterName}", text: "…ギルドに滞在？ ありがたいけど、できないよ。僕はずっと動き続けなければならない。一つの場所より、世界に音楽を届けるんだ。", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "仕方ないな。安全な旅を、曲を弾き続けてくれ！" },
+                {speaker: "Narrator", text: "エリアスは感謝の笑みを浮かべてメロディーを再開し、出発の準備をする。ほろ苦い別れの余韻が残る。", jumptoline: 49},
+
+                // 46-47: Leave
+                {speaker: "{adv2}", text: "おい、{PLAYER}… もっと言わないのか？ いいヤツっぽいのに…" },
+                {speaker: "Narrator", text: "あなたはそれ以上何も言わず立ち去る… リュートの淡いメロディーが後ろから響く。", jumptoline: 49},
+
+                // 48: Common ending (all routes converge)
+                {speaker: "Narrator", text: "旅行者の護衛はこれで終了した。" }
             ],
             // 2: キャラバン護衛
             [
@@ -2701,15 +2939,116 @@ const QuestCompletionDialogue = {
             ]
         ],
       'F+': [
-        // 0: Cave Behind Waterfall (Client: Explorer)
-        [
-          {speaker: "Adventurer", text: "I found the hidden cave behind the forest waterfall... Got completely soaked from the spray."},
-          {speaker: "Luna", text: "Behind a waterfall!? So romantic~ Must be a hidden ruin!"},
-          {speaker: "Kaito", text: "Water? Pass—I hate getting wet."},
-          {speaker: '{PLAYER}', text: "Quiet, you two. Report to the explorer."},
-          {speaker: "Explorer", text: "You found the cave behind the waterfall! New adventures can begin. Thank you so much!"},
-          {speaker: '{PLAYER}', text: "Reward. Next time, Kaito gets wet too."}
-        ],
+            [
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "I discovered a hidden cave behind the waterfall deep in the forest. ...I'm soaked from the water spray. Everyone else is drenched too!"},
+                {speaker: "{adv2}", text: "Haha, {adv1}'s soaked appearance is hilarious! But finding the cave was a good job."},
+                {speaker: "Luna", text: "Behind the waterfall!? How romantic~. It must be a hidden ruin! Maybe full of treasures!"},
+                {speaker: "Kaito", text: "If there's water splashing, I'm out... I hate getting wet. Next quest, I hope for a dry place!"},
+                {speaker: "{adv3}", text: "Everyone seems to be having fun, but we need to report properly. If it's a ruin, it's a big discovery."},
+                {speaker: "{PLAYER}", text: "Hey hey, everyone shut up. First, report to the explorer. You're fooling around too much."},
+                {speaker: "Explorer", text: "You found the cave behind the waterfall! Now we can start a new adventure. Thank you so much! I'm excited!"},
+                {speaker: "{adv4}", text: "Looking forward to the reward~. If it weren't for this water spray, it would have been the best quest."},
+                {speaker: "Explorer", text: "Here's the promised reward. Please accept it! Thanks for everyone's effort."},
+                {speaker: "{PLAYER}", text: "Alright, we've received the reward. Everyone, good work."},
+                // Line 11 (index 10)
+                {speaker: "Narrator", text: "(Choices: After discovering the cave behind the waterfall, how will you respond?)"},
+                // Line 12 (index 11) - Empty line (for displaying choices)
+                {speaker: "Narrator", text: ""},
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "Narrator",
+                    text: "",
+                    choices: [
+                        {
+                            text: "Tell the explorer more details about the cave (Reputation +3)",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "Praise the adventurers who were with you (Participants' Favorability +6)",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 18
+                        },
+                        {
+                            text: "Collect the glowing ore mixed in the waterfall spray (Gold +250)",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "Investigate deeper into the cave behind the waterfall",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "This cave has a high possibility of being an ancient ruin. I'll investigate more and report."},
+                {speaker: "Explorer", text: "That's right! I'll start the research right away! You really helped!"},
+                {speaker: "Explorer", text: "I'm glad there are people like you, adventurer!", jumptoline: 43},
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "You all did well. It must have been tough getting covered in spray."},
+                {speaker: "Luna", text: "I'm happy to hear that from {PLAYER}! I'll work even harder!"},
+                {speaker: "Kaito", text: "Hehe, praise me more! Next time it's my turn to shine!"},
+                {speaker: "{adv1}", text: "Thanks, {PLAYER}. Looking forward to next time!"},
+                {speaker: "{PLAYER}", text: "Yeah, I'm looking forward to it.", jumptoline: 43},
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "This glowing ore looks sellable. Let's collect some for guild funds."},
+                {speaker: "Luna", text: "...It certainly has value, but it feels a bit sneaky..."},
+                {speaker: "Kaito", text: "For money, I'll endure! But next time let me do it!"},
+                {speaker: "{adv2}", text: "Haha, this will increase the guild's drinking money!"},
+                {speaker: "{PLAYER}", text: "Haha, I'll leave it to you.", jumptoline: 43},
+                // ==================== Investigation Route (index 26 from onwards) ====================
+                // 26-30: Investigation start - Casual to sudden emotional shift
+                {speaker: "Narrator", text: "You proceeded deeper into the cave behind the waterfall. Only the damp air and the sound of water echo... Everyone is in a lively exploration mood."},
+                {speaker: "{adv1}", text: "I wonder if there's treasure deeper in? I'm excited!"},
+                {speaker: "Narrator", text: "In the darkness ahead, you see a small shadow trembling. ...Huh? That is... a human figure?"},
+                {speaker: "{adv2}", text: "Hey, something's moving! A monster!? This is thrilling!"},
+                {speaker: "Narrator", text: "As you approach, it turns out to be a small girl. She is trembling, her face pale, breathing faintly... as if she could collapse at any moment. The atmosphere tenses in an instant, turning the excitement of adventure into serious concern."},
+                // 31: recruitAdventurer declaration (specify name here)
+                {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
+                // 32: Girl appears - With emotional reaction
+                {speaker: "{encounterName}", text: "...W-who!? Don't come closer! ...I'm scared...", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "Eh, a girl!? In a place like this... Are you okay!? You look pale!"},
+                // 34: Backstory - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "My village... was burned down in the war. I've been wandering alone since then... I got lost here... I have no strength left...", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "The village burned in war... How terrible. Such a small child alone... We need to hurry or it's dangerous!"},
+                {speaker: "Luna", text: "Poor thing... We have to help her quickly! It brings tears to my eyes..."},
+                {speaker: "Kaito", text: "Damn, because of the war... We'll do something about it!"},
+                // 38: Choices
+                {
+                    speaker: "Narrator",
+                    text: "The girl (Lilia) is in a very weak state, and it's only a matter of time before she perishes if left alone. The sudden change in the situation shakes everyone's hearts. What will you do?",
+                    choices: [
+                        {
+                            text: "\"Won't you work as an adventurer in our guild?\" (Invite)",
+                            jumptoline: 40
+                        },
+                        {
+                            text: "Escort her to a safe town",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "...Leave without saying anything",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+                // 39-42: Recruitment success - With added emotion
+                {speaker: "{encounterName}", text: "......Really? Even someone useless like me...? ...I can't trust anyone...", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "Of course! We'll all protect you at the guild."},
+                {speaker: "{encounterName}", text: "Thank you...! I'll do my best! ...Finally, I see some hope...", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "New companion candidate \"Lilia\" has joined the guild! (She will be officially welcomed back at the guild)", jumptoline: 49},
+                // 43-45: Escort
+                {speaker: "{encounterName}", text: "...Thank you. I really appreciate it. I think I'll try to live a little longer. ...There are still kind people out there...", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "Alright, we'll protect and take you there. Don't worry!"},
+                {speaker: "Narrator", text: "You safely escorted Lilia to a nearby village. A warm afterglow remains in everyone's hearts.", jumptoline: 49},
+                // 46-47: Abandon
+                {speaker: "{adv2}", text: "Hey, {PLAYER}... Are you really leaving her? Such a weakened child..."},
+                {speaker: "Narrator", text: "You left the cave without saying anything... A heavy silence envelops the group.", jumptoline: 49},
+                // 48: Common ending (all routes converge)
+                {speaker: "Narrator", text: "The exploration of the cave behind the waterfall is now complete."}
+            ],
         // 1: Hidden Basement in Old House (Client: Homeowner)
         [
           {speaker: "Adventurer", text: "I located the hidden basement in the old house... Covered in dust, can't stop sneezing."},
@@ -2990,14 +3329,132 @@ const QuestCompletionDialogue = {
           {speaker: '{PLAYER}', text: "Reward. Taking Kaito next might lead to price hikes."}
         ],
         // 1: Escort Traveler Group
-        [
-          {speaker: "Adventurer", text: "I safely guarded the traveler group through the forest road."},
-          {speaker: "Luna", text: "The travelers seemed to enjoy it? I wanted souvenir stories~"},
-          {speaker: "Kaito", text: "Forest? I'd have made an iron defense! Call me next!"},
-          {speaker: '{PLAYER}', text: "You're tourists yourselves. Report to the group leader."},
-          {speaker: "Traveler Leader", text: "You got us safely through the forest! It was scary but fun thanks to you!"},
-          {speaker: '{PLAYER}', text: "Reward. Next time, tour guide duty?"}
-        ],
+            [
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "We safely guarded the group of travelers through the forest path. No incidents at all!"},
+                {speaker: "{adv2}", text: "Haha, with us around, those bandits didn't stand a chance! Good job, team."},
+                {speaker: "Luna", text: "The travelers looked so relieved and happy! I wanted to hear more of their stories from distant lands~."},
+                {speaker: "Kaito", text: "The forest is my territory! My guard was impenetrable. Make sure to call me next time!"},
+                {speaker: "{adv3}", text: "Everyone was in high spirits, but we stayed vigilant. It's good we completed the escort without issues."},
+                {speaker: "{PLAYER}", text: "Hey hey, everyone quiet down. First, let's report to the traveler representative. You're all too rowdy."},
+                {speaker: "Traveler Representative", text: "Thanks for getting us through the forest path safely! It was nerve-wracking with the rumors of war, but we enjoyed it thanks to you! I'm thrilled!"},
+                {speaker: "{adv4}", text: "The reward is exciting~. The forest views were amazing, if only without the tension."},
+                {speaker: "Traveler Representative", text: "Here's the promised reward. Please accept it! Thanks for everyone's hard work."},
+                {speaker: "{PLAYER}", text: "Alright, we've received the reward. Good work, everyone."},
+
+                // Line 11 (index 10)
+                {speaker: "Narrator", text: "(Choices: After safeguarding the group of visitors, how will you respond?)"},
+
+                // Line 12 (index 11) - Empty line (for displaying choices)
+                {speaker: "Narrator", text: ""},
+
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "Narrator",
+                    text: "",
+                    choices: [
+                        {
+                            text: "Tell the travelers more details about the path (Reputation +3)",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "Praise the adventurers who were with you (Participants' Favorability +6)",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 18
+                        },
+                        {
+                            text: "Collect the glowing herbs spotted during the escort (Gold +250)",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "Talk to the man holding the lute among the travelers",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "This forest path shows signs of ancient trails. I'll investigate further and report any dangers."},
+                {speaker: "Traveler Representative", text: "That's helpful! We'll proceed with caution. You really saved us!"},
+                {speaker: "Traveler Representative", text: "I'm glad there are reliable people like you adventurers!", jumptoline: 43},
+
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "You all did great. Escorting through the forest must have been demanding."},
+                {speaker: "Luna", text: "Hearing that from {PLAYER} makes me so happy! I'll push even harder next time!"},
+                {speaker: "Kaito", text: "Hehe, keep the praises coming! Next quest, I'll steal the show!"},
+                {speaker: "{adv1}", text: "Thanks, {PLAYER}. Count on us for the next one!"},
+                {speaker: "{PLAYER}", text: "Yeah, I'm counting on it.", jumptoline: 43},
+
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "Those glowing herbs we spotted look valuable. Let's gather some for guild funds."},
+                {speaker: "Luna", text: "...They do have worth, but it feels a tad opportunistic..."},
+                {speaker: "Kaito", text: "For gold, I'll put up with it! But let me handle it next time!"},
+                {speaker: "{adv2}", text: "Haha, this'll boost the guild's party budget!"},
+                {speaker: "{PLAYER}", text: "Haha, over to you.", jumptoline: 43},
+
+                // ==================== Special Route (index 26 from onwards) ====================
+                // 26-30: Approach start - Casual to engaging conversation
+                {speaker: "Narrator", text: "Among the travelers, you notice a man strumming a lute softly. You decide to approach him as the group rests."},
+                {speaker: "{adv1}", text: "That melody is catchy! Wonder who he is?"},
+                {speaker: "Narrator", text: "The man looks up, his fingers pausing on the strings. He seems weary but his eyes light up with a performer's spark."},
+                {speaker: "{adv2}", text: "Hey, that's a lute! Play us a tune, mister!"},
+                {speaker: "Narrator", text: "He smiles and plays a gentle melody, but you sense the weight of his travels. The air fills with soothing notes, contrasting the war rumors."},
+
+                // 31: recruitAdventurer declaration (specify name here)
+                {speaker: "Narrator", text: "", recruitAdventurer: "Elias"},
+
+                // 32: Man appears - With emotional reaction
+                {speaker: "{encounterName}", text: "...Hello? Adventurers, right? Don't mind me, just a wandering bard...", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "A bard in these parts? With the war tensions, that's bold! Your music is amazing though."},
+
+                // 34: Backstory - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "I'm Elias. I've been traveling the world, sharing my music despite the dangers of war. I want to bring joy to as many people as possible, even in dark times...", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "Traveling amid war tensions... That's inspiring but risky. Your dedication to music is admirable."},
+                {speaker: "Luna", text: "So romantic yet sad... Your songs must comfort so many! It touches my heart..."},
+                {speaker: "Kaito", text: "Damn, pushing through danger for music? Respect! We could use tunes like that in the guild."},
+
+                // 38: Choices
+                {
+                    speaker: "Narrator",
+                    text: "Elias is talented and passionate, but his wandering spirit is strong. The war makes his path perilous. What will you do?",
+                    choices: [
+                        {
+                            text: "\"Hire you for the guild with 1000G?\" (Invite)",
+                            reward: [{type: "gold", amount: -1000}],
+                            jumptoline: 40
+                        },
+                        {
+                            text: "Ask him to stay at the guild",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "...Leave without saying more",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+
+                // 39-42: Hire success - With added emotion
+                {speaker: "{encounterName}", text: "......1000G to join your guild? For my music...? ...That could be a new chapter. Alright, I'll accept.", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "Awesome! A bard in the guild will liven things up!"},
+                {speaker: "{encounterName}", text: "Thank you...! I'll compose songs of your adventures! ...Finally, a place to rest my strings for a while.", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "New companion candidate \"Elias\" has joined the guild! (He will be officially welcomed back at the guild)", jumptoline: 49},
+
+                // 43-45: Ask to stay (decline)
+                {speaker: "{encounterName}", text: "...Stay at the guild? Appreciate it, but I can't. I must keep moving; the world needs my music more than one place does.", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "Fair enough. Safe journeys, and keep playing those tunes!"},
+                {speaker: "Narrator", text: "Elias smiles gratefully and resumes his melody as he prepares to depart. A bittersweet farewell lingers.", jumptoline: 49},
+
+                // 46-47: Leave
+                {speaker: "{adv2}", text: "Oi, {PLAYER}... Not gonna say more? He seems like a cool guy..."},
+                {speaker: "Narrator", text: "You turn away without further words... The lute's faint melody echoes as you leave.", jumptoline: 49},
+
+                // 48: Common ending (all routes converge)
+                {speaker: "Narrator", text: "The safeguarding of the visitors is now complete."}
+            ],
         // 2: Escort Caravan
         [
           {speaker: "Adventurer", text: "I safely protected the cargo caravan from bandits."},
@@ -3814,6 +4271,133 @@ const QuestCompletionDialogue = {
                 {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ]
         ],
+        'F+':[
+            [
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "我在森林深處的瀑布後面發現了一個隱藏的洞窟。……我被水花弄得濕透了。大家也全身濕淋淋的！"},
+                {speaker: "{adv2}", text: "哈哈，{adv1}那濕透的樣子，好笑死了！不過發現洞窟是好樣的。"},
+                {speaker: "Luna", text: "瀑布後面！？好浪漫喔～。一定是隱藏的遺跡！也許裡面滿是寶物！"},
+                {speaker: "Kaito", text: "如果會被水濺到，那我就不去了……我不喜歡被弄濕。下次希望是乾燥地方的任務！"},
+                {speaker: "{adv3}", text: "大家看起來都很開心，不過要好好報告才行。如果是遺跡，那就是大發現了。"},
+                {speaker: "{PLAYER}", text: "喂喂，大家閉嘴。先向探險家報告吧。太鬧騰了。"},
+                {speaker: "探險家", text: "你發現了瀑布後面的洞窟！這下可以開始新的冒險了。真的非常感謝！好興奮啊！"},
+                {speaker: "{adv4}", text: "期待報酬啊～。要是沒有這水花，這就是最棒的任務了。"},
+                {speaker: "探險家", text: "這是約定的報酬。請收下！感謝大家的努力。"},
+                {speaker: "{PLAYER}", text: "好，報酬已經收到了。大家辛苦了。"},
+
+                // Line 11 (index 10)
+                {speaker: "Narrator", text: "（選擇：發現瀑布後面的洞窟後，要如何應對？）"},
+
+                // Line 12 (index 11) - 空行（選擇肢顯示用）
+                {speaker: "Narrator", text: ""},
+
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "Narrator",
+                    text: "",
+                    choices: [
+                        {
+                            text: "向探險家傳達洞窟的更多細節（Reputation +3）",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "慰勞一起的冒險者們（參加者好感度 +6）",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 17
+                        },
+                        {
+                            text: "採取混在瀑布水花中的發光礦石（Gold +250）",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "進一步調查瀑布後面的洞窟更深處",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "這個洞窟很有可能是古代遺跡。我會更詳細調查後報告。"},
+                {speaker: "探險家", text: "沒錯！馬上推進研究！真的幫了大忙！"},
+                {speaker: "探險家", text: "有像冒險者你這樣的人真是太好了！", jumptoline: 49},
+
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "大家做得很好。被水花弄得一身濕一定很辛苦吧。"},
+                {speaker: "Luna", text: "被{PLAYER}這麼說好開心！會更努力的！"},
+                {speaker: "Kaito", text: "嘿嘿，再多誇獎我吧！下次輪到我大顯身手了！"},
+                {speaker: "{adv1}", text: "謝謝，{PLAYER}。下次也請多關照！"},
+                {speaker: "{PLAYER}", text: "啊啊，下次也期待著。", jumptoline: 49},
+
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "這個發光礦石，看起來能賣錢。採取一些作為公會資金吧。"},
+                {speaker: "Luna", text: "……確實有價值，但感覺有點狡猾…"},
+                {speaker: "Kaito", text: "為了錢就忍耐吧！但下次讓我來做喔！"},
+                {speaker: "{adv2}", text: "哈哈，這樣公會的飲酒費就增加了！"},
+                {speaker: "{PLAYER}", text: "哈哈，交給你了。", jumptoline: 49},
+
+                // ==================== 調查路線（index 26從連續） ====================
+                // 26-30: 調查開始 - Casual to sudden emotional shift
+                {speaker: "Narrator", text: "你向瀑布後面的洞窟更深處前進。潮濕的空氣和水聲迴盪著…大家熱鬧地探險心情。"},
+                {speaker: "{adv1}", text: "更深處有寶物嗎？好期待啊！"},
+                {speaker: "Narrator", text: "在前方的黑暗中，看見一個小小的影子在顫抖。……嗯？那是……人影？"},
+                {speaker: "{adv2}", text: "喂，有東西在動！是怪物嗎！？好興奮啊！"},
+                {speaker: "Narrator", text: "靠近一看，那是一個小小的少女。她在顫抖，臉色蒼白，氣息微弱……彷彿隨時都會倒下般虛弱。空氣瞬間緊繃，冒險的興奮轉變成嚴重的擔憂。"},
+
+                // 31: recruitAdventurer宣言（這裡指定名字）
+                {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
+
+                // 32: 少女登場 - With emotional reaction
+                {speaker: "{encounterName}", text: "…誰、誰啊！？ 不要靠近！ ……好可怕……", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "咦，少女！？ 在這種地方……沒事吧！？ 臉色很差啊！"},
+
+                // 34: 背景故事 - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "我的村子…在戰爭中被燒毀了。從那之後一直一個人流浪…在這裡迷路了…已經沒有力氣了……", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "村子在戰爭中被燒…太可怕了。這樣小的孩子一個人…不趕緊的話危險啊！"},
+                {speaker: "Luna", text: "好可憐……快點救她！ 眼淚都要流出來了……"},
+                {speaker: "Kaito", text: "可惡，是戰爭的關係嗎……我們來想辦法吧！"},
+
+                // 38: 選擇肢
+                {
+                    speaker: "Narrator",
+                    text: "少女（Lilia）處於非常虛弱的狀態，如果就這樣放著不管，命不久矣。突然的狀況變化，讓大家的心靈受到動搖。要怎麼做？",
+                    choices: [
+                        {
+                            text: "「要不要來我們的公會當冒險者工作？」（Invite）",
+                            jumptoline: 40
+                        },
+                        {
+                            text: "護送她到安全的城鎮",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "…什麼都不說離開",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+
+                // 39-42: 勸誘成功 - With added emotion
+                {speaker: "{encounterName}", text: "……真的嗎？ 像我這樣沒用的人也可以…？ ……誰都無法相信……", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "當然了！ 在公會大家會保護你的。"},
+                {speaker: "{encounterName}", text: "謝謝…！ 我會努力的！ ……終於，看見希望了……", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "新的夥伴候補「莉莉亞」加入了公會！（回到公會後正式迎接）", jumptoline: 49},
+
+                // 43-45: 護送
+                {speaker: "{encounterName}", text: "…謝謝。真的很感激。我想再活久一點試試看。 ……世界上還有善良的人啊……", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "好，我們會保護你帶你去。別擔心！"},
+                {speaker: "Narrator", text: "你平安地把莉莉亞帶到附近的村子。大家心中殘留溫暖的餘韻。", jumptoline: 49},
+
+                // 46-47: 放置
+                {speaker: "{adv2}", text: "喂，{PLAYER}……真的要丟下她嗎？ 這樣虛弱的孩子……"},
+                {speaker: "Narrator", text: "你什麼都沒說就離開了洞窟… 沉重的沉默包圍著一行人。", jumptoline: 49},
+
+                // 48: 共通結局（全路線合流）
+                {speaker: "Narrator", text: "瀑布後面的洞窟探索到此結束。"}
+            ],
+        ]
     },
     // 2: DEX - escort quests
     {
@@ -4038,6 +4622,143 @@ const QuestCompletionDialogue = {
                 {speaker: '{PLAYER}', text: '任務完成了。回公會休息吧。'}
             ]
         ],
+        'F+': [
+                    // 0: Escort Merchant (Goblin Road)
+        [
+          {speaker: "Adventurer", text: "I escorted the merchant to the next town. Goblin road, but safe."},
+          {speaker: "Kaito", text: "Goblins showed up and you didn't call me!? Next time, no excuses!"},
+          {speaker: "Luna", text: "If Kaito went, the merchant would run in fear."},
+          {speaker: '{PLAYER}', text: "Both noisy. Merchant, your thoughts?"},
+          {speaker: "Merchant", text: "We passed the goblin road safely! You were reliable—thank you, adventurer!"},
+          {speaker: '{PLAYER}', text: "Reward. Taking Kaito next might lead to price hikes."}
+        ],
+                        [
+                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
+                {speaker: "{adv1}", text: "我們安全護衛旅行者集團通過森林小道。一點事故都沒有！"},
+                {speaker: "{adv2}", text: "哈哈，有我們在，那些強盜沒機會下手！幹得好，團隊。" },
+                {speaker: "Luna", text: "旅行者們看起來好安心又開心！我想聽更多他們遙遠土地的故事～。" },
+                {speaker: "Kaito", text: "森林是我的地盤！我的守護堅不可摧。下次一定要叫我！"},
+                {speaker: "{adv3}", text: "大家都很興奮，但我們保持警戒。順利完成護衛真好。" },
+                {speaker: "{PLAYER}", text: "喂喂，大家安靜點。先向旅行者代表報告。你們太吵了。" },
+                {speaker: "旅行者", text: "謝謝讓我們安全通過森林小道！戰爭傳聞讓人緊張，但多虧你們我們享受了旅途！好興奮啊！" },
+                {speaker: "{adv4}", text: "期待報酬啊～。森林景色超棒，要是沒有緊張感就完美了。" },
+                {speaker: "旅行者", text: "這是約定的報酬。請收下！感謝大家的努力。" },
+                {speaker: "{PLAYER}", text: "好，報酬已經收到了。大家辛苦了。" },
+
+                // Line 11 (index 10)
+                {speaker: "Narrator", text: "（選擇：護衛旅行者集團後，要如何應對？）"},
+
+                // Line 12 (index 11) - Empty line (for displaying choices)
+                {speaker: "Narrator", text: ""},
+
+                // Line 13 (index 12) - Choices object
+                {
+                    speaker: "Narrator",
+                    text: "",
+                    choices: [
+                        {
+                            text: "向旅行者傳達小道的更多細節（Reputation +3）",
+                            reward: [{type: "reputation", amount: 3}],
+                            jumptoline: 14
+                        },
+                        {
+                            text: "慰勞一起的冒險者們（參加者好感度 +6）",
+                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
+                            jumptoline: 18
+                        },
+                        {
+                            text: "採取護衛中發現的發光藥草（Gold +250）",
+                            reward: [{type: "gold", amount: 250}],
+                            jumptoline: 22
+                        },
+                        {
+                            text: "向旅行者中持有魯特琴的男人搭話",
+                            reward: [],
+                            jumptoline: 27
+                        }
+                    ]
+                },
+
+                // Branch 1: Reputation (+3) → index 13-15
+                {speaker: "{PLAYER}", text: "這條森林小道有古代軌跡的跡象。我會進一步調查並報告危險。" },
+                {speaker: "旅行者代表", text: "那很有幫助！我們會小心前進。你真的救了我們！" },
+                {speaker: "旅行者代表", text: "有像你們這樣可靠的冒險者真是太好了！", jumptoline: 43},
+
+                // Branch 2: Praise (+6) → index 16-20
+                {speaker: "{PLAYER}", text: "大家做得很好。森林護衛一定很辛苦。" },
+                {speaker: "Luna", text: "被{PLAYER}這麼說好開心！下次會更努力！" },
+                {speaker: "Kaito", text: "嘿嘿，再多誇獎吧！下個任務我會搶盡風頭！" },
+                {speaker: "{adv1}", text: "謝謝，{PLAYER}。下次也拜託了！" },
+                {speaker: "{PLAYER}", text: "啊啊，期待著呢。", jumptoline: 43},
+
+                // Branch 3: Gold (+250) → index 21-25
+                {speaker: "{PLAYER}", text: "護衛中發現的發光藥草，看起來有價值。採取一些作為公會資金吧。" },
+                {speaker: "Luna", text: "……確實有價值，但感覺有點投機…" },
+                {speaker: "Kaito", text: "為了錢就忍耐吧！但下次讓我來！" },
+                {speaker: "{adv2}", text: "哈哈，這會增加公會的派對預算！" },
+                {speaker: "{PLAYER}", text: "哈哈，交給你了。", jumptoline: 43},
+
+                // ==================== Special Route (index 26 from onwards) ====================
+                // 26-30: Approach start - Casual to engaging conversation
+                {speaker: "Narrator", text: "在旅行者中，你注意到一個輕輕彈奏魯特琴的男人。你決定在集團休息時接近他。" },
+                {speaker: "{adv1}", text: "那旋律真動聽！不知道他是誰？" },
+                {speaker: "Narrator", text: "男人抬起頭，手指停在琴弦上。他看起來疲憊，但眼中閃耀著表演者的光芒。" },
+                {speaker: "{adv2}", text: "喂，那是魯特琴！彈一曲給我們聽，大叔！" },
+                {speaker: "Narrator", text: "他微笑著彈奏溫柔的旋律，但你感受到他旅行的沉重。空氣充滿安撫的音符，與戰爭傳聞形成對比。" },
+
+                // 31: recruitAdventurer declaration (specify name here)
+                {speaker: "Narrator", text: "", recruitAdventurer: "Elias"},
+
+                // 32: Man appears - With emotional reaction
+                {speaker: "{encounterName}", text: "…你好？ 是冒險者吧？ 別在意我，只是個流浪的吟遊詩人…", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "在這種地方的吟遊詩人？ 戰爭緊張中真大膽！ 你的音樂很棒呢。" },
+
+                // 34: Backstory - Expanded with reactions for emotional depth
+                {speaker: "{encounterName}", text: "我是伊萊亞斯。即使戰爭使土地黑暗，我仍旅行世界分享音樂。我想盡可能帶給更多人喜悅，即使在黑暗時代…", image: "{encounterImage}"},
+                {speaker: "{PLAYER}", text: "在戰爭緊張中旅行… 鼓舞人心但危險。對音樂的奉獻令人欽佩。" },
+                {speaker: "Luna", text: "好浪漫卻悲傷… 你的歌一定安慰了很多人！ 觸動我的心…" },
+                {speaker: "Kaito", text: "可惡，為音樂闖蕩危險？ 尊敬！ 公會可以用這樣的曲子。" },
+
+                // 38: Choices
+                {
+                    speaker: "Narrator",
+                    text: "伊萊亞斯有才華且熱情，但他的流浪精神強烈。戰爭使他的道路危險。要怎麼做？",
+                    choices: [
+                        {
+                            text: "「用1000G雇你加入公會？」（Invite）",
+                            reward: [{type: "gold", amount: -1000}],
+                            jumptoline: 40
+                        },
+                        {
+                            text: "請求他留在公會",
+                            jumptoline: 44
+                        },
+                        {
+                            text: "…什麼都不說離開",
+                            jumptoline: 47
+                        }
+                    ]
+                },
+
+                // 39-42: Hire success - With added emotion
+                {speaker: "{encounterName}", text: "……1000G加入你們公會？ 為了我的音樂…？ ……這可能是新的一章。好吧，我接受。", image: "{encounterImage}"},
+                {speaker: "{adv4}", text: "太棒了！ 公會有吟遊詩人會熱鬧起來！" },
+                {speaker: "{encounterName}", text: "謝謝…！ 我會為你們的冒險作曲！ ……終於，有地方可以暫時休息琴弦了…", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "新的夥伴候補「伊萊亞斯」加入了公會！（回到公會後正式迎接）", jumptoline: 49},
+
+                // 43-45: Ask to stay (decline)
+                {speaker: "{encounterName}", text: "…留在公會？ 感謝，但不行。我必須繼續移動；世界比一個地方更需要我的音樂。", image: "{encounterImage}"},
+                {speaker: "{adv1}", text: "有道理。安全旅行，繼續彈奏那些曲子！" },
+                {speaker: "Narrator", text: "伊萊亞斯感激地微笑，重新彈奏旋律準備出發。苦甜的告別餘韻殘留。", jumptoline: 49},
+
+                // 46-47: Leave
+                {speaker: "{adv2}", text: "喂，{PLAYER}… 不多說點嗎？ 他看起來是個不錯的傢伙…" },
+                {speaker: "Narrator", text: "你沒有再說什麼就轉身離開… 魯特琴的淡薄旋律從後方迴盪。", jumptoline: 49},
+
+                // 48: Common ending (all routes converge)
+                {speaker: "Narrator", text: "旅行者的護衛到此結束。" }
+            ],
+        ]
     },
     // 3: LUC - fetch quests
     {
