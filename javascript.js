@@ -9601,6 +9601,8 @@ function playNextStoryPostDialogue() {
 
             // 英語の場合のみ高速（20ms）、それ以外は標準35ms
             const typingDelay = (currentLang === 'en') ? 20 : 35;
+            // Set text alignment to left to prevent shifting during typing
+            
 
             typingInterval = setInterval(() => {
                 if (charIndex < current.text.length) {
@@ -12477,15 +12479,22 @@ function playNextQuestDialogue() {
         }
         // ====================================================================================
 
+        let valid = true;
+
         // Handle {adv1}~{adv4} in speaker
         const speakerAdvMatch = processedSpeaker.match(/\{adv(\d+)\}/i);
-        if (speakerAdvMatch && currentQuestAdventurers && currentQuestAdventurers.length > 0) {
+        if (speakerAdvMatch) {
             const advIndex = parseInt(speakerAdvMatch[1]) - 1;
-            if (advIndex >= 0 && advIndex < currentQuestAdventurers.length) {
-                const adv = currentQuestAdventurers[advIndex];
-                processedSpeaker = adv.name;
+            if (currentQuestAdventurers && currentQuestAdventurers.length > 0) {
+                const length = currentQuestAdventurers.length;
+                if (advIndex >= 0 && advIndex < length) {
+                    const adv = currentQuestAdventurers[advIndex];
+                    processedSpeaker = adv.name;
+                } else {
+                    valid = false;
+                }
             } else {
-                processedSpeaker = processedSpeaker.replace(/\{adv\d+\}/gi, '?');
+                valid = false;
             }
         }
 
@@ -12493,12 +12502,33 @@ function playNextQuestDialogue() {
         let textAdvMatch;
         while ((textAdvMatch = fullText.match(/\{adv(\d+)\}/i)) !== null) {
             const advIndex = parseInt(textAdvMatch[1]) - 1;
-            if (advIndex >= 0 && advIndex < currentQuestAdventurers.length) {
-                const adv = currentQuestAdventurers[advIndex];
-                fullText = fullText.replace(new RegExp(`\\{adv${advIndex + 1}\\}`, 'gi'), adv.name);
+            if (currentQuestAdventurers && currentQuestAdventurers.length > 0) {
+                const length = currentQuestAdventurers.length;
+                if (advIndex >= 0 && advIndex < length) {
+                    const adv = currentQuestAdventurers[advIndex];
+                    fullText = fullText.replace(new RegExp(`\\{adv${advIndex + 1}\\}`, 'gi'), adv.name);
+                } else {
+                    valid = false;
+                }
             } else {
-                fullText = fullText.replace(/\{adv\d+\}/gi, '?');
+                valid = false;
             }
+        }
+
+        if (!valid) {
+            localIndex++;
+            if (localIndex - 1 >= 0 && sequence[localIndex - 1].jumptoline !== undefined) {
+                localIndex = sequence[localIndex - 1].jumptoline - 1;
+                while (localIndex < sequence.length && sequence[localIndex].jumptoline !== undefined) {
+                    localIndex = sequence[localIndex].jumptoline - 1;
+                }
+            }
+            if (localIndex < sequence.length) {
+                renderQuestDialogue();
+            } else {
+                playNextQuestDialogue();
+            }
+            return;
         }
 
         document.getElementById('speakerName').textContent = processedSpeaker + ":";
