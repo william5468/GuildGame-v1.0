@@ -2524,6 +2524,20 @@ h1, h3, button, .adventurer-card, .quest-card {
 #dialogueText {
     background: transparent !important;
     color: #ffffff !important;
+    text-align: left;
+    font-size: 1.3em;
+    line-height: 1.4;
+    min-height: 40px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+@media (max-width: 600px) {
+    #dialogueText {
+        padding-left: 20px;
+        padding-right: 20px;
+        font-size: 0.8em;
+    }
 }
 
 /* 超広画面（1025px以上）でキャラクターが画面外（特に髪の部分が上にはみ出る）問題を解決 */
@@ -2865,3 +2879,30 @@ h1, h3, button, .adventurer-card, .quest-card {
     transform-origin: left center;
 }
 
+#battleModal {
+    color: #ffffff !important;
+    text-shadow: 
+        1px 1px 2px #000000,
+        0 0 8px #000000;
+    font-weight: bold;
+    z-index: 10005 !important; /* <--- ADD THIS LINE */
+}
+
+#introBG {
+    /* Ensure the transition targets background-image specifically */
+    transition: background-image 1.2s ease-in-out;
+    
+    /* These ensure the background doesn't jump during the swap */
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+    /* Keep your existing functional styles */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.9;
+    pointer-events: none;
+}

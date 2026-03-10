@@ -3,6 +3,7 @@
 const translations = {
 
   ja: {
+    "trait.quest_bonding_suffix": "/日（任務中）",
     "facilities_level_title": "{title} Lv.{level}",
     "current_fee_label": "現在の使用料：",
     "gold_unit": "G",
@@ -28,7 +29,7 @@ const translations = {
     "tavern_hunger_recovered": "{name}の空腹度が{percent}%回復。",
     // === クエスト結果共通 ===
     "corrupt_insufficient_rep": "Reputationが不足しています（最低10必要）",
-    "corrupt_success:": `商人から{gold}G貰ったけど、Reputationは{rep}まで下がりました`,
+    "corrupt_success": `商人から{gold}G貰ったけど、Reputationは{rep}まで下がりました`,
     "quest_trade_failure_title": "貿易クエスト失敗！",
     "quest_trade_failure_desc1": "貿易キャラバンが期限内に目的地に到達できませんでした。",
     "quest_trade_failure_desc2": "冒険者の割り当てが不足または遅れたため、計画は失敗しました。",
@@ -175,6 +176,7 @@ const translations = {
   
   "hunger_label": "満腹度",
     "trait.for_adventurers": "対",
+    "trait.improvisation": "アドリブ",
 "trait.primary_suffix": "主ステータスの冒険者",
 "trait.compare_suffix": "の冒険者",
 "trait.friendliness_prefix": "好感度",
@@ -906,6 +908,8 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+     "trait.quest_bonding_suffix": "/Day (In quest)",
+    "trait.improvisation": "Improvisation",
     "facilities_level_title": "{title} Lv.{level}",
     "current_fee_label": "Current Fee:",
     "gold_unit": "G",
@@ -1785,7 +1789,8 @@ relationship_title: "{name}'s Relationships",
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
     // zh-tw (繁體中文 - 台灣/香港常用)
-
+         "trait.quest_bonding_suffix": "/天 (任務中)",
+"trait.improvisation": "即席演奏",
     "facilities_level_title": "{title} Lv.{level}",
     "current_fee_label": "目前使用費：",
     "gold_unit": "G",

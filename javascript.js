@@ -19,6 +19,105 @@ function getPlayerImage() {
         : 'Images/main_char_M.png';
 }
 
+
+// === NEW: Battle templates for dialogue-triggered fights ===
+const questBattleTemplates = {
+    "Protect Lilia": {
+        name: "Protect Lilia",
+        bgm: "battleBgm",
+        generateEnemies: function() {
+            const enemies = [];
+            const MONSTER_FOLDER = "Images/Dungeon_Monster/";
+            const goblinData = { file: "goblin.png", name: "ゴブリン", level: 2, type: "STR" };
+            const numEnemies = 4;
+            const floor = 2;  // Low level for this battle
+
+            const baseStatMultiplier = floor * 15;
+            const randomBonus = Math.random() * 40 + floor * 5;
+
+            for (let i = 0; i < numEnemies; i++) {
+                const baseStat = baseStatMultiplier + randomBonus;
+
+                let strength = Math.floor(baseStat * 1.8 + Math.random() * 25);
+                let wisdom = Math.floor(baseStat * 0.6);
+                let dexterity = Math.floor(baseStat * 0.6);
+                let luck = Math.floor(baseStat * 0.5);
+
+                const e = {
+                    id: `lilia_enemy_${i}`,
+                    name: goblinData.name + (numEnemies > 1 ? ` ${i + 1}` : ""),
+                    image: `${MONSTER_FOLDER}${goblinData.file}`,
+                    sex: 'N',
+                    hp: Math.floor(100 + baseStat * 2.8 + Math.random() * 80),
+                    maxHp: 0,
+                    mp: Math.floor(20 + baseStat * 0.9 + Math.random() * 30),
+                    maxMp: 0,
+                    strength: Math.max(5, strength + Math.floor(Math.random() * 15)),
+                    wisdom: Math.max(3, wisdom + Math.floor(Math.random() * 10)),
+                    dexterity: Math.max(5, dexterity + Math.floor(Math.random() * 15)),
+                    luck: Math.max(3, luck + Math.floor(Math.random() * 10)),
+                    defense: floor * 10,
+                    defending: false,
+                    action: null,
+                    target: null,
+                    primary: goblinData.type
+                };
+                e.maxHp = e.hp;
+                e.maxMp = e.mp;
+                enemies.push(e);
+            }
+            return enemies;
+        }
+    }
+    // Add more battles here later
+};
+// === NEW: Helper to start a dialogue battle (works with your existing renderBattle) ===
+// Modify startDialogueBattle to generate enemies dynamically if needed
+function startDialogueBattle(battleKey, onWin, onLose) {
+    const template = questBattleTemplates[battleKey];
+    if (!template) {
+        console.error("Battle template missing:", battleKey);
+        onWin(); // fallback
+        return;
+    }
+
+    // Generate enemies if generator exists (for "Protect Lilia")
+    const enemies = template.generateEnemies ? template.generateEnemies() : template.enemies || [];
+
+    // Store callbacks
+    window.pendingDialogueBattle = { onWin, onLose };
+
+    currentBattle = {
+        type: "dialogueQuest",
+        quest: { type: "dialogueQuest", desc: template.name }, // Dummy quest object to prevent crashes
+        day: gameState.day,
+        title: template.name,
+        enemies: enemies,
+        background: template.background || "Images/DungeonQuest_Background.jpg",
+        team: currentQuestAdventurers || [],
+        phase: 'setup',
+        round: 0,
+        combatants: []
+    };
+
+    // 1. Show the battle UI and set Title
+    document.getElementById('battleTitle').innerHTML = template.name;
+    document.getElementById('battleModal').style.display = 'flex';
+
+    // 2. Play BGM
+    if (template.bgm) {
+        crossfadeTo(template.bgm, 1500);
+    } else {
+        crossfadeTo('battleBgm', 1500);
+    }
+
+    // 3. Render the initial UI
+    renderBattle();
+
+    // 4. Initialize AP, Statuses, and start the Turn Loop!
+    startRound();
+}
+
 // === 拡張された特性リスト（表示名付き、多様な好み対応）===
 // 各特性に displayName を追加（キャラクターシートで表示用）
 // type で分類:
@@ -4337,58 +4436,57 @@ function getDailyRandomFraction(str) {
 }
 
 function getRecruitsHtml(){
-    console.log('DEBUG: Entering getRecruitsHtml');
-    console.log('DEBUG: gameState.recruitPending:', gameState.recruitPending);
+
     
     const numPerms = gameState.adventurers.filter(a => !a.temp).length;
-    console.log('DEBUG: numPerms:', numPerms, 'maxPermanentSlots:', gameState.maxPermanentSlots);
+
     
     const full = numPerms >= gameState.maxPermanentSlots;
-    console.log('DEBUG: Guild full?', full);
+
     
     if(!gameState.recruitPending.length) {
-        console.log('DEBUG: No recruits pending - returning empty string');
+
         return '';
     }
     
     let html='';
     gameState.recruitPending.forEach((adv,i)=>{
-        console.log(`DEBUG: Processing recruit ${i}:`, adv);
+
         
         try {
             const baseStr = adv.strength;
             const baseWis = adv.wisdom;
             const baseDex = adv.dexterity;
             const baseLuk = adv.luck;
-            console.log('DEBUG: Base stats:', {baseStr, baseWis, baseDex, baseLuk});
+
             
             const effStr = getEffectiveStat(adv, 'strength');
             const effWis = getEffectiveStat(adv, 'wisdom');
             const effDex = getEffectiveStat(adv, 'dexterity');
             const effLuk = getEffectiveStat(adv, 'luck');
-            console.log('DEBUG: Effective stats:', {effStr, effWis, effDex, effLuk});
+
             
             const equipStr = effStr - baseStr;
             const equipWis = effWis - baseWis;
             const equipDex = effDex - baseDex;
             const equipLuk = effLuk - baseLuk;
-            console.log('DEBUG: Equip bonuses:', {equipStr, equipWis, equipDex, equipLuk});
+
             
             const stats=`Lv ${adv.level} | <img src="Images/STR.png" class="stat-icon" title="筋力"> STR ${effStr} (${baseStr}+${equipStr}) <img src="Images/WIS.png" class="stat-icon" title="知恵"> WIS ${effWis} (${baseWis}+${equipWis}) <img src="Images/DEX.png" class="stat-icon" title="敏捷"> DEX ${effDex} (${baseDex}+${equipDex}) <img src="Images/LUC.png" class="stat-icon" title="運"> LUC ${effLuk} (${baseLuk}+${equipLuk})`;
-            console.log('DEBUG: Stats HTML:', stats);
+
             
             const expNeeded = adv.level * 100;
             const expPct = Math.min(100, (adv.exp / expNeeded) * 100);
-            console.log('DEBUG: Exp calc:', {exp: adv.exp, needed: expNeeded, pct: expPct});
+
             
             const img=`<img src="Images/${adv.image}" class="adventurer-img" alt="${adv.name}">`;
-            console.log('DEBUG: Image HTML:', img);
+
             
             const nameHtml = getNameHtml(adv);
-            console.log('DEBUG: Name HTML:', nameHtml);
+
             
             const btnHtml = full ? '<button disabled>ギルド満杯</button>' : `<button onclick="recruit(${i})">募集する</button>`;
-            console.log('DEBUG: Button HTML:', btnHtml);
+
             
             const cardHtml = `<div class="adventurer-card" draggable="true" data-adv-id="${adv.id}">
                 ${img}${nameHtml}<br><small class="stats">${stats}</small><br>
@@ -4396,14 +4494,14 @@ function getRecruitsHtml(){
                 Cost: ${adv.recruitingCost}G ${btnHtml}
             </div>`;
             
-            console.log('DEBUG: Generated card HTML:', cardHtml);
+
             html += cardHtml;
         } catch (err) {
             console.error('DEBUG: Error processing recruit:', adv, err);
         }
     });
     
-    console.log('DEBUG: Final generated HTML:', html);
+
     return html;
 }
 
@@ -6243,6 +6341,64 @@ function processAdventurerDailyActions() {
         });
     }
 
+    // === 7. Improvisation Trait – Quest Team Bonding ===
+    // Loop through all quests to find ongoing ones with assigned teams
+    gameState.quests.forEach(quest => {
+        if (quest.assigned && quest.assigned.length >= 2) {  // Only process active multi-member quests
+            console.log("Debug: Processing quest:", quest.id, "with team size:", quest.assigned.length);
+
+            // Get the actual adventurer objects for the team
+            const team = quest.assigned.map(advId => gameState.adventurers.find(adv => adv.id === advId)).filter(Boolean);
+
+            if (team.length < 2) {
+                console.log("Debug: Team too small after filter:", team.length);
+                return;  // Skip if invalid team
+            }
+
+            // Check if anyone in the team has the "improvisation" trait
+            const hasImproviser = team.some(adv =>
+                adv.traits?.some(trait => trait.type === 'quest_bonding')
+            );
+
+            console.log("Debug: Processing quest team:", team.map(a => a.name || a.id).join(", "));
+            console.log("Debug: Has improviser:", hasImproviser);
+
+            if (!hasImproviser) return;
+
+            const improviser = team.find(adv => adv.traits?.some(t => t.type === 'quest_bonding'));
+            const trait = improviser.traits.find(t => t.type === 'quest_bonding');
+            const delta = trait?.delta || 1;  // Fallback to 1 if not defined
+
+            console.log("Debug: Improviser found:", improviser.name || improviser.id);
+            console.log("Debug: Bonding delta:", delta);
+
+            // +delta friendliness to EVERY pair in the team
+            for (let i = 0; i < team.length; i++) {
+                for (let j = i + 1; j < team.length; j++) {
+                    const a = team[i];
+                    const b = team[j];
+
+                    const oldAF = a.friendliness[b.id] ?? 50;
+                    const oldBF = b.friendliness[a.id] ?? 50;
+
+                    a.friendliness[b.id] = Math.min(100, oldAF + delta);
+                    b.friendliness[a.id] = Math.min(100, oldBF + delta);
+
+                    console.log(`Debug: Increased friendliness between ${a.name || a.id} and ${b.name || b.id} by ${delta} (A: ${oldAF} -> ${a.friendliness[b.id]}, B: ${oldBF} -> ${b.friendliness[a.id]})`);
+                }
+            }
+
+            // Optional: nice log so the player sees it happened
+            if (improviser && improviser.actionHistory?.length) {
+                const lastEntry = improviser.actionHistory[improviser.actionHistory.length - 1];
+                if (lastEntry) {
+                    lastEntry.description += ` (Improvisation trait helped the team bond [+${delta} friendliness])`;
+                    better_alert(` (Improvisation trait helped the team bond [+${delta} friendliness])`);
+                }
+            }
+        }
+    });
+
     // Cleanup temporary daily data
     gameState.adventurers.forEach(adv => delete adv.dailyAction);
 
@@ -6632,6 +6788,7 @@ function renderBattlebgm(QuestType,floor=0){
 
 // === renderBattle() の更新版（ストーリー対応） ===
 function renderBattle() {
+    console.log("inside renderBattle, currentBattle: "+ currentBattle);
     if (!currentBattle) {
         // ===== 追加: 戦闘終了時（currentBattle === null）のクリーンアップ =====
         const tooltip = document.getElementById('statusTooltip');
@@ -7321,8 +7478,12 @@ function executeActorAction(actor, action) {
     const sex = actor.sex || (function() {
         if (actor.name === 'カイト') return 'M';
         if (actor.name === 'ルナ') return 'F';
+        if (actor.name === 'Kaito') return 'M';
+        if (actor.name === 'Luna') return 'F';
         if (actor.gender === 'male') return 'M';
         if (actor.gender === 'female') return 'F';
+        if (actor.gender === 'M') return 'M';
+        if (actor.gender === 'F') return 'F';
         const imgLower = (actor.image || '').toLowerCase();
         if (imgLower.includes('(f)') || imgLower.includes('_f')) return 'F';
         if (imgLower.includes('(m)') || imgLower.includes('_m')) return 'M';
@@ -8218,6 +8379,29 @@ function endBattle(win) {
             }
         }
     });
+
+    // =========================================================
+    // NEW: Intercept Dialogue Battles to run callbacks
+    // =========================================================
+    if (currentBattle.type === "dialogueQuest") {
+        if (win && window.pendingDialogueBattle && window.pendingDialogueBattle.onWin) {
+            window.pendingDialogueBattle.onWin();
+        } else if (!win && window.pendingDialogueBattle && window.pendingDialogueBattle.onLose) {
+            window.pendingDialogueBattle.onLose();
+        }
+        
+        window.pendingDialogueBattle = null;
+        currentBattle = null;
+        
+        // Restore normal BGM
+        if (!checkGameOver()){
+            const targetBgm = "QuestEndDialogueBgm";
+            crossfadeTo(targetBgm, 2000);
+        }
+        updateDisplays();
+        return; // End function here so normal quest processing doesn't run
+    }
+    // =========================================================
 
     if (win) {
         // Victory processing
@@ -10310,6 +10494,9 @@ function getTraitsDisplay(adv) {
                 case 'defense': targetName = t("stat_defense"); break;
             }
             detailed = targetName + sign + displayedValue + "%";
+
+        } else if (trait.type === 'quest_bonding') {
+            detailed = t("trait.friendliness_prefix") + sign + displayedValue + t("trait.quest_bonding_suffix"); // e.g. " (per day on quest with team)"
         }
 
         return `${name} (${detailed})`;
@@ -11936,21 +12123,17 @@ function queueQuestCompletionDialogue(rawSequence) {
 
     const playerName = gameState.playerName || defaultName;
 
-    const processedSequence = rawSequence.map(line => ({
+const processedSequence = rawSequence.map(line => ({
+        ...line, // This copies ALL existing properties (bg_image, bgm, battle, etc.)
         speaker: line.speaker ? line.speaker.replace(/\{PLAYER\}/gi, playerName) : '',
         text: line.text ? line.text.replace(/\{PLAYER\}/gi, playerName) : '',
         image: line.image || null,
-        jumptoline: line.jumptoline,
+        // Ensure choices also preserve their properties
         choices: line.choices ? line.choices.map(choice => ({
-            text: choice.text ? choice.text.replace(/\{PLAYER\}/gi, playerName) : '',
-            reward: choice.reward ? (Array.isArray(choice.reward) ? [...choice.reward] : { ...choice.reward }) : undefined,
-            jumptoline: choice.jumptoline,
-            // recruitAdventurer が書かれていたらそのまま残す（playNextQuestDialogueで検知）
-            recruitAdventurer: line.recruitAdventurer || choice.recruitAdventurer
-        })) : undefined,
-        recruitAdventurer: line.recruitAdventurer   // ここで名前をそのまま引き継ぐ
+            ...choice,
+            text: choice.text ? choice.text.replace(/\{PLAYER\}/gi, playerName) : ''
+        })) : undefined
     }));
-
     completionQueue.push(processedSequence);
 
     if (!isPlayingDialogue) {
@@ -12067,6 +12250,10 @@ function playNextQuestDialogue() {
         const targetBgm = getNormalBgmId();
         crossfadeTo(targetBgm, 2000);
         const modal = document.getElementById('introModal');
+
+        // === NEW: Reset background image to default ===
+        modal.style.backgroundImage = ''; 
+        // ===============================================
         modal.style.display = 'none';
 
         const dialogueTextEl = document.getElementById('dialogueText');
@@ -12214,6 +12401,7 @@ function playNextQuestDialogue() {
                     { type: 'percent_bonus', target: 'wisdom', delta: 35, translationKey: "trait.blessing_of_wisdom" },
                     { type: 'percent_bonus', target: 'defense', delta: -50, translationKey: "trait.curse_of_defense" },
                     { type: 'gender', preference: 'M', delta: -20, translationKey: "trait.dislikes_men" },
+                    { type: 'percent_bonus', target: 'luck', delta: -90, translationKey: "trait.curse_of_luck" },
                 ]
             };
                     encounterAdv = JSON.parse(JSON.stringify(template));
@@ -12265,7 +12453,13 @@ function playNextQuestDialogue() {
                         { type: 'action_preference', action: 'tavern', weight_bonus: 30, translationKey: "trait.likes_tavern" },   // Loves performing in taverns
                         { type: 'action_preference', action: 'guild_stay', weight_bonus: -15, translationKey: "trait.active" },    // Doesn't like staying still long
                          { type: 'percent_bonus', target: 'luck', delta: 30, translationKey: "trait.blessing_of_luck" },            // Survives dangerous roads
-                    ]
+                         {
+                            type: 'quest_bonding',          // Custom type for bonding effects during quests
+                            target: 'friendliness',         // Specifies what it affects (team friendliness)
+                            delta: 1,                       // The daily increase amount (+1 as per your spec)
+                            translationKey: "trait.improvisation"  // For localization, e.g., display name like "Improvisation"
+                        },
+                        ]
                 };
                 encounterAdv = JSON.parse(JSON.stringify(template));
                 encounterAdv.id = gameState.nextId++;
@@ -12286,6 +12480,73 @@ function playNextQuestDialogue() {
 
     function showDialogueChoices(choices) {
         choicesDiv.innerHTML = '';
+        
+        // === Helper to process rewards (exact same logic as your original code) ===
+        const processRewards = (rewardData) => {
+            if (!rewardData) return;
+            let rewards = Array.isArray(rewardData) ? rewardData : [rewardData];
+            let alertMessages = [];
+
+            rewards.forEach(r => {
+                if (!r || !r.type) return;
+
+                if (r.type === 'gold') {
+                    gameState.gold += r.amount || 0;
+                    alertMessages.push(r.amount > 0 ? `+${r.amount}G` : `${r.amount}G`);
+                } else if (r.type === 'reputation') {
+                    gameState.reputation += r.amount || 0;
+                    alertMessages.push(r.amount > 0 ? `+${r.amount} Reputation` : `${r.amount} Reputation`);
+                } else if (r.type === 'item') {
+                    let template = shopItems.find(item => item.name === r.name);
+                    if (!template) {
+                        const lang = currentLang || 'ja';
+                        const fetchData = fetchQuestsByRank[lang] || fetchQuestsByRank.ja;
+                        const allFetchQuests = Object.values(fetchData).flat();
+                        const fetchQuest = allFetchQuests.find(q => q.itemName === r.name);
+                        if (fetchQuest) template = { ...fetchQuest, name: fetchQuest.itemName };
+                    }
+                    if (template) {
+                        addToInventory(template, r.qty || 1);
+                        alertMessages.push(`+${r.qty || 1} ${r.name}`);
+                    } else {
+                        addToInventory({ name: r.name, type: 'unknown', description: 'Unknown gathered item' }, r.qty || 1);
+                        alertMessages.push(`+${r.qty || 1} ${r.name} (unknown)`);
+                    }
+                } else if (r.type === 'friendliness') {
+                    const amount = r.amount || 0;
+                    let targets = gameState.adventurers;
+                    if (r.target === "participants" && typeof currentQuestAdventurers !== "undefined" && Array.isArray(currentQuestAdventurers) && currentQuestAdventurers.length > 0) {
+                        targets = currentQuestAdventurers;
+                    }
+                    targets.forEach(adv => {
+                        const oldFriendliness = adv.Friendliness || 50;
+                        const newFriendliness = Math.max(0, Math.min(100, oldFriendliness + amount));
+                        adv.Friendliness = newFriendliness;
+                    });
+                    alertMessages.push(amount > 0 ? `+${amount} Friendliness` : `${amount} Friendliness`);
+                } else if (['exp', 'strength', 'wisdom', 'dexterity', 'luck', 'defense', 'hp', 'maxHp', 'mp', 'maxMp', 'hunger'].includes(r.type)) {
+                    const amount = r.amount || 0;
+                    const statName = r.type;
+                    gameState.adventurers.forEach(adv => {
+                        if (adv[statName] !== undefined) {
+                            adv[statName] += amount;
+                            if (statName === 'hp') adv.hp = Math.min(adv.hp, adv.maxHp);
+                            if (statName === 'mp') adv.mp = Math.min(adv.mp, adv.maxMp);
+                            if (statName === 'hunger') adv.hunger = Math.max(0, Math.min(1, adv.hunger));
+                        }
+                    });
+                    alertMessages.push(amount > 0 ? `+${amount} ${statName} (all adventurers)` : `${amount} ${statName} (all adventurers)`);
+                }
+            });
+
+            if (alertMessages.length > 0) {
+                const isPositive = alertMessages.every(m => m.startsWith('+'));
+                better_alert(alertMessages.join('\n'), isPositive ? "success" : "warning");
+                updateDisplays();
+                renderInventory();
+            }
+        };
+
         choices.forEach((choice) => {
             const btn = document.createElement('button');
             btn.textContent = choice.text;
@@ -12316,25 +12577,65 @@ function playNextQuestDialogue() {
                 btn.style.transform = 'translateY(0)';
                 btn.style.boxShadow = '0 8px 25px rgba(0,0,0,0.7)';
             };
+
             btn.onclick = (e) => {
                 e.stopPropagation();
+                console.log("choice.battle is: "+choice.battle);
+                // ====================== NEW: BATTLE SUPPORT (added here) ======================
+                if (choice.battle) {
+                    const winLine  = choice.winJumptoline !== undefined ? choice.winJumptoline - 1 : localIndex + 1;
+                    const loseLine = choice.loseJumptoline !== undefined ? choice.loseJumptoline - 1 : localIndex + 1;
 
-                // ====================== 勧誘選択肢なら自動で recruitPending に追加 ======================
-                console.log('DEBUG: Checking recruit condition...');
-                console.log('DEBUG: encounterAdv exists?', !!encounterAdv);
-                console.log('DEBUG: choice.text:', choice.text);
-                console.log('DEBUG: Includes 勧誘?', choice.text.includes('勧誘'));
-                console.log('DEBUG: Includes ギルドで冒険者として?', choice.text.includes('ギルドで冒険者として'));
-                console.log('DEBUG: Includes うちのギルド?', choice.text.includes('うちのギルド'));
+                    startDialogueBattle(choice.battle, 
+                        () => { // === WIN ===
+                            if (choice.winReward) processRewards(choice.winReward);
 
+                            // Recruit ONLY on win if this choice wants it (or contains "Invite")
+                            if (encounterAdv && (choice.recruit || choice.text.includes('Invite'))) {
+                                const girl = encounterAdv;
+                                const newAdv = JSON.parse(JSON.stringify(girl));
+                                newAdv.hp = newAdv.maxHp;
+                                newAdv.mp = newAdv.maxMp;
+                                newAdv.busy = false;
+                                newAdv.buffs = [];
+                                newAdv.friendliness = {};
+                                newAdv.traits = newAdv.traits || [];
+                                newAdv.rank = 'F';
+                                newAdv.Friendliness = 35;
+
+                                gameState.adventurers.forEach(other => {
+                                    if (!other.friendliness) other.friendliness = {};
+                                    newAdv.friendliness[other.id] = 50;
+                                    other.friendliness[newAdv.id] = 50;
+                                });
+
+                                gameState.recruitPending = gameState.recruitPending || [];
+                                gameState.recruitPending.push(newAdv);
+
+                                better_alert(`${girl.name} が仲間候補に加わった！（ギルドに戻って正式に迎え入れられます）`, "success");
+                                updateDisplays();
+                            }
+
+                            localIndex = winLine;
+                            cleanupAfterChoice();
+                        },
+                        () => { // === LOSE ===
+                            if (choice.loseReward) processRewards(choice.loseReward);
+                            localIndex = loseLine;
+                            cleanupAfterChoice();
+                        }
+                    );
+                    return; // Stop normal flow
+                }
+                // ============================================================================
+
+                // ====================== ORIGINAL RECRUIT LOGIC (unchanged) ======================
                 if (encounterAdv && 
-                    (choice.text.includes('Invite') )) {
-
-                    console.log('DEBUG: Recruit condition met! Adding to recruitPending...');
-                    console.log('DEBUG: encounterAdv details:', encounterAdv);
+                    (choice.text.includes('Invite') || 
+                     choice.text.includes('勧誘') || 
+                     choice.text.includes('ギルドで冒険者として'))) {
 
                     const girl = encounterAdv;
-
                     const newAdv = JSON.parse(JSON.stringify(girl));
                     newAdv.hp = newAdv.maxHp;
                     newAdv.mp = newAdv.maxMp;
@@ -12354,116 +12655,59 @@ function playNextQuestDialogue() {
                     gameState.recruitPending = gameState.recruitPending || [];
                     gameState.recruitPending.push(newAdv);
 
-                    console.log('DEBUG: Added to recruitPending:', gameState.recruitPending[gameState.recruitPending.length - 1]);
-
                     better_alert(`${girl.name} が仲間候補に加わった！（ギルドに戻って正式に迎え入れられます）`, "success");
                     updateDisplays();
-                } else {
-                    console.log('DEBUG: Recruit condition NOT met.');
+                }
+                // ===============================================================================
+
+                // ====================== ORIGINAL REWARD LOGIC (now using helper) ======================
+                if (choice.reward) {
+                    processRewards(choice.reward);
                 }
                 // ====================================================================================
 
-                let alertMessages = [];
-
-                if (choice.reward) {
-                    let rewards = [];
-
-                    if (Array.isArray(choice.reward)) {
-                        rewards = choice.reward;
-                    } else if (typeof choice.reward === 'object' && choice.reward !== null) {
-                        rewards = Object.values(choice.reward);
-                    }
-
-                    rewards.forEach(r => {
-                        if (r && r.type) {
-                            if (r.type === 'gold') {
-                                gameState.gold += r.amount || 0;
-                                alertMessages.push(r.amount > 0 ? `+${r.amount}G` : `${r.amount}G`);
-                            } else if (r.type === 'reputation') {
-                                gameState.reputation += r.amount || 0;
-                                alertMessages.push(r.amount > 0 ? `+${r.amount} Reputation` : `${r.amount} Reputation`);
-                            } else if (r.type === 'item') {
-                                let template = shopItems.find(item => item.name === r.name);
-                                if (!template) {
-                                    const lang = currentLang || 'ja';
-                                    const fetchData = fetchQuestsByRank[lang] || fetchQuestsByRank.ja;
-                                    const allFetchQuests = Object.values(fetchData).flat();
-                                    const fetchQuest = allFetchQuests.find(q => q.itemName === r.name);
-                                    if (fetchQuest) {
-                                        template = { ...fetchQuest, name: fetchQuest.itemName };
-                                    }
-                                }
-                                if (template) {
-                                    addToInventory(template, r.qty || 1);
-                                    alertMessages.push(`+${r.qty || 1} ${r.name}`);
-                                } else {
-                                    console.warn(`Item template not found for: ${r.name}`);
-                                    addToInventory({ name: r.name, type: 'unknown', description: 'Unknown gathered item' }, r.qty || 1);
-                                    alertMessages.push(`+${r.qty || 1} ${r.name} (unknown)`);
-                                }
-                            } else if (r.type === 'friendliness') {
-                                const amount = r.amount || 0;
-                                let targets = gameState.adventurers;
-                                if (r.target === "participants" && typeof currentQuestAdventurers !== "undefined" && Array.isArray(currentQuestAdventurers) && currentQuestAdventurers.length > 0) {
-                                    targets = currentQuestAdventurers;
-                                }
-                                targets.forEach(adv => {
-                                    const oldFriendliness = adv.Friendliness || 50;
-                                    const newFriendliness = Math.max(0, Math.min(100, oldFriendliness + amount));
-                                    adv.Friendliness = newFriendliness;
-                                });
-                                alertMessages.push(amount > 0 ? `+${amount} Friendliness` : `${amount} Friendliness`);
-                            } else if (['exp', 'strength', 'wisdom', 'dexterity', 'luck', 'defense', 'hp', 'maxHp', 'mp', 'maxMp', 'hunger'].includes(r.type)) {
-                                const amount = r.amount || 0;
-                                const statName = r.type;
-                                gameState.adventurers.forEach(adv => {
-                                    if (adv[statName] !== undefined) {
-                                        adv[statName] += amount;
-                                        if (statName === 'hp') adv.hp = Math.min(adv.hp, adv.maxHp);
-                                        if (statName === 'mp') adv.mp = Math.min(adv.mp, adv.maxMp);
-                                        if (statName === 'hunger') adv.hunger = Math.max(0, Math.min(1, adv.hunger));
-                                    }
-                                });
-                                alertMessages.push(amount > 0 ? `+${amount} ${statName} (all adventurers)` : `${amount} ${statName} (all adventurers)`);
-                            }
-                        }
-                    });
-
-                    if (alertMessages.length > 0) {
-                        const isPositive = alertMessages.every(m => m.startsWith('+'));
-                        better_alert(alertMessages.join('\n'), isPositive ? "success" : "warning");
-                        updateDisplays();
-                        renderInventory();
-                    }
-                }
-
                 localIndex = choice.jumptoline ? choice.jumptoline - 1 : localIndex + 1;
-
-                choicesDiv.style.display = 'none';
-                document.getElementById('continueIndicator').style.opacity = '0';
-
-                clearInterval(typingInterval);
-                typingInterval = null;
-                dialogueTextEl.innerHTML = '';
-
-                if (localIndex >= sequence.length) {
-                    playNextQuestDialogue();
-                } else {
-                    renderQuestDialogue();
-                }
+                cleanupAfterChoice();
             };
+
             choicesDiv.appendChild(btn);
         });
         choicesDiv.style.display = 'flex';
+
+        // === Cleanup (shared between normal path and battle win/lose) ===
+        function cleanupAfterChoice() {
+            choicesDiv.style.display = 'none';
+            document.getElementById('continueIndicator').style.opacity = '0';
+            clearInterval(typingInterval);
+            typingInterval = null;
+            dialogueTextEl.innerHTML = '';
+
+            if (localIndex >= sequence.length) {
+                playNextQuestDialogue();
+            } else {
+                renderQuestDialogue();
+            }
+        }
     }
 
     function renderQuestDialogue() {
-        console.log('renderQuestDialogue called - localIndex:', localIndex);
-        console.log('currentQuestAdventurers:', currentQuestAdventurers ? currentQuestAdventurers.map(adv => adv ? adv.name : 'null') : 'undefined');
-
         const current = sequence[localIndex];
-
-        console.log('Current line speaker raw:', current.speaker);
+// DEBUG LOG: This prints the ENTIRE object to the console
+    console.log("--- DIALOGUE LINE DEBUG ---");
+    console.log("Full Object:", current); 
+    console.log("Looking for bg_image:", current.bg_image);
+            // === NEW: Support for variable bg_image & bgm ===
+        if (current.bg_image) {
+            // Change the background of the intro modal
+            setDialogueBackground('Images/'+current.bg_image);
+            
+        }
+        
+        if (current.bgm) {
+            // Use your existing crossfade function
+            crossfadeTo(current.bgm, 1500);
+        }
+        // ===============================================
 
         let processedSpeaker = current.speaker.replace(/\{player\}/gi, playerName);
         let fullText = current.text.replace(/\{player\}/gi, playerName);
@@ -13098,11 +13342,20 @@ const processedSequence = rawSequence.map(line => ({
         text: line.text.replace(/\{PLAYER\}/gi, playerName),
         image: line.image || null,
         jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
-        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
-            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
-            reward: choice.reward ? { ...choice.reward } : undefined,
-            jumptoline: choice.jumptoline
-        })) : undefined
+choices: line.choices ? line.choices.map(choice => ({
+    text: choice.text ? choice.text.replace(/\{PLAYER\}/gi, playerName) : '',
+    reward: choice.reward ? (Array.isArray(choice.reward) ? [...choice.reward] : { ...choice.reward }) : undefined,
+    jumptoline: choice.jumptoline,
+    recruitAdventurer: line.recruitAdventurer || choice.recruitAdventurer,
+
+    // === NEW BATTLE FIELDS (add these lines) ===
+    battle: choice.battle,
+    recruit: choice.recruit,
+    winJumptoline: choice.winJumptoline,
+    loseJumptoline: choice.loseJumptoline,
+    winReward: choice.winReward ? (Array.isArray(choice.winReward) ? [...choice.winReward] : { ...choice.winReward }) : undefined,
+    loseReward: choice.loseReward ? (Array.isArray(choice.loseReward) ? [...choice.loseReward] : { ...choice.loseReward }) : undefined
+})) : undefined,
     }));
 
 

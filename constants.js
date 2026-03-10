@@ -1055,129 +1055,129 @@ const QuestCompletionDialogue = {
             // 0: 滝の裏の洞窟発見（依頼主: 探検家）
             // 0: 滝の裏の洞窟発見（依頼主: 探検家）
             [
-                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
-                {speaker: "{adv1}", text: "森の奥の滝の裏に隠された洞窟を発見しました。……水しぶきでびしょ濡れです。みんなもずぶ濡れだよ！"},
-                {speaker: "{adv2}", text: "はは、{adv1}のそのびしょ濡れ姿、笑えるぜ！でも洞窟見つけたのはグッジョブだな。"},
-                {speaker: "ルナ", text: "滝の裏！？ロマンチックね～。きっと隠された遺跡よ！宝物がいっぱいかも！"},
-                {speaker: "カイト", text: "水がかかるなら俺はパスだな……濡れるの嫌いだし。次は乾いた場所のクエスト希望！"},
-                {speaker: "{adv3}", text: "みんな楽しそうだけど、ちゃんと報告しないと。遺跡なら大発見だよ。"},
-                {speaker: "{PLAYER}", text: "おいおい、みんな黙ってろ。まずは探検家に報告だ。ふざけすぎだぞ。"},
-                {speaker: "探検家", text: "滝の裏の洞窟を見つけてくれたんだ！これで新しい冒険が始められるよ。本当にありがとう！興奮するね！"},
-                {speaker: "{adv4}", text: "報酬楽しみだな～。この水しぶきさえなければ最高のクエストだったのに。"},
-                {speaker: "探検家", text: "約束の報酬だ。受け取ってくれ！みんなの努力に感謝だよ。"},
-                {speaker: "{PLAYER}", text: "よし、報酬は受け取ったな。みんなお疲れ。"},
+                // Line 1-10 (index 0-9)
+                {speaker: "{adv1}", text: "森の奥、滝の裏側に隠し洞窟を見つけましたよ！……でも、しぶきで全身びしょ濡れです！みんなもひどい有様ですよ！"},
+                {speaker: "{adv2}", text: "ははは！{adv1}のその濡れ鼠みたいな格好、最高に笑えるな！まあ、洞窟を見つけたのはお手柄だったぜ。"},
+                {speaker: "Luna", text: "滝の裏側！？なんてロマンチックなの～！きっと隠された遺跡に違いないわ！お宝がいっぱいかも！"},
+                {speaker: "Kaito", text: "水が飛び散ってるなら、俺はパスだ……濡れるのは大嫌いなんだよ。次はもっと乾いた場所のクエストにしてくれよな！"},
+                {speaker: "{adv3}", text: "みんなはしゃいでますけど、まずはちゃんと報告すべきですよ。もし本物の遺跡なら、これは大発見ですから。"},
+                {speaker: "{PLAYER}", text: "おい、みんな静かにしろ。まずは依頼主にきちんと報告だ。騒ぎすぎだぞ。"},
+                {speaker: "Explorer", text: "滝の裏の洞窟を見つけてくれたのか！これで新しい冒険が始められるよ、本当にありがとう！ワクワクしてきたな！"},
+                {speaker: "{adv4}", text: "報酬が楽しみだな～。この水しぶきさえなければ、文句なしの完璧なクエストだったんだけどね。"},
+                {speaker: "Explorer", text: "さあ、これが約束の報酬だ。受け取ってくれ！みんな、本当にお疲れ様！"},
+                {speaker: "{PLAYER}", text: "よし、報酬は確かに受け取った。みんな、よくやったな。"},
 
-                // Line 11 (index 10)
-                {speaker: "ナレーター", text: "（選択肢：滝の裏の洞窟発見の後、どう対応する？）"},
+                // Line 11-12 (index 10-11)
+                {speaker: "Narrator", text: "（選択：滝の裏の洞窟を発見した後、あなたはどう対応しますか？）"},
+                {speaker: "Narrator", text: ""},
 
-                // Line 12 (index 11) - 空行（選択肢表示用）
-                {speaker: "ナレーター", text: ""},
-
-                // Line 13 (index 12) - Choices object
+                // Line 13 (index 12) – Choices
                 {
-                    speaker: "ナレーター",
+                    speaker: "Narrator",
                     text: "",
                     choices: [
-                        {
-                            text: "探検家に洞窟の詳細をさらに伝える（Reputation +3）",
-                            reward: [{type: "reputation", amount: 3}],
-                            jumptoline: 14
-                        },
-                        {
-                            text: "一緒にいた冒険者たちを労う（参加者好感度 +6）",
-                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
-                            jumptoline: 18
-                        },
-                        {
-                            text: "滝の水しぶきに混じっていた光る鉱石を採取する（Gold +250）",
-                            reward: [{type: "gold", amount: 250}],
-                            jumptoline: 22
-                        },
-                        {
-                            text: "滝の裏の洞窟をさらに奥まで調査する",
-                            reward: [],
-                            jumptoline: 27
-                        }
+                        { text: "依頼主により詳しく洞窟の様子を伝える (名声 +3)", reward: [{type: "reputation", amount: 3}], jumptoline: 14 },
+                        { text: "同行した冒険者たちを労う (参加者の好感度 +6)", reward: [{type: "friendliness", amount: 6, target: "participants"}], jumptoline: 18 },
+                        { text: "滝しぶきに混じる光る鉱石を回収する (ゴールド +250)", reward: [{type: "gold", amount: 250}], jumptoline: 22 },
+                        { text: "滝の裏の洞窟をさらに奥まで調査する", reward: [], jumptoline: 27 }
                     ]
                 },
 
-                // Branch 1: Reputation (+3) → index 13-15
-                {speaker: "{PLAYER}", text: "この洞窟は古代の遺跡の可能性が高いです。もっと詳しく調べて報告します。"},
-                {speaker: "探検家", text: "その通り！早速研究を進めるよ！本当に助かった！"},
-                {speaker: "探検家", text: "冒険者さんみたいな人がいてくれて嬉しいよ！", jumptoline: 43},
+                // Branch 1-3 (index 14-26)
+                {speaker: "{PLAYER}", text: "この洞窟は古代遺跡の可能性が高い。さらに詳しく調査して、詳細な報告書をまとめよう。"},
+                {speaker: "Explorer", text: "その通りだね！すぐに調査の準備を始めるよ。君は本当に頼りになるな！"},
+                {speaker: "Explorer", text: "君のような冒険者がいてくれて、本当に良かったよ！", jumptoline: 43},
+                {speaker: "{PLAYER}", text: "みんな、よくやってくれた。滝しぶきに打たれて大変だったろう。"},
+                {speaker: "Luna", text: "{PLAYER}にそう言ってもらえるのが一番嬉しいわ！私、もっと頑張っちゃう！"},
+                {speaker: "Kaito", text: "へへっ、もっと褒めてくれよ！次は俺が主役だぜ！"},
+                {speaker: "{adv1}", text: "ありがとうございます、{PLAYER}さん。また次も一緒に仕事ができるのを楽しみにしてます！"},
+                {speaker: "{PLAYER}", text: "ああ、次も期待しているぞ。", jumptoline: 43},
+                {speaker: "{PLAYER}", text: "この光る鉱石、価値がありそうだな。ギルドの運営資金として回収しておこう。"},
+                {speaker: "Luna", text: "……確かに価値はありそうだけど、ちょっと姑息な気もするわね……。"},
+                {speaker: "Kaito", text: "金のためなら我慢だ！でも次は俺にやらせてくれよ！"},
+                {speaker: "{adv2}", text: "ははは、これでギルドに戻った後に一杯やる金ができたな！"},
+                {speaker: "{PLAYER}", text: "ははは、お前たちに任せるよ。", jumptoline: 43},
 
-                // Branch 2: Praise (+6) → index 16-20
-                {speaker: "{PLAYER}", text: "みんなよく頑張ったな。水しぶきまみれで大変だっただろう。"},
-                {speaker: "ルナ", text: "{PLAYER}にそう言ってもらえると嬉しいです！もっと頑張ります！"},
-                {speaker: "カイト", text: "へへ、もっと褒めてくれよ！次は俺が大活躍する番だぜ！"},
-                {speaker: "{adv1}", text: "ありがとう、{PLAYER}。次もよろしく！"},
-                {speaker: "{PLAYER}", text: "ああ、次も期待してる。", jumptoline: 43},
+                // Investigation Route (index 27-35)
+                {speaker: "Narrator", 
+                    text: "あなたは一行を連れて、滝の裏にある洞窟のさらに奥へと足を踏み入れた。湿った空気と水の音が周囲に響き渡る……。一行はまだ、賑やかな探索気分に包まれていた。",
+                    bg_image: "DungeonQuest_Background.jpg",
+                    bgm: "storyBgm"
+                },
+                {speaker: "{adv1}", text: "この奥にお宝とかあるのかな？ワクワクしてきたぜ！"},
+                {speaker: "Narrator", text: "前方の暗闇の中に、震えている小さな影が見える……。おや？あれは……人の姿だろうか？"},
+                {speaker: "{adv2}", text: "おい、何か動いてるぞ！モンスターか！？こいつはスリル満点だ！"},
+                {speaker: "Narrator", text: "近づいてみると、それは一人の小さな少女だった。彼女は震え、顔色は青ざめ、今にも倒れそうなほど弱々しく呼吸をしている……。冒険の興奮は、一瞬にして深刻な懸念へと変わった。"},
 
-                // Branch 3: Gold (+250) → index 21-25
-                {speaker: "{PLAYER}", text: "この光る鉱石、売れそうだな。少し採取してギルド資金にしよう。"},
-                {speaker: "ルナ", text: "……確かに価値はあるけど、ちょっとずるいかも…"},
-                {speaker: "カイト", text: "金のためなら我慢だぜ！でも次は俺にやらせろよな！"},
-                {speaker: "{adv2}", text: "はは、これでギルドの飲み代が増えるな！"},
-                {speaker: "{PLAYER}", text: "はは、任せた。", jumptoline: 43},
+                {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
 
-                // ==================== 調査ルート（index 26から連続） ====================
-                // 26-30: 調査開始 - Casual to sudden emotional shift
-                {speaker: "ナレーター", text: "あなたは滝の裏の洞窟をさらに奥へと進んだ。湿った空気と水音だけが響いている…みんなでわいわい探検気分だ。"},
-                {speaker: "{adv1}", text: "もっと奥に宝とかないかな？楽しみだぜ！"},
-                {speaker: "ナレーター", text: "奥の暗がりで、小さな影が震えているのが見えた。……ん？ あれは……人影？"},
-                {speaker: "{adv2}", text: "おい、何か動いてるぞ！ モンスターか！？ わくわくするな！"},
-                {speaker: "ナレーター", text: "近づくと、それは小さな少女だった。彼女は震え、顔は青ざめ、息も絶え絶え……まるで今にも倒れそうなほど弱っている。空気は一瞬で張りつめ、冒険の興奮が一転して深刻な心配に変わる。"},
+                {speaker: "{encounterName}", text: "……だ、誰！？こっちに来ないで！……怖い……っ……", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "えっ、女の子！？こんな場所に……。大丈夫か！？顔色がすごく悪いぞ！"},
 
-                // 31: recruitAdventurer宣言（ここで名前を指定）
-                {speaker: "ナレーター", text: "", recruitAdventurer: "Lilia"},
+                {speaker: "{encounterName}", text: "村が……戦争で焼かれてしまったの。それからずっと一人でさまよって……ここで道に迷って……もう、力が入らないの……", image: "{encounterImage}"}, // index 35
+                {speaker: "{PLAYER}", text: "村が戦争で……なんてことだ。こんな小さな子が一人でさまよっていたなんて……。急いで対応しなければ！"}, // index 36
+                {speaker: "Luna", text: "なんて可哀想なの……すぐに助けてあげましょう！涙が出てきちゃうわ……。"}, // index 37
+                {speaker: "Kaito", text: "ちくしょう、また戦争のせいかよ……。俺たちがなんとかしてやる！"}, // index 38
 
-                // 32: 少女登場 - With emotional reaction
-                {speaker: "{encounterName}", text: "…だ、誰！？ 近づかないで！ ……怖い……", image: "{encounterImage}"},
-                {speaker: "{adv3}", text: "えっ、少女！？ こんなところで……大丈夫か！？ 顔色が悪いぞ！"},
+                // === NEW GOBLIN ATTACK SEQUENCE (Indices 39-42) ===
+                {speaker: "Narrator", text: "「ギギギィッ！」突如として、湿った洞窟内に滝の音をかき消すような甲高い笑い声が響き渡った！"}, // index 39
+                {speaker: "{adv1}", text: "気をつけろ！ゴブリンだ！壁の隙間から這い出してきたぞ！とんでもない数だ！"}, // index 40
+                {speaker: "{encounterName}", text: "ああっ！嫌……っ、村からずっと追いかけてきたの……お願い、連れて行かないで！", image: "{encounterImage}"}, // index 41
+                {speaker: "{PLAYER}", text: "チッ、囲まれたか。悠長に話している暇はない――この子を守りながら、力ずくで道を切り開くぞ！"}, // index 42
 
-                // 34: バックストーリー - Expanded with reactions for emotional depth
-                {speaker: "{encounterName}", text: "私の村は…戦争で焼かれてしまったの。一人になってからずっとさまよっていた…ここで道に迷って…もう力が出なくて……", image: "{encounterImage}"},
-                {speaker: "{PLAYER}", text: "戦争で村が……なんてひどい。こんな小さな子が一人で……急がないと危ないぞ！"},
-                {speaker: "ルナ", text: "可哀想に……早く助けなきゃ！ 涙が出ちゃうわ……"},
-                {speaker: "カイト", text: "くそっ、戦争のせいかよ……俺たちで何とかするぜ！"},
-
-                // 38: 選択肢
+                // ==================== UPDATED MAIN CHOICE (Index 43) ====================
                 {
-                    speaker: "ナレーター",
-                    text: "少女（Lilia）は凄く弱い状態で、そのままにすると命を断つのも時間の問題です。急な状況の変化に、皆の心が揺さぶられる。どうする？",
+                    speaker: "Narrator",
+                    text: "ゴブリンたちが迫りくる。Liliaは自力で動ける状態ではない。この混乱の中、あなたはどう対処しますか？",
                     choices: [
                         {
-                            text: "「うちのギルドで冒険者として働かないか？」（Invite）",
-                            jumptoline: 40
+                            text: "「彼女を守れ！ギルドへ連れて帰るぞ！」 (勧誘)",
+                            battle: "Protect Lilia",
+                            recruit: true,
+                            winJumptoline: 44,
+                            loseJumptoline: 51,
+                            winReward: [{type: "reputation", amount: -8}, {type: "friendliness", amount: 12, target: "participants"}],
+                            loseReward: [{type: "reputation", amount: -15}, {type: "friendliness", amount: -8, target: "participants"}]
                         },
                         {
-                            text: "安全な町までエスコートしてあげる",
-                            jumptoline: 44
+                            text: "包囲網を突破し、彼女を安全な場所まで送り届ける",
+                            battle: "Protect Lilia",
+                            recruit: false,
+                            winJumptoline: 48,
+                            loseJumptoline: 51,
+                            winReward: [{type: "reputation", amount: -5}, {type: "friendliness", amount: 10, target: "participants"}],
+                            loseReward: [{type: "reputation", amount: -12}, {type: "friendliness", amount: -10, target: "participants"}]
                         },
                         {
-                            text: "…何も言わずに立ち去る",
-                            jumptoline: 47
+                            text: "……混乱に乗じて、その場を離脱する (彼女を置いていく)",
+                            reward: [{type: "friendliness", amount: -10, target: "participants"}],
+                            jumptoline: 54
                         }
                     ]
                 },
 
-                // 39-42: 勧誘成功 - With added emotion
-                {speaker: "{encounterName}", text: "……本当に？ 私みたいな役立たずでもいいの…？ ……誰も信じられなくて……", image: "{encounterImage}"},
-                {speaker: "{adv4}", text: "もちろんだよ！ ギルドでみんなで守るからな。"},
-                {speaker: "{encounterName}", text: "ありがとう…！ 私、頑張るから！ ……やっと、希望が見えた……", image: "{encounterImage}"},
-                {speaker: "ナレーター", text: "新しい仲間候補「リリア」がギルドに加わった！（ギルドに戻って正式に迎え入れられます）", jumptoline: 49},
+                // Invite Win Route (indices 44-47)
+                {speaker: "{encounterName}", text: "……私、のために……戦ってくれたの……？私みたいな、何の役にも立たない子のために……？", image: "{encounterImage}"}, // index 44
+                {speaker: "{adv4}", text: "もちろんだよ！ギルドのみんなが君を守ってあげるからね。"},
+                {speaker: "{encounterName}", text: "ありがとう……！私、頑張るね……。……やっと、光が見えた気がする……", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "新しい仲間候補「Lilia」が加わりました！（ギルドに戻ると正式に迎え入れることができます）。しかし、この決断はギルドの名声に大きな傷をつけました。", jumptoline: 56},
 
-                // 43-45: エスコート
-                {speaker: "{encounterName}", text: "…ありがとう。本当に助かる。もう少しだけ生きてみようと思う。 ……優しい人がまだいるんだね……", image: "{encounterImage}"},
-                {speaker: "{adv1}", text: "よし、俺たちが守って連れてくよ。心配すんな！"},
-                {speaker: "ナレーター", text: "あなたはリリアを近くの村まで無事に連れて行った。皆の心に温かな余韻が残る。", jumptoline: 49},
+                // Escort Win Route (indices 48-50)
+                {speaker: "{encounterName}", text: "……守ってくれて、本当にありがとうございました。感謝しています。もう少しだけ、生きてみようと思います……。世界にはまだ、優しい人がいるんですね……", image: "{encounterImage}"}, // index 48
+                {speaker: "{adv1}", text: "よし、そこまで俺たちが守って送ってやるよ。安心しな！"},
+                {speaker: "Narrator", text: "あなたはLiliaを近くの村まで無事に送り届けました。温かな余韻は残りましたが、ギルドの名声には悪影響を及ぼしました。", jumptoline: 56},
 
-                // 46-47: 放置
-                {speaker: "{adv2}", text: "おい、{PLAYER}……本当に置いていくのか？ こんな弱ってる子を……"},
-                {speaker: "ナレーター", text: "あなたは何も言わず洞窟を後にした… 重い沈黙が一行を包む。", jumptoline: 49},
+                // Battle Lose Route (indices 51-53)
+                {speaker: "{encounterName}", text: "嫌……っ、あいつら、強すぎる……！", image: "{encounterImage}"}, // index 51
+                {speaker: "Kaito", text: "くそっ！ここは撤退するしかない！"},
+                {speaker: "Narrator", text: "あなたはLiliaを置き去りにして、逃げ出すことを余儀なくされました……。全員の心に深い罪悪感が刻まれました。", jumptoline: 56},
 
-                // 48: 共通エンディング（全ルート合流）
-                {speaker: "ナレーター", text: "滝の裏の洞窟探索はこれで終了した。"}
+                // Abandon Route (indices 54-55)
+                {speaker: "{adv2}", text: "おい、{PLAYER}……本気で彼女を置いていくのか？あんなに弱っているのに……。"}, // index 54
+                {speaker: "Narrator", text: "あなたは何も言わず、洞窟を後にしました……。一行を重苦しい沈黙が包み込みます。", jumptoline: 56},
+
+                // Common Ending (index 56)
+                {speaker: "Narrator", text: "滝の裏の洞窟の探索が完了しました。"}
             ],
         
             // 1: 古い家の隠し地下室（依頼主: 家主）
@@ -2939,116 +2939,131 @@ const QuestCompletionDialogue = {
             ]
         ],
       'F+': [
-            [
-                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
-                {speaker: "{adv1}", text: "I discovered a hidden cave behind the waterfall deep in the forest. ...I'm soaked from the water spray. Everyone else is drenched too!"},
-                {speaker: "{adv2}", text: "Haha, {adv1}'s soaked appearance is hilarious! But finding the cave was a good job."},
-                {speaker: "Luna", text: "Behind the waterfall!? How romantic~. It must be a hidden ruin! Maybe full of treasures!"},
-                {speaker: "Kaito", text: "If there's water splashing, I'm out... I hate getting wet. Next quest, I hope for a dry place!"},
-                {speaker: "{adv3}", text: "Everyone seems to be having fun, but we need to report properly. If it's a ruin, it's a big discovery."},
-                {speaker: "{PLAYER}", text: "Hey hey, everyone shut up. First, report to the explorer. You're fooling around too much."},
-                {speaker: "Explorer", text: "You found the cave behind the waterfall! Now we can start a new adventure. Thank you so much! I'm excited!"},
-                {speaker: "{adv4}", text: "Looking forward to the reward~. If it weren't for this water spray, it would have been the best quest."},
-                {speaker: "Explorer", text: "Here's the promised reward. Please accept it! Thanks for everyone's effort."},
-                {speaker: "{PLAYER}", text: "Alright, we've received the reward. Everyone, good work."},
-                // Line 11 (index 10)
-                {speaker: "Narrator", text: "(Choices: After discovering the cave behind the waterfall, how will you respond?)"},
-                // Line 12 (index 11) - Empty line (for displaying choices)
-                {speaker: "Narrator", text: ""},
-                // Line 13 (index 12) - Choices object
-                {
-                    speaker: "Narrator",
-                    text: "",
-                    choices: [
-                        {
-                            text: "Tell the explorer more details about the cave (Reputation +3)",
-                            reward: [{type: "reputation", amount: 3}],
-                            jumptoline: 14
-                        },
-                        {
-                            text: "Praise the adventurers who were with you (Participants' Favorability +6)",
-                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
-                            jumptoline: 18
-                        },
-                        {
-                            text: "Collect the glowing ore mixed in the waterfall spray (Gold +250)",
-                            reward: [{type: "gold", amount: 250}],
-                            jumptoline: 22
-                        },
-                        {
-                            text: "Investigate deeper into the cave behind the waterfall",
-                            reward: [],
-                            jumptoline: 27
-                        }
-                    ]
-                },
-                // Branch 1: Reputation (+3) → index 13-15
-                {speaker: "{PLAYER}", text: "This cave has a high possibility of being an ancient ruin. I'll investigate more and report."},
-                {speaker: "Explorer", text: "That's right! I'll start the research right away! You really helped!"},
-                {speaker: "Explorer", text: "I'm glad there are people like you, adventurer!", jumptoline: 43},
-                // Branch 2: Praise (+6) → index 16-20
-                {speaker: "{PLAYER}", text: "You all did well. It must have been tough getting covered in spray."},
-                {speaker: "Luna", text: "I'm happy to hear that from {PLAYER}! I'll work even harder!"},
-                {speaker: "Kaito", text: "Hehe, praise me more! Next time it's my turn to shine!"},
-                {speaker: "{adv1}", text: "Thanks, {PLAYER}. Looking forward to next time!"},
-                {speaker: "{PLAYER}", text: "Yeah, I'm looking forward to it.", jumptoline: 43},
-                // Branch 3: Gold (+250) → index 21-25
-                {speaker: "{PLAYER}", text: "This glowing ore looks sellable. Let's collect some for guild funds."},
-                {speaker: "Luna", text: "...It certainly has value, but it feels a bit sneaky..."},
-                {speaker: "Kaito", text: "For money, I'll endure! But next time let me do it!"},
-                {speaker: "{adv2}", text: "Haha, this will increase the guild's drinking money!"},
-                {speaker: "{PLAYER}", text: "Haha, I'll leave it to you.", jumptoline: 43},
-                // ==================== Investigation Route (index 26 from onwards) ====================
-                // 26-30: Investigation start - Casual to sudden emotional shift
-                {speaker: "Narrator", text: "You proceeded deeper into the cave behind the waterfall. Only the damp air and the sound of water echo... Everyone is in a lively exploration mood."},
-                {speaker: "{adv1}", text: "I wonder if there's treasure deeper in? I'm excited!"},
-                {speaker: "Narrator", text: "In the darkness ahead, you see a small shadow trembling. ...Huh? That is... a human figure?"},
-                {speaker: "{adv2}", text: "Hey, something's moving! A monster!? This is thrilling!"},
-                {speaker: "Narrator", text: "As you approach, it turns out to be a small girl. She is trembling, her face pale, breathing faintly... as if she could collapse at any moment. The atmosphere tenses in an instant, turning the excitement of adventure into serious concern."},
-                // 31: recruitAdventurer declaration (specify name here)
-                {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
-                // 32: Girl appears - With emotional reaction
-                {speaker: "{encounterName}", text: "...W-who!? Don't come closer! ...I'm scared...", image: "{encounterImage}"},
-                {speaker: "{adv3}", text: "Eh, a girl!? In a place like this... Are you okay!? You look pale!"},
-                // 34: Backstory - Expanded with reactions for emotional depth
-                {speaker: "{encounterName}", text: "My village... was burned down in the war. I've been wandering alone since then... I got lost here... I have no strength left...", image: "{encounterImage}"},
-                {speaker: "{PLAYER}", text: "The village burned in war... How terrible. Such a small child alone... We need to hurry or it's dangerous!"},
-                {speaker: "Luna", text: "Poor thing... We have to help her quickly! It brings tears to my eyes..."},
-                {speaker: "Kaito", text: "Damn, because of the war... We'll do something about it!"},
-                // 38: Choices
-                {
-                    speaker: "Narrator",
-                    text: "The girl (Lilia) is in a very weak state, and it's only a matter of time before she perishes if left alone. The sudden change in the situation shakes everyone's hearts. What will you do?",
-                    choices: [
-                        {
-                            text: "\"Won't you work as an adventurer in our guild?\" (Invite)",
-                            jumptoline: 40
-                        },
-                        {
-                            text: "Escort her to a safe town",
-                            jumptoline: 44
-                        },
-                        {
-                            text: "...Leave without saying anything",
-                            jumptoline: 47
-                        }
-                    ]
-                },
-                // 39-42: Recruitment success - With added emotion
-                {speaker: "{encounterName}", text: "......Really? Even someone useless like me...? ...I can't trust anyone...", image: "{encounterImage}"},
-                {speaker: "{adv4}", text: "Of course! We'll all protect you at the guild."},
-                {speaker: "{encounterName}", text: "Thank you...! I'll do my best! ...Finally, I see some hope...", image: "{encounterImage}"},
-                {speaker: "Narrator", text: "New companion candidate \"Lilia\" has joined the guild! (She will be officially welcomed back at the guild)", jumptoline: 49},
-                // 43-45: Escort
-                {speaker: "{encounterName}", text: "...Thank you. I really appreciate it. I think I'll try to live a little longer. ...There are still kind people out there...", image: "{encounterImage}"},
-                {speaker: "{adv1}", text: "Alright, we'll protect and take you there. Don't worry!"},
-                {speaker: "Narrator", text: "You safely escorted Lilia to a nearby village. A warm afterglow remains in everyone's hearts.", jumptoline: 49},
-                // 46-47: Abandon
-                {speaker: "{adv2}", text: "Hey, {PLAYER}... Are you really leaving her? Such a weakened child..."},
-                {speaker: "Narrator", text: "You left the cave without saying anything... A heavy silence envelops the group.", jumptoline: 49},
-                // 48: Common ending (all routes converge)
-                {speaker: "Narrator", text: "The exploration of the cave behind the waterfall is now complete."}
-            ],
+        [
+            // Line 1-10 (index 0-9) – unchanged
+            {speaker: "{adv1}", text: "I discovered a hidden cave behind the waterfall deep in the forest... I'm completely soaked from the water spray! Everyone else is drenched too!"},
+            {speaker: "{adv2}", text: "Haha, {adv1}'s soaked appearance is hilarious! But finding the cave was a good job well done."},
+            {speaker: "Luna", text: "Behind the waterfall!? How romantic~! It must be a hidden ruin! Maybe it's full of treasures!"},
+            {speaker: "Kaito", text: "If there's water splashing everywhere, count me out... I hate getting wet. Next time, please give me a dry quest!"},
+            {speaker: "{adv3}", text: "Everyone seems excited, but we should still report this properly. If it's a real ruin, this is a major discovery."},
+            {speaker: "{PLAYER}", text: "Hey, everyone quiet down. First, report to the explorer properly. You're making too much noise."},
+            {speaker: "Explorer", text: "You found the cave behind the waterfall! Now we can start a new adventure. Thank you so much! I'm really excited!"},
+            {speaker: "{adv4}", text: "I'm looking forward to the reward~. If it weren't for all this water spray, it would've been the perfect quest."},
+            {speaker: "Explorer", text: "Here's the promised reward. Please accept it! Thank you all for your hard work."},
+            {speaker: "{PLAYER}", text: "Alright, we've received the reward. Good work, everyone."},
+
+            // Line 11-12 (index 10-11) – unchanged
+            {speaker: "Narrator", text: "(Choice: After discovering the cave behind the waterfall, how will you respond?)"},
+            {speaker: "Narrator", text: ""},
+
+            // Line 13 (index 12) – Choices – unchanged
+            {
+                speaker: "Narrator",
+                text: "",
+                choices: [
+                    { text: "Tell the explorer more details about the cave (Reputation +3)", reward: [{type: "reputation", amount: 3}], jumptoline: 14 },
+                    { text: "Praise the adventurers who were with you (Participants' Favorability +6)", reward: [{type: "friendliness", amount: 6, target: "participants"}], jumptoline: 18 },
+                    { text: "Collect the glowing ore mixed in the waterfall spray (Gold +250)", reward: [{type: "gold", amount: 250}], jumptoline: 22 },
+                    { text: "Investigate deeper into the cave behind the waterfall", reward: [], jumptoline: 27 }
+                ]
+            },
+
+            // Branch 1-3 (index 14-26) – unchanged
+            {speaker: "{PLAYER}", text: "This cave is very likely an ancient ruin. I'll investigate further and give you a detailed report."},
+            {speaker: "Explorer", text: "That's right! I'll start the research right away. You've been a huge help!"},
+            {speaker: "Explorer", text: "I'm really glad we have adventurers like you!", jumptoline: 43},
+            {speaker: "{PLAYER}", text: "You all did great. Getting soaked by the waterfall spray must have been tough."},
+            {speaker: "Luna", text: "Hearing that from you makes me so happy, {PLAYER}! I'll work even harder!"},
+            {speaker: "Kaito", text: "Hehe, praise me more! Next time it's my turn to shine!"},
+            {speaker: "{adv1}", text: "Thanks, {PLAYER}. Looking forward to working with you again!"},
+            {speaker: "{PLAYER}", text: "Yeah, I'm counting on you next time too.", jumptoline: 43},
+            {speaker: "{PLAYER}", text: "This glowing ore looks valuable. Let's collect some for the guild funds."},
+            {speaker: "Luna", text: "...It does have value, but it feels a bit sneaky..."},
+            {speaker: "Kaito", text: "We'll endure it for the money! But next time let me do it!"},
+            {speaker: "{adv2}", text: "Haha, now we have more money for drinks at the guild!"},
+            {speaker: "{PLAYER}", text: "Haha, I'll leave it to you guys.", jumptoline: 43},
+
+            // Investigation Route (index 27-35) – unchanged
+            {speaker: "Narrator", 
+                text: "You lead the party deeper into the cave behind the waterfall. The damp air and the sound of water echo around you... Everyone is still in a lively exploration mood.",
+                bg_image: "DungeonQuest_Background.jpg", // Changes the background
+                bgm: "storyBgm"
+            },
+            {speaker: "{adv1}", text: "I wonder if there's treasure deeper inside? I'm getting excited!"},
+            {speaker: "Narrator", text: "In the darkness ahead, you see a small shadow trembling... Huh? Is that... a human figure?"},
+            {speaker: "{adv2}", text: "Hey, something's moving! Is it a monster!? This is thrilling!"},
+            {speaker: "Narrator", text: "As you get closer, you realize it's a small girl. She's trembling, her face pale, breathing faintly... as if she could collapse at any moment. The excitement of adventure instantly turns into serious concern."},
+
+            {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
+
+            {speaker: "{encounterName}", text: "...W-who!? Don't come closer! ...I'm scared...", image: "{encounterImage}"},
+            {speaker: "{adv3}", text: "Eh, a girl!? In a place like this... Are you okay!? You look really pale!"},
+
+{speaker: "{encounterName}", text: "My village... was burned down in the war. I've been wandering alone ever since... I got lost here... I have no strength left...", image: "{encounterImage}"}, // index 35
+    {speaker: "{PLAYER}", text: "Her village was destroyed in the war... How terrible. Such a young child wandering all alone... We need to act quickly!"}, // index 36
+    {speaker: "Luna", text: "She's so pitiful... Let's help her right away! It's bringing tears to my eyes..."}, // index 37
+    {speaker: "Kaito", text: "Damn it, because of the war again... We'll figure something out!"}, // index 38
+
+    // === NEW GOBLIN ATTACK SEQUENCE (Indices 39-42) ===
+    {speaker: "Narrator", text: "*SCREEECH!* Suddenly, high-pitched cackling echoes through the damp cave, drowning out the sound of the waterfall!"}, // index 39
+    {speaker: "{adv1}", text: "Look out! Goblins! They're crawling out from the crevices in the walls! There's dozens of them!"}, // index 40
+    {speaker: "{encounterName}", text: "Aah! No... they've followed me from the village... please, don't let them take me!", image: "{encounterImage}"}, // index 41
+    {speaker: "{PLAYER}", text: "Tch, we're surrounded. We can't keep talking—we have to fight our way out and protect this girl!"}, // index 42
+
+    // ==================== UPDATED MAIN CHOICE (Index 43) ====================
+    {
+        speaker: "Narrator",
+        text: "The Goblins are closing in. Lilia is too weak to move on her own. How will you handle this situation amidst the chaos?",
+        choices: [
+            {
+                text: "\"Protect her! She's coming with us to the guild!\" (Invite)",
+                battle: "Protect Lilia",
+                recruit: true,
+                winJumptoline: 44,                 // Success dialogue
+                loseJumptoline: 51,                // Failure dialogue
+                winReward: [{type: "reputation", amount: -8}, {type: "friendliness", amount: 12, target: "participants"}],
+                loseReward: [{type: "reputation", amount: -15}, {type: "friendliness", amount: -8, target: "participants"}]
+            },
+            {
+                text: "Break through the lines and escort her to safety",
+                battle: "Protect Lilia",
+                recruit: false,
+                winJumptoline: 48,                 // Success escort dialogue
+                loseJumptoline: 51,                // Same failure
+                winReward: [{type: "reputation", amount: -5}, {type: "friendliness", amount: 10, target: "participants"}],
+                loseReward: [{type: "reputation", amount: -12}, {type: "friendliness", amount: -10, target: "participants"}]
+            },
+            {
+                text: "...Use the chaos to slip away (Leave her)",
+                reward: [{type: "friendliness", amount: -10, target: "participants"}],
+                jumptoline: 54
+            }
+        ]
+    },
+
+    // Invite Win Route (indices 44-47)
+    {speaker: "{encounterName}", text: "......You really fought for me...? Even someone useless like me...?", image: "{encounterImage}"}, // index 44
+    {speaker: "{adv4}", text: "Of course! Everyone at the guild will protect you."},
+    {speaker: "{encounterName}", text: "Thank you...! I'll do my best! ...Finally, I see some hope...", image: "{encounterImage}"},
+    {speaker: "Narrator", text: "New companion candidate \"Lilia\" has joined the guild! (She will be officially welcomed back at the guild). However, this decision significantly damaged the guild's reputation.", jumptoline: 56},
+
+    // Escort Win Route (indices 48-50)
+    {speaker: "{encounterName}", text: "...Thank you for protecting me. I really appreciate it. I'll try to live a little longer... There are still kind people in this world...", image: "{encounterImage}"}, // index 48
+    {speaker: "{adv1}", text: "Alright, we'll protect you and take you there. Don't worry!"},
+    {speaker: "Narrator", text: "You safely escorted Lilia to a nearby village. Although a warm feeling remains, this will negatively impact the guild's reputation.", jumptoline: 56},
+
+    // Battle Lose Route (indices 51-53)
+    {speaker: "{encounterName}", text: "No... they're too strong...!", image: "{encounterImage}"}, // index 51
+    {speaker: "Kaito", text: "Damn it! We have to retreat!"},
+    {speaker: "Narrator", text: "You were forced to flee, leaving Lilia behind... The guilt weighs heavily on everyone.", jumptoline: 56},
+
+    // Abandon Route (indices 54-55)
+    {speaker: "{adv2}", text: "Hey, {PLAYER}... Are you really going to leave her behind? She's so weak..."}, // index 54
+    {speaker: "Narrator", text: "You left the cave without saying anything... A heavy silence envelops the group.", jumptoline: 56},
+
+    // Common Ending (index 56)
+    {speaker: "Narrator", text: "The exploration of the cave behind the waterfall is now complete."}
+],
         // 1: Hidden Basement in Old House (Client: Homeowner)
         [
           {speaker: "Adventurer", text: "I located the hidden basement in the old house... Covered in dust, can't stop sneezing."},
@@ -4273,129 +4288,129 @@ const QuestCompletionDialogue = {
         ],
         'F+':[
             [
-                // Line 1-10 (index 0-9) - Expanded casual start with more adventurers for richer content
-                {speaker: "{adv1}", text: "我在森林深處的瀑布後面發現了一個隱藏的洞窟。……我被水花弄得濕透了。大家也全身濕淋淋的！"},
-                {speaker: "{adv2}", text: "哈哈，{adv1}那濕透的樣子，好笑死了！不過發現洞窟是好樣的。"},
-                {speaker: "Luna", text: "瀑布後面！？好浪漫喔～。一定是隱藏的遺跡！也許裡面滿是寶物！"},
-                {speaker: "Kaito", text: "如果會被水濺到，那我就不去了……我不喜歡被弄濕。下次希望是乾燥地方的任務！"},
-                {speaker: "{adv3}", text: "大家看起來都很開心，不過要好好報告才行。如果是遺跡，那就是大發現了。"},
-                {speaker: "{PLAYER}", text: "喂喂，大家閉嘴。先向探險家報告吧。太鬧騰了。"},
-                {speaker: "探險家", text: "你發現了瀑布後面的洞窟！這下可以開始新的冒險了。真的非常感謝！好興奮啊！"},
-                {speaker: "{adv4}", text: "期待報酬啊～。要是沒有這水花，這就是最棒的任務了。"},
-                {speaker: "探險家", text: "這是約定的報酬。請收下！感謝大家的努力。"},
-                {speaker: "{PLAYER}", text: "好，報酬已經收到了。大家辛苦了。"},
+                // Line 1-10 (index 0-9)
+                {speaker: "{adv1}", text: "我在森林深處的瀑布後面發現了一個隱藏洞窟！……但我全身都被水噴濕了！其他人也都變成了落湯雞！"},
+                {speaker: "{adv2}", text: "哈哈，{adv1}濕漉漉的樣子看起來真滑稽！不過能發現那個洞窟，確實幹得漂亮。"},
+                {speaker: "Luna", text: "瀑布後面！？太浪漫了吧～！那一定是個隱藏的遺跡！說不定裡面裝滿了寶藏！"},
+                {speaker: "Kaito", text: "如果到處都會噴水的話，那就別算上我……我最討厭弄濕了。下次請給我一個乾燥點的任務！"},
+                {speaker: "{adv3}", text: "雖然大家都很興奮，但我們還是應該正式報告。如果那是真正的遺跡，這可是一項重大發現。"},
+                {speaker: "{PLAYER}", text: "嘿，大家安靜點。首先，先向委託人好好報告，你們太吵了。"},
+                {speaker: "Explorer", text: "你們發現了瀑布後的洞窟！現在我們可以開始新的冒險了。真的太感謝你們了！我現在好興奮啊！"},
+                {speaker: "{adv4}", text: "我已經開始期待報酬了～。要不是那些討厭的水花，這本該是個完美的任務。"},
+                {speaker: "Explorer", text: "這是約定的報酬，請收下吧！各位辛苦了！"},
+                {speaker: "{PLAYER}", text: "好了，報酬收到了。大家辛苦了，做得好。"},
 
-                // Line 11 (index 10)
-                {speaker: "Narrator", text: "（選擇：發現瀑布後面的洞窟後，要如何應對？）"},
-
-                // Line 12 (index 11) - 空行（選擇肢顯示用）
+                // Line 11-12 (index 10-11)
+                {speaker: "Narrator", text: "（選擇：發現瀑布後的洞窟後，你將如何應對？）"},
                 {speaker: "Narrator", text: ""},
 
-                // Line 13 (index 12) - Choices object
+                // Line 13 (index 12) – Choices
                 {
                     speaker: "Narrator",
                     text: "",
                     choices: [
-                        {
-                            text: "向探險家傳達洞窟的更多細節（Reputation +3）",
-                            reward: [{type: "reputation", amount: 3}],
-                            jumptoline: 14
-                        },
-                        {
-                            text: "慰勞一起的冒險者們（參加者好感度 +6）",
-                            reward: [{type: "friendliness", amount: 6, target: "participants"}],
-                            jumptoline: 17
-                        },
-                        {
-                            text: "採取混在瀑布水花中的發光礦石（Gold +250）",
-                            reward: [{type: "gold", amount: 250}],
-                            jumptoline: 22
-                        },
-                        {
-                            text: "進一步調查瀑布後面的洞窟更深處",
-                            reward: [],
-                            jumptoline: 27
-                        }
+                        { text: "向探險家提供更多關於洞窟的細節 (名聲 +3)", reward: [{type: "reputation", amount: 3}], jumptoline: 14 },
+                        { text: "表揚與你同行的冒險者們 (參與者好感度 +6)", reward: [{type: "friendliness", amount: 6, target: "participants"}], jumptoline: 18 },
+                        { text: "收集混在瀑布水花中的閃爍礦石 (金幣 +250)", reward: [{type: "gold", amount: 250}], jumptoline: 22 },
+                        { text: "深入調查瀑布後的洞窟", reward: [], jumptoline: 27 }
                     ]
                 },
 
-                // Branch 1: Reputation (+3) → index 13-15
-                {speaker: "{PLAYER}", text: "這個洞窟很有可能是古代遺跡。我會更詳細調查後報告。"},
-                {speaker: "探險家", text: "沒錯！馬上推進研究！真的幫了大忙！"},
-                {speaker: "探險家", text: "有像冒險者你這樣的人真是太好了！", jumptoline: 49},
+                // Branch 1-3 (index 14-26)
+                {speaker: "{PLAYER}", text: "這個洞窟極有可能是古代遺跡。我會進一步調查並提供詳細報告。"},
+                {speaker: "Explorer", text: "沒錯！我會立刻開始研究。你真是幫了大忙！"},
+                {speaker: "Explorer", text: "我真的很慶幸有像你這樣的冒險者存在！", jumptoline: 43},
+                {speaker: "{PLAYER}", text: "你們都做得很好。被瀑布淋濕一定很辛苦吧。"},
+                {speaker: "Luna", text: "聽到你這麼說我太開心了，{PLAYER}！我會更加努力的！"},
+                {speaker: "Kaito", text: "嘿嘿，多誇獎我一點吧！下次就輪到我大顯身手了！"},
+                {speaker: "{adv1}", text: "謝謝你，{PLAYER}。期待下次再與你合作！"},
+                {speaker: "{PLAYER}", text: "嗯，下次也拜託你們了。", jumptoline: 43},
+                {speaker: "{PLAYER}", text: "這些閃爍的礦石看起來很有價值。讓我們收集一些作為公會資金吧。"},
+                {speaker: "Luna", text: "……雖然很有價值，但感覺有點像在偷雞摸狗……"},
+                {speaker: "Kaito", text: "為了錢我們就忍忍吧！但下次換我來收！"},
+                {speaker: "{adv2}", text: "哈哈，現在我們回公會後有更多錢可以喝一杯了！"},
+                {speaker: "{PLAYER}", text: "哈哈，那就交給你們了。", jumptoline: 43},
 
-                // Branch 2: Praise (+6) → index 16-20
-                {speaker: "{PLAYER}", text: "大家做得很好。被水花弄得一身濕一定很辛苦吧。"},
-                {speaker: "Luna", text: "被{PLAYER}這麼說好開心！會更努力的！"},
-                {speaker: "Kaito", text: "嘿嘿，再多誇獎我吧！下次輪到我大顯身手了！"},
-                {speaker: "{adv1}", text: "謝謝，{PLAYER}。下次也請多關照！"},
-                {speaker: "{PLAYER}", text: "啊啊，下次也期待著。", jumptoline: 49},
+                // Investigation Route (index 27-35)
+                {speaker: "Narrator", 
+                    text: "你帶領隊伍深入瀑布後的洞窟。潮濕的空氣和水聲在四周迴盪……大家依然沉浸在輕快的探索氣氛中。",
+                    bg_image: "DungeonQuest_Background.jpg",
+                    bgm: "storyBgm"
+                },
+                {speaker: "{adv1}", text: "不知道深處會不會有寶藏？我開始興奮起來了！"},
+                {speaker: "Narrator", text: "在前方黑暗中，你看到一個小小的身影正在顫抖……咦？那是……人影嗎？"},
+                {speaker: "{adv2}", text: "嘿，有東西在動！是怪物嗎！？這太刺激了！"},
+                {speaker: "Narrator", text: "當你走近時，才發現是一個小女孩。她正不停顫抖，臉色蒼白，呼吸微弱……彷彿隨時都會倒下。冒險的興奮感瞬間轉為深切的擔憂。"},
 
-                // Branch 3: Gold (+250) → index 21-25
-                {speaker: "{PLAYER}", text: "這個發光礦石，看起來能賣錢。採取一些作為公會資金吧。"},
-                {speaker: "Luna", text: "……確實有價值，但感覺有點狡猾…"},
-                {speaker: "Kaito", text: "為了錢就忍耐吧！但下次讓我來做喔！"},
-                {speaker: "{adv2}", text: "哈哈，這樣公會的飲酒費就增加了！"},
-                {speaker: "{PLAYER}", text: "哈哈，交給你了。", jumptoline: 49},
-
-                // ==================== 調查路線（index 26從連續） ====================
-                // 26-30: 調查開始 - Casual to sudden emotional shift
-                {speaker: "Narrator", text: "你向瀑布後面的洞窟更深處前進。潮濕的空氣和水聲迴盪著…大家熱鬧地探險心情。"},
-                {speaker: "{adv1}", text: "更深處有寶物嗎？好期待啊！"},
-                {speaker: "Narrator", text: "在前方的黑暗中，看見一個小小的影子在顫抖。……嗯？那是……人影？"},
-                {speaker: "{adv2}", text: "喂，有東西在動！是怪物嗎！？好興奮啊！"},
-                {speaker: "Narrator", text: "靠近一看，那是一個小小的少女。她在顫抖，臉色蒼白，氣息微弱……彷彿隨時都會倒下般虛弱。空氣瞬間緊繃，冒險的興奮轉變成嚴重的擔憂。"},
-
-                // 31: recruitAdventurer宣言（這裡指定名字）
                 {speaker: "Narrator", text: "", recruitAdventurer: "Lilia"},
 
-                // 32: 少女登場 - With emotional reaction
-                {speaker: "{encounterName}", text: "…誰、誰啊！？ 不要靠近！ ……好可怕……", image: "{encounterImage}"},
-                {speaker: "{adv3}", text: "咦，少女！？ 在這種地方……沒事吧！？ 臉色很差啊！"},
+                {speaker: "{encounterName}", text: "……誰！？別過來！……我好怕……", image: "{encounterImage}"},
+                {speaker: "{adv3}", text: "欸，女孩子！？在這種地方……妳沒事吧！？妳的臉色看起來非常糟！"},
 
-                // 34: 背景故事 - Expanded with reactions for emotional depth
-                {speaker: "{encounterName}", text: "我的村子…在戰爭中被燒毀了。從那之後一直一個人流浪…在這裡迷路了…已經沒有力氣了……", image: "{encounterImage}"},
-                {speaker: "{PLAYER}", text: "村子在戰爭中被燒…太可怕了。這樣小的孩子一個人…不趕緊的話危險啊！"},
-                {speaker: "Luna", text: "好可憐……快點救她！ 眼淚都要流出來了……"},
-                {speaker: "Kaito", text: "可惡，是戰爭的關係嗎……我們來想辦法吧！"},
+                {speaker: "{encounterName}", text: "我的村莊……在戰爭中被燒毀了。從那以後我就一直獨自流浪……然後在這裡迷了路……我已經沒有力氣了……", image: "{encounterImage}"}, // index 35
+                {speaker: "{PLAYER}", text: "村莊被戰爭毀掉了……太慘了。這麼小的孩子竟然獨自流浪……我們必須盡快行動！"}, // index 36
+                {speaker: "Luna", text: "她好可憐……我們快幫幫她吧！看得我眼淚都要掉下來了……"}, // index 37
+                {speaker: "Kaito", text: "該死，又是因為戰爭……我們會想辦法的！"}, // index 38
 
-                // 38: 選擇肢
+                // === NEW GOBLIN ATTACK SEQUENCE (Indices 39-42) ===
+                {speaker: "Narrator", text: "*嘶嘶——！* 突然，尖銳的笑聲在潮濕的洞窟中迴盪，蓋過了瀑布的水聲！"}, // index 39
+                {speaker: "{adv1}", text: "小心！是哥布林！牠們從牆壁的裂縫鑽出來了！到處都是，數量有幾十隻！"}, // index 40
+                {speaker: "{encounterName}", text: "啊！不……牠們從村莊一直跟著我過來了……求求你們，別讓牠們抓走我！", image: "{encounterImage}"}, // index 41
+                {speaker: "{PLAYER}", text: "嘖，被包圍了。沒時間多說了——我們必須保護這個女孩，殺出一條血路！"}, // index 42
+
+                // ==================== UPDATED MAIN CHOICE (Index 43) ====================
                 {
                     speaker: "Narrator",
-                    text: "少女（Lilia）處於非常虛弱的狀態，如果就這樣放著不管，命不久矣。突然的狀況變化，讓大家的心靈受到動搖。要怎麼做？",
+                    text: "哥布林正在逼近。Lilia 虛弱得無法自行移動。在混亂之中，你將如何處理這種情況？",
                     choices: [
                         {
-                            text: "「要不要來我們的公會當冒險者工作？」（Invite）",
-                            jumptoline: 40
+                            text: "「保護她！帶她回公會！」 (招募)",
+                            battle: "Protect Lilia",
+                            recruit: true,
+                            winJumptoline: 44,
+                            loseJumptoline: 51,
+                            winReward: [{type: "reputation", amount: -8}, {type: "friendliness", amount: 12, target: "participants"}],
+                            loseReward: [{type: "reputation", amount: -15}, {type: "friendliness", amount: -8, target: "participants"}]
                         },
                         {
-                            text: "護送她到安全的城鎮",
-                            jumptoline: 44
+                            text: "突圍並護送她到安全地帶",
+                            battle: "Protect Lilia",
+                            recruit: false,
+                            winJumptoline: 48,
+                            loseJumptoline: 51,
+                            winReward: [{type: "reputation", amount: -5}, {type: "friendliness", amount: 10, target: "participants"}],
+                            loseReward: [{type: "reputation", amount: -12}, {type: "friendliness", amount: -10, target: "participants"}]
                         },
                         {
-                            text: "…什麼都不說離開",
-                            jumptoline: 47
+                            text: "……趁亂溜走 (丟下她)",
+                            reward: [{type: "friendliness", amount: -10, target: "participants"}],
+                            jumptoline: 54
                         }
                     ]
                 },
 
-                // 39-42: 勸誘成功 - With added emotion
-                {speaker: "{encounterName}", text: "……真的嗎？ 像我這樣沒用的人也可以…？ ……誰都無法相信……", image: "{encounterImage}"},
-                {speaker: "{adv4}", text: "當然了！ 在公會大家會保護你的。"},
-                {speaker: "{encounterName}", text: "謝謝…！ 我會努力的！ ……終於，看見希望了……", image: "{encounterImage}"},
-                {speaker: "Narrator", text: "新的夥伴候補「莉莉亞」加入了公會！（回到公會後正式迎接）", jumptoline: 49},
+                // Invite Win Route (indices 44-47)
+                {speaker: "{encounterName}", text: "……你們真的為了救我而戰……？甚至是為了像我這樣沒用的人……？", image: "{encounterImage}"}, // index 44
+                {speaker: "{adv4}", text: "當然！公會裡的每個人都會保護妳的。"},
+                {speaker: "{encounterName}", text: "謝謝你們……！我會努力的！……終於，我看到了一點希望……", image: "{encounterImage}"},
+                {speaker: "Narrator", text: "新的夥伴候選人「Lilia」加入了公會！（回到公會後可正式迎接她）。然而，這個決定顯著地損害了公會的名聲。", jumptoline: 56},
 
-                // 43-45: 護送
-                {speaker: "{encounterName}", text: "…謝謝。真的很感激。我想再活久一點試試看。 ……世界上還有善良的人啊……", image: "{encounterImage}"},
-                {speaker: "{adv1}", text: "好，我們會保護你帶你去。別擔心！"},
-                {speaker: "Narrator", text: "你平安地把莉莉亞帶到附近的村子。大家心中殘留溫暖的餘韻。", jumptoline: 49},
+                // Escort Win Route (indices 48-50)
+                {speaker: "{encounterName}", text: "……謝謝你們保護我，我真的很感激。我會試著再多活一陣子……原來這世界上還是有溫柔的人存在……", image: "{encounterImage}"}, // index 48
+                {speaker: "{adv1}", text: "好了，我們會保護妳並帶妳去那裡。別擔心！"},
+                {speaker: "Narrator", text: "你安全地護送 Lilia 到了附近的村莊。雖然心中留有一絲溫暖，但這對公會的名聲產生了負面影響。", jumptoline: 56},
 
-                // 46-47: 放置
-                {speaker: "{adv2}", text: "喂，{PLAYER}……真的要丟下她嗎？ 這樣虛弱的孩子……"},
-                {speaker: "Narrator", text: "你什麼都沒說就離開了洞窟… 沉重的沉默包圍著一行人。", jumptoline: 49},
+                // Battle Lose Route (indices 51-53)
+                {speaker: "{encounterName}", text: "不……牠們太強了……！", image: "{encounterImage}"}, // index 51
+                {speaker: "Kaito", text: "該死！我們必須撤退！"},
+                {speaker: "Narrator", text: "你被迫逃跑，留下了 Lilia…… 負罪感沉重地壓在每個人的心頭。", jumptoline: 56},
 
-                // 48: 共通結局（全路線合流）
-                {speaker: "Narrator", text: "瀑布後面的洞窟探索到此結束。"}
+                // Abandon Route (indices 54-55)
+                {speaker: "{adv2}", text: "嘿，{PLAYER}……你真的要把她丟在這裡嗎？她看起來那麼虛弱……"}, // index 54
+                {speaker: "Narrator", text: "你默默地離開了洞窟…… 沉重的沉默籠罩了整支隊伍。", jumptoline: 56},
+
+                // Common Ending (index 56)
+                {speaker: "Narrator", text: "瀑布後洞窟的探索現在已經完成了。"}
             ],
         ]
     },
