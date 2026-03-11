@@ -12032,15 +12032,14 @@ function startIntroDialogue() {
     const currentIntro = introDialogues[currentLang] || introDialogues.ja;
 
     // クエスト/ゲームオーバー/誕生日と同じ形式に統一処理（{PLAYER}置換 + image対応）
-const processedSequence = currentIntro.map(line => ({
-        speaker: line.speaker.replace(/\{PLAYER\}/gi, playerName),
-        text: line.text.replace(/\{PLAYER\}/gi, playerName),
+    const processedSequence = currentIntro.map(line => ({
+        ...line, // Copy ALL properties (bg_image, bgm, etc.)
+        speaker: line.speaker ? line.speaker.replace(/\{PLAYER\}/gi, playerName) : '',
+        text: line.text ? line.text.replace(/\{PLAYER\}/gi, playerName) : '',
         image: line.image || null,
-        jumptoline: line.jumptoline,  // ← Add this: preserve normal-line jumptoline
-        choices: line.choices ? line.choices.map(choice => ({  // deep copy choices
-            text: choice.text.replace(/\{PLAYER\}/gi, playerName),  // optional: replace in choice text too
-            reward: choice.reward ? { ...choice.reward } : undefined,
-            jumptoline: choice.jumptoline
+        choices: line.choices ? line.choices.map(choice => ({
+            ...choice, // Copy ALL choice properties (reward array, battle flags, etc.) perfectly
+            text: choice.text ? choice.text.replace(/\{PLAYER\}/gi, playerName) : ''
         })) : undefined
     }));
 
