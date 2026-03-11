@@ -2253,23 +2253,23 @@ function checkGameOver() {
 }
 
 function buyExpansion() {
-    const current = gameState.maxPermanentSlots;
-    if (current >= 12) {
-        better_alert(t('max_expansion_reached'), "error");
+    const currentSlots = gameState.maxPermanentSlots || 4;
+    const maxSlotsLimit = 20; // Matches the UI limit
+
+    if (currentSlots >= maxSlotsLimit) {
+        better_alert(t('guild_max_expanded'), "error");
         return;
     }
-    const next = current + 1;
-    const level = next - 4; // 拡張レベル（5スロット目からレベル1）
+
+    const nextSlots = currentSlots + 1;
+    const level = nextSlots - 4;
     const cost = 500 + 250 * (level - 1);
 
-    if (!spendGold(cost)) return;
-
-    gameState.maxPermanentSlots = next;
-
-    // 成功時の翻訳可能アラート（拡張レベルとコストを表示）
-    better_alert(t('expansion_purchased', { slots: next, cost: cost }), "success");
-
-    updateDisplays();
+    if (spendGold(cost)) {
+        gameState.maxPermanentSlots = nextSlots;
+        better_alert(t('expansion_purchased', {next: nextSlots}), "success");
+        updateDisplays();
+    }
 }
 
 function randomName(gender) {  // gender: 'male' or 'female' (string, lowercase)
@@ -2280,16 +2280,30 @@ function randomName(gender) {  // gender: 'male' or 'female' (string, lowercase)
 
 // generateQuest 関数を以下のものに完全に置き換え
 function generateQuest(){
-    // 新しい難易度計算：Reputationに基づく範囲（平均 ≈ reputation / 10）
     const baseDiff = Math.max(0, Math.floor(gameState.reputation / 10));
-    const minDiff = Math.max(1, baseDiff - 5);
-    const maxDiff = Math.min(150, baseDiff + 5);
-    const difficulty = minDiff + Math.floor(Math.random() * (maxDiff - minDiff + 1));
+    let difficulty;
+
+    // --- NEW DIFFICULTY CALCULATION ---
+    // 25% chance to generate a "lower tier" quest (no lower limit)
+    if (baseDiff > 1 && Math.random() < 0.25) {
+        let lowerBound = 1;
+        let upperBound = Math.max(1, baseDiff - 1);
+        // Generates randomly between 1 and just below current level
+        difficulty = lowerBound + Math.floor(Math.random() * (upperBound - lowerBound + 1));
+    } else {
+        // 75% chance for standard level-appropriate quest
+        const minDiff = Math.max(1, baseDiff - 5);
+        const maxDiff = Math.min(150, baseDiff + 5);
+        difficulty = minDiff + Math.floor(Math.random() * (maxDiff - minDiff + 1));
+    }
+    // ----------------------------------
+
     const rank = getQuestRank(difficulty);
     let storyindex = 0;
 
     const primary = Math.floor(Math.random()*4);
     let minStrength=0, minWisdom=0, minDexterity=0, minLuck=0;
+    
     if(primary===0){ // STR - kill
         minStrength = Math.floor(Math.random()*10 + difficulty*5);
         minWisdom   = Math.floor(Math.random()*5  + difficulty*2);
@@ -2328,16 +2342,10 @@ function generateQuest(){
     else if (primary === 1) { // discovery (WIS)
         const descs = discoveryDescsByRank[currentLang] || discoveryDescsByRank.ja;
         const pool = descs[rank] || descs['F'];
-        
-
         qType = 1;
         const selectedIndex = Math.floor(Math.random() * pool.length);
-        const selectedDesc = pool[selectedIndex];
-        desc = selectedDesc;
-
-
+        desc = pool[selectedIndex];
         storyindex = selectedIndex;
-
     } 
     else if (primary === 2) { // escort (DEX)
         const descs = escortDescsByRank[currentLang] || escortDescsByRank.ja;
@@ -2360,16 +2368,8 @@ function generateQuest(){
     const focusStat = ['strength', 'wisdom', 'dexterity', 'luck'][primary];
     const minFocus = primary === 0 ? minStrength : primary === 1 ? minWisdom : primary === 2 ? minDexterity : minLuck;
 
-    // Base gold reward (same as before)
     let baseReward = difficulty * 70;
-
-    // Apply quest-type gold multiplier
-    let goldMultiplier = 1.0;
-    if (qType === 3) {   // fetch
-        goldMultiplier = 0.8;
-    } 
-    // kill (0) and discovery (1) keep 1.0×
-
+    let goldMultiplier = (qType === 3) ? 0.8 : 1.0;
     const finalReward = Math.round(baseReward * goldMultiplier);
 
     return {
@@ -2383,7 +2383,7 @@ function generateQuest(){
         item: item,
         npcIdx: npcIdx,
         daysLeft: 7 + Math.floor(Math.random() * 8),
-        reward: finalReward,           // ← modified here
+        reward: finalReward,
         assigned: [],
         inProgress: false,
         questType: qType,
@@ -4145,18 +4145,99 @@ function renderDailyMaterials() {
 }
 
 function renderGuildExpansion() {
+    let html = '<div class="expansion-section" style="display:flex; flex-direction:column; gap:20px;">';
+
+    // --- 1. Permanent Adventurer Slots ---
     const currentSlots = gameState.maxPermanentSlots || 4;
-    if (currentSlots < 12) {
+    const maxSlotsLimit = 20;
+
+    if (currentSlots < maxSlotsLimit) {
         const nextSlots = currentSlots + 1;
-        const level = nextSlots - 4;
+        const level = nextSlots - 4; // Level 1 is the 5th slot
         const cost = 500 + 250 * (level - 1);
-        return `<div class="expansion-section">
-            <p>${t('guild_slots_current')} <strong>${currentSlots}</strong></p>
+
+        html += `<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
+            <p>${t('guild_slots_title') || 'Guild Adventurer Quarters'}</p>
+            
+            <ul style="font-size:0.95em; color:#ffd700; margin: 12px 0 16px 20px; line-height: 1.5;">
+                <li>${t('guild_effect_slots') || 'Max Adventurer Capacity'}: ${currentSlots} → <span style="color:#4ade80; font-weight:bold;">${nextSlots}</span></li>
+            </ul>
+
             <p>${t('guild_slots_next', {next: nextSlots, cost: cost})}</p>
-            <button class="buy-btn large" onclick="buyExpansion()">${t('guild_expansion_button')}</button>
+            
+            <button class="buy-btn large" onclick="buyExpansion()" ${gameState.gold < cost ? 'disabled style="opacity:0.5"' : ''}>
+                ${t('guild_expansion_button')}
+            </button>
+        </div>`;
+    } else {
+        html += `<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
+            <p class="empty-msg" style="margin-bottom:15px;">${t('guild_max_expanded')}</p>
+            <ul style="font-size:0.95em; color:#ffd700; margin: 0 0 0 20px; line-height: 1.5; text-align:left;">
+                <li>${t('guild_effect_slots') || 'Max Adventurer Capacity'}: <strong>${currentSlots}</strong></li>
+            </ul>
         </div>`;
     }
-    return `<p class="empty-msg">${t('guild_max_expanded')}</p>`;
+
+    // --- 2. Reception Space Expansion (Quest Rolls) ---
+    const recLevel = gameState.receptionLevel || 0;
+    const currentMaxQuests = 4 + (recLevel * 2);
+    const currentRolls = 1 + recLevel;
+
+    if (recLevel < 5) {
+        const nextRecLevel = recLevel + 1;
+        const cost = 1000 * nextRecLevel;
+        const nextMaxQuests = 4 + (nextRecLevel * 2);
+        const nextRolls = 1 + nextRecLevel;
+
+        html += `<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
+            <p>${t('reception_level_current') || 'Current Reception Level'}: <strong>${recLevel} / 5</strong></p>
+            
+            <ul style="font-size:0.95em; color:#ffd700; margin: 12px 0 16px 20px; line-height: 1.5;">
+                <li>${t('reception_effect_quests') || 'Max Quests on Board'}: ${currentMaxQuests} → <span style="color:#4ade80; font-weight:bold;">${nextMaxQuests}</span></li>
+                <li>${t('reception_effect_rolls') || 'Daily Quest Rolls'}: ${currentRolls} → <span style="color:#4ade80; font-weight:bold;">${nextRolls}</span></li>
+            </ul>
+
+            <p>${t('reception_level_next', {next: nextRecLevel, cost: cost}) || `Next Lv: ${nextRecLevel} (Cost: ${cost}G)`}</p>
+            <p style="font-size:0.9em; color:#aaa;">${t('reception_desc') || 'Increases daily quest generation rolls and max quest board capacity.'}</p>
+            
+            <button class="buy-btn large" onclick="buyReceptionExpansion()" ${gameState.gold < cost ? 'disabled style="opacity:0.5"' : ''}>
+                ${t('reception_expansion_button') || 'Expand Reception'}
+            </button>
+        </div>`;
+    } else {
+        html += `<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
+            <p class="empty-msg" style="margin-bottom:15px;">${t('reception_max_expanded') || 'Reception Space is fully expanded!'}</p>
+            
+            <ul style="font-size:0.95em; color:#ffd700; margin: 0 0 0 20px; line-height: 1.5; text-align:left;">
+                <li>${t('reception_effect_quests') || 'Max Quests on Board'}: <strong>${currentMaxQuests}</strong></li>
+                <li>${t('reception_effect_rolls') || 'Daily Quest Rolls'}: <strong>${currentRolls}</strong></li>
+            </ul>
+        </div>`;
+    }
+
+    html += '</div>';
+    return html;
+}
+
+// Function to handle the purchase
+function buyReceptionExpansion() {
+    if (!gameState.receptionLevel) gameState.receptionLevel = 0;
+    
+    const current = gameState.receptionLevel;
+    if (current >= 5) {
+        better_alert(t('max_expansion_reached'), "error");
+        return;
+    }
+    
+    const next = current + 1;
+    const cost = 1000 * next;
+
+    if (!spendGold(cost)) return;
+
+    gameState.receptionLevel = next;
+    
+    better_alert(t('reception_expanded', { level: next, cost: cost }) || `Reception expanded to Lv ${next}!`, "success");
+    updateDisplays();
 }
 
 function renderCorruption() {
@@ -4738,20 +4819,29 @@ function startDay(){
         });
     });
 
-    // Quest limit: max 4 non-training quests
+// --- NEW MULTI-ROLL QUEST GENERATION ---
+    if (!gameState.receptionLevel) gameState.receptionLevel = 0;
+    
     let nonTrainingCount = gameState.quests.filter(q => !q.training).length;
-    let availableSlots = 4 - nonTrainingCount;
+    // Increase max quest board capacity by 2 per reception level (4 -> 6 -> 8 -> 10 -> 12 -> 14)
+    let maxQuests = 4 + (gameState.receptionLevel * 2); 
+    let availableSlots = maxQuests - nonTrainingCount;
 
-    // On day 1, guarantee at least 1 non-training quest if none exist yet
-    let generateProb = 0.8;
-    if (gameState.day === 1 && nonTrainingCount === 0) {
-        generateProb = 1.0; // 100% chance → always add the first one on day 1
-    }
+    // Rolls = 1 base + 1 per reception level
+    let rolls = 1 + gameState.receptionLevel; 
+    
+    for (let r = 0; r < rolls; r++) {
+        // On day 1, guarantee at least 1 non-training quest on the first roll
+        let generateProb = (gameState.day === 1 && nonTrainingCount === 0 && r === 0) ? 1.0 : 0.8;
 
-    if (availableSlots > 0 && Math.random() < generateProb) {
-        let q = generateQuest(); 
-        gameState.quests.push(q);
+        if (availableSlots > 0 && Math.random() < generateProb) {
+            let q = generateQuest(); 
+            gameState.quests.push(q);
+            availableSlots--;
+            nonTrainingCount++;
+        }
     }
+    // ---------------------------------------
 
     if (gameState.day > 30 && Math.random() < 0.07 && !gameState.quests.some(q => q.defense)) {
         const dq = generateDefenseQuest();
@@ -9010,9 +9100,9 @@ function enhanceEquipment(advId, itemId) {
         return; 
     }
 
-    const crystalName = t('enhancement_crystal');
+    const crystalName = t('enhancement_crystal') || 'Enhancement Crystal';
 
-    // クリスタル消費（スタック対応）
+    // クリスタル消費（スタック対応） - ALWAYS CONSUMED (Even on failure)
     let consumed = false;
     for (let i = gameState.inventory.length - 1; i >= 0; i--) {
         const inv = gameState.inventory[i];
@@ -9031,20 +9121,45 @@ function enhanceEquipment(advId, itemId) {
     }
 
     if (!consumed) {
-        better_alert(t('blacksmith_insufficient_crystals'),"error");
+        better_alert(t('blacksmith_insufficient_crystals'), "error");
         return;
     }
 
-    // 強化実行（絶対値+1）
-    item.enhancement = (item.enhancement || 0) + 1;
+    // --- NEW: Calculate Success Rate ---
+    const currentLevel = item.enhancement || 0;
+    let successRate = 0;
 
-    const statFull = t(`stat_${item.stat}`) || t(`stat_${item.stat}`);
-    better_alert(t('blacksmith_enhance_success', {
-        item: item.name,
-        bonus: item.bonus,
-        enhancement: item.enhancement,
-        stat: statFull
-    }),"success");
+    if (currentLevel < 10) {
+        // Levels 0 to 9: 100%, 90%, 80%, ..., 10%
+        successRate = 100 - (currentLevel * 10);
+    } else {
+        // Levels 10+: 9%, 8%, ..., minimum 1%
+        successRate = Math.max(1, 10 - (currentLevel - 9));
+    }
+
+    // Roll for success (generates a number between 0 and 99.99)
+    const roll = Math.random() * 100;
+    const isSuccess = roll < successRate;
+
+    const statFull = t(`stat_${item.stat}`) || item.stat;
+
+    if (isSuccess) {
+        // 強化実行（絶対値+1）
+        item.enhancement = currentLevel + 1;
+
+        better_alert(t('blacksmith_enhance_success', {
+            item: item.name,
+            bonus: item.bonus,
+            enhancement: item.enhancement,
+            stat: statFull
+        }) || `強化成功！ ${item.name} が +${item.enhancement} になりました！`, "success");
+    } else {
+        // 強化失敗 (Crystal is already lost)
+        better_alert(t('blacksmith_enhance_failure', {
+            item: item.name,
+            level: currentLevel
+        }) || `強化失敗... クリスタルは失われました。(${item.name} +${currentLevel})`, "error");
+    }
 
     // UI更新
     renderFacilities();
@@ -9130,6 +9245,66 @@ function produceAndStock(recipeIndex) {
     updateDisplays();
 }
 
+/**
+ * Deducts gold and increases friendliness for all adventurers currently at the guild.
+ */
+/**
+ * Logic to buy a round for everyone currently at the guild.
+ * Increases Friendliness (toward GM) and interpersonal friendliness.
+ */
+/**
+ * Logic to buy a round for PERMANENT adventurers currently at the guild.
+ * Increases Friendliness (toward GM) and interpersonal friendliness.
+ */
+function offerBeerForAll(totalCost) {
+    // Constants for the increases
+    const GM_INC = 2;
+    const BOND_INC = 2;
+
+    // Filter: Only permanent members NOT on a quest
+    const availableAdvs = gameState.adventurers.filter(adv => 
+        !isAdventurerOnQuest(adv) && !adv.temp
+    );
+
+    if (gameState.gold < totalCost) {
+        better_alert(t('insufficient_gold'), "error");
+        return;
+    }
+    
+    if (availableAdvs.length === 0) {
+        better_alert(t('no_adventurers_available'), "error");
+        return;
+    }
+
+    gameState.gold -= totalCost;
+
+    availableAdvs.forEach(advA => {
+        // 1. Increase Friendliness toward Guild Master
+        advA.Friendliness = Math.min(100, (advA.Friendliness || 50) + GM_INC);
+
+        // 2. Increase Friendliness toward other permanent members present
+        if (!advA.friendliness) advA.friendliness = {};
+        
+        availableAdvs.forEach(advB => {
+            if (advA.id === advB.id) return; 
+
+            const currentRel = advA.friendliness[advB.id] || 50;
+            advA.friendliness[advB.id] = Math.min(100, currentRel + BOND_INC);
+        });
+    });
+
+    // Construct the success message with specific amounts
+    let successMsg = t('tavern_beer_success')
+        .replace('{count}', availableAdvs.length)
+        .replace('{gmInc}', GM_INC)
+        .replace('{bondInc}', BOND_INC);
+
+    better_alert(successMsg, "friendliness");
+    
+    renderFacilities();
+    updateDisplays();
+}
+
 function renderFacilities() {
     const content = document.getElementById('facilitiesContent');
     const modalContent = document.querySelector('#facilitiesModal .modal-content');
@@ -9179,7 +9354,6 @@ function renderFacilities() {
         const level = gameState.facilities[currentFacility];
         const title = t(titleKey);
 
-        // Current fee for this facility
         const currentFee = (gameState.facilityFees && gameState.facilityFees[currentFacility]) || 0;
 
         let html = `<div class="facility-panel">
@@ -9203,6 +9377,29 @@ function renderFacilities() {
                     ${t('facilities_back_to_street')}
                 </button>
             </div>`;
+
+        // === NEW: Tavern Special Section (Buy a Round) ===
+        if (currentFacility === 'tavern' && level > 0) {
+            const availableAdvs = gameState.adventurers.filter(adv => !isAdventurerOnQuest(adv) && !adv.temp);
+            const costPerBeer = 50; 
+            const totalCost = availableAdvs.length * costPerBeer;
+
+            html += `
+                <div style="margin: 40px auto; max-width: 600px; padding: 25px; background: rgba(243, 156, 18, 0.2); border: 3px solid #f39c12; border-radius: 20px; text-align: center;">
+                    <h3 style="color: #f39c12; margin-top: 0; font-size: 1.8em;">🍻 ${t('tavern_treat_title') || 'Buy a Round of Beer'}</h3>
+                    <p style="font-size: 1.1em; margin: 15px 0;">
+                        ${t('tavern_treat_desc') || 'Treat all adventurers currently in the guild to a drink! Increases their friendliness toward you and each other.'}
+                    </p>
+                    <div style="font-size: 1.4em; font-weight: bold; color: #ffd700; margin-bottom: 20px;">
+                        ${t('cost') || 'Cost'}: ${totalCost} ${t('gold_unit')} (${availableAdvs.length} ${t('adventurers')})
+                    </div>
+                    <button onclick="offerBeerForAll(${totalCost})" 
+                            ${(gameState.gold < totalCost || availableAdvs.length === 0) ? 'disabled style="background:#777; cursor:not-allowed;"' : 'style="background:#e67e22; padding: 15px 40px; font-size: 1.3em; color:white; border:none; border-radius:10px; cursor:pointer;"'}>
+                        ${t('tavern_treat_button') || 'Cheers! (Treat Everyone)'}
+                    </button>
+                </div>
+            `;
+        }
 
         // Upgrade Section
         const maxLevel = facilityMaxLevels[currentFacility] || 4;
@@ -9247,23 +9444,16 @@ function renderFacilities() {
                 html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top:30px;">`;
 
                 gameState.adventurers.forEach(adv => {
-                    // --- UPDATED EQUIPMENT EXTRACTION LOGIC ---
                     let enhanceableItems = [];
-                    
-                    // 1. Pull from the new slots system
                     if (adv.slots) {
                         Object.values(adv.slots).forEach(item => {
-                            // Ensure it's a real item, not locked (prevents 2H weapon duplicates), and is enhanceable
                             if (item && !item.locked && item.stat && typeof item.bonus === 'number') {
-                                // Double check to avoid pushing the same item ID twice
                                 if (!enhanceableItems.some(i => i.id === item.id)) {
                                     enhanceableItems.push(item);
                                 }
                             }
                         });
                     } 
-                    
-                    // 2. Fallback for older saves that still use adv.equipment array
                     if (enhanceableItems.length === 0 && adv.equipment) {
                         enhanceableItems = adv.equipment.filter(item => item.stat && typeof item.bonus === 'number');
                     }
@@ -9277,8 +9467,14 @@ function renderFacilities() {
                         enhanceableItems.forEach(item => {
                             const statFull = t(`stat_${item.stat}`) || item.stat;
                             const currentEnh = item.enhancement || 0;
-                            // Add category to display if it exists
                             const categoryText = item.category ? ` [${item.category}]` : '';
+
+                            let successRate = 0;
+                            if (currentEnh < 10) {
+                                successRate = 100 - (currentEnh * 10);
+                            } else {
+                                successRate = Math.max(1, 10 - (currentEnh - 9));
+                            }
 
                             html += `
                                 <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; margin:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.95em;">
@@ -9287,6 +9483,9 @@ function renderFacilities() {
                                         <p style="margin:4px 0 0; color:#ffeb3b;">
                                             ${statFull} +${item.bonus}${t('percent_symbol')}
                                             ${currentEnh > 0 ? ` +${currentEnh}${t('absolute_symbol')}` : ''}
+                                            <span style=" font-size:0.85em; margin-left:8px;">
+                                                (Successful rate: ${successRate}%)
+                                            </span>
                                         </p>
                                     </div>
                                     <button onclick="enhanceEquipment(${adv.id}, '${item.id}')"
@@ -9295,7 +9494,6 @@ function renderFacilities() {
                                     </button>
                                 </div>`;
                         });
-
                         html += `</div>`;
                     }
                 });
@@ -9303,7 +9501,6 @@ function renderFacilities() {
                 if (!hasEnhanceable) {
                     html += `<p style="grid-column:1/-1; text-align:center; color:#aaa;">${t('blacksmith_no_equipment')}</p>`;
                 }
-
                 html += `</div>`;
             }
         }
@@ -9314,15 +9511,12 @@ function renderFacilities() {
                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-top:30px;">`;
 
             let hasItems = false;
-
             recipes.forEach((r, originalIndex) => {
                 if (r.level > level) return;
-
                 hasItems = true;
 
                 const cost = r.cost || 0;
                 let canMake = gameState.gold >= cost;
-
                 const materials = currentFacility === 'alchemy' 
                     ? r.inputs.map(name => ({name, qty: 1}))
                     : (r.materials || []);
@@ -9343,18 +9537,12 @@ function renderFacilities() {
                     ? `${r.inputs.join(' + ')} → ${r.output.name}`
                     : r.name;
 
-                // === Enhanced effect display for blacksmith ===
                 let effectHtml = '';
                 if (currentFacility === 'blacksmith') {
                     const statFull = t(`stat_${r.stat}`) || r.stat;
                     const bonusText = ` +${r.bonus}${t('percent_symbol')}`;
-                    let enhText = '';
-                    if (r.enhancement > 0) {
-                        enhText = `+${r.enhancement}${t('absolute_symbol')}`;
-                    }
-                    effectHtml = `<p style="margin:10px 0; color:#ffeb3b; font-weight:bold; font-size:1em;">
-                                    ${statFull} ${bonusText}${enhText}
-                                  </p>`;
+                    let enhText = r.enhancement > 0 ? `+${r.enhancement}${t('absolute_symbol')}` : '';
+                    effectHtml = `<p style="margin:10px 0; color:#ffeb3b; font-weight:bold; font-size:1em;">${statFull} ${bonusText}${enhText}</p>`;
                 } else if (currentFacility === 'tavern') {
                     if (r.buff.stat) {
                         const statText = t(`stat_${r.buff.stat}`);
@@ -9377,15 +9565,11 @@ function renderFacilities() {
                                   </p>`;
                 }
 
-                // Tavern stock display
                 let stockHtml = '';
-                let stockQty = 0;
                 if (currentFacility === 'tavern') {
                     if (!gameState.tavernStock) gameState.tavernStock = {};
-                    stockQty = gameState.tavernStock[originalIndex] || 0;
-                    stockHtml = `<p style="margin:12px 0 6px; font-size:1.1em; color:#f39c12; font-weight:bold;">
-                                    在庫: ${stockQty}個
-                                 </p>`;
+                    const stockQty = gameState.tavernStock[originalIndex] || 0;
+                    stockHtml = `<p style="margin:12px 0 6px; font-size:1.1em; color:#f39c12; font-weight:bold;">在庫: ${stockQty}個</p>`;
                 }
 
                 let craftButtonHtml = '';
@@ -9393,43 +9577,19 @@ function renderFacilities() {
                     const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
                     craftButtonHtml = `
                         <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-                            <button onclick="craftAlchemyRecipe(${originalIndex},1)" 
-                                    ${disabledAttr}
-                                    style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">
-                                ${t('facilities_craft_alchemy')}
-                            </button>
-                            <button onclick="craftAlchemyRecipe(${originalIndex},10)" 
-                                    ${disabledAttr}
-                                    style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">
-                                ${t('facilities_craft_alchemy_10')}
-                            </button>
+                            <button onclick="craftAlchemyRecipe(${originalIndex},1)" ${disabledAttr} style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">${t('facilities_craft_alchemy')}</button>
+                            <button onclick="craftAlchemyRecipe(${originalIndex},10)" ${disabledAttr} style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">${t('facilities_craft_alchemy_10')}</button>
                         </div>`;
                 } else {
                     const disabledAttr = !canMake ? 'disabled style="background:#777;"' : '';
                     if (currentFacility === 'tavern') {
                         craftButtonHtml = `
                             <div style="margin-top:15px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-                                <button onclick="produceAndStock(${originalIndex})"
-                                        ${disabledAttr}
-                                        style="padding:10px 20px; font-size:1.05em; background:#e67e22; flex:1; min-width:130px;">
-                                    ${t('facilities_produce_and_stock')}
-                                </button>
-                                <button onclick="orderTavernItem(${originalIndex})"
-                                        ${disabledAttr}
-                                        style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">
-                                    ${t('facilities_order_tavern')}
-                                </button>
+                                <button onclick="produceAndStock(${originalIndex})" ${disabledAttr} style="padding:10px 20px; font-size:1.05em; background:#e67e22; flex:1; min-width:130px;">${t('facilities_produce_and_stock')}</button>
+                                <button onclick="orderTavernItem(${originalIndex})" ${disabledAttr} style="padding:10px 20px; font-size:1.05em; flex:1; min-width:130px;">${t('facilities_order_tavern')}</button>
                             </div>`;
                     } else {
-                        // blacksmith
-                        const buttonText = t('facilities_produce_blacksmith');
-                        const onclick = `produceBlacksmith(${originalIndex})`;
-                        craftButtonHtml = `
-                            <button onclick="${onclick}" 
-                                    ${disabledAttr}
-                                    style="margin-top:12px; padding:10px 24px; font-size:1.1em;">
-                                ${buttonText}
-                            </button>`;
+                        craftButtonHtml = `<button onclick="produceBlacksmith(${originalIndex})" ${disabledAttr} style="margin-top:12px; padding:10px 24px; font-size:1.1em;">${t('facilities_produce_blacksmith')}</button>`;
                     }
                 }
 
@@ -9443,11 +9603,7 @@ function renderFacilities() {
                         ${craftButtonHtml}
                     </div>`;
             });
-
-            if (!hasItems) {
-                html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">${t('facilities_no_recipes_yet')}</p>`;
-            }
-
+            if (!hasItems) html += `<p style="grid-column:1/-1; text-align:center; font-size:1.4em;">${t('facilities_no_recipes_yet')}</p>`;
             html += `</div>`;
         } else {
             html += `<p style="text-align:center; font-size:1.4em; margin-top:40px;">${t('facilities_upgrade_to_unlock')}</p>`;
