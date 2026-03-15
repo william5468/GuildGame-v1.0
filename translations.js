@@ -3,6 +3,8 @@
 const translations = {
 
   ja: {
+    "facility_already_max": "この施設はすでに最大レベルです",
+"facility_upgraded": "{facility} がレベル {level} にアップグレードされました！",
 "tavern_treat_title": "全員にビールを振る舞う",
         "tavern_treat_desc": "ギルドにいる正規の冒険者全員に酒を振る舞います。あなたへの親密度と冒険者同士の友好度が上昇します。",
         "tavern_treat_button": "乾杯！（全員に奢る）",
@@ -925,6 +927,8 @@ relationship_title: "{name} の関係性",
 
   },
   en: {
+    "facility_already_max": "This facility is already at the maximum level.",
+"facility_upgraded": "{facility} has been upgraded to Level {level}!",
         "tavern_treat_title": "Buy a Round of Beer",
         "tavern_treat_desc": "Treat all permanent adventurers currently in the guild. Increases their loyalty to you and their bonds with each other.",
         "tavern_treat_button": "Cheers! (Treat Everyone)",
@@ -1823,7 +1827,8 @@ relationship_title: "{name}'s Relationships",
     // translations.js の zh オブジェクト内に追加（Traditional Chinese）
     // === 任務結果共通 ===
     // zh-tw (繁體中文 - 台灣/香港常用)
-    
+    "facility_already_max": "該設施已達到最高等級。",
+"facility_upgraded": "{facility} 已升級至等級 {level}！",
         "tavern_treat_title": "請所有人喝啤酒",
         "tavern_treat_desc": "請公會內的所有正式冒險者喝一杯！這將增加他們對您的親密度，以及夥伴彼此之間的友好度。",
         "tavern_treat_button": "乾杯！（請所有人）",
@@ -2762,7 +2767,7 @@ function getNpcDisplayName(internalKey) {
 const tavernRecipes = {
   ja: [
     // === 既存レシピ ===
-    {level: 1, name: "ギルド配給食", buff: {}, cost: 20, materials: [], hunger_recover: 1.0, isRation: true},
+    {level: 1, name: "ギルド配給食", buff: {}, cost: 20, materials: [], hunger_recover: 1, isRation: true},
     {level: 1, name: "力のスープ", buff: {stat: "strength", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.5},
     {level: 2, name: "巨人の煮込み", buff: {stat: "strength", percent: true, bonus: 40, days: 7}, cost: 800, materials: [{name: "活力の粉", qty: 2}], hunger_recover: 0.7},
     {level: 1, name: "知恵の茶", buff: {stat: "wisdom", percent: true, bonus: 20, days: 5}, cost: 250, materials: [], hunger_recover: 0.3},

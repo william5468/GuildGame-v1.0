@@ -1044,6 +1044,7 @@ function skipIntro() {
 
 /* ページ読み込み後すぐにプリロード開始 */
 preloadAssets();
+const OfferBeerSound = new Audio('Audio/OfferBeerSound.mp3');
 const strLightSound = new Audio('Audio/STR_lightAttack.mp3');
 const strHeavySound = new Audio('Audio/STR_heavyAttack.mp3');
 const strProtectSound = new Audio('Audio/STR_protect.mp3');
@@ -1070,6 +1071,9 @@ const counterTriggerSound = new Audio('Audio/CounterAttack_trigger.mp3');
 
 const levelupSound = new Audio('Audio/levelup.mp3');
 const buttonClickSound = new Audio('Audio/Button_Click.mp3');
+
+const GoldSound = new Audio('Audio/Gold_Sound.mp3');
+
 buttonClickSound.volume = 0.3; // 0.0 ~ 1.0（例: 50%）
 
 let currentCharIndex = 0;
@@ -2191,7 +2195,8 @@ function corrupt() {
     gameState.gold += goldGain;
 
     better_alert(t('corrupt_success', {gold: goldGain, rep: gameState.reputation}), "success");
-
+    GoldSound.currentTime = 0;
+    GoldSound.play().catch(e => console.log('Audio play error:', e));
     checkGameOver();
     updateDisplays();
 }
@@ -2267,7 +2272,7 @@ function buyExpansion() {
 
     if (spendGold(cost)) {
         gameState.maxPermanentSlots = nextSlots;
-        better_alert(t('expansion_purchased', {next: nextSlots}), "success");
+        better_alert(t('expansion_purchased', {next: nextSlots}), "levelup");
         updateDisplays();
     }
 }
@@ -3405,6 +3410,8 @@ function buy(i, qty) {
         }),
         "success"
     );
+    GoldSound.currentTime = 0;
+    GoldSound.play().catch(e => console.log('Audio play error:', e));
     updateDisplays();
 }
 
@@ -3791,7 +3798,8 @@ function buyMaterial(idx, isSpecial = false) {
         }),
         "success"
     );
-
+    GoldSound.currentTime = 0;
+    GoldSound.play().catch(e => console.log('Audio play error:', e));
     // Refresh shop
     document.getElementById('shopContent').innerHTML = renderDailyMaterials();
     updateDisplays();
@@ -3951,6 +3959,8 @@ function borrowGold() {
 
     gameState.gold += amount;
     better_alert(t('borrow_success', { amount: amount }), "success");
+    GoldSound.currentTime = 0;
+    GoldSound.play().catch(e => console.log('Audio play error:', e));
     updateDisplays();
     renderCurrentShopPage(); // ページ再描画
 }
@@ -4112,17 +4122,6 @@ function renderDailyMaterials() {
 
     let hasAnyItem = false;
 
-    // === 1. Normal Materials (language-safe, currentLang names) ===
-    if (gameState.dailyMaterials && gameState.dailyMaterials.length > 0) {
-        gameState.dailyMaterials.forEach((mat, i) => {
-            html += `<li class="shop-item">
-                <strong>${mat.name}</strong> - ${mat.price}G
-                <button class="buy-btn" onclick="buyMaterial(${i}, false)">${t('buy_button')}</button>
-            </li>`;
-            hasAnyItem = true;
-        });
-    }
-
     // === 2. Special Quest Reward Items (also currentLang names) ===
     if (gameState.dailySpecialItems && gameState.dailySpecialItems.length > 0) {
         gameState.dailySpecialItems.forEach((item, i) => {
@@ -4236,7 +4235,7 @@ function buyReceptionExpansion() {
 
     gameState.receptionLevel = next;
     
-    better_alert(t('reception_expanded', { level: next, cost: cost }) || `Reception expanded to Lv ${next}!`, "success");
+    better_alert(t('reception_expanded', { level: next, cost: cost }) || `Reception expanded to Lv ${next}!`, "levelup");
     updateDisplays();
 }
 
@@ -4411,16 +4410,6 @@ function nextShopPage() {
     currentShopPage = (currentShopPage + 1) % shopSections.length;
     renderCurrentShopPage();
 }
-function toggleShop() {
-    const modal = document.getElementById('shopModal');
-    if (modal.style.display === 'block') {
-        modal.style.display = 'none';
-    } else {
-        currentShopPage = 0;
-        renderCurrentShopPage();
-        modal.style.display = 'block';
-    }
-}
 
 function sellStackedItem(name, amount) {
     let remaining = amount;
@@ -4498,6 +4487,8 @@ function sellStackedItem(name, amount) {
 
     gameState.gold += totalGold;
     better_alert(`${name} を ${amount}個 売却しました！ +${totalGold}G`,"success");
+    GoldSound.currentTime = 0;
+    GoldSound.play().catch(e => console.log('Audio play error:', e));
 
     // ショップモーダルを更新（価格が日固定なので再計算しても同じ値になる）
     document.getElementById('shopContent').innerHTML = renderCurrentShopPage();
@@ -6550,11 +6541,11 @@ function playDay(){
         if (adv.leaveDaysLeft > 0) adv.leaveDaysLeft--;
     });
 
-    // 2. New leave requests (15% chance per permanent adventurer not on leave)
+    // 2. New leave requests (5% chance per permanent adventurer not on leave)
     const leaveRequests = [];
     gameState.adventurers.forEach(adv => {
         if (adv.temp || adv.leaveDaysLeft > 0 || isAdventurerOnQuest(adv)) return;
-        if (Math.random() < 0.15) {
+        if (Math.random() < 0.05) {
             const days = Math.floor(Math.random() * 6) + 2; // 2~7 days
             leaveRequests.push({adv, days});
         }
@@ -8839,15 +8830,6 @@ function updateTradeInfo() {
     document.getElementById('tradeInfo').innerHTML = info;
 }
 
-function toggleFacilities() {
-    currentFacility = null;
-    document.getElementById('facilitiesModal').style.display = 'flex';
-    renderFacilities();
-}
-
-function closeFacilities() {
-    document.getElementById('facilitiesModal').style.display = 'none';
-}
 
 
 
@@ -8859,10 +8841,23 @@ function toggleFacilities() {
 
 function closeFacilities() {
     document.getElementById('facilitiesModal').style.display = 'none';
+    currentFacility = null;
+    const targetBgm = getNormalBgmId();
+    crossfadeTo(targetBgm, 2000);
 }
 
 function selectFacility(fac) {
     currentFacility = fac;
+    if (currentFacility=='tavern'){
+    crossfadeTo("TavernBgm",2000);
+    }else if (currentFacility=='alchemy'){
+            
+    crossfadeTo("AlchemyBgm",2000);
+    }
+    else if (currentFacility=='blacksmith'){
+            
+    crossfadeTo("BlacksmithBgm",2000);
+    }
     renderFacilities();
 }
 
@@ -9202,6 +9197,8 @@ function produceBlacksmith(recipeIdx) {
     addToInventory(newItem, 1);
 
     better_alert(`${r.name} を製作しました！`,"success");
+    strProtectSound.currentTime = 0;
+    strProtectSound.play().catch(e => console.log('Audio play error:', e));
     renderFacilities();
     if (typeof updateGold === 'function') updateGold();
     updateDisplays();
@@ -9258,8 +9255,8 @@ function produceAndStock(recipeIndex) {
  */
 function offerBeerForAll(totalCost) {
     // Constants for the increases
-    const GM_INC = 2;
-    const BOND_INC = 2;
+    const GM_INC = 5;
+    const BOND_INC = 3;
 
     // Filter: Only permanent members NOT on a quest
     const availableAdvs = gameState.adventurers.filter(adv => 
@@ -9300,6 +9297,8 @@ function offerBeerForAll(totalCost) {
         .replace('{bondInc}', BOND_INC);
 
     better_alert(successMsg, "friendliness");
+    OfferBeerSound.currentTime = 0;
+    OfferBeerSound.play().catch(e => console.log('Audio play error:', e));
     
     renderFacilities();
     updateDisplays();
@@ -9310,6 +9309,10 @@ function renderFacilities() {
     const modalContent = document.querySelector('#facilitiesModal .modal-content');
 
     if (currentFacility === null) {
+
+        const targetBgm = getNormalBgmId();
+        crossfadeTo(targetBgm, 2000);
+
         modalContent.style.backgroundImage = "url('Images/Street.jpg')";
         content.innerHTML = `
             <div id="renderedfacilitiesContent" style="text-align:center; padding:60px;">
@@ -9340,6 +9343,7 @@ function renderFacilities() {
             titleKey = 'facilities_blacksmith';
             recipes = currentBlacksmithRecipes;
         } else if (currentFacility === 'tavern') {
+            
             bgFile = '酒場.jpg';
             titleKey = 'facilities_tavern';
             recipes = currentTavernRecipes;
@@ -9775,7 +9779,7 @@ function upgradeFacility(fac) {
     const maxLevel = facilityMaxLevels[fac];
 
     if (currentLevel >= maxLevel) {
-        better_alert('この施設はすでに最大レベルです', "warning");
+        better_alert(t('facility_already_max'), "warning");
         return;
     }
 
@@ -9802,9 +9806,18 @@ function upgradeFacility(fac) {
         // ── 通常の処理 ──
         renderFacilities();
         if (typeof updateGold === 'function') updateGold();
-        better_alert(`${fac} がレベル ${gameState.facilities[fac]} にアップグレードされました！`, "success");
+        
+        // Translate the facility name dynamically (e.g., "facilities_tavern" -> "酒場")
+        const translatedFacName = t(`facilities_${fac}`); 
+        
+        // Trigger the translated success alert
+        better_alert(t('facility_upgraded', { 
+            facility: translatedFacName, 
+            level: gameState.facilities[fac] 
+        }), "levelup");
+
     } else {
-        better_alert('Goldが不足しています', "error");
+        better_alert(t('insufficient_gold'), "error");
     }
 
     updateDisplays();
@@ -10157,13 +10170,17 @@ function postGuildQuest() {
 }
 
 function toggleShop() {
+    
     const modal = document.getElementById('shopModal');
     modal.style.display = 'flex';
     document.getElementById('shopContent').innerHTML =renderCurrentShopPage();
+    crossfadeTo('ShopBgm', 2000);
 }
 
 function closeShop() {
     document.getElementById('shopModal').style.display = 'none';
+    const targetBgm = getNormalBgmId();
+        crossfadeTo(targetBgm, 2000);
 }
 
 function toggleCharacters() {
@@ -11787,7 +11804,19 @@ document.addEventListener('dragstart', e => {
 
 
 function getNormalBgmId() {
-    // 評判が100より大きい場合は bgm_2、それ以外は bgm
+    // 1. 現在施設の中にいる場合は、その施設のBGMを最優先で返す
+    if (typeof currentFacility !== 'undefined' && currentFacility) {
+        if (currentFacility === 'tavern') return 'TavernBgm';
+        if (currentFacility === 'blacksmith') return 'BlacksmithBgm';
+        if (currentFacility === 'alchemy') return 'AlchemyBgm';
+    }
+
+    // 2. ショップ画面を開いている場合
+    if (typeof isShopOpen !== 'undefined' && isShopOpen) {
+        return 'ShopBgm';
+    }
+
+    // 3. それ以外（ギルドのメイン画面）は評判に応じて切り替え
     if (gameState.reputation > 100) {
         return 'bgm_2';
     } else {
@@ -11798,6 +11827,12 @@ function getNormalBgmId() {
 // 新規追加：BGMクロスフェード共通関数（再利用可能）
 function crossfadeTo(newBgmId, duration = 2000) {
     const newBgm = document.getElementById(newBgmId);
+
+    // Early return: If the requested BGM is already playing, don't do anything
+    if (newBgm && !newBgm.paused) {
+        return; 
+    }
+
     const currentBgms = [
         document.getElementById('main_screen_bgm'),
         document.getElementById('bgm'),
@@ -11808,8 +11843,12 @@ function crossfadeTo(newBgmId, duration = 2000) {
         document.getElementById('dialogueBgm'),
         document.getElementById('QuestEndDialogueBgm'),
         document.getElementById('storyBgm'),
-        document.getElementById('GameoverBgm')
-    ].filter(b => b !== newBgm && !b.paused);
+        document.getElementById('GameoverBgm'),
+        document.getElementById('ShopBgm'),
+        document.getElementById('TavernBgm'),
+        document.getElementById('AlchemyBgm'),
+        document.getElementById('BlacksmithBgm'),
+    ].filter(b => b && b !== newBgm && !b.paused); // Added 'b &&' to prevent null errors just in case
 
     // 現在再生中のBGMをすべてフェードアウト（複数対応安全策）
     // 新しいBGMをボリューム0で再生開始
